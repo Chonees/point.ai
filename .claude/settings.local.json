@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "mcp__autocad-mcp__system",
+      "mcp__autocad-mcp__drawing",
+      "mcp__autocad-mcp__layer",
+      "mcp__autocad-mcp__entity",
+      "Bash(uv run:*)"
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+# AutoCAD MCP — repositorio externo, no nuestro
+autocad-mcp/
+
+# AutoCAD lock files
+*.dwl
+*.dwl2
+*.bak
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# Generated test DXFs
+data/test_house*.dxf
+
+# Claude local settings
+.claude/settings.local.json
