@@ -24,6 +24,7 @@ export default function App() {
   const [statusMsg, setStatusMsg] = useState('')
   const [result, setResult] = useState<Result | null>(null)
   const [showJson, setShowJson] = useState(false)
+  const [analyzing, setAnalyzing] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const generate = useCallback(async () => {
@@ -66,6 +67,43 @@ export default function App() {
     }
   }, [prompt])
 
+  const analyzeImage = useCallback(async (file: File) => {
+    setAnalyzing(true)
+    setStatusMsg('Analyzing image...')
+    setStatus('idle')
+
+    try {
+      const base64 = await fileToBase64(file)
+      const res = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: base64 }),
+      })
+
+      if (!res.ok) {
+        const err = await res.json()
+        throw new Error(err.detail || `Error ${res.status}`)
+      }
+
+      const data = await res.json()
+      setPrompt(data.description)
+      setStatusMsg('')
+    } catch (e: unknown) {
+      setStatus('error')
+      setStatusMsg(e instanceof Error ? e.message : 'Failed to analyze image')
+    } finally {
+      setAnalyzing(false)
+    }
+  }, [])
+
+  const handleFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setFileName(file.name)
+      analyzeImage(file)
+    }
+  }, [analyzeImage])
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault()
@@ -74,7 +112,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center px-5 py-16">
+    <div className="min-h-screen flex flex-col items-center justify-center px-5 py-16">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
@@ -83,7 +121,7 @@ export default function App() {
         className="text-center mb-12"
       >
         <h1 className="text-4xl font-light tracking-tight text-white/90">
-          Point<span className="text-white/30">.ai</span>
+          Pointe<span className="text-white/30">.ai</span>
         </h1>
         <p className="text-xs tracking-[0.2em] uppercase text-zinc-600 mt-2">
           Floor Plan Generator
@@ -139,16 +177,23 @@ export default function App() {
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={(e) => setFileName(e.target.files?.[0]?.name || '')}
+              onChange={handleFileChange}
             />
           </label>
           {fileName && (
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-xs text-zinc-600"
+              className="text-xs text-zinc-600 flex items-center gap-2"
             >
               {fileName}
+              {analyzing && (
+                <motion.span
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                  className="inline-block w-3 h-3 border border-zinc-700 border-t-zinc-400 rounded-full"
+                />
+              )}
             </motion.span>
           )}
         </div>
@@ -157,7 +202,7 @@ export default function App() {
         <motion.button
           whileTap={{ scale: 0.98 }}
           onClick={generate}
-          disabled={status === 'loading'}
+          disabled={status === 'loading' || analyzing}
           className="w-full mt-4 py-3 rounded-lg text-sm font-medium
                      bg-white/[0.06] text-zinc-400 border border-zinc-800/60
                      hover:bg-white/[0.09] hover:text-zinc-300
@@ -258,10 +303,6 @@ export default function App() {
           )}
         </AnimatePresence>
 
-        {/* Footer hint */}
-        <p className="text-center text-[10px] text-zinc-700 mt-8">
-          Ctrl + Enter to generate
-        </p>
       </motion.div>
     </div>
   )
