@@ -1,4 +1,4 @@
-# AutoCAD MCP — repositorio externo, no nuestro
+# AutoCAD MCP — repositorio externo
 autocad-mcp/
 
 # AutoCAD lock files
@@ -10,10 +10,17 @@ autocad-mcp/
 __pycache__/
 *.pyc
 *.pyo
+.venv/
+
+# Environment variables
 .env
 
+# Frontend
+frontend/node_modules/
+frontend/dist/
+
 # Generated test DXFs
-data/test_house*.dxf
+backend/data/test_house*.dxf
 
 # Claude local settings
 .claude/settings.local.json

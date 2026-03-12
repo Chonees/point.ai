@@ -1,6 +1,9 @@
-# cad_standards.py — Pointe Homes CAD Standards
-# Fuente: floorplan.dxf extraido y verificado 2026-03-11
-# UNICA fuente de verdad para todos los generadores
+"""
+layers.py — Pointe Homes layer definitions + document setup.
+This is the ONLY shared config — setup_doc() needs all layers at once.
+Source: Seminole 2000 FARMHOUSE floorplan.dxf, verified 2026-03-11.
+"""
+import ezdxf
 
 LAYERS = {
     "WALLS":            {"color": 7,   "lineweight": 60},
@@ -20,28 +23,19 @@ LAYERS = {
     "MISC":             {"color": 3,   "lineweight": 30},
 }
 
-WALL = {
-    "thickness": 4,     # inches — dos LINEs paralelas a 4" de distancia
-    "lineweight": 60,   # 0.60mm
-    "color": 7,
-}
 
-DOOR = {
-    "layer": "DOORS",
-    "swing_angle": 90,
-    "lineweight": 9,
-}
+def setup_doc():
+    """Create DXF document with all Pointe Homes layers. Returns (doc, msp)."""
+    doc = ezdxf.new("R2018")
+    doc.units = 1  # inches
 
-WINDOW = {
-    "layer": "WINS",
-    "lineweight": -3,
-}
+    msp = doc.modelspace()
 
-UNITS = {
-    "insunits": 2,      # 1 unit = 1 inch
-}
+    for name, props in LAYERS.items():
+        layer = doc.layers.new(name=name)
+        layer.color = props["color"]
+        lw = props["lineweight"]
+        if lw > 0:
+            layer.lineweight = lw
 
-TEXT = {
-    "room_label_height": 9,
-    "dim_text_height":   6,
-}
+    return doc, msp

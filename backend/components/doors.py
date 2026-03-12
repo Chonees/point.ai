@@ -1,0 +1,71 @@
+"""
+doors.py — Pointe Homes Door Standards + Drawing Logic
+Source: Seminole 2000 FARMHOUSE floorplan.dxf, verified 2026-03-11.
+
+Standards:
+  - Two parallel lines (door slab) + 90 degree arc swing
+  - Slab thickness: 1.5"
+  - Layer: DOORS (color 157, lineweight 9)
+  - Swing conventions (verified vs Seminole):
+      up    — bottom wall, room above: slab up + arc 0->90
+      down  — top wall, room below:    slab down + arc 270->360
+      right — left wall, room right:   slab right + arc 0->90
+      left  — right wall, room left:   slab left + arc 90->180
+"""
+from .primitives import add_line, add_arc
+from .walls import THICKNESS
+
+# === STANDARDS ===
+SLAB_THICKNESS = 1.5   # inches
+SWING_ANGLE = 90       # degrees
+LAYER = "DOORS"
+
+
+# === DRAWING ===
+
+def draw_door(msp, hx, hy, width, direction="up"):
+    """
+    Puerta: dos lineas paralelas (tablero) + arc swing.
+    hx, hy = punto de bisagra (inner face de la pared).
+    direction: 'up','down','left','right'
+    """
+    DS = SLAB_THICKNESS
+    if direction == "up":
+        add_line(msp, hx,      hy, hx,      hy + width, LAYER)
+        add_line(msp, hx + DS, hy, hx + DS, hy + width, LAYER)
+        add_arc(msp, hx, hy, width, 0, 90, LAYER)
+    elif direction == "down":
+        add_line(msp, hx,      hy, hx,      hy - width, LAYER)
+        add_line(msp, hx + DS, hy, hx + DS, hy - width, LAYER)
+        add_arc(msp, hx, hy, width, 270, 360, LAYER)
+    elif direction == "right":
+        add_line(msp, hx, hy,      hx + width, hy,      LAYER)
+        add_line(msp, hx, hy + DS, hx + width, hy + DS, LAYER)
+        add_arc(msp, hx, hy, width, 0, 90, LAYER)
+    elif direction == "left":
+        add_line(msp, hx, hy,      hx - width, hy,      LAYER)
+        add_line(msp, hx, hy + DS, hx - width, hy + DS, LAYER)
+        add_arc(msp, hx, hy, width, 90, 180, LAYER)
+
+
+# === ROOM HELPER ===
+
+def draw_doors_for_room(msp, room):
+    """Draw all doors for a room, handling wall-offset-to-hinge-point math."""
+    T = THICKNESS
+    rx, ry, rw, rh = room["x"], room["y"], room["w"], room["h"]
+
+    for d in room.get("doors", []):
+        off  = d["offset"]
+        w    = d["width"]
+        wall = d["wall"]
+        if d.get("type") == "garage":
+            continue
+        if wall == "bottom":
+            draw_door(msp, rx + off, ry + T, w, "up")
+        elif wall == "top":
+            draw_door(msp, rx + off, ry + rh - T, w, "down")
+        elif wall == "left":
+            draw_door(msp, rx + T, ry + off, w, "right")
+        elif wall == "right":
+            draw_door(msp, rx + rw - T, ry + off, w, "left")
