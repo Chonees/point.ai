@@ -64,7 +64,45 @@
       "Bash(mv arquitectura_sistema1.md docs/)",
       "Bash(mv \"STEPS DAY TO DAY\" docs/)",
       "Bash(cp -r \"building Plans\" backend/data/plans)",
-      "Bash(rm -rf \"building Plans\")"
+      "Bash(rm -rf \"building Plans\")",
+      "Bash(.venv/Scripts/python -m pytest -q)",
+      "Bash(wc -l backend/*.py backend/components/*.py tests/*.py)",
+      "Bash(ls -la c:/Users/lucas/OneDrive/Escritorio/Point.ai/tests/test_*.py)",
+      "Bash(wc -l c:/Users/lucas/OneDrive/Escritorio/Point.ai/backend/*.py)",
+      "Bash(python -m pytest tests/ --tb=no -q)",
+      "Bash(python -m pytest tests/ --tb=short -q)",
+      "Bash(py --version)",
+      "Bash(python -m pip install opencv-python fastapi httpx \"uvicorn[standard]\" pytest pytest-asyncio)",
+      "Bash(python data/benchmark/generate_cases.py)",
+      "Bash(python -m pytest tests/ -v --tb=short)",
+      "Bash(python -m pytest tests/test_plan_parser.py::test_parse_structure_from_inferred_image_merges_fragments_and_anchors_openings tests/test_benchmark.py::test_evaluate_result_against_thresholds_accepts_good_case -v --tb=long)",
+      "Bash(python -m pytest tests/test_benchmark.py::test_evaluate_result_against_thresholds_accepts_good_case -v --tb=long -s)",
+      "Bash(npm run:*)",
+      "Bash(python -c \"from backend.app import app; print\\(''OK''\\)\")",
+      "Bash(python -c \"from backend.prompts import SYSTEM_PROMPT, DIMENSION_EXTRACTION_PROMPT, ANALYZE_PROMPT; print\\(''prompts OK:'', len\\(SYSTEM_PROMPT\\), len\\(DIMENSION_EXTRACTION_PROMPT\\)\\)\")",
+      "Bash(python -c \"from backend.structural_generator import generate, _apply_junction_extensions; print\\(''structural_generator OK''\\)\")",
+      "Bash(python -c \"from backend.plan_parser import parse_structure_payload; print\\(''plan_parser OK''\\)\")",
+      "Bash(ls -d c:UserslucasOneDriveEscritoriofloor plan research/*)",
+      "Bash(ls -d c:UserslucasOneDriveEscritoriofloor-plan-research/*)",
+      "Bash(python3 -c \"import json; f = open\\(''c:\\\\Users\\\\lucas\\\\OneDrive\\\\Escritorio\\\\floorplan-research\\\\CubiCasa5k\\\\samples.ipynb'', ''r''\\); nb = json.load\\(f\\); print\\(''Number of cells:'', len\\(nb[''cells'']\\)\\); cells = [c for c in nb[''cells''] if c[''cell_type''] == ''code'']; print\\(''Number of code cells:'', len\\(cells\\)\\)\")",
+      "Bash(find c:UserslucasOneDriveEscritoriofloorplan-researchCubiCasa5k -type f -name *.txt)",
+      "Bash(gdown \"1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK\" -O \"c:/Users/lucas/OneDrive/Escritorio/floorplan-research/CubiCasa5k/model_best_val_loss_var.pkl\")",
+      "Bash(python -m pip install gdown)",
+      "Bash(python -m gdown \"1gRB7ez1e4H7a9Y09lLqRuna0luZO5VRK\" -O \"c:/Users/lucas/OneDrive/Escritorio/floorplan-research/CubiCasa5k/model_best_val_loss_var.pkl\")",
+      "Bash(python -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu)",
+      "Bash(python -c \"from backend.cubicasa_inference import infer_cubicasa; print\\(''cubicasa_inference OK''\\)\")",
+      "Bash(timeout 30 bash -c 'while [ ! -s \"\"C:\\\\Users\\\\lucas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-lucas-OneDrive-Escritorio-Point-ai\\\\0464c216-6167-4a79-9f19-e51c574f2d97\\\\tasks\\\\b21a29eky.output\"\" ]; do sleep 1; done; cat \"\"C:\\\\Users\\\\lucas\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-lucas-OneDrive-Escritorio-Point-ai\\\\0464c216-6167-4a79-9f19-e51c574f2d97\\\\tasks\\\\b21a29eky.output\"\"')",
+      "Bash(python:*)",
+      "WebSearch",
+      "Bash(mkdir -p 'c:/Users/lucas/OneDrive/Escritorio/floorplan-research/ResPlan')",
+      "Bash(mkdir -p 'c:/Users/lucas/OneDrive/Escritorio/floorplan-research/FloorPlanCAD')",
+      "Bash(kaggle datasets:*)",
+      "Bash(ls -lh 'c:/Users/lucas/OneDrive/Escritorio/floorplan-research/ResPlan/'*.zip)",
+      "Bash(ls -lh 'c:/Users/lucas/OneDrive/Escritorio/floorplan-research/FloorPlanCAD/'*.zip)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "autocad-mcp"
+  ]
 }

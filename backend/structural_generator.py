@@ -1,0 +1,261 @@
+"""
+structural_generator.py
+DXF renderer for the v2 structure contract.
+
+Phase 2: axis-aligned walls with junction-based corner extensions
+and corrected door/window anchoring.
+"""
+from __future__ import annotations
+
+from collections import defaultdict
+from typing import Any
+
+from .components.doors import draw_door, draw_garage_door, draw_sliding_door
+from .components.layers import setup_doc
+from .components.walls import THICKNESS, draw_wall_h, draw_wall_v
+from .components.windows import draw_window_h, draw_window_v
+
+EPSILON = 1e-6
+JUNCTION_TOLERANCE = 6.0
+
+
+def generate(structure: dict[str, Any], out_path: str) -> None:
+    doc, msp = setup_doc()
+    wall_geometries = [_wall_geometry(wall) for wall in structure.get("walls") or []]
+    wall_map = {wall["id"]: wall for wall in wall_geometries}
+
+    # Apply corner joint extensions using junction graph
+    junctions = structure.get("junctions") or []
+    if junctions:
+        _apply_junction_extensions(wall_geometries, junctions, wall_map)
+
+    openings_by_wall: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for opening in structure.get("openings") or []:
+        wall_id = opening.get("wall_id")
+        if wall_id in wall_map:
+            openings_by_wall[wall_id].append(_opening_geometry(opening, wall_map[wall_id]))
+
+    for wall in wall_geometries:
+        gaps = [(opening["start"], opening["end"]) for opening in openings_by_wall.get(wall["id"], [])]
+        if wall["orientation"] == "horizontal":
+            draw_wall_h(msp, wall["start"], wall["end"], wall["coord"], gaps=gaps)
+        else:
+            draw_wall_v(msp, wall["coord"], wall["start"], wall["end"], gaps=gaps)
+
+    for wall_id, openings in openings_by_wall.items():
+        wall = wall_map[wall_id]
+        for opening in openings:
+            _draw_opening(msp, wall, opening)
+
+    doc.saveas(out_path)
+
+
+# ---------------------------------------------------------------------------
+# Junction-based corner extensions
+# ---------------------------------------------------------------------------
+
+def _apply_junction_extensions(
+    wall_geometries: list[dict[str, Any]],
+    junctions: list[dict[str, Any]],
+    wall_map: dict[str, dict[str, Any]],
+) -> None:
+    """Extend wall endpoints at L/T/X junctions so double-line walls overlap cleanly."""
+    # Track which (wall_id, endpoint) pairs have already been extended
+    extended: set[tuple[str, str]] = set()
+
+    for junction in junctions:
+        jp = junction.get("point", {})
+        jx = float(jp.get("x", 0))
+        jy = float(jp.get("y", 0))
+
+        for wall_id in junction.get("wall_ids", []):
+            wall = wall_map.get(wall_id)
+            if wall is None:
+                continue
+
+            if wall["orientation"] == "horizontal":
+                # Check if junction is at the start (left end) of the wall
+                if abs(wall["start"] - jx) < JUNCTION_TOLERANCE:
+                    key = (wall_id, "start")
+                    if key not in extended:
+                        wall["start"] -= THICKNESS
+                        extended.add(key)
+                # Check if junction is at the end (right end) of the wall
+                elif abs(wall["end"] - jx) < JUNCTION_TOLERANCE:
+                    key = (wall_id, "end")
+                    if key not in extended:
+                        wall["end"] += THICKNESS
+                        extended.add(key)
+            else:  # vertical
+                # Check if junction is at the start (bottom) of the wall
+                if abs(wall["start"] - jy) < JUNCTION_TOLERANCE:
+                    key = (wall_id, "start")
+                    if key not in extended:
+                        wall["start"] -= THICKNESS
+                        extended.add(key)
+                # Check if junction is at the end (top) of the wall
+                elif abs(wall["end"] - jy) < JUNCTION_TOLERANCE:
+                    key = (wall_id, "end")
+                    if key not in extended:
+                        wall["end"] += THICKNESS
+                        extended.add(key)
+
+
+# ---------------------------------------------------------------------------
+# Wall geometry
+# ---------------------------------------------------------------------------
+
+def _wall_geometry(wall: dict[str, Any]) -> dict[str, Any]:
+    polyline = wall.get("polyline") or []
+    if len(polyline) != 2:
+        raise ValueError(f"Wall {wall.get('id')} must have exactly 2 polyline points in phase 1.")
+
+    start = _point(polyline[0])
+    end = _point(polyline[1])
+
+    if abs(start["y"] - end["y"]) <= EPSILON:
+        if start["x"] > end["x"]:
+            start, end = end, start
+        return {
+            "id": wall["id"],
+            "orientation": "horizontal",
+            "coord": start["y"],
+            "start": start["x"],
+            "end": end["x"],
+            "thickness": float(wall.get("thickness", THICKNESS)),
+            "is_exterior": bool(wall.get("is_exterior", False)),
+        }
+
+    if abs(start["x"] - end["x"]) <= EPSILON:
+        if start["y"] > end["y"]:
+            start, end = end, start
+        return {
+            "id": wall["id"],
+            "orientation": "vertical",
+            "coord": start["x"],
+            "start": start["y"],
+            "end": end["y"],
+            "thickness": float(wall.get("thickness", THICKNESS)),
+            "is_exterior": bool(wall.get("is_exterior", False)),
+        }
+
+    raise ValueError(f"Wall {wall.get('id')} is not axis-aligned.")
+
+
+# ---------------------------------------------------------------------------
+# Opening geometry
+# ---------------------------------------------------------------------------
+
+def _opening_geometry(opening: dict[str, Any], wall: dict[str, Any]) -> dict[str, Any]:
+    span = float(opening["span"])
+    offset = opening.get("offset")
+    if offset is None:
+        position = _point(opening["position"])
+        if wall["orientation"] == "horizontal":
+            offset = position["x"] - wall["start"] - (span / 2.0)
+        else:
+            offset = position["y"] - wall["start"] - (span / 2.0)
+
+    start = wall["start"] + float(offset)
+    end = start + span
+    return {
+        "id": opening["id"],
+        "kind": opening["kind"],
+        "wall_id": wall["id"],
+        "orientation": wall["orientation"],
+        "side": opening.get("side"),
+        "swing": opening.get("swing"),
+        "door_type": opening.get("door_type", opening.get("type", "normal")),
+        "start": start,
+        "end": end,
+        "span": span,
+    }
+
+
+def _draw_opening(msp: Any, wall: dict[str, Any], opening: dict[str, Any]) -> None:
+    if opening["kind"] == "door":
+        _draw_door_opening(msp, wall, opening)
+        return
+
+    _draw_window_opening(msp, wall, opening)
+
+
+def _draw_door_opening(msp: Any, wall: dict[str, Any], opening: dict[str, Any]) -> None:
+    door_type = opening.get("door_type", "normal")
+
+    if door_type == "garage":
+        if opening["orientation"] == "horizontal":
+            draw_garage_door(msp, opening["start"], wall["coord"] + THICKNESS / 2, opening["span"], "horizontal")
+        else:
+            draw_garage_door(msp, wall["coord"] + THICKNESS / 2, opening["start"], opening["span"], "vertical")
+        return
+
+    if door_type == "sliding":
+        if opening["orientation"] == "horizontal":
+            draw_sliding_door(msp, opening["start"], wall["coord"] + THICKNESS / 2, opening["span"], "horizontal")
+        else:
+            draw_sliding_door(msp, wall["coord"] + THICKNESS / 2, opening["start"], opening["span"], "vertical")
+        return
+
+    swing = opening.get("swing") or _default_swing(opening.get("side"))
+    if swing is None:
+        return
+
+    # Hinge point calculation:
+    # wall["coord"] is the bottom/left face of the double-line wall
+    # wall["coord"] + THICKNESS is the top/right face
+    if opening["orientation"] == "horizontal":
+        hinge_x = opening["start"]
+        if opening.get("side") == "bottom":
+            # Room is above the wall → hinge at top face, swing up
+            hinge_y = wall["coord"] + THICKNESS
+        else:
+            # Room is below the wall → hinge at bottom face, swing down
+            hinge_y = wall["coord"]
+        draw_door(msp, hinge_x, hinge_y, opening["span"], swing)
+        return
+
+    # Vertical wall
+    hinge_y = opening["start"]
+    if opening.get("side") == "left":
+        # Room is to the right → hinge at right face, swing right
+        hinge_x = wall["coord"] + THICKNESS
+    else:
+        # Room is to the left → hinge at left face, swing left
+        hinge_x = wall["coord"]
+    draw_door(msp, hinge_x, hinge_y, opening["span"], swing)
+
+
+def _draw_window_opening(msp: Any, wall: dict[str, Any], opening: dict[str, Any]) -> None:
+    side = opening.get("side")
+    if opening["orientation"] == "horizontal":
+        if side == "top":
+            # Window on top face of wall
+            draw_window_h(msp, opening["start"], wall["coord"] + THICKNESS, opening["span"], side="top")
+        else:
+            # Window on bottom face of wall (default)
+            draw_window_h(msp, opening["start"], wall["coord"], opening["span"], side=side or "bottom")
+        return
+
+    draw_window_v(msp, wall["coord"], opening["start"], opening["span"], side=side or "left")
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _point(raw_point: dict[str, Any] | list[Any] | tuple[Any, Any]) -> dict[str, float]:
+    if isinstance(raw_point, dict):
+        return {"x": float(raw_point["x"]), "y": float(raw_point["y"])}
+    if isinstance(raw_point, (list, tuple)) and len(raw_point) >= 2:
+        return {"x": float(raw_point[0]), "y": float(raw_point[1])}
+    raise ValueError("Point must be a dict with x/y or a 2-item sequence.")
+
+
+def _default_swing(side: str | None) -> str | None:
+    return {
+        "bottom": "up",
+        "top": "down",
+        "left": "right",
+        "right": "left",
+    }.get(side)

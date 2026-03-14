@@ -48,6 +48,54 @@ def draw_door(msp, hx, hy, width, direction="up"):
         add_arc(msp, hx, hy, width, 90, 180, LAYER)
 
 
+def draw_garage_door(msp, x, y, width, orientation="horizontal"):
+    """
+    Garage door: dashed centerline across the opening.
+    No swing, just a visual indicator of the garage opening.
+    """
+    DASH_LEN = 4.0
+    GAP_LEN = 3.0
+    if orientation == "horizontal":
+        cx = x
+        while cx < x + width:
+            seg_end = min(cx + DASH_LEN, x + width)
+            add_line(msp, cx, y, seg_end, y, LAYER)
+            cx = seg_end + GAP_LEN
+    else:
+        cy = y
+        while cy < y + width:
+            seg_end = min(cy + DASH_LEN, y + width)
+            add_line(msp, x, cy, x, seg_end, LAYER)
+            cy = seg_end + GAP_LEN
+
+
+def draw_sliding_door(msp, x, y, width, orientation="horizontal"):
+    """
+    Sliding door: two parallel offset lines (panels) with arrows.
+    Each panel is half the opening width, overlapping in the center.
+    """
+    DS = SLAB_THICKNESS
+    half = width / 2.0
+    arrow_len = min(6.0, half * 0.3)
+
+    if orientation == "horizontal":
+        # Panel 1: left half, offset up
+        add_line(msp, x, y + DS, x + half + arrow_len, y + DS, LAYER)
+        # Panel 2: right half, offset down
+        add_line(msp, x + half - arrow_len, y - DS, x + width, y - DS, LAYER)
+        # Arrow heads (small tick marks)
+        add_line(msp, x + half + arrow_len, y + DS - 1, x + half + arrow_len, y + DS + 1, LAYER)
+        add_line(msp, x + half - arrow_len, y - DS - 1, x + half - arrow_len, y - DS + 1, LAYER)
+    else:
+        # Panel 1: bottom half, offset right
+        add_line(msp, x + DS, y, x + DS, y + half + arrow_len, LAYER)
+        # Panel 2: top half, offset left
+        add_line(msp, x - DS, y + half - arrow_len, x - DS, y + width, LAYER)
+        # Arrow heads
+        add_line(msp, x + DS - 1, y + half + arrow_len, x + DS + 1, y + half + arrow_len, LAYER)
+        add_line(msp, x - DS - 1, y + half - arrow_len, x - DS + 1, y + half - arrow_len, LAYER)
+
+
 # === ROOM HELPER ===
 
 def draw_doors_for_room(msp, room):
