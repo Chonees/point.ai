@@ -123,10 +123,10 @@ def test_generate_dxf_endpoint_passes_model_variant_and_reports_it(monkeypatch):
 
     response = client.post(
         "/api/v2/generate-dxf",
-        json={"image": build_synthetic_structure_image(), "model_variant": "experimental"},
+        json={"image": build_synthetic_structure_image(), "model_variant": "baseline"},
     )
 
     assert response.status_code == 200, response.text
     payload = response.json()
-    assert captured["options"] == {"model_variant": "experimental"}
-    assert payload["quality_metrics"]["model_variant"] == "experimental"
+    assert captured["options"] == {"model_variant": "baseline"}
+    assert payload["quality_metrics"]["model_variant"] == "baseline"

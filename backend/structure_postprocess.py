@@ -92,10 +92,26 @@ def postprocess_structure(
     junctions = build_junction_graph(merged_walls)
     classified_walls = _classify_walls_with_junctions(merged_walls, junctions)
 
+    # Filter isolated noisy walls (dimension annotations, symbols with no junctions)
+    classified_walls, isolated_noise_count = _filter_isolated_noisy_walls(classified_walls, junctions)
+    if isolated_noise_count:
+        review_flags.append(f"Removed {isolated_noise_count} isolated noisy wall segment(s).")
+        junctions = build_junction_graph(classified_walls)
+
     # Filter furniture-like openings (isolated small closed shapes not connected to walls)
     filtered_openings, furniture_count = _filter_furniture_openings(openings, classified_walls)
     if furniture_count:
         review_flags.append(f"Removed {furniture_count} furniture-like opening(s).")
+
+    # Deduplicate overlapping openings on the same wall
+    filtered_openings, dup_count = _deduplicate_openings(filtered_openings, classified_walls)
+    if dup_count:
+        review_flags.append(f"Removed {dup_count} duplicate/overlapping opening(s).")
+
+    # Limit windows on exterior walls — too many signals false positives (deck junctions, etc.)
+    filtered_openings, excess_count = _limit_exterior_wall_windows(filtered_openings, classified_walls)
+    if excess_count:
+        review_flags.append(f"Removed {excess_count} excess window(s) from dense exterior wall(s).")
 
     wall_map = {wall["id"]: wall for wall in classified_walls}
     anchored_openings, opening_metrics = _anchor_openings(filtered_openings, classified_walls, wall_map, review_flags)
@@ -531,6 +547,151 @@ def _filter_furniture_openings(
             removed += 1
 
     return kept, removed
+
+
+# ---------------------------------------------------------------------------
+# Isolated noisy wall filter
+# ---------------------------------------------------------------------------
+
+def _filter_isolated_noisy_walls(
+    walls: list[dict[str, Any]],
+    junctions: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], int]:
+    """Remove short isolated wall segments caused by dimension annotations or symbols.
+
+    Walls with no junctions whose thickness-to-length ratio exceeds 0.4 are
+    almost certainly CAD annotation artifacts rather than structural walls.
+    """
+    connected_ids: set[str] = set()
+    for j in junctions:
+        for wid in j["wall_ids"]:
+            connected_ids.add(wid)
+
+    filtered = []
+    removed = 0
+    for wall in walls:
+        length = _wall_length(wall)
+        thickness = float(wall.get("thickness", 4.0))
+        # High thickness-to-length ratio = dimension symbol or annotation artifact.
+        # Real structural walls are always much longer than they are thick.
+        # Apply regardless of junction status (noise walls can form junctions with each other).
+        if length > 0 and thickness / length > 0.4:
+            removed += 1
+            continue
+        # Also drop short unconnected walls
+        if wall["id"] not in connected_ids and length < MIN_WALL_LENGTH * 3:
+            removed += 1
+            continue
+        filtered.append(wall)
+    return filtered, removed
+
+
+# ---------------------------------------------------------------------------
+# Opening deduplication
+# ---------------------------------------------------------------------------
+
+def _deduplicate_openings(
+    openings: list[dict[str, Any]],
+    walls: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], int]:
+    """Remove openings that overlap more than 50% with a larger opening on the same wall.
+
+    CubiCasa sometimes emits multiple nearby detections for the same window or door.
+    Keep the one with the larger span when two same-kind openings heavily overlap.
+    """
+    wall_map = {w["id"]: w for w in walls}
+
+    by_wall_kind: dict[tuple[str | None, str], list[dict[str, Any]]] = defaultdict(list)
+    for op in openings:
+        by_wall_kind[(op.get("wall_id"), op["kind"])].append(op)
+
+    kept: list[dict[str, Any]] = []
+    removed = 0
+    for (wall_id, _kind), ops in by_wall_kind.items():
+        if len(ops) <= 1:
+            kept.extend(ops)
+            continue
+
+        wall = wall_map.get(wall_id) if wall_id else None
+        if wall is None:
+            kept.extend(ops)
+            continue
+
+        axis_key = "x" if wall["orientation"] == "horizontal" else "y"
+        ops_sorted = sorted(ops, key=lambda o: o["position"][axis_key])
+
+        wall_kept: list[dict[str, Any]] = []
+        for op in ops_sorted:
+            span = op["span"]
+            center = op["position"][axis_key]
+            op_start = center - span / 2
+            op_end = center + span / 2
+
+            overlapping_with = None
+            for k_op in wall_kept:
+                k_span = k_op["span"]
+                k_center = k_op["position"][axis_key]
+                k_start = k_center - k_span / 2
+                k_end = k_center + k_span / 2
+                overlap = max(0.0, min(op_end, k_end) - max(op_start, k_start))
+                min_span = min(span, k_span)
+                if min_span > 0 and overlap / min_span > 0.5:
+                    overlapping_with = k_op
+                    break
+
+            if overlapping_with is None:
+                wall_kept.append(op)
+            elif op["span"] > overlapping_with["span"]:
+                wall_kept.remove(overlapping_with)
+                wall_kept.append(op)
+                removed += 1
+            else:
+                removed += 1
+
+        kept.extend(wall_kept)
+
+    return kept, removed
+
+
+# ---------------------------------------------------------------------------
+# Exterior wall window density filter
+# ---------------------------------------------------------------------------
+
+_MAX_WINDOWS_PER_EXTERIOR_WALL = 3
+
+
+def _limit_exterior_wall_windows(
+    openings: list[dict[str, Any]],
+    walls: list[dict[str, Any]],
+) -> tuple[list[dict[str, Any]], int]:
+    """Cap the number of windows on any single exterior wall to MAX_WINDOWS_PER_EXTERIOR_WALL.
+
+    CubiCasa often fires many small window detections where a deck or extension
+    attaches to an exterior wall. When a wall has more windows than the cap,
+    keep only the largest ones (by span).
+    """
+    wall_map = {w["id"]: w for w in walls}
+
+    windows_by_wall: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    other_openings: list[dict[str, Any]] = []
+
+    for op in openings:
+        if op["kind"] == "window":
+            windows_by_wall[op.get("wall_id", "")].append(op)
+        else:
+            other_openings.append(op)
+
+    kept_windows: list[dict[str, Any]] = []
+    removed = 0
+    for wall_id, wins in windows_by_wall.items():
+        if len(wins) <= _MAX_WINDOWS_PER_EXTERIOR_WALL:
+            kept_windows.extend(wins)
+        else:
+            wins_sorted = sorted(wins, key=lambda o: o["span"], reverse=True)
+            kept_windows.extend(wins_sorted[:_MAX_WINDOWS_PER_EXTERIOR_WALL])
+            removed += len(wins) - _MAX_WINDOWS_PER_EXTERIOR_WALL
+
+    return other_openings + kept_windows, removed
 
 
 # ---------------------------------------------------------------------------

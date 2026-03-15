@@ -439,7 +439,7 @@ def run_finetune(
     grad_clip_norm: float | None = 1.0,
     amp_enabled: bool = False,
     enable_color_jitter: bool = True,
-    model_variant: str = "experimental",
+    model_variant: str = "baseline",
     export_inference_checkpoint: Path | None = None,
     log_every_steps: int = 100,
 ) -> dict[str, Any]:
@@ -688,6 +688,50 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument("--amp", action="store_true", help="Enable mixed precision on CUDA.")
     parser.add_argument("--no-amp", action="store_true", help="Force-disable mixed precision.")
     parser.add_argument("--no-color-jitter", action="store_true", help="Disable color jitter in training.")
-    parser.add_argument("--model-variant", type=str, default="experimental", help="Variant label for exported inference checkpoint.")
+    parser.add_argument("--model-variant", type=str, default="baseline", help="Variant label for exported inference checkpoint.")
     parser.add_argument("--export-inference-checkpoint", type=Path, default=None, help="Optional path for best inference checkpoint.")
-    parser.add_argument("--log-every-steps", type=int, default=100, help="Emit running metrics every N s
+    parser.add_argument("--log-every-steps", type=int, default=100, help="Emit running metrics every N steps.")
+    parser.add_argument(
+        "--output-summary",
+        type=Path,
+        default=None,
+        help="Optional explicit location for the final summary JSON.",
+    )
+    return parser
+
+
+def main() -> int:
+    args = build_arg_parser().parse_args()
+    init_weights = None if str(args.init_weights).strip() == "" else args.init_weights
+    summary = run_finetune(
+        data_path=args.data_path,
+        run_dir=args.run_dir,
+        epochs=args.epochs,
+        batch_size=args.batch_size,
+        image_size=args.image_size,
+        learning_rate=args.learning_rate,
+        weight_decay=args.weight_decay,
+        device_name=args.device,
+        num_workers=args.num_workers,
+        seed=args.seed,
+        init_weights=init_weights,
+        resume_checkpoint=args.resume,
+        max_train_steps_per_epoch=args.max_train_steps_per_epoch,
+        max_val_steps=args.max_val_steps,
+        accumulation_steps=max(args.accumulation_steps, 1),
+        grad_clip_norm=None if args.grad_clip_norm <= 0 else args.grad_clip_norm,
+        amp_enabled=args.amp and not args.no_amp,
+        enable_color_jitter=not args.no_color_jitter,
+        model_variant=args.model_variant,
+        export_inference_checkpoint=args.export_inference_checkpoint,
+        log_every_steps=args.log_every_steps,
+    )
+    if args.output_summary:
+        args.output_summary.parent.mkdir(parents=True, exist_ok=True)
+        args.output_summary.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    print(json.dumps(summary, indent=2))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

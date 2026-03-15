@@ -17,6 +17,7 @@ import httpx
 
 from .cubicasa_inference import CUBICASA_BACKEND, cubicasa_available, infer_cubicasa
 from .inference_client import HEURISTIC_BACKEND, infer_heuristic_structure
+from .r2v_inference import R2V_BACKEND, infer_r2v, r2v_available
 from .observability import log_event
 from .worker_contract import (
     WorkerError,
@@ -69,6 +70,16 @@ def infer_structure(
         log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
         return result
 
+    if backend == R2V_BACKEND:
+        ready, reason = r2v_available()
+        if not ready:
+            raise WorkerError("MODEL_NOT_LOADED", reason or "R2V is not available.")
+        result = infer_r2v(image_b64)
+        result.setdefault("inference_debug", {})
+        result["inference_debug"]["backend"] = backend
+        log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
+        return result
+
     raise ValueError(f"Unsupported inference backend: {backend}")
 
 
@@ -111,12 +122,20 @@ def get_worker_health(
         )
 
 
+_backend_cache: str | None = None
+
+
 def _default_backend() -> str:
+    global _backend_cache
+    if _backend_cache is not None:
+        return _backend_cache
     configured = os.getenv("POINTAI_INFERENCE_BACKEND")
     if configured:
-        return configured
+        _backend_cache = configured
+        return _backend_cache
     ready, _ = cubicasa_available()
-    return CUBICASA_BACKEND if ready else HEURISTIC_BACKEND
+    _backend_cache = CUBICASA_BACKEND if ready else HEURISTIC_BACKEND
+    return _backend_cache
 
 
 def _model_variant_from_options(options: dict[str, Any] | None) -> str | None:

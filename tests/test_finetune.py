@@ -54,7 +54,7 @@ def test_run_finetune_writes_checkpoints_and_summary(tmp_path: Path):
         grad_clip_norm=1.0,
         amp_enabled=False,
         enable_color_jitter=False,
-        model_variant="experimental",
+        model_variant="baseline",
         export_inference_checkpoint=run_dir / "checkpoints" / "best_inference.pt",
     )
 
@@ -66,4 +66,8 @@ def test_run_finetune_writes_checkpoints_and_summary(tmp_path: Path):
     assert (run_dir / "summary.json").exists()
     config = json.loads((run_dir / "config.json").read_text(encoding="utf-8"))
     assert config["num_workers"] == 2
-    assert config["effective_num_workers"] =
+    assert config["effective_num_workers"] == _normalize_num_workers(2)
+
+    checkpoint = torch.load(summary["best_inference_checkpoint"], map_location="cpu", weights_only=False)
+    assert checkpoint["variant"] == "baseline"
+    assert "model_state" in checkpoint

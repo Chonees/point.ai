@@ -52,7 +52,7 @@ def run_smoke_finetune(
     image_size: int = 128,
     learning_rate: float = 1e-4,
     checkpoint_output: Path | None = None,
-    model_variant: str = "experimental",
+    model_variant: str = "baseline",
 ) -> dict[str, object]:
     cubi_root = _cubi_root()
     sys.path.insert(0, str(cubi_root))
@@ -150,7 +150,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--model-variant",
         type=str,
-        default="experimental",
+        default="baseline",
         help="Variant name stored in the checkpoint metadata.",
     )
     parser.add_argument(

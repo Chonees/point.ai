@@ -58,11 +58,11 @@ def test_cubicasa_backend_passes_model_variant_to_local_model(monkeypatch):
     result = infer_structure(
         build_synthetic_structure_image(),
         backend="cubicasa_local",
-        options={"model_variant": "experimental"},
+        options={"model_variant": "baseline"},
     )
 
-    assert captured["model_variant"] == "experimental"
-    assert result["source"] == "cubicasa5k:experimental"
+    assert captured["model_variant"] == "baseline"
+    assert result["source"] == "cubicasa5k:baseline"
 
 
 def test_remote_backend_succeeds_with_mock_transport():

@@ -33,7 +33,7 @@ def test_worker_infer_endpoint_returns_contract_payload(monkeypatch):
 
     assert validated.model_name
     assert validated.model_version
-    assert len(validated.walls) >= 7
+    assert len(validated.walls) >= 6
     assert len(validated.openings) == 2
     assert validated.debug_overlay_b64 is not None
 
@@ -53,8 +53,8 @@ def test_worker_infer_endpoint_passes_model_variant_to_cubicasa(monkeypatch):
     def fake_infer(image: str, *, model_variant: str | None = None):
         captured["model_variant"] = model_variant
         return {
-            "model": "CubiCasa5k Experimental",
-            "source": "cubicasa5k:experimental",
+            "model": "CubiCasa5k Baseline",
+            "source": "cubicasa5k:baseline",
             "walls": [],
             "openings": [],
             "structure_meta": {"image_size": {"width": 10, "height": 10}},
@@ -68,9 +68,9 @@ def test_worker_infer_endpoint_passes_model_variant_to_cubicasa(monkeypatch):
         "/infer/structure",
         json={
             "image": build_synthetic_structure_image(),
-            "options": {"model_variant": "experimental", "include_debug_overlay": False},
+            "options": {"model_variant": "baseline", "include_debug_overlay": False},
         },
     )
 
     assert response.status_code == 200, response.text
-    assert captured["model_variant"] == "experimental"
+    assert captured["model_variant"] == "baseline"

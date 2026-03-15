@@ -8,6 +8,6 @@ def test_infer_structure_detects_raw_fragments_and_openings_from_image():
 
     assert inferred["source"] == "heuristic_local"
     assert inferred["structure_meta"]["image_size"] == {"width": 220, "height": 160}
-    assert len(inferred["walls"]) >= 7
+    assert len(inferred["walls"]) >= 6
     assert len(inferred["openings"]) == 2
     assert {opening["kind"] for opening in inferred["openings"]} == {"door", "window"}

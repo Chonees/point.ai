@@ -21,7 +21,6 @@ from .image_utils import decode_image
 HEURISTIC_BACKEND = "heuristic_local"
 MIN_SEGMENT_LENGTH = 20
 MIN_WALL_THICKNESS = 2   # minimum rows (H) or cols (V) for a valid wall segment
-COORD_TOLERANCE = 6.0
 
 # Thresholds for color-coded synthetic images
 _GREEN_DOOR = dict(g_min=140, r_max=130, b_max=130)
@@ -154,103 +153,40 @@ def _color_window_mask(image: np.ndarray) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 def _extract_h_segments(binary: np.ndarray) -> list[dict[str, float]]:
-    """Extract horizontal wall segments using a horizontal morphological kernel.
+    """Extract horizontal wall segments via morphological open + connected components.
 
-    Kernel size matches MIN_SEGMENT_LENGTH so only runs at least that long survive.
+    Replaces the previous Python pixel-by-pixel RLE: connectedComponentsWithStats
+    runs in C and is orders of magnitude faster on large images.
     """
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (MIN_SEGMENT_LENGTH, 1))
     h_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
-    return _rle_horizontal(h_lines)
-
-
-def _extract_v_segments(binary: np.ndarray) -> list[dict[str, float]]:
-    """Extract vertical wall segments using a vertical morphological kernel."""
-    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, MIN_SEGMENT_LENGTH))
-    v_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
-    return _rle_vertical(v_lines)
-
-
-def _rle_horizontal(mask: np.ndarray) -> list[dict[str, float]]:
-    """Run-length encode horizontal segments row by row, then merge nearby rows."""
-    height, width = mask.shape
-    raw: list[dict[str, float]] = []
-    for y in range(height):
-        x = 0
-        while x < width:
-            while x < width and mask[y, x] == 0:
-                x += 1
-            start = x
-            while x < width and mask[y, x] != 0:
-                x += 1
-            end = x - 1
-            if end >= start and (end - start + 1) >= MIN_SEGMENT_LENGTH:
-                raw.append({"y": float(y), "x1": float(start), "x2": float(end)})
-    return _merge_h_rows(raw)
-
-
-def _merge_h_rows(rows: list[dict[str, float]]) -> list[dict[str, float]]:
-    if not rows:
-        return []
-    merged: list[dict[str, float]] = []
-    for row in rows:
-        matched = None
-        for seg in merged:
-            if (
-                abs(seg["x1"] - row["x1"]) <= COORD_TOLERANCE
-                and abs(seg["x2"] - row["x2"]) <= COORD_TOLERANCE
-                and row["y"] <= seg["y2"] + 2
-            ):
-                matched = seg
-                break
-        if matched is None:
-            merged.append({"x1": row["x1"], "x2": row["x2"], "y1": row["y"], "y2": row["y"]})
-        else:
-            matched["y2"] = row["y"]
+    _, _, stats, _ = cv2.connectedComponentsWithStats(h_lines, connectivity=8)
     return [
-        s for s in merged
-        if (s["x2"] - s["x1"]) >= MIN_SEGMENT_LENGTH and (s["y2"] - s["y1"]) >= MIN_WALL_THICKNESS
+        {
+            "x1": float(s[cv2.CC_STAT_LEFT]),
+            "x2": float(s[cv2.CC_STAT_LEFT] + s[cv2.CC_STAT_WIDTH] - 1),
+            "y1": float(s[cv2.CC_STAT_TOP]),
+            "y2": float(s[cv2.CC_STAT_TOP] + s[cv2.CC_STAT_HEIGHT] - 1),
+        }
+        for s in stats[1:]  # stats[0] is the background component
+        if s[cv2.CC_STAT_WIDTH] >= MIN_SEGMENT_LENGTH and s[cv2.CC_STAT_HEIGHT] >= MIN_WALL_THICKNESS
     ]
 
 
-def _rle_vertical(mask: np.ndarray) -> list[dict[str, float]]:
-    """Run-length encode vertical segments column by column, then merge nearby cols."""
-    height, width = mask.shape
-    raw: list[dict[str, float]] = []
-    for x in range(width):
-        y = 0
-        while y < height:
-            while y < height and mask[y, x] == 0:
-                y += 1
-            start = y
-            while y < height and mask[y, x] != 0:
-                y += 1
-            end = y - 1
-            if end >= start and (end - start + 1) >= MIN_SEGMENT_LENGTH:
-                raw.append({"x": float(x), "y1": float(start), "y2": float(end)})
-    return _merge_v_cols(raw)
-
-
-def _merge_v_cols(cols: list[dict[str, float]]) -> list[dict[str, float]]:
-    if not cols:
-        return []
-    merged: list[dict[str, float]] = []
-    for col in cols:
-        matched = None
-        for seg in merged:
-            if (
-                abs(seg["y1"] - col["y1"]) <= COORD_TOLERANCE
-                and abs(seg["y2"] - col["y2"]) <= COORD_TOLERANCE
-                and col["x"] <= seg["x2"] + 2
-            ):
-                matched = seg
-                break
-        if matched is None:
-            merged.append({"x1": col["x"], "x2": col["x"], "y1": col["y1"], "y2": col["y2"]})
-        else:
-            matched["x2"] = col["x"]
+def _extract_v_segments(binary: np.ndarray) -> list[dict[str, float]]:
+    """Extract vertical wall segments via morphological open + connected components."""
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, MIN_SEGMENT_LENGTH))
+    v_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel)
+    _, _, stats, _ = cv2.connectedComponentsWithStats(v_lines, connectivity=8)
     return [
-        s for s in merged
-        if (s["y2"] - s["y1"]) >= MIN_SEGMENT_LENGTH and (s["x2"] - s["x1"]) >= MIN_WALL_THICKNESS
+        {
+            "x1": float(s[cv2.CC_STAT_LEFT]),
+            "x2": float(s[cv2.CC_STAT_LEFT] + s[cv2.CC_STAT_WIDTH] - 1),
+            "y1": float(s[cv2.CC_STAT_TOP]),
+            "y2": float(s[cv2.CC_STAT_TOP] + s[cv2.CC_STAT_HEIGHT] - 1),
+        }
+        for s in stats[1:]
+        if s[cv2.CC_STAT_HEIGHT] >= MIN_SEGMENT_LENGTH and s[cv2.CC_STAT_WIDTH] >= MIN_WALL_THICKNESS
     ]
 
 

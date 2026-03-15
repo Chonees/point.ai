@@ -28,23 +28,18 @@ if str(_CUBICASA_ROOT) not in sys.path:
 
 CUBICASA_BACKEND = "cubicasa_local"
 _WEIGHTS_PATH = _CUBICASA_ROOT / "model_best_val_loss_var.pkl"
-_EXPERIMENTAL_WEIGHTS_PATH = ROOT_DIR / "data" / "training" / "checkpoints" / "cubicasa_experimental.pt"
 _N_CLASSES = 44
 _SPLIT = [21, 12, 11]  # heatmaps, rooms, icons
 _PAD_MULTIPLE = 16     # conv layers need input divisible by 16
 _MAX_MODEL_SIDE = int(os.getenv("POINTAI_CUBICASA_MAX_SIDE", "768"))
 _OPENING_ICON_CLASSES = {1: "window", 2: "door"}
 _DEFAULT_VARIANT = "baseline"
+
 _MODEL_VARIANTS = {
     "baseline": {
         "label": "Baseline",
         "weights_path": _WEIGHTS_PATH,
         "model_name": "CubiCasa5k Baseline",
-    },
-    "experimental": {
-        "label": "Experimental",
-        "weights_path": _EXPERIMENTAL_WEIGHTS_PATH,
-        "model_name": "CubiCasa5k Experimental",
     },
 }
 
@@ -52,27 +47,52 @@ _models: dict[tuple[str, str], Any] = {}
 _torch: Any | None = None
 _hg_furukawa_original: Any | None = None
 _get_polygons: Any | None = None
+_availability_cache: dict[str, tuple[bool, str | None]] = {}
 
 
 def cubicasa_available(model_variant: str | None = None) -> tuple[bool, str | None]:
     """Return whether CubiCasa can run in the current environment."""
     variant = resolve_model_variant(model_variant)
+    if variant in _availability_cache:
+        return _availability_cache[variant]
+
     weights_path = _variant_config(variant)["weights_path"]
     if not weights_path.exists():
-        return False, f"CubiCasa weights not found at {weights_path}"
+        result: tuple[bool, str | None] = (False, f"CubiCasa weights not found at {weights_path}")
+        _availability_cache[variant] = result
+        return result
 
     try:
         importlib.import_module("torch")
     except Exception as exc:  # pragma: no cover - depends on local env
-        return False, f"torch unavailable: {exc}"
+        result = (False, f"torch unavailable: {exc}")
+        _availability_cache[variant] = result
+        return result
 
     try:
         importlib.import_module("floortrans.models.hg_furukawa_original")
         importlib.import_module("floortrans.post_prosessing")
     except Exception as exc:  # pragma: no cover - depends on local env
-        return False, f"floortrans unavailable: {exc}"
+        result = (False, f"floortrans unavailable: {exc}")
+        _availability_cache[variant] = result
+        return result
 
-    return True, None
+    result = (True, None)
+    _availability_cache[variant] = result
+    return result
+
+
+def warmup_models() -> None:
+    """Pre-load all available CubiCasa model variants into the in-process cache.
+
+    Call this at server startup so the first inference request doesn't pay
+    the disk-load + model-init cold-start penalty.
+    """
+    for variant in _MODEL_VARIANTS:
+        ready, _ = cubicasa_available(variant)
+        if ready:
+            device = _runtime_device()
+            _load_model(variant, device)
 
 
 def available_model_variants() -> list[dict[str, Any]]:
@@ -355,6 +375,32 @@ def _polygon_to_wall(polygon: np.ndarray, counter: int) -> dict[str, Any] | None
     }
 
 
+def _infer_door_swing(polygon: np.ndarray, orientation: str) -> str | None:
+    """Infer door swing from polygon bounding-box asymmetry.
+
+    The door icon polygon includes the arc sweep, which extends further on
+    the swing side than the opposite side. We detect that asymmetry to
+    determine the swing direction. Returns None when the signal is too weak.
+    """
+    xs = polygon[:, 0]
+    ys = polygon[:, 1]
+    cx = float((xs.min() + xs.max()) / 2)
+    cy = float((ys.min() + ys.max()) / 2)
+
+    if orientation == "horizontal":
+        extent_up = float(ys.max()) - cy
+        extent_down = cy - float(ys.min())
+        if abs(extent_up - extent_down) < 2.0:
+            return None
+        return "up" if extent_up > extent_down else "down"
+    else:
+        extent_right = float(xs.max()) - cx
+        extent_left = cx - float(xs.min())
+        if abs(extent_right - extent_left) < 2.0:
+            return None
+        return "right" if extent_right > extent_left else "left"
+
+
 def _polygon_to_opening(
     polygon: np.ndarray,
     cls: int,
@@ -399,6 +445,6 @@ def _polygon_to_opening(
 
     if kind == "door":
         opening["door_type"] = "normal"
-        opening["swing"] = None
+        opening["swing"] = _infer_door_swing(polygon, orientation)
 
     return opening

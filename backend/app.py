@@ -39,6 +39,7 @@ from .models import (
 )
 from .claude import analyze_image, generate_plan
 from .artifacts import ARTIFACT_DIR, save_structure_artifacts
+from .cubicasa_inference import warmup_models
 from .observability import log_event
 from .worker_client import infer_structure
 from .worker_contract import WorkerError
@@ -59,6 +60,14 @@ app.add_middleware(
 # DXF output directory
 DXF_DIR = Path(tempfile.gettempdir()) / "pointai_dxf"
 DXF_DIR.mkdir(exist_ok=True)
+
+
+# ─── STARTUP ─────────────────────────────────────────────────────────────────
+
+@app.on_event("startup")
+async def _warmup() -> None:
+    """Pre-load available CubiCasa models so the first request doesn't cold-start."""
+    warmup_models()
 
 
 # ─── ROUTES ──────────────────────────────────────────────────────────────────
@@ -224,11 +233,14 @@ def _parse_v2_input(
         return parsed, None, None
 
     if image is not None:
-        options = {"model_variant": model_variant} if model_variant else None
-        if options is None:
-            inferred = infer_structure(image)
+        if model_variant == "r2v":
+            inferred = infer_structure(image, backend="r2v_local")
         else:
-            inferred = infer_structure(image, options=options)
+            options = {"model_variant": model_variant} if model_variant else None
+            if options is None:
+                inferred = infer_structure(image)
+            else:
+                inferred = infer_structure(image, options=options)
         parsed = parse_structure_payload(structure=inferred, scale_hint=scale_hint)
         parsed["quality_metrics"]["inference_backend"] = (
             inferred.get("inference_debug", {}).get("backend") or inferred.get("source")
