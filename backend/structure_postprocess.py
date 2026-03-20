@@ -59,11 +59,11 @@ def postprocess_structure(
         img_w = img_size.get("width", 1000) if isinstance(img_size, dict) else 1000
         scale = max(img_w / 500.0, 1.0)  # ratio vs typical inch-based plan
         SNAP_TOLERANCE = 3.0 * scale
-        JUNCTION_TOLERANCE = 4.0 * scale
-        MERGE_GAP = 6.0 * scale  # much less aggressive merge for pixels
-        MIN_WALL_LENGTH = 8.0 * scale
+        JUNCTION_TOLERANCE = 5.0 * scale
+        MERGE_GAP = 6.0 * scale
+        MIN_WALL_LENGTH = 5.0 * scale  # keep short interior walls
         TEXT_MAX_LENGTH = 30.0 * scale
-        TEXT_MAX_THICKNESS = 4.0 * scale
+        TEXT_MAX_THICKNESS = 2.0 * scale  # was 4.0: only sub-2px text strokes, not thin walls
         FURNITURE_MAX_AREA = (100.0 * scale) ** 2
     else:
         # Reset to defaults for inch-based inputs
@@ -572,10 +572,10 @@ def _filter_isolated_noisy_walls(
     for wall in walls:
         length = _wall_length(wall)
         thickness = float(wall.get("thickness", 4.0))
-        # High thickness-to-length ratio = dimension symbol or annotation artifact.
-        # Real structural walls are always much longer than they are thick.
-        # Apply regardless of junction status (noise walls can form junctions with each other).
-        if length > 0 and thickness / length > 0.4:
+        # High thickness-to-length ratio on UNCONNECTED walls = dimension symbol or
+        # annotation artifact.  Structurally connected walls are kept regardless of
+        # ratio because corner polygons from CubiCasa can appear nearly square.
+        if wall["id"] not in connected_ids and length > 0 and thickness / length > 0.4:
             removed += 1
             continue
         # Also drop short unconnected walls

@@ -18,6 +18,7 @@ import httpx
 from .cubicasa_inference import CUBICASA_BACKEND, cubicasa_available, infer_cubicasa
 from .inference_client import HEURISTIC_BACKEND, infer_heuristic_structure
 from .r2v_inference import R2V_BACKEND, infer_r2v, r2v_available
+from .segformer_inference import SEGFORMER_BACKEND, infer_segformer, segformer_available
 from .observability import log_event
 from .worker_contract import (
     WorkerError,
@@ -31,6 +32,11 @@ REMOTE_BACKEND = "remote"
 
 DEFAULT_WORKER_URL = "http://localhost:8100"
 WORKER_TIMEOUT_S = 30.0
+
+# When CubiCasa returns fewer walls than this, fall back to the heuristic.
+# CubiCasa heatmaps on unusual image types (dark-background, synthetic) can
+# underfire; the heuristic morphological approach is more robust as a safety net.
+_CUBICASA_MIN_WALLS = int(os.getenv("POINTAI_CUBI_MIN_WALLS", "8"))
 
 
 def infer_structure(
@@ -60,7 +66,30 @@ def infer_structure(
         result = infer_cubicasa(image_b64, model_variant=model_variant)
         result.setdefault("inference_debug", {})
         result["inference_debug"]["backend"] = backend
-        log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
+
+        # Automatic heuristic fallback: if CubiCasa detected very few walls it
+        # likely failed on an unusual image type (dark-bg, synthetic, low-contrast).
+        wall_count = len(result.get("walls", []))
+        if wall_count < _CUBICASA_MIN_WALLS:
+            log_event(
+                "worker_client.cubicasa.fallback",
+                cubicasa_wall_count=wall_count,
+                min_required=_CUBICASA_MIN_WALLS,
+            )
+            heuristic = infer_heuristic_structure(image_b64)
+            heuristic.setdefault("inference_debug", {})
+            heuristic["inference_debug"]["backend"] = HEURISTIC_BACKEND
+            heuristic["inference_debug"]["fallback_from"] = CUBICASA_BACKEND
+            heuristic["inference_debug"]["cubicasa_wall_count"] = wall_count
+            log_event(
+                "worker_client.infer.success",
+                backend=HEURISTIC_BACKEND,
+                fallback=True,
+                wall_count=len(heuristic.get("walls", [])),
+            )
+            return heuristic
+
+        log_event("worker_client.infer.success", backend=backend, wall_count=wall_count)
         return result
 
     if backend == REMOTE_BACKEND:
@@ -75,6 +104,16 @@ def infer_structure(
         if not ready:
             raise WorkerError("MODEL_NOT_LOADED", reason or "R2V is not available.")
         result = infer_r2v(image_b64)
+        result.setdefault("inference_debug", {})
+        result["inference_debug"]["backend"] = backend
+        log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
+        return result
+
+    if backend == SEGFORMER_BACKEND:
+        ready, reason = segformer_available()
+        if not ready:
+            raise WorkerError("MODEL_NOT_LOADED", reason or "SegFormer is not available.")
+        result = infer_segformer(image_b64)
         result.setdefault("inference_debug", {})
         result["inference_debug"]["backend"] = backend
         log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))

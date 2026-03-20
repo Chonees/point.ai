@@ -7,6 +7,9 @@ from __future__ import annotations
 from typing import Any
 
 EPSILON = 1e-6
+# Tolerance for bbox-side membership: walls end up on snapped cluster coords
+# which may differ from the true min/max by a small float residual.
+_BBOX_SNAP_TOL = 4.0  # matches default SNAP_TOLERANCE in structure_postprocess
 MIN_EXTERIOR_WALLS = 2
 MIN_BBOX_SIDE_COVERAGE = 0.6
 MIN_BBOX_SIDES_COVERED = 3
@@ -96,16 +99,16 @@ def _compute_bbox_shell_metrics(walls: list[dict[str, Any]]) -> dict[str, float 
         if orientation == "horizontal":
             span = abs(float(end["x"]) - float(start["x"])) / bbox_width
             y = float(start["y"])
-            if abs(y - min_y) <= EPSILON:
+            if abs(y - min_y) <= _BBOX_SNAP_TOL:
                 coverage["bottom"] = max(coverage["bottom"], span)
-            if abs(y - max_y) <= EPSILON:
+            if abs(y - max_y) <= _BBOX_SNAP_TOL:
                 coverage["top"] = max(coverage["top"], span)
         elif orientation == "vertical":
             span = abs(float(end["y"]) - float(start["y"])) / bbox_height
             x = float(start["x"])
-            if abs(x - min_x) <= EPSILON:
+            if abs(x - min_x) <= _BBOX_SNAP_TOL:
                 coverage["left"] = max(coverage["left"], span)
-            if abs(x - max_x) <= EPSILON:
+            if abs(x - max_x) <= _BBOX_SNAP_TOL:
                 coverage["right"] = max(coverage["right"], span)
 
     covered_count = sum(1 for value in coverage.values() if value >= MIN_BBOX_SIDE_COVERAGE)

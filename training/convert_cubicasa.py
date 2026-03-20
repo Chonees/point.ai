@@ -210,26 +210,35 @@ def convert_cubicasa_dataset(
     split_counts: dict[str, int] = {}
     partition_counts: dict[str, int] = {}
 
+    errors = 0
     for index, entry in enumerate(entries):
-        sample = convert_cubicasa_sample_dir(
-            entry["sample_dir"],
-            split=entry["split"],
-            relative_path=entry["relative_path"],
-            use_original=use_original,
-        )
-        manifest_entry = save_converted_sample(
-            sample,
-            output_dir,
-            write_preview=index < preview_limit,
-        )
-        manifest_entry["source_split"] = entry["split"]
-        manifest_entry["source_partition"] = sample.meta["source_partition"]
-        manifest_entry["relative_path"] = entry["relative_path"]
-        manifest.append(manifest_entry)
+        try:
+            sample = convert_cubicasa_sample_dir(
+                entry["sample_dir"],
+                split=entry["split"],
+                relative_path=entry["relative_path"],
+                use_original=use_original,
+            )
+            manifest_entry = save_converted_sample(
+                sample,
+                output_dir,
+                write_preview=index < preview_limit,
+            )
+            manifest_entry["source_split"] = entry["split"]
+            manifest_entry["source_partition"] = sample.meta["source_partition"]
+            manifest_entry["relative_path"] = entry["relative_path"]
+            manifest.append(manifest_entry)
 
-        split_counts[entry["split"]] = split_counts.get(entry["split"], 0) + 1
-        partition = sample.meta["source_partition"]
-        partition_counts[partition] = partition_counts.get(partition, 0) + 1
+            split_counts[entry["split"]] = split_counts.get(entry["split"], 0) + 1
+            partition = sample.meta["source_partition"]
+            partition_counts[partition] = partition_counts.get(partition, 0) + 1
+        except Exception as e:
+            errors += 1
+            if errors <= 10:
+                print(f"  ERROR {entry['relative_path']}: {e}")
+
+        if (index + 1) % 200 == 0:
+            print(f"  Progress: {index + 1}/{len(entries)}  converted={len(manifest)} errors={errors}")
 
     manifest_path = output_dir / "cubicasa_manifest.jsonl"
     write_jsonl(manifest_path, manifest)

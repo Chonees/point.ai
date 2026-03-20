@@ -235,6 +235,8 @@ def _parse_v2_input(
     if image is not None:
         if model_variant == "r2v":
             inferred = infer_structure(image, backend="r2v_local")
+        elif model_variant == "segformer":
+            inferred = infer_structure(image, backend="segformer_local")
         else:
             options = {"model_variant": model_variant} if model_variant else None
             if options is None:

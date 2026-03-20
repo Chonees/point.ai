@@ -569,6 +569,14 @@ def run_finetune(
         )
         global_step += train_metrics.steps
         scheduler.step(val_metrics.loss)
+        print(
+            f"Epoch {epoch+1}/{epochs}  "
+            f"train_loss={train_metrics.loss:.4f}  "
+            f"val_loss={val_metrics.loss:.4f}  "
+            f"room_acc={val_metrics.room_acc:.3f}  "
+            f"icon_acc={val_metrics.icon_acc:.3f}",
+            flush=True,
+        )
 
         record = {
             "epoch": epoch,

@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 type Mode = 'describe' | 'upload'
 type Status = 'idle' | 'loading' | 'done' | 'error'
-type ModelVariant = 'baseline' | 'r2v'
+type ModelVariant = 'baseline' | 'finetuned' | 'segformer'
 
 interface V1Result {
   dxf_url: string
@@ -381,10 +381,11 @@ function UploadPanel() {
 
       <div className="mt-3">
         <p className="text-xs text-zinc-600 mb-2">Model variant</p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {([
-            { value: 'baseline' as const, label: 'Baseline', note: 'CubiCasa5k pixel→vector' },
-            { value: 'r2v' as const,      label: 'R2V',      note: 'Raster-to-Vector ICCV 2017' },
+            { value: 'baseline'  as const, label: 'Baseline',      note: 'CubiCasa5k original' },
+            { value: 'finetuned' as const, label: 'Fine-tuned',     note: 'CubiCasa fine-tuned' },
+            { value: 'segformer' as const, label: 'SegFormer',      note: 'Modelo moderno 2021' },
           ]).map((option) => (
             <button
               key={option.value}

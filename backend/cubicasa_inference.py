@@ -17,7 +17,7 @@ from typing import Any
 import cv2
 import numpy as np
 
-from .image_utils import decode_image
+from .image_utils import decode_image, preprocess_for_cubicasa
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
@@ -31,15 +31,22 @@ _WEIGHTS_PATH = _CUBICASA_ROOT / "model_best_val_loss_var.pkl"
 _N_CLASSES = 44
 _SPLIT = [21, 12, 11]  # heatmaps, rooms, icons
 _PAD_MULTIPLE = 16     # conv layers need input divisible by 16
-_MAX_MODEL_SIDE = int(os.getenv("POINTAI_CUBICASA_MAX_SIDE", "768"))
+_MAX_MODEL_SIDE = int(os.getenv("POINTAI_CUBICASA_MAX_SIDE", "1024"))
 _OPENING_ICON_CLASSES = {1: "window", 2: "door"}
 _DEFAULT_VARIANT = "baseline"
+
+_FINETUNED_WEIGHTS_PATH = Path(r"D:\training_v2\runs\checkpoints\best_inference.pt")
 
 _MODEL_VARIANTS = {
     "baseline": {
         "label": "Baseline",
         "weights_path": _WEIGHTS_PATH,
         "model_name": "CubiCasa5k Baseline",
+    },
+    "finetuned": {
+        "label": "Fine-tuned (PointAI)",
+        "weights_path": _FINETUNED_WEIGHTS_PATH,
+        "model_name": "CubiCasa5k Fine-tuned PointAI",
     },
 }
 
@@ -91,7 +98,7 @@ def warmup_models() -> None:
     for variant in _MODEL_VARIANTS:
         ready, _ = cubicasa_available(variant)
         if ready:
-            device = _runtime_device()
+            device = _runtime_device(variant)
             _load_model(variant, device)
 
 
@@ -122,7 +129,7 @@ def resolve_model_variant(model_variant: str | None) -> str:
     return normalized
 
 
-def infer_cubicasa(image_b64: str, *, model_variant: str | None = None) -> dict[str, Any]:
+def infer_cubicasa(image_b64: str, *, model_variant: str | None = None, preprocess: bool = False) -> dict[str, Any]:
     """Run CubiCasa5k inference on a base64-encoded floor plan image."""
     variant = resolve_model_variant(model_variant)
     ready, reason = cubicasa_available(variant)
@@ -130,10 +137,12 @@ def infer_cubicasa(image_b64: str, *, model_variant: str | None = None) -> dict[
         raise ValueError(reason or "CubiCasa runtime is not available.")
 
     torch, _, get_polygons = _load_runtime_dependencies()
-    device = _runtime_device()
+    device = _runtime_device(variant)
     model = _load_model(variant, device)
     image = decode_image(image_b64)
     orig_h, orig_w = image.shape[:2]
+    if preprocess:
+        image = preprocess_for_cubicasa(image)
     model_image, scale_x, scale_y = _resize_for_inference(image)
     model_h, model_w = model_image.shape[:2]
 
@@ -150,19 +159,39 @@ def infer_cubicasa(image_b64: str, *, model_variant: str | None = None) -> dict[
 
     tensor = torch.from_numpy(fplan).unsqueeze(0).to(device)
 
-    # Single forward pass only. Rotational TTA needs channel remapping first.
+    # Single forward pass. TTA disabled: 90°/270° rotations corrupt directional
+    # heatmap channels without channel remapping.
+    import time as _time
+    print(f"[DEBUG] model forward start (device={device}, variant={variant})", flush=True)
+    _t0 = _time.time()
     with torch.inference_mode():
-        predictions = model(tensor).squeeze(0)
+        predictions = model(tensor).squeeze(0).cpu()
+    print(f"[DEBUG] model forward done in {_time.time()-_t0:.2f}s, shape={predictions.shape}", flush=True)
 
+    _t0 = _time.time()
     heatmaps, rooms, icons = _split_predictions(predictions)
+    print(f"[DEBUG] split_predictions done in {_time.time()-_t0:.2f}s", flush=True)
+
+    # Log prediction stats to diagnose get_polygons hangs
+    print(f"[DEBUG] heatmaps range: min={heatmaps.min():.3f} max={heatmaps.max():.3f}", flush=True)
+    print(f"[DEBUG] rooms range: min={rooms.min():.3f} max={rooms.max():.3f}", flush=True)
+    print(f"[DEBUG] icons range: min={icons.min():.3f} max={icons.max():.3f}", flush=True)
+
+    _t0 = _time.time()
+    from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+    _threshold = 0.08 if variant == "baseline" else 0.3
+    print(f"[DEBUG] get_polygons threshold={_threshold}", flush=True)
+    _t0 = _time.time()
     polygons, types, _, room_types = get_polygons(
         (heatmaps, rooms, icons),
-        threshold=0.2,
+        threshold=_threshold,
         all_opening_types=list(_OPENING_ICON_CLASSES),
     )
+    print(f"[DEBUG] get_polygons done in {_time.time()-_t0:.2f}s, polygons={len(polygons)}", flush=True)
 
     polygons = _rescale_polygons(polygons, scale_x=scale_x, scale_y=scale_y)
     walls, openings = _polygons_to_structure(polygons, types, orig_h)
+    print(f"[DEBUG] done: walls={len(walls)}, openings={len(openings)}", flush=True)
     model_name = _variant_config(variant)["model_name"]
 
     return {
@@ -177,6 +206,7 @@ def infer_cubicasa(image_b64: str, *, model_variant: str | None = None) -> dict[
         },
         "inference_debug": {
             "backend": CUBICASA_BACKEND,
+            "preprocess": preprocess,
             "raw_wall_count": sum(1 for item in types if item.get("type") == "wall"),
             "raw_opening_count": sum(1 for item in types if _is_opening_type(item)),
             "raw_icon_count": sum(1 for item in types if item.get("type") == "icon"),
@@ -217,7 +247,14 @@ def _load_model(model_variant: str, device: Any) -> Any:
     config = _variant_config(model_variant)
     weights_path: Path = config["weights_path"]
     torch, hg_furukawa_original, _ = _load_runtime_dependencies()
-    model = hg_furukawa_original(n_classes=_N_CLASSES)
+    # hg_furukawa_original.init_weights() loads model_1427.pth with a relative
+    # path, so we must be in the CubiCasa5k directory during construction.
+    old_cwd = os.getcwd()
+    try:
+        os.chdir(str(_CUBICASA_ROOT))
+        model = hg_furukawa_original(n_classes=_N_CLASSES)
+    finally:
+        os.chdir(old_cwd)
     checkpoint = torch.load(str(weights_path), map_location=device, weights_only=False)
     model.load_state_dict(_extract_state_dict(checkpoint))
     model = model.to(device)
@@ -226,10 +263,9 @@ def _load_model(model_variant: str, device: Any) -> Any:
     return model
 
 
-def _runtime_device() -> Any:
+def _runtime_device(model_variant: str = "baseline") -> Any:
     torch, _, _ = _load_runtime_dependencies()
-    if torch.cuda.is_available():
-        torch.backends.cudnn.benchmark = True
+    if model_variant == "finetuned" and torch.cuda.is_available():
         return torch.device("cuda")
     return torch.device("cpu")
 
