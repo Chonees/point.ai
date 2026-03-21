@@ -22,8 +22,10 @@ frontend/dist/
 # Generated test DXFs
 backend/data/test_house*.dxf
 
-# Training artifacts and generated datasets
-data/training/
+# Data and training artifacts
+data/
+debug_out/
+scraper/
 
 # Claude local settings
 .claude/settings.local.json
