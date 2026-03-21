@@ -61,7 +61,7 @@ export default function App() {
           Pointe<span className="text-white/30">.ai</span>
         </h1>
         <p className="text-[10px] sm:text-xs tracking-[0.2em] uppercase text-zinc-600 mt-1.5 sm:mt-2">
-          Floor Plan Generator
+          Floor Plan to DXF
         </p>
       </motion.div>
 
