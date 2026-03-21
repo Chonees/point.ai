@@ -46,21 +46,21 @@ function Spinner() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [mode, setMode] = useState<Mode>('describe')
+  const [mode, setMode] = useState<Mode>('upload')
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-5 py-16">
+    <div className="min-h-screen flex flex-col items-center px-4 sm:px-5 py-8 sm:py-16 safe-area-inset">
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="text-center mb-10"
+        className="text-center mb-6 sm:mb-10"
       >
-        <h1 className="text-4xl font-light tracking-tight text-white/90">
+        <h1 className="text-3xl sm:text-4xl font-light tracking-tight text-white/90">
           Pointe<span className="text-white/30">.ai</span>
         </h1>
-        <p className="text-xs tracking-[0.2em] uppercase text-zinc-600 mt-2">
+        <p className="text-[10px] sm:text-xs tracking-[0.2em] uppercase text-zinc-600 mt-1.5 sm:mt-2">
           Floor Plan Generator
         </p>
       </motion.div>
@@ -70,13 +70,13 @@ export default function App() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.1 }}
-        className="flex gap-1 p-1 bg-zinc-900 border border-zinc-800/60 rounded-lg mb-8"
+        className="flex gap-1 p-1 bg-zinc-900 border border-zinc-800/60 rounded-lg mb-6 sm:mb-8 w-full sm:w-auto"
       >
         {(['describe', 'upload'] as Mode[]).map((m) => (
           <button
             key={m}
             onClick={() => setMode(m)}
-            className={`px-5 py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer ${
+            className={`flex-1 sm:flex-none px-4 sm:px-5 py-2 sm:py-1.5 rounded-md text-xs font-medium transition-all duration-200 cursor-pointer ${
               mode === m
                 ? 'bg-white/[0.08] text-zinc-300'
                 : 'text-zinc-600 hover:text-zinc-400'
@@ -186,8 +186,8 @@ function DescribePanel() {
         onChange={(e) => setPrompt(e.target.value)}
         onKeyDown={(e) => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) generate() }}
         placeholder="Describe your floor plan — rooms, dimensions, layout..."
-        className="w-full h-36 bg-zinc-950 border border-zinc-800/60 rounded-lg
-                   text-zinc-300 text-sm px-4 py-3 resize-none
+        className="w-full h-32 sm:h-36 bg-zinc-950 border border-zinc-800/60 rounded-lg
+                   text-zinc-300 text-sm px-3 sm:px-4 py-3 resize-none
                    placeholder:text-zinc-700
                    focus:outline-none focus:border-zinc-600
                    transition-colors duration-200"
@@ -196,14 +196,16 @@ function DescribePanel() {
       <div className="flex items-center gap-3 mt-3">
         <label className="flex items-center gap-2 px-3 py-2 border border-zinc-800/60 rounded-md
                           text-xs text-zinc-600 cursor-pointer
-                          hover:border-zinc-600 hover:text-zinc-400 transition-colors duration-200">
+                          hover:border-zinc-600 hover:text-zinc-400 transition-colors duration-200
+                          active:bg-white/[0.04]">
           <UploadIcon />
-          Upload reference
+          <span className="hidden sm:inline">Upload reference</span>
+          <span className="sm:hidden">Reference</span>
           <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
         </label>
         {fileName && (
           <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="text-xs text-zinc-600 flex items-center gap-2">
+            className="text-xs text-zinc-600 flex items-center gap-2 truncate max-w-[150px] sm:max-w-none">
             {fileName}
             {analyzing && <Spinner />}
           </motion.span>
@@ -214,11 +216,12 @@ function DescribePanel() {
         whileTap={{ scale: 0.98 }}
         onClick={generate}
         disabled={status === 'loading' || analyzing}
-        className="w-full mt-4 py-3 rounded-lg text-sm font-medium
+        className="w-full mt-4 py-3.5 sm:py-3 rounded-lg text-sm font-medium
                    bg-white/[0.06] text-zinc-400 border border-zinc-800/60
                    hover:bg-white/[0.09] hover:text-zinc-300
                    disabled:opacity-30 disabled:cursor-not-allowed
-                   transition-all duration-200 cursor-pointer"
+                   transition-all duration-200 cursor-pointer
+                   active:bg-white/[0.12]"
       >
         {status === 'loading'
           ? <span className="flex items-center justify-center gap-2"><Spinner />Generating...</span>
@@ -237,7 +240,7 @@ function DescribePanel() {
       <AnimatePresence>
         {result && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }} className="mt-6 p-5 border border-zinc-800/60 rounded-lg">
+            exit={{ opacity: 0 }} className="mt-6 p-4 sm:p-5 border border-zinc-800/60 rounded-lg">
             <DownloadButton href={result.dxf_url} />
             <button onClick={() => setShowJson(!showJson)}
               className="block mt-4 text-xs text-zinc-600 hover:text-zinc-500 transition-colors cursor-pointer">
@@ -248,7 +251,7 @@ function DescribePanel() {
                 <motion.pre initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
                   className="mt-3 p-3 bg-zinc-950 border border-zinc-800/40 rounded-md
-                             text-[11px] leading-relaxed text-zinc-600 font-mono overflow-auto max-h-80">
+                             text-[11px] leading-relaxed text-zinc-600 font-mono overflow-auto max-h-60 sm:max-h-80">
                   {JSON.stringify(result.plan, null, 2)}
                 </motion.pre>
               )}
@@ -334,58 +337,59 @@ function UploadPanel() {
                     transition-all duration-200 overflow-hidden
                     ${dragging
                       ? 'border-zinc-500 bg-white/[0.04]'
-                      : 'border-zinc-800/60 bg-zinc-950 hover:border-zinc-700'}`}
-        style={{ minHeight: preview ? 'auto' : '160px' }}
+                      : 'border-zinc-800/60 bg-zinc-950 hover:border-zinc-700'}
+                    active:bg-white/[0.04]`}
+        style={{ minHeight: preview ? 'auto' : '140px' }}
       >
         <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
 
         {preview ? (
           <div className="relative">
-            <img src={preview} alt="floor plan" className="w-full object-contain max-h-64 rounded-lg" />
+            <img src={preview} alt="floor plan" className="w-full object-contain max-h-48 sm:max-h-64 rounded-lg" />
             <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity
                             flex items-center justify-center rounded-lg">
-              <span className="text-xs text-zinc-300">Click to change</span>
+              <span className="text-xs text-zinc-300">Tap to change</span>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center h-40 gap-3">
+          <div className="flex flex-col items-center justify-center h-36 sm:h-40 gap-2 sm:gap-3">
             <UploadIcon size={20} className="text-zinc-700" />
             <div className="text-center">
-              <p className="text-xs text-zinc-500">Drop a floor plan image here</p>
-              <p className="text-xs text-zinc-700 mt-1">PNG, JPG, JPEG</p>
+              <p className="text-xs text-zinc-500">Tap or drop a floor plan image</p>
+              <p className="text-[10px] text-zinc-700 mt-1">PNG, JPG, JPEG</p>
             </div>
           </div>
         )}
       </div>
 
       {/* Scale hint */}
-      <div className="flex items-center gap-3 mt-3">
+      <div className="flex items-center gap-2 sm:gap-3 mt-3">
         <div className="flex items-center gap-2 flex-1">
-          <label className="text-xs text-zinc-600 whitespace-nowrap">Scale hint</label>
+          <label className="text-xs text-zinc-600 whitespace-nowrap">Scale</label>
           <input
             type="number"
             value={scaleHint}
             onChange={(e) => setScaleHint(e.target.value)}
-            placeholder="px → inch (e.g. 0.083)"
+            placeholder="px/inch (optional)"
             step="0.001"
             min="0"
-            className="flex-1 bg-zinc-950 border border-zinc-800/60 rounded-md
+            className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800/60 rounded-md
                        text-xs text-zinc-400 px-3 py-2
                        placeholder:text-zinc-700
                        focus:outline-none focus:border-zinc-600
                        transition-colors duration-200"
           />
         </div>
-        <span className="text-xs text-zinc-700">optional</span>
       </div>
 
+      {/* Model variant */}
       <div className="mt-3">
-        <p className="text-xs text-zinc-600 mb-2">Model variant</p>
-        <div className="grid grid-cols-3 gap-2">
+        <p className="text-xs text-zinc-600 mb-2">Model</p>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {([
-            { value: 'baseline'  as const, label: 'Baseline',      note: 'CubiCasa5k original' },
-            { value: 'finetuned' as const, label: 'Fine-tuned',     note: 'CubiCasa fine-tuned' },
-            { value: 'segformer' as const, label: 'SegFormer',      note: 'Modelo moderno 2021' },
+            { value: 'baseline'  as const, label: 'Baseline',      note: 'CubiCasa5k' },
+            { value: 'finetuned' as const, label: 'Fine-tuned',    note: 'CubiCasa+' },
+            { value: 'segformer' as const, label: 'SegFormer',     note: 'Modern' },
           ]).map((option) => (
             <button
               key={option.value}
@@ -394,34 +398,38 @@ function UploadPanel() {
                 setModelVariant(option.value)
                 setResult(null)
               }}
-              className={`p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer ${
+              className={`p-2.5 sm:p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer
+                          active:bg-white/[0.08] ${
                 modelVariant === option.value
                   ? 'border-zinc-500 bg-white/[0.05]'
                   : 'border-zinc-800/60 bg-zinc-950 hover:border-zinc-700'
               }`}
             >
               <p className="text-xs text-zinc-300">{option.label}</p>
-              <p className="text-[10px] text-zinc-600 mt-1">{option.note}</p>
+              <p className="text-[10px] text-zinc-600 mt-0.5">{option.note}</p>
             </button>
           ))}
         </div>
       </div>
 
+      {/* Generate button */}
       <motion.button
         whileTap={{ scale: 0.98 }}
         onClick={generate}
         disabled={status === 'loading' || !file}
-        className="w-full mt-4 py-3 rounded-lg text-sm font-medium
+        className="w-full mt-4 py-3.5 sm:py-3 rounded-lg text-sm font-medium
                    bg-white/[0.06] text-zinc-400 border border-zinc-800/60
                    hover:bg-white/[0.09] hover:text-zinc-300
                    disabled:opacity-30 disabled:cursor-not-allowed
-                   transition-all duration-200 cursor-pointer"
+                   transition-all duration-200 cursor-pointer
+                   active:bg-white/[0.12]"
       >
         {status === 'loading'
           ? <span className="flex items-center justify-center gap-2"><Spinner />Processing...</span>
-          : 'Generate DXF from Image'}
+          : 'Generate DXF'}
       </motion.button>
 
+      {/* Status message */}
       <AnimatePresence>
         {statusMsg && (
           <motion.p initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
@@ -431,10 +439,11 @@ function UploadPanel() {
         )}
       </AnimatePresence>
 
+      {/* Results */}
       <AnimatePresence>
         {result && (
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-            className="mt-6 space-y-4">
+            className="mt-6 space-y-3 sm:space-y-4">
 
             {/* Preview overlay */}
             {result.preview_url && (
@@ -442,7 +451,7 @@ function UploadPanel() {
                 <img
                   src={result.preview_url}
                   alt="structure preview"
-                  className="w-full object-contain max-h-64"
+                  className="w-full object-contain max-h-48 sm:max-h-64"
                 />
                 <p className="text-[10px] text-zinc-700 text-center py-1.5">
                   Detected structure overlay
@@ -451,28 +460,28 @@ function UploadPanel() {
             )}
 
             {/* Stats row */}
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
               <Stat label="Walls" value={String(result.quality_metrics.wall_count ?? '—')} />
               <Stat label="Openings" value={String(result.quality_metrics.opening_count ?? '—')} />
               <Stat
                 label="Scale"
-                value={result.scale_status === 'calibrated' ? 'Calibrated' : 'Pixel'}
+                value={result.scale_status === 'calibrated' ? 'Cal.' : 'Px'}
                 dim={result.scale_status !== 'calibrated'}
               />
             </div>
 
-            <div className="flex items-center justify-between text-[11px] text-zinc-600 px-1">
-              <span>Variant: {String(result.quality_metrics.model_variant ?? modelVariant)}</span>
-              <span>Backend: {String(result.quality_metrics.inference_backend ?? '—')}</span>
+            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-zinc-600 px-1">
+              <span>{String(result.quality_metrics.model_variant ?? modelVariant)}</span>
+              <span>{String(result.quality_metrics.inference_backend ?? '—')}</span>
             </div>
 
             {/* Review flags */}
             {result.needs_review && result.review_flags.length > 0 && (
               <div className="p-3 bg-amber-950/20 border border-amber-900/30 rounded-lg">
                 <p className="text-xs text-amber-600/80 font-medium mb-1.5">Review needed</p>
-                <ul className="space-y-1">
+                <ul className="space-y-1 max-h-32 sm:max-h-none overflow-auto">
                   {result.review_flags.map((flag, i) => (
-                    <li key={i} className="text-[11px] text-amber-700/70">• {flag}</li>
+                    <li key={i} className="text-[10px] sm:text-[11px] text-amber-700/70">• {flag}</li>
                   ))}
                 </ul>
               </div>
@@ -484,7 +493,7 @@ function UploadPanel() {
             {/* Details toggle */}
             <button onClick={() => setShowDetails(!showDetails)}
               className="text-xs text-zinc-600 hover:text-zinc-500 transition-colors cursor-pointer">
-              {showDetails ? 'Hide' : 'Show'} structure details
+              {showDetails ? 'Hide' : 'Show'} details
             </button>
 
             <AnimatePresence>
@@ -492,7 +501,7 @@ function UploadPanel() {
                 <motion.pre initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}
                   className="p-3 bg-zinc-950 border border-zinc-800/40 rounded-md
-                             text-[11px] leading-relaxed text-zinc-600 font-mono overflow-auto max-h-80">
+                             text-[10px] sm:text-[11px] leading-relaxed text-zinc-600 font-mono overflow-auto max-h-60 sm:max-h-80">
                   {JSON.stringify(result.structure, null, 2)}
                 </motion.pre>
               )}
@@ -508,9 +517,9 @@ function UploadPanel() {
 
 function Stat({ label, value, dim = false }: { label: string; value: string; dim?: boolean }) {
   return (
-    <div className="p-3 bg-zinc-900/50 border border-zinc-800/40 rounded-lg text-center">
-      <p className={`text-lg font-light ${dim ? 'text-zinc-600' : 'text-zinc-300'}`}>{value}</p>
-      <p className="text-[10px] text-zinc-700 mt-0.5">{label}</p>
+    <div className="p-2.5 sm:p-3 bg-zinc-900/50 border border-zinc-800/40 rounded-lg text-center">
+      <p className={`text-base sm:text-lg font-light ${dim ? 'text-zinc-600' : 'text-zinc-300'}`}>{value}</p>
+      <p className="text-[9px] sm:text-[10px] text-zinc-700 mt-0.5">{label}</p>
     </div>
   )
 }
@@ -518,10 +527,12 @@ function Stat({ label, value, dim = false }: { label: string; value: string; dim
 function DownloadButton({ href }: { href: string }) {
   return (
     <a href={href} download
-      className="inline-flex items-center gap-2 px-4 py-2.5
-                 bg-white/[0.04] border border-zinc-800/60 rounded-md
+      className="inline-flex items-center justify-center gap-2 w-full sm:w-auto
+                 px-4 py-3 sm:py-2.5
+                 bg-white/[0.04] border border-zinc-800/60 rounded-lg sm:rounded-md
                  text-sm text-zinc-400
                  hover:bg-white/[0.08] hover:text-zinc-300
+                 active:bg-white/[0.12]
                  transition-colors duration-200">
       <DownloadIcon />
       Download DXF
