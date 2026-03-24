@@ -80,23 +80,27 @@ def postprocess_structure(
     if diag_count:
         review_flags.append(f"Projected {diag_count} near-axis diagonal wall(s) to H/V.")
 
-    # Filter text artifacts (very short, very thin segments)
-    filtered_text, text_count = _filter_text_artifacts(projected)
-    if text_count:
-        review_flags.append(f"Removed {text_count} text-like wall artifact(s).")
-
-    snapped_walls = [_normalize_wall_geometry(wall) for wall in filtered_text]
+    snapped_walls = [_normalize_wall_geometry(wall) for wall in projected]
     snapped_walls = _snap_walls(snapped_walls)
     snapped_walls = _snap_to_intersections(snapped_walls)
     merged_walls = _merge_walls(snapped_walls)
     junctions = build_junction_graph(merged_walls)
     classified_walls = _classify_walls_with_junctions(merged_walls, junctions)
 
+    # Filter text artifacts only after junctions exist, so short real walls that
+    # genuinely connect to the graph are not discarded prematurely.
+    classified_walls, text_count = _filter_text_artifacts(classified_walls, junctions)
+    if text_count:
+        review_flags.append(f"Removed {text_count} text-like wall artifact(s).")
+        junctions = build_junction_graph(classified_walls)
+        classified_walls = _classify_walls_with_junctions(classified_walls, junctions)
+
     # Filter isolated noisy walls (dimension annotations, symbols with no junctions)
     classified_walls, isolated_noise_count = _filter_isolated_noisy_walls(classified_walls, junctions)
     if isolated_noise_count:
         review_flags.append(f"Removed {isolated_noise_count} isolated noisy wall segment(s).")
         junctions = build_junction_graph(classified_walls)
+        classified_walls = _classify_walls_with_junctions(classified_walls, junctions)
 
     # Filter furniture-like openings (isolated small closed shapes not connected to walls)
     filtered_openings, furniture_count = _filter_furniture_openings(openings, classified_walls)
@@ -163,18 +167,19 @@ def build_junction_graph(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
         hx2 = hw["polyline"][1]["x"]
 
         for vw in v_walls:
+            pair_tolerance = _wall_connection_tolerance(hw, vw)
             vx = vw["polyline"][0]["x"]
             vy1 = vw["polyline"][0]["y"]
             vy2 = vw["polyline"][1]["y"]
 
             # Check if they intersect or are close enough
-            if vx < hx1 - JUNCTION_TOLERANCE or vx > hx2 + JUNCTION_TOLERANCE:
+            if vx < hx1 - pair_tolerance or vx > hx2 + pair_tolerance:
                 continue
-            if hy < vy1 - JUNCTION_TOLERANCE or hy > vy2 + JUNCTION_TOLERANCE:
+            if hy < vy1 - pair_tolerance or hy > vy2 + pair_tolerance:
                 continue
 
             point = (round(vx, 2), round(hy, 2))
-            junction_type = _classify_junction(hx1, hx2, hy, vx, vy1, vy2)
+            junction_type = _classify_junction(hx1, hx2, hy, vx, vy1, vy2, pair_tolerance)
 
             if point in seen_points:
                 existing = seen_points[point]
@@ -199,14 +204,15 @@ def build_junction_graph(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
 def _classify_junction(
     hx1: float, hx2: float, hy: float,
     vx: float, vy1: float, vy2: float,
+    tolerance: float,
 ) -> str:
     """Determine if junction is L, T, or X based on endpoint proximity."""
-    h_at_left = abs(vx - hx1) <= JUNCTION_TOLERANCE
-    h_at_right = abs(vx - hx2) <= JUNCTION_TOLERANCE
+    h_at_left = abs(vx - hx1) <= tolerance
+    h_at_right = abs(vx - hx2) <= tolerance
     h_endpoint = h_at_left or h_at_right
 
-    v_at_top = abs(hy - vy1) <= JUNCTION_TOLERANCE
-    v_at_bottom = abs(hy - vy2) <= JUNCTION_TOLERANCE
+    v_at_top = abs(hy - vy1) <= tolerance
+    v_at_bottom = abs(hy - vy2) <= tolerance
     v_endpoint = v_at_top or v_at_bottom
 
     if h_endpoint and v_endpoint:
@@ -231,6 +237,63 @@ def _summarize_junctions(junctions: list[dict[str, Any]]) -> dict[str, int]:
         "junction_T": counts["T"],
         "junction_X": counts["X"],
     }
+
+
+def _connected_wall_ids(junctions: list[dict[str, Any]]) -> set[str]:
+    connected_ids: set[str] = set()
+    for junction in junctions:
+        for wall_id in junction.get("wall_ids", []):
+            connected_ids.add(wall_id)
+    return connected_ids
+
+
+def _wall_connection_tolerance(wall_a: dict[str, Any], wall_b: dict[str, Any]) -> float:
+    thickness_a = float(wall_a.get("thickness", 4.0))
+    thickness_b = float(wall_b.get("thickness", 4.0))
+    adaptive = max(thickness_a, thickness_b) / 2.0 + SNAP_TOLERANCE
+    return min(max(JUNCTION_TOLERANCE, adaptive), JUNCTION_TOLERANCE * 2.5)
+
+
+def _supported_wall_ids(walls: list[dict[str, Any]]) -> set[str]:
+    supported_ids: set[str] = set()
+    for wall in walls:
+        for other in walls:
+            if wall["id"] == other["id"] or wall["orientation"] == other["orientation"]:
+                continue
+            tolerance = _wall_connection_tolerance(wall, other)
+            if _wall_has_endpoint_support(wall, other, tolerance):
+                supported_ids.add(wall["id"])
+                break
+    return supported_ids
+
+
+def _wall_has_endpoint_support(
+    wall: dict[str, Any],
+    other: dict[str, Any],
+    tolerance: float,
+) -> bool:
+    start, end = wall["polyline"]
+    other_start, other_end = other["polyline"]
+
+    if wall["orientation"] == "horizontal" and other["orientation"] == "vertical":
+        wall_y = float(start["y"])
+        other_x = float(other_start["x"])
+        other_y1 = min(float(other_start["y"]), float(other_end["y"]))
+        other_y2 = max(float(other_start["y"]), float(other_end["y"]))
+        if wall_y < other_y1 - tolerance or wall_y > other_y2 + tolerance:
+            return False
+        return any(abs(float(point["x"]) - other_x) <= tolerance for point in (start, end))
+
+    if wall["orientation"] == "vertical" and other["orientation"] == "horizontal":
+        wall_x = float(start["x"])
+        other_y = float(other_start["y"])
+        other_x1 = min(float(other_start["x"]), float(other_end["x"]))
+        other_x2 = max(float(other_start["x"]), float(other_end["x"]))
+        if wall_x < other_x1 - tolerance or wall_x > other_x2 + tolerance:
+            return False
+        return any(abs(float(point["y"]) - other_y) <= tolerance for point in (start, end))
+
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -446,12 +509,16 @@ def _project_diagonal_walls(
 
 def _filter_text_artifacts(
     walls: list[dict[str, Any]],
+    junctions: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], int]:
     """Remove wall segments that are likely text or dimension labels.
 
-    Heuristic: a segment is text-like when it is both very short AND very thin.
-    Real walls in floor plans have either significant length or significant thickness.
+    Heuristic: a segment is text-like when it is compact (length ~= thickness),
+    short, and not structurally connected. This avoids filtering long thin wall
+    returns that the model detected correctly but that happen to be short.
     """
+    connected_ids = _connected_wall_ids(junctions)
+    supported_ids = _supported_wall_ids(walls)
     filtered = []
     removed = 0
     for wall in walls:
@@ -464,7 +531,18 @@ def _filter_text_artifacts(
         dy = float(p1["y"]) - float(p0["y"])
         length = (dx * dx + dy * dy) ** 0.5
         thickness = float(wall.get("thickness", 4.0))
-        if length < TEXT_MAX_LENGTH and thickness < TEXT_MAX_THICKNESS:
+        aspect_ratio = length / max(thickness, EPSILON)
+        is_supported = (
+            wall["id"] in connected_ids
+            or wall["id"] in supported_ids
+            or bool(wall.get("is_exterior", False))
+        )
+        if (
+            not is_supported
+            and length < TEXT_MAX_LENGTH
+            and thickness < TEXT_MAX_THICKNESS
+            and aspect_ratio < 3.0
+        ):
             removed += 1
         else:
             filtered.append(wall)
@@ -562,24 +640,30 @@ def _filter_isolated_noisy_walls(
     Walls with no junctions whose thickness-to-length ratio exceeds 0.4 are
     almost certainly CAD annotation artifacts rather than structural walls.
     """
-    connected_ids: set[str] = set()
-    for j in junctions:
-        for wid in j["wall_ids"]:
-            connected_ids.add(wid)
+    connected_ids = _connected_wall_ids(junctions)
+    supported_ids = _supported_wall_ids(walls)
 
     filtered = []
     removed = 0
     for wall in walls:
         length = _wall_length(wall)
         thickness = float(wall.get("thickness", 4.0))
+        is_supported = (
+            wall["id"] in connected_ids
+            or wall["id"] in supported_ids
+            or bool(wall.get("is_exterior", False))
+        )
+        if is_supported:
+            filtered.append(wall)
+            continue
         # High thickness-to-length ratio on UNCONNECTED walls = dimension symbol or
         # annotation artifact.  Structurally connected walls are kept regardless of
         # ratio because corner polygons from CubiCasa can appear nearly square.
-        if wall["id"] not in connected_ids and length > 0 and thickness / length > 0.4:
+        if length > 0 and thickness / length > 0.55 and length < MIN_WALL_LENGTH * 2:
             removed += 1
             continue
         # Also drop short unconnected walls
-        if wall["id"] not in connected_ids and length < MIN_WALL_LENGTH * 3:
+        if length < max(MIN_WALL_LENGTH * 1.5, thickness * 2.0):
             removed += 1
             continue
         filtered.append(wall)

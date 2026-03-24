@@ -2,7 +2,7 @@
 import tempfile
 from pathlib import Path
 
-from backend.structural_generator import generate
+from backend.structural_generator import _apply_junction_extensions, _opening_geometry, generate
 
 
 def _structure_with_door_types():
@@ -91,3 +91,51 @@ def test_generate_minimal_structure():
 
     content = Path(out_path).read_text(encoding="utf-8", errors="ignore")
     assert "WALLS" in content
+
+
+def test_opening_offset_uses_original_wall_start_after_extension():
+    wall = {
+        "id": "w1",
+        "orientation": "horizontal",
+        "coord": 20.0,
+        "start": 12.0,
+        "end": 108.0,
+        "base_start": 20.0,
+        "base_end": 100.0,
+        "thickness": 8.0,
+        "draw_thickness": 8.0,
+        "is_exterior": True,
+    }
+    opening = {
+        "id": "op-1",
+        "kind": "door",
+        "wall_id": "w1",
+        "offset": 10.0,
+        "span": 24.0,
+    }
+
+    geometry = _opening_geometry(opening, wall)
+
+    assert geometry["start"] == 30.0
+    assert geometry["end"] == 54.0
+
+
+def test_junction_extensions_use_detected_wall_thickness():
+    wall = {
+        "id": "w1",
+        "orientation": "horizontal",
+        "coord": 20.0,
+        "start": 20.0,
+        "end": 100.0,
+        "base_start": 20.0,
+        "base_end": 100.0,
+        "thickness": 8.0,
+        "draw_thickness": 8.0,
+        "is_exterior": True,
+    }
+    wall_map = {"w1": wall}
+    junctions = [{"point": {"x": 20.0, "y": 20.0}, "type": "L", "wall_ids": ["w1"]}]
+
+    _apply_junction_extensions([wall], junctions, wall_map)
+
+    assert wall["start"] == 12.0
