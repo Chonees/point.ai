@@ -10,6 +10,7 @@ import tempfile
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel as _PydanticBaseModel
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
@@ -227,11 +228,11 @@ async def download_dxf(filename: str):
 # Add Doors & Windows via CubiCasa + AutoCAD MCP
 # ---------------------------------------------------------------------------
 
-class AddOpeningsRequest(BaseModel):
+class AddOpeningsRequest(_PydanticBaseModel):
     image: str  # base64-encoded floor plan image
 
 
-class AddOpeningsResponse(BaseModel):
+class AddOpeningsResponse(_PydanticBaseModel):
     status: str
     openings_count: int
     lisp_file: str | None = None
