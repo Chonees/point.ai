@@ -615,21 +615,54 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     const dy = Math.abs(pt.y - startPt.y)
     if (dx < 5 && dy < 5) return // too short
 
+    const newAnn: Annotation = {
+      type: tool,
+      x1: startPt.x, y1: startPt.y,
+      x2: pt.x, y2: pt.y,
+    }
+
     if (tool === 'door') {
-      // Ask swing direction before adding
       setPendingDoor({ x1: startPt.x, y1: startPt.y, x2: pt.x, y2: pt.y })
     } else {
-      setAnnotations([...annotations, {
-        type: tool,
-        x1: startPt.x, y1: startPt.y,
-        x2: pt.x, y2: pt.y,
-      }])
+      // Draw immediately on canvas
+      const canvas = canvasRef.current
+      if (canvas) {
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          ctx.strokeStyle = COLORS[tool]
+          ctx.lineWidth = tool === 'wall' ? 4 : 2
+          ctx.beginPath()
+          ctx.moveTo(startPt.x, startPt.y)
+          ctx.lineTo(pt.x, pt.y)
+          ctx.stroke()
+          ctx.fillStyle = COLORS[tool]
+          ctx.font = '10px monospace'
+          ctx.fillText(tool[0].toUpperCase(), Math.min(startPt.x, pt.x) - 12, (startPt.y + pt.y) / 2 + 4)
+        }
+      }
+      setAnnotations([...annotations, newAnn])
     }
     setStartPt(null)
   }
 
   const addDoorWithSwing = (dir: SwingDir) => {
     if (!pendingDoor) return
+    // Draw on canvas immediately
+    const canvas = canvasRef.current
+    if (canvas) {
+      const ctx = canvas.getContext('2d')
+      if (ctx) {
+        ctx.strokeStyle = COLORS.door
+        ctx.lineWidth = 2
+        ctx.beginPath()
+        ctx.moveTo(pendingDoor.x1, pendingDoor.y1)
+        ctx.lineTo(pendingDoor.x2, pendingDoor.y2)
+        ctx.stroke()
+        ctx.fillStyle = COLORS.door
+        ctx.font = '10px monospace'
+        ctx.fillText('D' + dir[0], Math.min(pendingDoor.x1, pendingDoor.x2) - 16, (pendingDoor.y1 + pendingDoor.y2) / 2 + 4)
+      }
+    }
     setAnnotations([...annotations, {
       type: 'door',
       ...pendingDoor,
