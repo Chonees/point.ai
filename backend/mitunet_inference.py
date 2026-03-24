@@ -402,11 +402,8 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
 
     # --- Decompose wall mask into non-overlapping rectangles ---
     # Uses Generalized Delta-Method (mosaic library)
-    # Erode first to thin walls while keeping proportions
-    erode_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    thinned = cv2.erode(cleaned, erode_kernel, iterations=2)
-    thinned = cv2.morphologyEx(thinned, cv2.MORPH_CLOSE,
-                               cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
+    # No erode — keep all walls including thin ones
+    thinned = cleaned
 
     try:
         from mosaic import rectangular_decomposition
