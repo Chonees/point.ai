@@ -332,20 +332,15 @@ async def api_add_openings(req: AddOpeningsRequest):
                             f'"{x:.2f},{max(ys):.2f}" "")'
                         )
 
-        # 4. Write LISP to file for AutoCAD MCP
+        # 4. Write LISP to file
         lisp_code = "\n".join(lisp_lines)
-        lisp_path = Path("C:/temp/pointai_openings.lsp")
-        lisp_path.parent.mkdir(exist_ok=True)
+        lisp_dir = Path("C:/temp")
+        lisp_dir.mkdir(exist_ok=True)
+        lisp_path = lisp_dir / "pointai_openings.lsp"
         lisp_path.write_text(lisp_code, encoding="utf-8")
 
-        # 5. Also write IPC command for AutoCAD to load and execute
-        ipc_cmd = {
-            "tool": "system",
-            "operation": "execute_lisp",
-            "data": {"code": f'(load "C:/temp/pointai_openings.lsp")'},
-        }
-        ipc_path = Path("C:/temp/autocad_mcp_cmd_openings.json")
-        ipc_path.write_text(json.dumps(ipc_cmd), encoding="utf-8")
+        # 5. Send LISP to AutoCAD via PostMessage (same as MCP File IPC)
+        autocad_status = _send_lisp_to_autocad(str(lisp_path))
 
         log_event("api.add_openings.success", openings_count=len(openings))
 
@@ -353,12 +348,83 @@ async def api_add_openings(req: AddOpeningsRequest):
             status="ok",
             openings_count=len(openings),
             lisp_file=str(lisp_path),
-            message=f"Generated {len(openings)} openings. LISP ready at {lisp_path}",
+            message=f"{len(openings)} openings. {autocad_status}",
         )
 
     except Exception as e:
         log_event("api.add_openings.error", message=str(e))
         raise HTTPException(status_code=500, detail=f"Add openings failed: {e}")
+
+
+def _send_lisp_to_autocad(lisp_path: str) -> str:
+    """Send a (load ...) command to AutoCAD via PostMessage — no MCP server needed."""
+    import sys
+    if sys.platform != "win32":
+        return "Not on Windows — LISP saved for manual loading"
+
+    try:
+        import ctypes
+        import win32gui
+
+        # Find AutoCAD window
+        windows: list[int] = []
+
+        def callback(hwnd, result):
+            if win32gui.IsWindowVisible(hwnd):
+                text = win32gui.GetWindowText(hwnd).lower()
+                if "autocad" in text and ("drawing" in text or ".dwg" in text or ".dxf" in text):
+                    result.append(hwnd)
+            return True
+
+        win32gui.EnumWindows(callback, windows)
+
+        if not windows:
+            return "AutoCAD not found — LISP saved for manual loading"
+
+        hwnd = windows[0]
+
+        # Find MDIClient child for command routing
+        mdi_client: list[int] = []
+
+        def find_mdi(child_hwnd, _):
+            if win32gui.GetClassName(child_hwnd) == "MDIClient":
+                mdi_client.append(child_hwnd)
+                return False
+            return True
+
+        try:
+            win32gui.EnumChildWindows(hwnd, find_mdi, None)
+        except Exception:
+            pass
+
+        target = mdi_client[0] if mdi_client else hwnd
+
+        WM_CHAR = 0x0102
+        WM_KEYDOWN = 0x0100
+        WM_KEYUP = 0x0101
+        VK_ESCAPE = 0x1B
+        post = ctypes.windll.user32.PostMessageW
+
+        # Cancel any pending command
+        import time
+        for _ in range(2):
+            post(target, WM_KEYDOWN, VK_ESCAPE, 0)
+            post(target, WM_KEYUP, VK_ESCAPE, 0)
+        time.sleep(0.05)
+
+        # Type: (load "C:/temp/pointai_openings.lsp")
+        load_cmd = f'(load "{lisp_path.replace(chr(92), "/")}")'
+        for ch in load_cmd:
+            post(target, WM_CHAR, ord(ch), 0)
+        # Enter
+        post(target, WM_CHAR, 0x0D, 0)
+
+        return "Sent to AutoCAD"
+
+    except ImportError:
+        return "pywin32 not installed — LISP saved for manual loading"
+    except Exception as e:
+        return f"AutoCAD send failed: {e} — LISP saved for manual loading"
 
 
 def _parse_v2_input(
