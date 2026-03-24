@@ -505,21 +505,25 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
                 hx, hy = dx1, dy1
 
                 if swing == "up":
+                    # Slab vertical, arc swings up-right
                     msp.add_line((hx, hy), (hx, hy + door_width), dxfattribs=DA)
                     msp.add_line((hx + slab, hy), (hx + slab, hy + door_width), dxfattribs=DA)
                     msp.add_arc((hx, hy), door_width, 0, 90, dxfattribs=DA)
                 elif swing == "down":
+                    # Slab vertical, arc swings down-right
                     msp.add_line((hx, hy), (hx, hy - door_width), dxfattribs=DA)
                     msp.add_line((hx + slab, hy), (hx + slab, hy - door_width), dxfattribs=DA)
                     msp.add_arc((hx, hy), door_width, 270, 360, dxfattribs=DA)
                 elif swing == "right":
+                    # Slab horizontal, arc swings right-up
                     msp.add_line((hx, hy), (hx + door_width, hy), dxfattribs=DA)
-                    msp.add_line((hx, hy + slab), (hx + door_width, hy + slab), dxfattribs=DA)
-                    msp.add_arc((hx, hy), door_width, 0, 90, dxfattribs=DA)
+                    msp.add_line((hx, hy - slab), (hx + door_width, hy - slab), dxfattribs=DA)
+                    msp.add_arc((hx, hy), door_width, 270, 360, dxfattribs=DA)
                 elif swing == "left":
+                    # Slab horizontal, arc swings left-up
                     msp.add_line((hx, hy), (hx - door_width, hy), dxfattribs=DA)
-                    msp.add_line((hx, hy + slab), (hx - door_width, hy + slab), dxfattribs=DA)
-                    msp.add_arc((hx, hy), door_width, 90, 180, dxfattribs=DA)
+                    msp.add_line((hx, hy - slab), (hx - door_width, hy - slab), dxfattribs=DA)
+                    msp.add_arc((hx, hy), door_width, 180, 270, dxfattribs=DA)
 
             elif ann_type == "window":
                 # Window: 3 parallel lines + 2 end caps + sill (5" offset)
