@@ -223,6 +223,143 @@ async def download_dxf(filename: str):
     return FileResponse(str(path), media_type="application/dxf", filename=filename)
 
 
+# ---------------------------------------------------------------------------
+# Add Doors & Windows via CubiCasa + AutoCAD MCP
+# ---------------------------------------------------------------------------
+
+class AddOpeningsRequest(BaseModel):
+    image: str  # base64-encoded floor plan image
+
+
+class AddOpeningsResponse(BaseModel):
+    status: str
+    openings_count: int
+    lisp_file: str | None = None
+    message: str | None = None
+
+
+@app.post("/api/v2/add-openings", response_model=AddOpeningsResponse)
+async def api_add_openings(req: AddOpeningsRequest):
+    """Detect doors & windows with CubiCasa and send LISP to AutoCAD via File IPC."""
+    from .cubicasa_inference import infer_cubicasa
+    from .mitunet_inference import _PLAN_X1, _PLAN_Y1, _PLAN_X2, _PLAN_Y2
+    import json
+    from pathlib import Path
+
+    try:
+        # 1. Run CubiCasa baseline to get openings
+        result = infer_cubicasa(req.image, model_variant="baseline")
+        openings = result.get("openings", [])
+        img_size = result.get("structure_meta", {}).get("image_size", {})
+        img_w = img_size.get("width", 800)
+        img_h = img_size.get("height", 600)
+
+        if not openings:
+            return AddOpeningsResponse(
+                status="no_openings",
+                openings_count=0,
+                message="No doors or windows detected.",
+            )
+
+        # 2. Calculate scale to match MitUNet DXF template coordinates
+        plan_w = _PLAN_X2 - _PLAN_X1
+        plan_h = _PLAN_Y2 - _PLAN_Y1
+        img_aspect = img_w / img_h
+        plan_aspect = plan_w / plan_h
+
+        if img_aspect > plan_aspect:
+            scale = plan_w / img_w
+            offset_x = _PLAN_X1
+            offset_y = _PLAN_Y1 + (plan_h - img_h * scale) / 2
+        else:
+            scale = plan_h / img_h
+            offset_x = _PLAN_X1 + (plan_w - img_w * scale) / 2
+            offset_y = _PLAN_Y1
+
+        # 3. Generate LISP commands for each opening
+        lisp_lines = [
+            '(command "-LAYER" "M" "OPENINGS" "C" "3" "" "")',  # green layer
+        ]
+
+        for opening in openings:
+            polyline = opening.get("polyline", [])
+            if len(polyline) < 2:
+                continue
+
+            opening_type = opening.get("opening_type", "door")
+
+            # Convert pixel coords to DXF coords
+            # CubiCasa already flipped Y, and our scale maps to template space
+            pts = []
+            for p in polyline:
+                dx = p[0] * scale + offset_x
+                dy = p[1] * scale + offset_y
+                pts.append((dx, dy))
+
+            if len(pts) < 2:
+                continue
+
+            # Calculate opening center and dimensions
+            xs = [p[0] for p in pts]
+            ys = [p[1] for p in pts]
+            cx = (min(xs) + max(xs)) / 2
+            cy = (min(ys) + max(ys)) / 2
+            ow = max(xs) - min(xs)
+            oh = max(ys) - min(ys)
+
+            if opening_type == "door":
+                # Door: arc swing + gap lines
+                radius = max(ow, oh)
+                lisp_lines.append(
+                    f'(command "ARC" "{cx:.2f},{cy:.2f}" "E" '
+                    f'"{cx + radius:.2f},{cy:.2f}" "A" "90")'
+                )
+            else:
+                # Window: 3 parallel lines
+                if ow > oh:  # horizontal window
+                    for off in [-1, 0, 1]:
+                        y = cy + off * 1.5
+                        lisp_lines.append(
+                            f'(command "LINE" "{min(xs):.2f},{y:.2f}" '
+                            f'"{max(xs):.2f},{y:.2f}" "")'
+                        )
+                else:  # vertical window
+                    for off in [-1, 0, 1]:
+                        x = cx + off * 1.5
+                        lisp_lines.append(
+                            f'(command "LINE" "{x:.2f},{min(ys):.2f}" '
+                            f'"{x:.2f},{max(ys):.2f}" "")'
+                        )
+
+        # 4. Write LISP to file for AutoCAD MCP
+        lisp_code = "\n".join(lisp_lines)
+        lisp_path = Path("C:/temp/pointai_openings.lsp")
+        lisp_path.parent.mkdir(exist_ok=True)
+        lisp_path.write_text(lisp_code, encoding="utf-8")
+
+        # 5. Also write IPC command for AutoCAD to load and execute
+        ipc_cmd = {
+            "tool": "system",
+            "operation": "execute_lisp",
+            "data": {"code": f'(load "C:/temp/pointai_openings.lsp")'},
+        }
+        ipc_path = Path("C:/temp/autocad_mcp_cmd_openings.json")
+        ipc_path.write_text(json.dumps(ipc_cmd), encoding="utf-8")
+
+        log_event("api.add_openings.success", openings_count=len(openings))
+
+        return AddOpeningsResponse(
+            status="ok",
+            openings_count=len(openings),
+            lisp_file=str(lisp_path),
+            message=f"Generated {len(openings)} openings. LISP ready at {lisp_path}",
+        )
+
+    except Exception as e:
+        log_event("api.add_openings.error", message=str(e))
+        raise HTTPException(status_code=500, detail=f"Add openings failed: {e}")
+
+
 def _parse_v2_input(
     plan: dict | None,
     structure: dict | None,

@@ -489,6 +489,11 @@ function UploadPanel() {
             {/* Download */}
             <DownloadButton href={result.dxf_url} />
 
+            {/* Add Doors & Windows — sends to AutoCAD via MCP */}
+            {modelVariant === 'mitunet' && file && (
+              <AddOpeningsButton imageFile={file} />
+            )}
+
             {/* Details toggle */}
             <button onClick={() => setShowDetails(!showDetails)}
               className="text-xs text-zinc-600 hover:text-zinc-500 transition-colors cursor-pointer">
@@ -519,6 +524,65 @@ function Stat({ label, value, dim = false }: { label: string; value: string; dim
     <div className="p-2.5 sm:p-3 bg-zinc-900/50 border border-zinc-800/40 rounded-lg text-center">
       <p className={`text-base sm:text-lg font-light ${dim ? 'text-zinc-600' : 'text-zinc-300'}`}>{value}</p>
       <p className="text-[9px] sm:text-[10px] text-zinc-700 mt-0.5">{label}</p>
+    </div>
+  )
+}
+
+function AddOpeningsButton({ imageFile }: { imageFile: File }) {
+  const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
+  const [message, setMessage] = useState('')
+
+  const handleClick = async () => {
+    setStatus('loading')
+    setMessage('')
+    try {
+      const reader = new FileReader()
+      const b64 = await new Promise<string>((resolve) => {
+        reader.onload = () => resolve(reader.result as string)
+        reader.readAsDataURL(imageFile)
+      })
+
+      const res = await fetch('/api/v2/add-openings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: b64 }),
+      })
+      const data = await res.json()
+      if (data.status === 'ok') {
+        setStatus('done')
+        setMessage(`${data.openings_count} openings sent to AutoCAD`)
+      } else {
+        setStatus('done')
+        setMessage(data.message || 'No openings detected')
+      }
+    } catch (e) {
+      setStatus('error')
+      setMessage('Failed to add openings')
+    }
+  }
+
+  return (
+    <div className="space-y-1">
+      <motion.button
+        whileTap={{ scale: 0.98 }}
+        onClick={handleClick}
+        disabled={status === 'loading'}
+        className="w-full py-3 sm:py-2.5 rounded-lg text-sm font-medium
+                   bg-emerald-950/30 text-emerald-400/80 border border-emerald-900/40
+                   hover:bg-emerald-950/50 hover:text-emerald-300
+                   disabled:opacity-30 disabled:cursor-not-allowed
+                   active:bg-emerald-950/60
+                   transition-all duration-200 cursor-pointer"
+      >
+        {status === 'loading'
+          ? <span className="flex items-center justify-center gap-2"><Spinner />Detecting doors & windows...</span>
+          : '+ Add Doors & Windows to AutoCAD'}
+      </motion.button>
+      {message && (
+        <p className={`text-[10px] text-center ${status === 'error' ? 'text-red-500' : 'text-emerald-600'}`}>
+          {message}
+        </p>
+      )}
     </div>
   )
 }
