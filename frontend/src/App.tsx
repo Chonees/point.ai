@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 type Mode = 'describe' | 'upload'
 type Status = 'idle' | 'loading' | 'done' | 'error'
-type ModelVariant = 'baseline' | 'finetuned' | 'segformer' | 'segformer_v1' | 'mitunet'
+type ModelVariant = 'baseline' | 'mitunet'
 
 interface V1Result {
   dxf_url: string
@@ -385,11 +385,10 @@ function UploadPanel() {
       {/* Model variant */}
       <div className="mt-3">
         <p className="text-xs text-zinc-600 mb-2">Model</p>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div className="grid grid-cols-2 gap-2">
           {([
-            { value: 'baseline'     as const, label: 'Baseline',      note: 'CubiCasa5k' },
-            { value: 'mitunet'     as const, label: 'MitUNet',       note: 'Walls only' },
-            { value: 'segformer_v1' as const, label: 'SegFormer v1', note: 'Solo CubiCasa' },
+            { value: 'baseline'  as const, label: 'Baseline',  note: 'CubiCasa5k' },
+            { value: 'mitunet'   as const, label: 'MitUNet',   note: 'Walls HD' },
           ]).map((option) => (
             <button
               key={option.value}
