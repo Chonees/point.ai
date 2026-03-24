@@ -18,7 +18,6 @@ import httpx
 from .cubicasa_inference import CUBICASA_BACKEND, cubicasa_available, infer_cubicasa
 from .inference_client import HEURISTIC_BACKEND, infer_heuristic_structure
 from .r2v_inference import R2V_BACKEND, infer_r2v, r2v_available
-from .segformer_inference import SEGFORMER_BACKEND, infer_segformer, segformer_available
 from .mitunet_inference import MITUNET_BACKEND, infer_mitunet, mitunet_available
 from .observability import log_event
 from .worker_contract import (
@@ -105,17 +104,6 @@ def infer_structure(
         if not ready:
             raise WorkerError("MODEL_NOT_LOADED", reason or "R2V is not available.")
         result = infer_r2v(image_b64)
-        result.setdefault("inference_debug", {})
-        result["inference_debug"]["backend"] = backend
-        log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
-        return result
-
-    if backend == SEGFORMER_BACKEND:
-        ready, reason = segformer_available()
-        if not ready:
-            raise WorkerError("MODEL_NOT_LOADED", reason or "SegFormer is not available.")
-        sf_opts = options or {}
-        result = infer_segformer(image_b64, **sf_opts)
         result.setdefault("inference_debug", {})
         result["inference_debug"]["backend"] = backend
         log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))

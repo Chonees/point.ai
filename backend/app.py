@@ -378,9 +378,6 @@ def _parse_v2_input(
     if image is not None:
         if model_variant == "r2v":
             inferred = infer_structure(image, backend="r2v_local")
-        elif model_variant in ("segformer", "segformer_v1"):
-            sf_variant = "v1" if model_variant == "segformer_v1" else "v4"
-            inferred = infer_structure(image, backend="segformer_local", options={"segformer_variant": sf_variant})
         elif model_variant == "mitunet":
             inferred = infer_structure(image, backend="mitunet_local")
         else:
