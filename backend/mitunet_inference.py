@@ -404,6 +404,8 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
     h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (min_len, 1))
     h_mask = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, h_kernel)
 
+    WALL_THIN = 0.5  # reduce wall thickness by this factor (0.5 = half)
+
     num_h, _, stats_h, _ = cv2.connectedComponentsWithStats(h_mask, connectivity=8)
     for i in range(1, num_h):
         x = stats_h[i, cv2.CC_STAT_LEFT]
@@ -412,8 +414,12 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
         ch = stats_h[i, cv2.CC_STAT_HEIGHT]
         if cw < min_len or ch < 2:
             continue
-        x1d, y1d = _img_to_dxf(x, y + ch)
-        x2d, y2d = _img_to_dxf(x + cw, y)
+        # Thin the wall: shrink height toward center
+        trim = ch * (1 - WALL_THIN) / 2
+        y_shrunk = y + trim
+        ch_shrunk = ch - 2 * trim
+        x1d, y1d = _img_to_dxf(x, y_shrunk + ch_shrunk)
+        x2d, y2d = _img_to_dxf(x + cw, y_shrunk)
         pts = [(x1d, y1d), (x2d, y1d), (x2d, y2d), (x1d, y2d), (x1d, y1d)]
         poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
         poly.close()
@@ -433,8 +439,12 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
         ch = stats_v[i, cv2.CC_STAT_HEIGHT]
         if ch < min_len or cw < 2:
             continue
-        x1d, y1d = _img_to_dxf(x, y + ch)
-        x2d, y2d = _img_to_dxf(x + cw, y)
+        # Thin the wall: shrink width toward center
+        trim = cw * (1 - WALL_THIN) / 2
+        x_shrunk = x + trim
+        cw_shrunk = cw - 2 * trim
+        x1d, y1d = _img_to_dxf(x_shrunk, y + ch)
+        x2d, y2d = _img_to_dxf(x_shrunk + cw_shrunk, y)
         pts = [(x1d, y1d), (x2d, y1d), (x2d, y2d), (x1d, y2d), (x1d, y1d)]
         poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
         poly.close()
