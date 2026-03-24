@@ -493,26 +493,33 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
 
             elif ann_type == "door":
                 # Door: slab (2 parallel lines 1.5" apart) + arc swing 90°
+                # Uses Pointe Homes standard from doors.py
                 slab = 1.5
                 adx = abs(dx2 - dx1)
                 ady = abs(dy2 - dy1)
                 door_width = max(adx, ady)
-                hx, hy = min(dx1, dx2), min(dy1, dy2)
+                swing = ann.get("swing", "up")
+                DA = {"layer": "DOORS", "color": 157}
 
-                if adx >= ady:  # horizontal door
-                    msp.add_line((hx, hy), (hx + door_width, hy),
-                                 dxfattribs={"layer": "DOORS", "color": 157})
-                    msp.add_line((hx, hy + slab), (hx + door_width, hy + slab),
-                                 dxfattribs={"layer": "DOORS", "color": 157})
-                    msp.add_arc((hx, hy), door_width, 0, 90,
-                                dxfattribs={"layer": "DOORS", "color": 157})
-                else:  # vertical door
-                    msp.add_line((hx, hy), (hx, hy + door_width),
-                                 dxfattribs={"layer": "DOORS", "color": 157})
-                    msp.add_line((hx + slab, hy), (hx + slab, hy + door_width),
-                                 dxfattribs={"layer": "DOORS", "color": 157})
-                    msp.add_arc((hx, hy), door_width, 0, 90,
-                                dxfattribs={"layer": "DOORS", "color": 157})
+                # Hinge point = start of line user drew
+                hx, hy = dx1, dy1
+
+                if swing == "up":
+                    msp.add_line((hx, hy), (hx, hy + door_width), dxfattribs=DA)
+                    msp.add_line((hx + slab, hy), (hx + slab, hy + door_width), dxfattribs=DA)
+                    msp.add_arc((hx, hy), door_width, 0, 90, dxfattribs=DA)
+                elif swing == "down":
+                    msp.add_line((hx, hy), (hx, hy - door_width), dxfattribs=DA)
+                    msp.add_line((hx + slab, hy), (hx + slab, hy - door_width), dxfattribs=DA)
+                    msp.add_arc((hx, hy), door_width, 270, 360, dxfattribs=DA)
+                elif swing == "right":
+                    msp.add_line((hx, hy), (hx + door_width, hy), dxfattribs=DA)
+                    msp.add_line((hx, hy + slab), (hx + door_width, hy + slab), dxfattribs=DA)
+                    msp.add_arc((hx, hy), door_width, 0, 90, dxfattribs=DA)
+                elif swing == "left":
+                    msp.add_line((hx, hy), (hx - door_width, hy), dxfattribs=DA)
+                    msp.add_line((hx, hy + slab), (hx - door_width, hy + slab), dxfattribs=DA)
+                    msp.add_arc((hx, hy), door_width, 90, 180, dxfattribs=DA)
 
             elif ann_type == "window":
                 # Window: 3 parallel lines + 2 end caps + sill (5" offset)

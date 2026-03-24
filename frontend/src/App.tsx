@@ -7,7 +7,8 @@ type Mode = 'describe' | 'upload'
 type Status = 'idle' | 'loading' | 'done' | 'error'
 type ModelVariant = 'baseline' | 'mitunet'
 type AnnotationType = 'wall' | 'door' | 'window'
-interface Annotation { type: AnnotationType; x1: number; y1: number; x2: number; y2: number }
+type SwingDir = 'up' | 'down' | 'left' | 'right'
+interface Annotation { type: AnnotationType; x1: number; y1: number; x2: number; y2: number; swing?: SwingDir }
 
 interface V1Result {
   dxf_url: string
@@ -623,6 +624,8 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     }, 50)
   }
 
+  const [pendingDoor, setPendingDoor] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null)
+
   const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!drawing || !startPt) return
     const pt = getCanvasPoint(e)
@@ -632,12 +635,27 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     const dy = Math.abs(pt.y - startPt.y)
     if (dx < 5 && dy < 5) return // too short
 
-    setAnnotations([...annotations, {
-      type: tool,
-      x1: startPt.x, y1: startPt.y,
-      x2: pt.x, y2: pt.y,
-    }])
+    if (tool === 'door') {
+      // Ask swing direction before adding
+      setPendingDoor({ x1: startPt.x, y1: startPt.y, x2: pt.x, y2: pt.y })
+    } else {
+      setAnnotations([...annotations, {
+        type: tool,
+        x1: startPt.x, y1: startPt.y,
+        x2: pt.x, y2: pt.y,
+      }])
+    }
     setStartPt(null)
+  }
+
+  const addDoorWithSwing = (dir: SwingDir) => {
+    if (!pendingDoor) return
+    setAnnotations([...annotations, {
+      type: 'door',
+      ...pendingDoor,
+      swing: dir,
+    }])
+    setPendingDoor(null)
   }
 
   const undo = () => {
@@ -699,6 +717,29 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
           style={{ imageRendering: 'auto' }}
         />
       </div>
+
+      {/* Door swing direction picker */}
+      {pendingDoor && (
+        <div className="flex items-center justify-center gap-2 px-3 py-2 bg-green-950/30 border-t border-green-900/40">
+          <span className="text-[10px] text-green-400">Door opens toward:</span>
+          {(['up', 'down', 'left', 'right'] as SwingDir[]).map((dir) => (
+            <button
+              key={dir}
+              onClick={() => addDoorWithSwing(dir)}
+              className="px-2.5 py-1 rounded text-[10px] font-medium bg-green-900/40 border border-green-700/50
+                         text-green-300 hover:bg-green-800/50 cursor-pointer transition-colors"
+            >
+              {dir === 'up' ? '↑' : dir === 'down' ? '↓' : dir === 'left' ? '←' : '→'} {dir}
+            </button>
+          ))}
+          <button
+            onClick={() => setPendingDoor(null)}
+            className="px-2 py-1 text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
 
       <p className="text-[9px] text-zinc-700 text-center py-1">
         Draw lines: <span className="text-red-500">red</span>=wall <span className="text-green-500">green</span>=door <span className="text-blue-500">blue</span>=window
