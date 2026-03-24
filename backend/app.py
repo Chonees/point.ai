@@ -45,6 +45,7 @@ from .worker_client import infer_structure
 from .worker_contract import WorkerError
 from .plan_parser import parse_structure_payload
 from .structural_generator import generate as generate_structural
+from .mitunet_inference import generate_mitunet_dxf, MITUNET_BACKEND
 from .validation import validate_plan
 
 # App
@@ -180,7 +181,12 @@ async def api_generate_v2(req: GenerateStructureRequest):
     out_path = str(DXF_DIR / filename)
 
     try:
-        generate_structural(parsed["structure"], out_path)
+        # Use MitUNet's own DXF generator (template + rect hatch) when available
+        infer_result = parsed.get("_infer_result") or {}
+        if infer_result.get("source") == MITUNET_BACKEND and "_wall_mask" in infer_result:
+            generate_mitunet_dxf(infer_result, out_path)
+        else:
+            generate_structural(parsed["structure"], out_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DXF generation failed: {e}")
 
@@ -235,8 +241,11 @@ def _parse_v2_input(
     if image is not None:
         if model_variant == "r2v":
             inferred = infer_structure(image, backend="r2v_local")
-        elif model_variant == "segformer":
-            inferred = infer_structure(image, backend="segformer_local")
+        elif model_variant in ("segformer", "segformer_v1"):
+            sf_variant = "v1" if model_variant == "segformer_v1" else "v4"
+            inferred = infer_structure(image, backend="segformer_local", options={"segformer_variant": sf_variant})
+        elif model_variant == "mitunet":
+            inferred = infer_structure(image, backend="mitunet_local")
         else:
             options = {"model_variant": model_variant} if model_variant else None
             if options is None:
@@ -250,6 +259,8 @@ def _parse_v2_input(
         parsed["quality_metrics"]["model_variant"] = (
             inferred.get("inference_debug", {}).get("model_variant") or model_variant or "baseline"
         )
+        # Preserve raw infer result for MitUNet DXF generator
+        parsed["_infer_result"] = inferred
         return parsed, image, inferred.get("inference_debug", {}).get("debug_overlay_b64")
 
     raise ValueError("One of structure, plan or image must be provided.")

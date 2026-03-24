@@ -33,22 +33,55 @@ from training.segformer_dataset import (
 # ---------------------------------------------------------------------------
 # Class weights (inverse frequency, from stats)
 # ---------------------------------------------------------------------------
-DEFAULT_CLASS_WEIGHTS = [
-    0.05,  # 0 background — no importa
-    0.05,  # 1 outdoor — no importa
-    25.0,  # 2 wall — CRITICO
-    0.05,  # 3 kitchen — no importa
-    0.05,  # 4 living — no importa
-    0.05,  # 5 bedroom — no importa
-    0.05,  # 6 bath — no importa
-    0.05,  # 7 entry — no importa
-    0.05,  # 8 railing — no importa
-    0.05,  # 9 storage — no importa
-    0.05,  # 10 garage — no importa
-    0.05,  # 11 room — no importa
-    25.0,  # 12 window — CRITICO
-    25.0,  # 13 door — CRITICO
-]
+# Inverse frequency weights calculated from segformer_class_stats.json
+# Formula: weight = median_freq / class_freq (median frequency balancing)
+# This gives natural weights without manual tuning
+DEFAULT_CLASS_WEIGHTS = None  # Will be computed from data, or use focal loss
+
+
+class FocalLoss(nn.Module):
+    """Focal Loss — automatically focuses on hard-to-classify pixels."""
+    def __init__(self, alpha: torch.Tensor | None = None, gamma: float = 2.0, ignore_index: int = 255):
+        super().__init__()
+        self.alpha = alpha  # optional per-class weights
+        self.gamma = gamma  # focusing parameter: higher = more focus on hard examples
+        self.ignore_index = ignore_index
+
+    def forward(self, logits: torch.Tensor, targets: torch.Tensor) -> torch.Tensor:
+        ce_loss = nn.functional.cross_entropy(
+            logits, targets, weight=self.alpha, ignore_index=self.ignore_index, reduction="none"
+        )
+        pt = torch.exp(-ce_loss)  # probability of correct class
+        focal_loss = ((1 - pt) ** self.gamma) * ce_loss
+        return focal_loss.mean()
+
+
+def _compute_inverse_freq_weights(data_path: str, num_classes: int) -> torch.Tensor:
+    """Compute class weights from saved stats using median frequency balancing."""
+    import json
+    stats_path = Path(data_path) / "segformer_class_stats.json"
+    if not stats_path.exists():
+        print("[WARNING] No class stats found, using uniform weights", flush=True)
+        return torch.ones(num_classes)
+
+    with open(stats_path) as f:
+        stats = json.load(f)
+
+    total = stats["total_pixels"]
+    freqs = []
+    for i in range(num_classes):
+        pixels = stats["classes"][str(i)]["pixels"]
+        freqs.append(pixels / total if total > 0 else 1.0)
+
+    median_freq = sorted(freqs)[len(freqs) // 2]
+    weights = [median_freq / (f + 1e-10) for f in freqs]
+
+    # Cap extreme weights
+    max_weight = 10.0
+    weights = [min(w, max_weight) for w in weights]
+
+    print(f"[Focal Loss] Inverse freq weights: {[round(w, 2) for w in weights]}", flush=True)
+    return torch.tensor(weights, dtype=torch.float32)
 
 
 def _build_model(num_labels: int, model_name: str, device: torch.device) -> nn.Module:
@@ -92,7 +125,7 @@ def _run_epoch(
     loader: DataLoader,
     optimizer: torch.optim.Optimizer | None,
     device: torch.device,
-    class_weights: torch.Tensor,
+    loss_fn: nn.Module,
     scaler: GradScaler | None,
     phase: str,
     log_every: int = 50,
@@ -119,7 +152,7 @@ def _run_epoch(
                     upsampled = nn.functional.interpolate(
                         logits, size=labels.shape[-2:], mode="bilinear", align_corners=False
                     )
-                    loss = nn.functional.cross_entropy(upsampled, labels, weight=class_weights)
+                    loss = loss_fn(upsampled, labels)
 
                 scaler.scale(loss).backward()
                 scaler.unscale_(optimizer)
@@ -133,7 +166,7 @@ def _run_epoch(
                 upsampled = nn.functional.interpolate(
                     logits, size=labels.shape[-2:], mode="bilinear", align_corners=False
                 )
-                loss = nn.functional.cross_entropy(upsampled, labels, weight=class_weights)
+                loss = loss_fn(upsampled, labels)
 
                 if is_train:
                     loss.backward()
@@ -214,8 +247,9 @@ def run_finetune(
     optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=0.01)
     scheduler = CosineAnnealingWarmRestarts(optimizer, T_0=len(train_loader), T_mult=2)
 
-    # Class weights
-    class_weights = torch.tensor(DEFAULT_CLASS_WEIGHTS, dtype=torch.float32).to(device)
+    # Focal Loss with inverse frequency weights
+    alpha_weights = _compute_inverse_freq_weights(data_path, NUM_CLASSES).to(device)
+    loss_fn = FocalLoss(alpha=alpha_weights, gamma=2.0)
 
     # AMP
     use_amp = device.type == "cuda"
@@ -233,13 +267,13 @@ def run_finetune(
         t0 = time.time()
 
         train_metrics = _run_epoch(
-            model, train_loader, optimizer, device, class_weights, scaler,
+            model, train_loader, optimizer, device, loss_fn, scaler,
             phase=f"train_epoch_{epoch}", log_every=log_every,
         )
         scheduler.step()
 
         val_metrics = _run_epoch(
-            model, val_loader, None, device, class_weights, None,
+            model, val_loader, None, device, loss_fn, None,
             phase=f"val_epoch_{epoch}", log_every=log_every,
         )
 

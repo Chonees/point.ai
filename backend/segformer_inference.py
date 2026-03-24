@@ -15,7 +15,8 @@ import numpy as np
 
 SEGFORMER_BACKEND = "segformer_local"
 
-_WEIGHTS_PATH = Path(r"D:\training_v2\segformer_runs\checkpoints\best_inference.pt")
+_WEIGHTS_V1 = Path(r"D:\training_v2\segformer_runs\checkpoints\best_inference.pt")
+_WEIGHTS_V4 = Path(r"D:\training_v2\segformer_runs_v4\checkpoints\best_inference.pt")
 _IMAGE_SIZE = 512
 _NUM_CLASSES = 14
 
@@ -24,14 +25,14 @@ _WALL = 2
 _WINDOW = 12
 _DOOR = 13
 
-# Lazy-loaded globals
-_model = None
+# Lazy-loaded globals per variant
+_models: dict[str, Any] = {}
 _device = None
 
 
 def segformer_available() -> tuple[bool, str | None]:
-    if not _WEIGHTS_PATH.exists():
-        return False, f"Weights not found: {_WEIGHTS_PATH}"
+    if not _WEIGHTS_V1.exists() and not _WEIGHTS_V4.exists():
+        return False, f"No weights found: {_WEIGHTS_V1} or {_WEIGHTS_V4}"
     try:
         import torch
         from transformers import SegformerForSemanticSegmentation
@@ -40,10 +41,10 @@ def segformer_available() -> tuple[bool, str | None]:
         return False, str(e)
 
 
-def _load_model():
-    global _model, _device
-    if _model is not None:
-        return _model, _device
+def _load_model(variant: str = "v4"):
+    global _device
+    if variant in _models:
+        return _models[variant], _device
 
     import torch
     from transformers import SegformerForSemanticSegmentation
@@ -51,10 +52,12 @@ def _load_model():
 
     _device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+    weights_path = _WEIGHTS_V1 if variant == "v1" else _WEIGHTS_V4
+
     id2label = {i: name for i, name in MERGED_CLASSES.items()}
     label2id = {name: i for i, name in MERGED_CLASSES.items()}
 
-    _model = SegformerForSemanticSegmentation.from_pretrained(
+    model = SegformerForSemanticSegmentation.from_pretrained(
         "nvidia/mit-b2",
         num_labels=_NUM_CLASSES,
         id2label=id2label,
@@ -62,12 +65,13 @@ def _load_model():
         ignore_mismatched_sizes=True,
     )
 
-    checkpoint = torch.load(str(_WEIGHTS_PATH), map_location=_device, weights_only=False)
-    _model.load_state_dict(checkpoint["model_state"])
-    _model.to(_device)
-    _model.eval()
-    print(f"[SegFormer] Model loaded on {_device}", flush=True)
-    return _model, _device
+    checkpoint = torch.load(str(weights_path), map_location=_device, weights_only=False)
+    model.load_state_dict(checkpoint["model_state"])
+    model.to(_device)
+    model.eval()
+    _models[variant] = model
+    print(f"[SegFormer] Model {variant} loaded on {_device}", flush=True)
+    return model, _device
 
 
 # ---------------------------------------------------------------------------
@@ -96,12 +100,12 @@ def _preprocess(image_bgr: np.ndarray) -> tuple[Any, int, int, float, float]:
     return tensor, orig_h, orig_w, scale_x, scale_y
 
 
-def _predict(tensor: Any) -> np.ndarray:
+def _predict(tensor: Any, variant: str = "v4") -> np.ndarray:
     """Run model and return class prediction mask at original scale."""
     import torch
     import torch.nn.functional as F
 
-    model, device = _load_model()
+    model, device = _load_model(variant)
     tensor = tensor.to(device)
 
     with torch.no_grad():
@@ -122,19 +126,25 @@ def _predict(tensor: Any) -> np.ndarray:
 # ---------------------------------------------------------------------------
 
 def _extract_wall_segments(wall_mask: np.ndarray, orig_h: int, orig_w: int, scale_x: float, scale_y: float) -> list[dict]:
-    """Extract wall line segments from binary wall mask."""
-    # Morphological cleanup
+    """Extract wall line segments from binary wall mask — H, V, and diagonal."""
+    from skimage.morphology import skeletonize
+
+    # Morphological cleanup: close small gaps, remove noise
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
-    clean = cv2.morphologyEx(wall_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+    clean = cv2.morphologyEx(wall_mask, cv2.MORPH_CLOSE, kernel, iterations=3)
     clean = cv2.morphologyEx(clean, cv2.MORPH_OPEN, kernel, iterations=1)
 
-    # Skeletonize
-    from skimage.morphology import skeletonize
+    # Dilate slightly to connect near-miss walls
+    clean = cv2.dilate(clean, kernel, iterations=1)
+
+    # Skeletonize to centerlines
     skeleton = skeletonize(clean > 0).astype(np.uint8) * 255
 
-    # Detect line segments
-    lines = cv2.HoughLinesP(skeleton, rho=1, theta=np.pi / 180, threshold=15,
-                            minLineLength=10, maxLineGap=8)
+    # Detect line segments — lower threshold + longer gap tolerance = more walls
+    lines = cv2.HoughLinesP(skeleton, rho=1, theta=np.pi / 180,
+                            threshold=8,       # lower = detect more lines
+                            minLineLength=6,   # lower = detect shorter walls
+                            maxLineGap=12)     # higher = bridge more gaps
 
     walls = []
     if lines is None:
@@ -148,33 +158,30 @@ def _extract_wall_segments(wall_mask: np.ndarray, orig_h: int, orig_w: int, scal
         sx1, sy1 = x1 * scale_x, y1 * scale_y
         sx2, sy2 = x2 * scale_x, y2 * scale_y
 
-        # Determine orientation
         dx = abs(sx2 - sx1)
         dy = abs(sy2 - sy1)
+        length = np.sqrt((sx2 - sx1) ** 2 + (sy2 - sy1) ** 2)
 
-        if dx < 3 and dy < 3:
+        if length < 4:
             continue  # Too small
 
-        # Snap to H/V if close (within 15 degrees)
+        # Determine orientation — snap near-H/V but KEEP diagonals
         angle = np.degrees(np.arctan2(dy, dx))
-        if angle < 15:
+        if angle < 8:
             orientation = "horizontal"
             avg_y = (sy1 + sy2) / 2
             sy1 = sy2 = avg_y
-        elif angle > 75:
+        elif angle > 82:
             orientation = "vertical"
             avg_x = (sx1 + sx2) / 2
             sx1 = sx2 = avg_x
         else:
-            orientation = "horizontal" if dx > dy else "vertical"
+            # Diagonal — keep as-is
+            orientation = "diagonal"
 
         # Flip Y for CAD coordinates (origin bottom-left)
         cad_y1 = orig_h - sy1
         cad_y2 = orig_h - sy2
-
-        length = np.sqrt((sx2 - sx1) ** 2 + (cad_y2 - cad_y1) ** 2)
-        if length < 5:
-            continue
 
         wall_id += 1
         walls.append({
@@ -189,7 +196,62 @@ def _extract_wall_segments(wall_mask: np.ndarray, orig_h: int, orig_w: int, scal
             "confidence": 0.8,
         })
 
+    # Merge nearby parallel segments to reduce clutter
+    walls = _merge_nearby_walls(walls)
+
     return walls
+
+
+def _merge_nearby_walls(walls: list[dict], dist_threshold: float = 8.0) -> list[dict]:
+    """Merge wall segments that are very close and roughly parallel."""
+    if len(walls) <= 1:
+        return walls
+
+    merged = []
+    used = set()
+
+    for i, w1 in enumerate(walls):
+        if i in used:
+            continue
+        p1a = w1["polyline"][0]
+        p1b = w1["polyline"][1]
+        cx1 = (p1a["x"] + p1b["x"]) / 2
+        cy1 = (p1a["y"] + p1b["y"]) / 2
+
+        best_merge = None
+        best_dist = dist_threshold
+
+        for j, w2 in enumerate(walls):
+            if j <= i or j in used:
+                continue
+            if w1["orientation"] != w2["orientation"]:
+                continue
+
+            p2a = w2["polyline"][0]
+            p2b = w2["polyline"][1]
+            cx2 = (p2a["x"] + p2b["x"]) / 2
+            cy2 = (p2a["y"] + p2b["y"]) / 2
+
+            dist = np.sqrt((cx1 - cx2) ** 2 + (cy1 - cy2) ** 2)
+            if dist < best_dist:
+                best_dist = dist
+                best_merge = j
+
+        if best_merge is not None:
+            # Merge: take the longer segment
+            w2 = walls[best_merge]
+            len1 = np.sqrt((p1b["x"] - p1a["x"]) ** 2 + (p1b["y"] - p1a["y"]) ** 2)
+            p2a = w2["polyline"][0]
+            p2b = w2["polyline"][1]
+            len2 = np.sqrt((p2b["x"] - p2a["x"]) ** 2 + (p2b["y"] - p2a["y"]) ** 2)
+            merged.append(w1 if len1 >= len2 else w2)
+            used.add(i)
+            used.add(best_merge)
+        else:
+            merged.append(w1)
+            used.add(i)
+
+    return merged
 
 
 def _extract_openings(mask: np.ndarray, kind: str, orig_h: int, orig_w: int,
@@ -268,6 +330,7 @@ def infer_segformer(image_b64_or_array, **kwargs) -> dict[str, Any]:
     """Run SegFormer inference on a floor plan image."""
     from .image_utils import decode_image
 
+    variant = kwargs.get("segformer_variant", "v4")
     t0 = time.time()
 
     # Decode image
@@ -283,7 +346,7 @@ def infer_segformer(image_b64_or_array, **kwargs) -> dict[str, Any]:
 
     # Predict
     t_model = time.time()
-    pred_mask = _predict(tensor)
+    pred_mask = _predict(tensor, variant=variant)
     model_time = time.time() - t_model
 
     # Extract structure
