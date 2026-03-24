@@ -535,6 +535,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
   const [drawing, setDrawing] = useState(false)
   const [startPt, setStartPt] = useState<{ x: number; y: number } | null>(null)
   const [imgSize, setImgSize] = useState({ w: 0, h: 0 })
+  const [fullscreen, setFullscreen] = useState(false)
 
   const COLORS: Record<AnnotationType, string> = {
     wall: '#ff3333',
@@ -546,9 +547,11 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     const canvas = canvasRef.current
     if (!canvas) return { x: 0, y: 0 }
     const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
     return {
-      x: (e.clientX - rect.left) * (canvas.width / rect.width),
-      y: (e.clientY - rect.top) * (canvas.height / rect.height),
+      x: Math.round((e.clientX - rect.left) * scaleX),
+      y: Math.round((e.clientY - rect.top) * scaleY),
     }
   }
 
@@ -646,7 +649,8 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
   ]
 
   return (
-    <div className="rounded-lg overflow-hidden border border-zinc-800/60">
+    <div className={`rounded-lg overflow-hidden border border-zinc-800/60 transition-all duration-300
+      ${fullscreen ? 'fixed inset-4 z-50 bg-zinc-950 flex flex-col' : ''}`}>
       {/* Toolbar */}
       <div className="flex items-center gap-1.5 px-2 py-1.5 bg-zinc-900/80 border-b border-zinc-800/40">
         {tools.map((t) => (
@@ -668,20 +672,26 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
         >
           Undo
         </button>
+        <button
+          onClick={() => setFullscreen(!fullscreen)}
+          className="px-2 py-1 rounded text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer transition-colors"
+        >
+          {fullscreen ? '↙ Exit' : '↗ Expand'}
+        </button>
         <span className="text-[9px] text-zinc-700">
           {annotations.length} drawn
         </span>
       </div>
 
       {/* Canvas */}
-      <div ref={containerRef} className="relative">
+      <div ref={containerRef} className={`relative ${fullscreen ? 'flex-1 overflow-auto' : ''}`}>
         <canvas
           ref={canvasRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={() => { setDrawing(false); setStartPt(null) }}
-          className="w-full object-contain max-h-64 cursor-crosshair"
+          className={`w-full cursor-crosshair ${fullscreen ? 'max-h-full object-contain' : 'object-contain max-h-64'}`}
           style={{ imageRendering: 'auto' }}
         />
       </div>
