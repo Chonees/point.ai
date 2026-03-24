@@ -286,7 +286,8 @@ def _generate_window_lisp(dx: float, dy: float, dspan: float, orientation: str) 
         lines.append(f'(command "LINE" "{x1:.2f},{dy - 1:.2f}" "{x1:.2f},{dy - 2:.2f}" "")')
         lines.append(f'(command "LINE" "{x2:.2f},{dy - 1:.2f}" "{x2:.2f},{dy - 2:.2f}" "")')
         # Sill exterior
-        lines.append(f'(command "LINE" "{x1:.2f},{dy - {_SILL_OFFSET}:.2f}" "{x2:.2f},{dy - {_SILL_OFFSET}:.2f}" "")')
+        sill_y = dy - _SILL_OFFSET
+        lines.append(f'(command "LINE" "{x1:.2f},{sill_y:.2f}" "{x2:.2f},{sill_y:.2f}" "")')
     else:
         y1 = dy - dspan / 2
         y2 = dy + dspan / 2
@@ -298,7 +299,8 @@ def _generate_window_lisp(dx: float, dy: float, dspan: float, orientation: str) 
         lines.append(f'(command "LINE" "{dx - 1:.2f},{y1:.2f}" "{dx:.2f},{y1:.2f}" "")')
         lines.append(f'(command "LINE" "{dx - 1:.2f},{y2:.2f}" "{dx:.2f},{y2:.2f}" "")')
         # Sill exterior
-        lines.append(f'(command "LINE" "{dx + {_SILL_OFFSET}:.2f},{y1:.2f}" "{dx + {_SILL_OFFSET}:.2f},{y2:.2f}" "")')
+        sill_x = dx + _SILL_OFFSET
+        lines.append(f'(command "LINE" "{sill_x:.2f},{y1:.2f}" "{sill_x:.2f},{y2:.2f}" "")')
     return lines
 
 
