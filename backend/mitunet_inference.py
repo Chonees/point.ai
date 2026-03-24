@@ -416,8 +416,11 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
         min_rect_area = max(20, (h * w) // 10000)
 
         for rect in rects:
-            # rect is a Rectangle namedtuple with x, y, width, height
-            rx, ry, rw, rh = rect.x, rect.y, rect.width, rect.height
+            # rect = Rectangle(y_start, y_end, x_start, x_end)
+            rx = rect.x_start
+            ry = rect.y_start
+            rw = rect.x_end - rect.x_start + 1
+            rh = rect.y_end - rect.y_start + 1
             if rw * rh < min_rect_area:
                 continue
 
