@@ -404,7 +404,7 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
     h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (min_len, 1))
     h_mask = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, h_kernel)
 
-    WALL_THIN = 0.5  # reduce wall thickness by this factor (0.5 = half)
+    WALL_THIN = 0.4  # reduce wall thickness by this factor (keeps proportions)
 
     num_h, _, stats_h, _ = cv2.connectedComponentsWithStats(h_mask, connectivity=8)
     for i in range(1, num_h):
