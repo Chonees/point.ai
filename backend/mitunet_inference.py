@@ -589,6 +589,13 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
                 hx, hy = dx1, dy1
                 ex, ey = dx2, dy2
                 door_width = ((ex - hx) ** 2 + (ey - hy) ** 2) ** 0.5
+                # Cap door width to reasonable size (standard door = 36", max ~48")
+                MAX_DOOR = 48.0
+                if door_width > MAX_DOOR:
+                    ratio = MAX_DOOR / door_width
+                    ex = hx + (ex - hx) * ratio
+                    ey = hy + (ey - hy) * ratio
+                    door_width = MAX_DOOR
                 if door_width < 2:
                     continue
 
@@ -606,33 +613,37 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
                     # Slab: 2 parallel vertical lines
                     msp.add_line((hx, hy), (hx, hy + sy * door_width), dxfattribs=DA)
                     msp.add_line((hx + sx * slab, hy), (hx + sx * slab, hy + sy * door_width), dxfattribs=DA)
-                    # Arc from hinge, radius = door_width, swings perpendicular
-                    if sy > 0 and sx > 0:
-                        msp.add_arc((hx, hy), door_width, 0, 90, dxfattribs=DA)
-                    elif sy > 0 and sx < 0:
-                        msp.add_arc((hx, hy), door_width, 90, 180, dxfattribs=DA)
-                    elif sy < 0 and sx > 0:
-                        msp.add_arc((hx, hy), door_width, 270, 360, dxfattribs=DA)
-                    else:  # sy < 0, sx < 0
-                        msp.add_arc((hx, hy), door_width, 180, 270, dxfattribs=DA)
+                    # Arc: from slab end direction, sweep 90° toward swing direction
+                    slab_angle = 90 if sy > 0 else 270
+                    swing_angle = 0 if sx > 0 else 180
+                    start_a = min(slab_angle, swing_angle)
+                    end_a = max(slab_angle, swing_angle)
+                    if end_a - start_a > 180:
+                        start_a, end_a = end_a, start_a + 360
+                    msp.add_arc((hx, hy), door_width, start_a, end_a, dxfattribs=DA)
                 else:
                     # Slab is HORIZONTAL (user drew left or right)
                     sx = 1 if ex > hx else -1  # direction along slab
                     # Swing is perpendicular (up or down)
                     sy = 1 if swing == "up" else -1
 
+                    # End of slab (where door ends when closed)
+                    slab_end_x = hx + sx * door_width
+
                     # Slab: 2 parallel horizontal lines
-                    msp.add_line((hx, hy), (hx + sx * door_width, hy), dxfattribs=DA)
-                    msp.add_line((hx, hy + sy * slab), (hx + sx * door_width, hy + sy * slab), dxfattribs=DA)
-                    # Arc
-                    if sx > 0 and sy > 0:
-                        msp.add_arc((hx, hy), door_width, 0, 90, dxfattribs=DA)
-                    elif sx > 0 and sy < 0:
-                        msp.add_arc((hx, hy), door_width, 270, 360, dxfattribs=DA)
-                    elif sx < 0 and sy > 0:
-                        msp.add_arc((hx, hy), door_width, 90, 180, dxfattribs=DA)
-                    else:  # sx < 0, sy < 0
-                        msp.add_arc((hx, hy), door_width, 180, 270, dxfattribs=DA)
+                    msp.add_line((hx, hy), (slab_end_x, hy), dxfattribs=DA)
+                    msp.add_line((hx, hy + sy * slab), (slab_end_x, hy + sy * slab), dxfattribs=DA)
+                    # Arc: from slab end direction, sweep 90° toward swing direction
+                    # slab_angle = direction from hinge to slab end (0°=right, 90°=up, 180°=left, 270°=down)
+                    slab_angle = 0 if sx > 0 else 180
+                    swing_angle = 90 if sy > 0 else 270
+                    # Arc goes from slab direction to swing direction
+                    start_a = min(slab_angle, swing_angle)
+                    end_a = max(slab_angle, swing_angle)
+                    # Handle wrap (e.g. 270→0 should be 270→360)
+                    if end_a - start_a > 180:
+                        start_a, end_a = end_a, start_a + 360
+                    msp.add_arc((hx, hy), door_width, start_a, end_a, dxfattribs=DA)
 
             elif ann_type == "window":
                 # Window: 3 parallel lines + 2 end caps + sill (5" offset)

@@ -886,8 +886,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
       </div>
 
       {/* Door swing direction picker */}
-      {pendingDoor && <DoorSwingPicker pendingDoor={pendingDoor} onPick={addDoorWithSwing} onCancel={() => setPendingDoor(null)} />
-      )}
+      {pendingDoor && <DoorSwingPicker pendingDoor={pendingDoor} onPick={addDoorWithSwing} onCancel={() => setPendingDoor(null)} />}
 
       <p className="text-[9px] text-zinc-700 text-center py-1">
         Draw lines: <span className="text-red-500">red</span>=wall <span className="text-green-500">green</span>=door <span className="text-blue-500">blue</span>=window
