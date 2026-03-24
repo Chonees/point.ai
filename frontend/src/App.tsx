@@ -526,6 +526,40 @@ function Stat({ label, value, dim = false }: { label: string; value: string; dim
 }
 
 
+function DoorSwingPicker({ pendingDoor, onPick, onCancel }: {
+  pendingDoor: { x1: number; y1: number; x2: number; y2: number }
+  onPick: (dir: SwingDir) => void
+  onCancel: () => void
+}) {
+  const adx = Math.abs(pendingDoor.x2 - pendingDoor.x1)
+  const ady = Math.abs(pendingDoor.y2 - pendingDoor.y1)
+  const isVertical = ady >= adx
+  const options: SwingDir[] = isVertical ? ['left', 'right'] : ['up', 'down']
+  const arrows: Record<string, string> = { up: '↑', down: '↓', left: '←', right: '→' }
+  return (
+    <div className="flex items-center justify-center gap-2 px-3 py-2 bg-green-950/30 border-t border-green-900/40">
+      <span className="text-[10px] text-green-400">Opens toward:</span>
+      {options.map((dir) => (
+        <button
+          key={dir}
+          onClick={() => onPick(dir)}
+          className="px-3 py-1.5 rounded text-[11px] font-medium bg-green-900/40 border border-green-700/50
+                     text-green-300 hover:bg-green-800/50 cursor-pointer transition-colors"
+        >
+          {arrows[dir]} {dir}
+        </button>
+      ))}
+      <button
+        onClick={onCancel}
+        className="px-2 py-1 text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
+      >
+        ✕
+      </button>
+    </div>
+  )
+}
+
+
 function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
   previewUrl: string
   annotations: Annotation[]
@@ -852,26 +886,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
       </div>
 
       {/* Door swing direction picker */}
-      {pendingDoor && (
-        <div className="flex items-center justify-center gap-2 px-3 py-2 bg-green-950/30 border-t border-green-900/40">
-          <span className="text-[10px] text-green-400">Door opens toward:</span>
-          {(['up', 'down', 'left', 'right'] as SwingDir[]).map((dir) => (
-            <button
-              key={dir}
-              onClick={() => addDoorWithSwing(dir)}
-              className="px-2.5 py-1 rounded text-[10px] font-medium bg-green-900/40 border border-green-700/50
-                         text-green-300 hover:bg-green-800/50 cursor-pointer transition-colors"
-            >
-              {dir === 'up' ? '↑' : dir === 'down' ? '↓' : dir === 'left' ? '←' : '→'} {dir}
-            </button>
-          ))}
-          <button
-            onClick={() => setPendingDoor(null)}
-            className="px-2 py-1 text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
-          >
-            Cancel
-          </button>
-        </div>
+      {pendingDoor && <DoorSwingPicker pendingDoor={pendingDoor} onPick={addDoorWithSwing} onCancel={() => setPendingDoor(null)} />
       )}
 
       <p className="text-[9px] text-zinc-700 text-center py-1">
