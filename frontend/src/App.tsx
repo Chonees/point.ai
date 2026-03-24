@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 type Mode = 'describe' | 'upload'
 type Status = 'idle' | 'loading' | 'done' | 'error'
 type ModelVariant = 'baseline' | 'mitunet'
-type AnnotationType = 'wall' | 'door' | 'window'
+type AnnotationType = 'wall' | 'door' | 'window' | 'eraser'
 type SwingDir = 'up' | 'down' | 'left' | 'right'
 interface Annotation { type: AnnotationType; x1: number; y1: number; x2: number; y2: number; swing?: SwingDir }
 
@@ -532,17 +532,24 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
   setAnnotations: (a: Annotation[]) => void
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const loupeRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [tool, setTool] = useState<AnnotationType>('wall')
   const [drawing, setDrawing] = useState(false)
   const [startPt, setStartPt] = useState<{ x: number; y: number } | null>(null)
   const [imgSize, setImgSize] = useState({ w: 0, h: 0 })
   const [fullscreen, setFullscreen] = useState(false)
+  const [loupeEnabled, setLoupeEnabled] = useState(true)
+  const [loupePos, setLoupePos] = useState<{ x: number; y: number; cx: number; cy: number } | null>(null)
+  const [eraserSize, setEraserSize] = useState(10)
+  const [loupeSize, setLoupeSize] = useState(55)
+  const LOUPE_ZOOM = 4
 
   const COLORS: Record<AnnotationType, string> = {
     wall: '#ff3333',
     door: '#33ff66',
     window: '#3399ff',
+    eraser: '#888888',
   }
 
   const getCanvasPoint = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -575,17 +582,28 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
 
       // Draw existing annotations
       for (const ann of annotations) {
-        ctx.strokeStyle = COLORS[ann.type]
-        ctx.lineWidth = ann.type === 'wall' ? 4 : 2
-        ctx.beginPath()
-        ctx.moveTo(ann.x1, ann.y1)
-        ctx.lineTo(ann.x2, ann.y2)
-        ctx.stroke()
+        if (ann.type === 'eraser') {
+          // Draw eraser zone as dark semi-transparent rect
+          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+          ctx.fillRect(ann.x1, ann.y1, ann.x2 - ann.x1, ann.y2 - ann.y1)
+          ctx.strokeStyle = '#ff4444'
+          ctx.lineWidth = 1
+          ctx.setLineDash([3, 3])
+          ctx.strokeRect(ann.x1, ann.y1, ann.x2 - ann.x1, ann.y2 - ann.y1)
+          ctx.setLineDash([])
+        } else {
+          ctx.strokeStyle = COLORS[ann.type]
+          ctx.lineWidth = ann.type === 'wall' ? 4 : 2
+          ctx.beginPath()
+          ctx.moveTo(ann.x1, ann.y1)
+          ctx.lineTo(ann.x2, ann.y2)
+          ctx.stroke()
 
-        // Label
-        ctx.fillStyle = COLORS[ann.type]
-        ctx.font = '10px monospace'
-        ctx.fillText(ann.type[0].toUpperCase(), Math.min(ann.x1, ann.x2) - 12, (ann.y1 + ann.y2) / 2 + 4)
+          // Label
+          ctx.fillStyle = COLORS[ann.type]
+          ctx.font = '10px monospace'
+          ctx.fillText(ann.type[0].toUpperCase(), Math.min(ann.x1, ann.x2) - 12, (ann.y1 + ann.y2) / 2 + 4)
+        }
       }
     }
     img.src = previewUrl
@@ -600,8 +618,55 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    // Update loupe
+    const canvas = canvasRef.current
+    const loupe = loupeRef.current
+    if (!loupeEnabled) setLoupePos(null)
+    if (canvas && loupe && loupeEnabled) {
+      const rect = canvas.getBoundingClientRect()
+      const scaleX = canvas.width / rect.width
+      const scaleY = canvas.height / rect.height
+      const cx = Math.round(e.nativeEvent.offsetX * scaleX)
+      const cy = Math.round(e.nativeEvent.offsetY * scaleY)
+      const screenX = e.nativeEvent.offsetX
+      const screenY = e.nativeEvent.offsetY
+
+      setLoupePos({ x: screenX, y: screenY, cx, cy })
+
+      const lctx = loupe.getContext('2d')
+      if (lctx) {
+        loupe.width = loupeSize
+        loupe.height = loupeSize
+        const srcSize = loupeSize / LOUPE_ZOOM
+        lctx.clearRect(0, 0, loupeSize, loupeSize)
+        lctx.save()
+        lctx.beginPath()
+        lctx.arc(loupeSize / 2, loupeSize / 2, loupeSize / 2, 0, Math.PI * 2)
+        lctx.clip()
+        lctx.drawImage(
+          canvas,
+          cx - srcSize / 2, cy - srcSize / 2, srcSize, srcSize,
+          0, 0, loupeSize, loupeSize
+        )
+        // Crosshair
+        lctx.strokeStyle = '#000'
+        lctx.lineWidth = 0.5
+        lctx.beginPath()
+        lctx.moveTo(loupeSize / 2, 0)
+        lctx.lineTo(loupeSize / 2, loupeSize)
+        lctx.moveTo(0, loupeSize / 2)
+        lctx.lineTo(loupeSize, loupeSize / 2)
+        lctx.stroke()
+        // Border
+        lctx.strokeStyle = COLORS[tool]
+        lctx.lineWidth = 2
+        lctx.beginPath()
+        lctx.arc(loupeSize / 2, loupeSize / 2, loupeSize / 2 - 1, 0, Math.PI * 2)
+        lctx.stroke()
+        lctx.restore()
+      }
+    }
     if (!drawing || !startPt) return
-    // No redraw — just track. The line appears on mouseUp.
   }
 
   const [pendingDoor, setPendingDoor] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null)
@@ -615,54 +680,53 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     const dy = Math.abs(pt.y - startPt.y)
     if (dx < 5 && dy < 5) return // too short
 
-    const newAnn: Annotation = {
-      type: tool,
-      x1: startPt.x, y1: startPt.y,
-      x2: pt.x, y2: pt.y,
-    }
-
-    if (tool === 'door') {
+    if (tool === 'eraser') {
+      // Erase: find nearest annotation within 15px of click point and remove it
+      // Also add erase zone for model walls
+      const cx = (startPt.x + pt.x) / 2
+      const cy = (startPt.y + pt.y) / 2
+      const threshold = 20
+      let found = -1
+      for (let i = annotations.length - 1; i >= 0; i--) {
+        const a = annotations[i]
+        if (a.type === 'eraser') continue
+        // Distance from point to line segment
+        const lx = a.x2 - a.x1, ly = a.y2 - a.y1
+        const len2 = lx * lx + ly * ly
+        let t = len2 > 0 ? ((cx - a.x1) * lx + (cy - a.y1) * ly) / len2 : 0
+        t = Math.max(0, Math.min(1, t))
+        const px = a.x1 + t * lx, py = a.y1 + t * ly
+        const dist = Math.sqrt((cx - px) ** 2 + (cy - py) ** 2)
+        if (dist < threshold) { found = i; break }
+      }
+      if (found >= 0) {
+        // Remove the annotation
+        setAnnotations(annotations.filter((_, i) => i !== found))
+      } else {
+        // No annotation found — erase model wall at this area
+        setAnnotations([...annotations, {
+          type: 'eraser',
+          x1: Math.min(startPt.x, pt.x) - eraserSize,
+          y1: Math.min(startPt.y, pt.y) - eraserSize,
+          x2: Math.max(startPt.x, pt.x) + eraserSize,
+          y2: Math.max(startPt.y, pt.y) + eraserSize,
+        }])
+      }
+    } else if (tool === 'door') {
+      // Ask swing direction before adding
       setPendingDoor({ x1: startPt.x, y1: startPt.y, x2: pt.x, y2: pt.y })
     } else {
-      // Draw immediately on canvas
-      const canvas = canvasRef.current
-      if (canvas) {
-        const ctx = canvas.getContext('2d')
-        if (ctx) {
-          ctx.strokeStyle = COLORS[tool]
-          ctx.lineWidth = tool === 'wall' ? 4 : 2
-          ctx.beginPath()
-          ctx.moveTo(startPt.x, startPt.y)
-          ctx.lineTo(pt.x, pt.y)
-          ctx.stroke()
-          ctx.fillStyle = COLORS[tool]
-          ctx.font = '10px monospace'
-          ctx.fillText(tool[0].toUpperCase(), Math.min(startPt.x, pt.x) - 12, (startPt.y + pt.y) / 2 + 4)
-        }
-      }
-      setAnnotations([...annotations, newAnn])
+      setAnnotations([...annotations, {
+        type: tool,
+        x1: startPt.x, y1: startPt.y,
+        x2: pt.x, y2: pt.y,
+      }])
     }
     setStartPt(null)
   }
 
   const addDoorWithSwing = (dir: SwingDir) => {
     if (!pendingDoor) return
-    // Draw on canvas immediately
-    const canvas = canvasRef.current
-    if (canvas) {
-      const ctx = canvas.getContext('2d')
-      if (ctx) {
-        ctx.strokeStyle = COLORS.door
-        ctx.lineWidth = 2
-        ctx.beginPath()
-        ctx.moveTo(pendingDoor.x1, pendingDoor.y1)
-        ctx.lineTo(pendingDoor.x2, pendingDoor.y2)
-        ctx.stroke()
-        ctx.fillStyle = COLORS.door
-        ctx.font = '10px monospace'
-        ctx.fillText('D' + dir[0], Math.min(pendingDoor.x1, pendingDoor.x2) - 16, (pendingDoor.y1 + pendingDoor.y2) / 2 + 4)
-      }
-    }
     setAnnotations([...annotations, {
       type: 'door',
       ...pendingDoor,
@@ -681,6 +745,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     { type: 'wall', label: 'Wall', color: 'bg-red-900/40 border-red-700/50 text-red-400' },
     { type: 'door', label: 'Door', color: 'bg-green-900/40 border-green-700/50 text-green-400' },
     { type: 'window', label: 'Window', color: 'bg-blue-900/40 border-blue-700/50 text-blue-400' },
+    { type: 'eraser', label: 'Eraser', color: 'bg-zinc-700/40 border-zinc-500/50 text-zinc-300' },
   ]
 
   return (
@@ -688,31 +753,72 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
       ${fullscreen ? 'fixed inset-4 z-50 bg-zinc-950 flex flex-col' : ''}`}>
       {/* Toolbar */}
       <div className="flex items-center gap-1.5 px-2 py-1.5 bg-zinc-900/80 border-b border-zinc-800/40">
-        {tools.map((t) => (
-          <button
-            key={t.type}
-            onClick={() => setTool(t.type)}
-            className={`px-2.5 py-1 rounded text-[10px] font-medium border transition-all cursor-pointer
-              ${tool === t.type ? t.color + ' ring-1 ring-white/20' : 'bg-zinc-900 border-zinc-800 text-zinc-600'}`}
-          >
-            {t.label}
-          </button>
-        ))}
-        <div className="flex-1" />
-        <button
-          onClick={undo}
-          disabled={annotations.length === 0}
-          className="px-2 py-1 rounded text-[10px] text-zinc-500 hover:text-zinc-300
-                     disabled:opacity-30 cursor-pointer transition-colors"
-        >
-          Undo
-        </button>
-        <button
-          onClick={() => setFullscreen(!fullscreen)}
-          className="px-2 py-1 rounded text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer transition-colors"
-        >
-          {fullscreen ? '↙ Exit' : '↗ Expand'}
-        </button>
+        {fullscreen ? (
+          <>
+            {tools.map((t) => (
+              <button
+                key={t.type}
+                onClick={() => setTool(t.type)}
+                className={`px-2.5 py-1 rounded text-[10px] font-medium border transition-all cursor-pointer
+                  ${tool === t.type ? t.color + ' ring-1 ring-white/20' : 'bg-zinc-900 border-zinc-800 text-zinc-600'}`}
+              >
+                {t.label}
+              </button>
+            ))}
+            {tool === 'eraser' && (
+              <div className="flex items-center gap-1 ml-1">
+                <span className="text-[9px] text-zinc-600">Size</span>
+                <input
+                  type="range" min="3" max="30" value={eraserSize}
+                  onChange={(e) => setEraserSize(Number(e.target.value))}
+                  className="w-14 h-1 accent-zinc-500"
+                />
+                <span className="text-[9px] text-zinc-500 w-4">{eraserSize}</span>
+              </div>
+            )}
+            <div className="flex-1" />
+            <button
+              onClick={() => setLoupeEnabled(!loupeEnabled)}
+              className={`px-2 py-1 rounded text-[10px] cursor-pointer transition-colors
+                ${loupeEnabled ? 'text-zinc-300 bg-zinc-800' : 'text-zinc-600'}`}
+            >
+              🔍
+            </button>
+            {loupeEnabled && (
+              <input
+                type="range" min="30" max="120" value={loupeSize}
+                onChange={(e) => setLoupeSize(Number(e.target.value))}
+                className="w-12 h-1 accent-zinc-500"
+                title={`Loupe: ${loupeSize}px`}
+              />
+            )}
+            <button
+              onClick={undo}
+              disabled={annotations.length === 0}
+              className="px-2 py-1 rounded text-[10px] text-zinc-500 hover:text-zinc-300
+                         disabled:opacity-30 cursor-pointer transition-colors"
+            >
+              Undo
+            </button>
+            <button
+              onClick={() => setFullscreen(false)}
+              className="px-2 py-1 rounded text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer transition-colors"
+            >
+              ↙ Done
+            </button>
+          </>
+        ) : (
+          <>
+            <div className="flex-1" />
+            <button
+              onClick={() => setFullscreen(true)}
+              className="px-3 py-1 rounded text-[10px] font-medium text-zinc-400 bg-zinc-800/60 border border-zinc-700/50
+                         hover:bg-zinc-700/60 hover:text-zinc-300 cursor-pointer transition-colors"
+            >
+              ✏️ Edit
+            </button>
+          </>
+        )}
         <span className="text-[9px] text-zinc-700">
           {annotations.length} drawn
         </span>
@@ -725,9 +831,23 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          onMouseLeave={() => { setDrawing(false); setStartPt(null) }}
-          className={`w-full cursor-crosshair ${fullscreen ? 'max-h-full object-contain' : 'object-contain max-h-64'}`}
+          onMouseLeave={() => { setDrawing(false); setStartPt(null); setLoupePos(null) }}
+          className={`w-full ${loupeEnabled ? 'cursor-none' : 'cursor-crosshair'} ${fullscreen ? 'max-h-full object-contain' : 'object-contain max-h-64'}`}
           style={{ imageRendering: 'auto' }}
+        />
+        {/* Loupe magnifier following cursor */}
+        <canvas
+          ref={loupeRef}
+          width={loupeSize}
+          height={loupeSize}
+          className="pointer-events-none absolute rounded-full shadow-lg"
+          style={{
+            left: loupePos ? loupePos.x - loupeSize / 2 : -999,
+            top: loupePos ? loupePos.y - loupeSize / 2 : -999,
+            width: loupeSize,
+            height: loupeSize,
+            opacity: loupePos ? 1 : 0,
+          }}
         />
       </div>
 

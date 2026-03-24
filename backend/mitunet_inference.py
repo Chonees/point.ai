@@ -375,7 +375,17 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
     cleaned = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN,
                                cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
 
-    min_len = max(12, min(h, w) // 25)
+    # Apply eraser zones — black out areas the user marked for deletion
+    if annotations:
+        for ann in annotations:
+            if ann.get("type") == "eraser":
+                ex1 = max(0, int(ann["x1"]))
+                ey1 = max(0, int(ann["y1"]))
+                ex2 = min(w, int(ann["x2"]))
+                ey2 = min(h, int(ann["y2"]))
+                cleaned[ey1:ey2, ex1:ex2] = 0
+
+    min_len = max(8, min(h, w) // 40)
 
     # Scale to fit inside template
     plan_w = _PLAN_X2 - _PLAN_X1
@@ -399,61 +409,121 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
         return dx, dy
 
     rect_count = 0
+    WALL_THIN = 0.4
 
-    # --- Decompose wall mask into non-overlapping rectangles ---
-    # Uses Generalized Delta-Method (mosaic library)
-    # No erode — keep all walls including thin ones
-    thinned = cleaned
+    # --- Collect all wall rects (in DXF coords) ---
+    # Each rect = (x_lo, y_lo, x_hi, y_hi, orientation)
+    h_rects: list[list[float]] = []
+    v_rects: list[list[float]] = []
 
-    try:
-        from mosaic import rectangular_decomposition
-        binary = (thinned > 127).astype(bool)
-        rects = rectangular_decomposition(binary)
+    # H walls
+    h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (min_len, 1))
+    h_mask = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, h_kernel)
+    num_h, _, stats_h, _ = cv2.connectedComponentsWithStats(h_mask, connectivity=8)
+    for i in range(1, num_h):
+        x = stats_h[i, cv2.CC_STAT_LEFT]
+        y = stats_h[i, cv2.CC_STAT_TOP]
+        cw = stats_h[i, cv2.CC_STAT_WIDTH]
+        ch = stats_h[i, cv2.CC_STAT_HEIGHT]
+        if cw < min_len or ch < 2:
+            continue
+        # Skip if too square (not a wall shape) — walls are elongated
+        if ch > 0 and cw / ch < 2.5:
+            continue
+        trim = ch * (1 - WALL_THIN) / 2
+        y_s = y + trim
+        ch_s = ch - 2 * trim
+        x1d, y1d = _img_to_dxf(x, y_s + ch_s)
+        x2d, y2d = _img_to_dxf(x + cw, y_s)
+        h_rects.append([min(x1d, x2d), min(y1d, y2d), max(x1d, x2d), max(y1d, y2d)])
 
-        min_rect_area = 5  # keep almost all rectangles
+    # V walls
+    v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, min_len))
+    v_mask = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, v_kernel)
+    num_v, _, stats_v, _ = cv2.connectedComponentsWithStats(v_mask, connectivity=8)
+    for i in range(1, num_v):
+        x = stats_v[i, cv2.CC_STAT_LEFT]
+        y = stats_v[i, cv2.CC_STAT_TOP]
+        cw = stats_v[i, cv2.CC_STAT_WIDTH]
+        ch = stats_v[i, cv2.CC_STAT_HEIGHT]
+        if ch < min_len or cw < 2:
+            continue
+        # Skip if too square (not a wall shape)
+        if cw > 0 and ch / cw < 2.5:
+            continue
+        trim = cw * (1 - WALL_THIN) / 2
+        x_s = x + trim
+        cw_s = cw - 2 * trim
+        x1d, y1d = _img_to_dxf(x_s, y + ch)
+        x2d, y2d = _img_to_dxf(x_s + cw_s, y)
+        v_rects.append([min(x1d, x2d), min(y1d, y2d), max(x1d, x2d), max(y1d, y2d)])
 
-        for rect in rects:
-            # rect = Rectangle(y_start, y_end, x_start, x_end)
-            rx = rect.x_start
-            ry = rect.y_start
-            rw = rect.x_end - rect.x_start + 1
-            rh = rect.y_end - rect.y_start + 1
-            if rw * rh < min_rect_area:
+    # --- Trim overlapping junctions ---
+    # Algorithm based on "Raster to Rectangles" (2024):
+    # For each H-V pair that overlaps, check if the wall ENDS inside the other
+    # (T-junction) vs PASSES THROUGH (X-junction).
+    # T-junction: trim the ending wall to meet the edge of the other.
+    # X-junction: leave both as-is (wall passes through).
+    TOL = 2.0
+    V_WIDTH_MARGIN = 1.3  # if H extends past V center + margin*V_width, it's passing through
+
+    for hr in h_rects:
+        hx1, hy1, hx2, hy2 = hr
+        h_cy = (hy1 + hy2) / 2
+
+        for vr in v_rects:
+            vx1, vy1, vx2, vy2 = vr
+            v_cx = (vx1 + vx2) / 2
+            v_w = vx2 - vx1
+
+            # Check if H overlaps V vertically
+            if not (vy1 - TOL <= h_cy <= vy2 + TOL):
+                continue
+            # Check if H overlaps V horizontally
+            if not (hx1 < vx2 and hx2 > vx1):
                 continue
 
-            # Convert image coords to DXF coords
-            x1d, y1d = _img_to_dxf(rx, ry + rh)
-            x2d, y2d = _img_to_dxf(rx + rw, ry)
+            # H right end inside V zone (T-junction from left)
+            if vx1 - TOL < hx2 < vx2 + v_w * V_WIDTH_MARGIN:
+                hr[2] = vx2  # extend H right to V right edge (clean T)
+            # H left end inside V zone (T-junction from right)
+            if vx1 - v_w * V_WIDTH_MARGIN < hx1 < vx2 + TOL:
+                hr[0] = vx1  # extend H left to V left edge (clean T)
 
-            pts = [(min(x1d, x2d), min(y1d, y2d)),
-                   (max(x1d, x2d), min(y1d, y2d)),
-                   (max(x1d, x2d), max(y1d, y2d)),
-                   (min(x1d, x2d), max(y1d, y2d)),
-                   (min(x1d, x2d), min(y1d, y2d))]
+    for vr in v_rects:
+        vx1, vy1, vx2, vy2 = vr
+        v_cx = (vx1 + vx2) / 2
 
-            poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
-            poly.close()
-            hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
-            hatch.paths.add_polyline_path(pts, is_closed=True)
-            rect_count += 1
+        for hr in h_rects:
+            hx1, hy1, hx2, hy2 = hr
+            h_cy = (hy1 + hy2) / 2
+            h_h = hy2 - hy1
 
-    except ImportError:
-        # Fallback: use contours if mosaic not available
-        contours, _ = cv2.findContours(thinned, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-        for cnt in contours:
-            if cv2.contourArea(cnt) < 100:
+            # Check if V overlaps H horizontally
+            if not (hx1 - TOL <= v_cx <= hx2 + TOL):
                 continue
-            x, y, cw, ch = cv2.boundingRect(cnt)
-            x1d, y1d = _img_to_dxf(x, y + ch)
-            x2d, y2d = _img_to_dxf(x + cw, y)
-            pts = [(min(x1d,x2d), min(y1d,y2d)), (max(x1d,x2d), min(y1d,y2d)),
-                   (max(x1d,x2d), max(y1d,y2d)), (min(x1d,x2d), max(y1d,y2d)),
-                   (min(x1d,x2d), min(y1d,y2d))]
-            poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
-            poly.close()
-            hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
-            hatch.paths.add_polyline_path(pts, is_closed=True)
-            rect_count += 1
+            # Check if V overlaps H vertically
+            if not (vy1 < hy2 and vy2 > hy1):
+                continue
+
+            # V top end inside H zone (T-junction from below)
+            if hy1 - TOL < vy2 < hy2 + h_h * V_WIDTH_MARGIN:
+                vr[3] = hy2  # extend V top to H top edge
+            # V bottom end inside H zone (T-junction from above)
+            if hy1 - h_h * V_WIDTH_MARGIN < vy1 < hy2 + TOL:
+                vr[1] = hy1  # extend V bottom to H bottom edge
+
+    # --- Draw all rects ---
+    for r in h_rects + v_rects:
+        x1, y1, x2, y2 = r
+        if abs(x2 - x1) < 1 or abs(y2 - y1) < 1:
+            continue
+        pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]
+        poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
+        poly.close()
+        hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
+        hatch.paths.add_polyline_path(pts, is_closed=True)
+        rect_count += 1
 
     # --- Draw user annotations (walls/doors/windows) ---
     if annotations:
@@ -468,6 +538,8 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
         # The overlay matches the original image size (h, w)
         for ann in annotations:
             ann_type = ann.get("type", "wall")
+            if ann_type == "eraser":
+                continue  # eraser zones already applied to mask above
             # Canvas coords → image coords (canvas matches overlay which matches image)
             ax1, ay1 = ann["x1"], ann["y1"]
             ax2, ay2 = ann["x2"], ann["y2"]
