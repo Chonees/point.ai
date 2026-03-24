@@ -547,11 +547,14 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     const canvas = canvasRef.current
     if (!canvas) return { x: 0, y: 0 }
     const rect = canvas.getBoundingClientRect()
+    // Use nativeEvent.offsetX/offsetY for accurate position regardless of scroll
+    const offsetX = e.nativeEvent.offsetX
+    const offsetY = e.nativeEvent.offsetY
     const scaleX = canvas.width / rect.width
     const scaleY = canvas.height / rect.height
     return {
-      x: Math.round((e.clientX - rect.left) * scaleX),
-      y: Math.round((e.clientY - rect.top) * scaleY),
+      x: Math.round(offsetX * scaleX),
+      y: Math.round(offsetY * scaleY),
     }
   }
 
