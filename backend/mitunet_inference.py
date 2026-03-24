@@ -399,13 +399,16 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
         return dx, dy
 
     rect_count = 0
+    WALL_THIN = 0.4
 
-    # H walls via directional morphology
+    # --- Collect all wall rects (in DXF coords) ---
+    # Each rect = (x_lo, y_lo, x_hi, y_hi, orientation)
+    h_rects: list[list[float]] = []
+    v_rects: list[list[float]] = []
+
+    # H walls
     h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (min_len, 1))
     h_mask = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, h_kernel)
-
-    WALL_THIN = 0.4  # reduce wall thickness by this factor (keeps proportions)
-
     num_h, _, stats_h, _ = cv2.connectedComponentsWithStats(h_mask, connectivity=8)
     for i in range(1, num_h):
         x = stats_h[i, cv2.CC_STAT_LEFT]
@@ -414,23 +417,16 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
         ch = stats_h[i, cv2.CC_STAT_HEIGHT]
         if cw < min_len or ch < 2:
             continue
-        # Thin the wall: shrink height toward center
         trim = ch * (1 - WALL_THIN) / 2
-        y_shrunk = y + trim
-        ch_shrunk = ch - 2 * trim
-        x1d, y1d = _img_to_dxf(x, y_shrunk + ch_shrunk)
-        x2d, y2d = _img_to_dxf(x + cw, y_shrunk)
-        pts = [(x1d, y1d), (x2d, y1d), (x2d, y2d), (x1d, y2d), (x1d, y1d)]
-        poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
-        poly.close()
-        hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
-        hatch.paths.add_polyline_path(pts, is_closed=True)
-        rect_count += 1
+        y_s = y + trim
+        ch_s = ch - 2 * trim
+        x1d, y1d = _img_to_dxf(x, y_s + ch_s)
+        x2d, y2d = _img_to_dxf(x + cw, y_s)
+        h_rects.append([min(x1d, x2d), min(y1d, y2d), max(x1d, x2d), max(y1d, y2d)])
 
     # V walls
     v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, min_len))
     v_mask = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, v_kernel)
-
     num_v, _, stats_v, _ = cv2.connectedComponentsWithStats(v_mask, connectivity=8)
     for i in range(1, num_v):
         x = stats_v[i, cv2.CC_STAT_LEFT]
@@ -439,13 +435,76 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
         ch = stats_v[i, cv2.CC_STAT_HEIGHT]
         if ch < min_len or cw < 2:
             continue
-        # Thin the wall: shrink width toward center
         trim = cw * (1 - WALL_THIN) / 2
-        x_shrunk = x + trim
-        cw_shrunk = cw - 2 * trim
-        x1d, y1d = _img_to_dxf(x_shrunk, y + ch)
-        x2d, y2d = _img_to_dxf(x_shrunk + cw_shrunk, y)
-        pts = [(x1d, y1d), (x2d, y1d), (x2d, y2d), (x1d, y2d), (x1d, y1d)]
+        x_s = x + trim
+        cw_s = cw - 2 * trim
+        x1d, y1d = _img_to_dxf(x_s, y + ch)
+        x2d, y2d = _img_to_dxf(x_s + cw_s, y)
+        v_rects.append([min(x1d, x2d), min(y1d, y2d), max(x1d, x2d), max(y1d, y2d)])
+
+    # --- Trim overlapping junctions ---
+    # Where H rect crosses through V rect: trim H to stop at V boundary
+    # Where V rect crosses through H rect: trim V to stop at H boundary
+    TOL = 2.0  # tolerance for detecting overlap
+
+    for hr in h_rects:
+        hx1, hy1, hx2, hy2 = hr
+        h_cy = (hy1 + hy2) / 2  # center Y of H wall
+
+        for vr in v_rects:
+            vx1, vy1, vx2, vy2 = vr
+            v_cx = (vx1 + vx2) / 2  # center X of V wall
+
+            # Does H wall cross through V wall?
+            if hx1 < v_cx < hx2 and vy1 - TOL <= h_cy <= vy2 + TOL:
+                # H passes through V — check if H should stop at left or right of V
+                dist_left = v_cx - hx1
+                dist_right = hx2 - v_cx
+
+                if dist_left < dist_right:
+                    # H comes from left, trim right end to V's left edge
+                    if hx2 > vx2 + TOL:  # H extends past V on right
+                        pass  # H continues past — this is a through wall, don't trim
+                    elif abs(hx2 - vx2) < vx2 - vx1 + TOL:
+                        # H ends inside or near V — trim to V right edge
+                        hr[2] = vx2
+                else:
+                    # H comes from right, trim left end to V's right edge
+                    if hx1 < vx1 - TOL:
+                        pass
+                    elif abs(hx1 - vx1) < vx2 - vx1 + TOL:
+                        hr[0] = vx1
+
+    for vr in v_rects:
+        vx1, vy1, vx2, vy2 = vr
+        v_cx = (vx1 + vx2) / 2
+
+        for hr in h_rects:
+            hx1, hy1, hx2, hy2 = hr
+            h_cy = (hy1 + hy2) / 2
+
+            # Does V wall cross through H wall?
+            if vy1 < h_cy < vy2 and hx1 - TOL <= v_cx <= hx2 + TOL:
+                dist_bot = h_cy - vy1
+                dist_top = vy2 - h_cy
+
+                if dist_bot < dist_top:
+                    if vy2 > hy2 + TOL:
+                        pass
+                    elif abs(vy2 - hy2) < hy2 - hy1 + TOL:
+                        vr[3] = hy2
+                else:
+                    if vy1 < hy1 - TOL:
+                        pass
+                    elif abs(vy1 - hy1) < hy2 - hy1 + TOL:
+                        vr[1] = hy1
+
+    # --- Draw all rects ---
+    for r in h_rects + v_rects:
+        x1, y1, x2, y2 = r
+        if abs(x2 - x1) < 1 or abs(y2 - y1) < 1:
+            continue
+        pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]
         poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
         poly.close()
         hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
