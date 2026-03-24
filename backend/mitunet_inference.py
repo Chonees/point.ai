@@ -400,49 +400,60 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
 
     rect_count = 0
 
-    # --- Erode the mask to thin walls, then extract unified contours ---
-    # Erode shrinks wall thickness while keeping proportions
+    # --- Decompose wall mask into non-overlapping rectangles ---
+    # Uses Generalized Delta-Method (mosaic library)
+    # Erode first to thin walls while keeping proportions
     erode_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     thinned = cv2.erode(cleaned, erode_kernel, iterations=2)
-    # Re-close to keep connectivity
     thinned = cv2.morphologyEx(thinned, cv2.MORPH_CLOSE,
                                cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)))
 
-    # Find contours on the unified thinned mask
-    contours, _ = cv2.findContours(thinned, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
-    min_area = max(100, (h * w) // 5000)
+    try:
+        from mosaic import rectangular_decomposition
+        binary = (thinned > 127).astype(bool)
+        rects = rectangular_decomposition(binary)
 
-    for cnt in contours:
-        area = cv2.contourArea(cnt)
-        if area < min_area:
-            continue
+        min_rect_area = max(20, (h * w) // 10000)
 
-        perimeter = cv2.arcLength(cnt, True)
-        if perimeter < 20:
-            continue
+        for rect in rects:
+            # rect is a Rectangle namedtuple with x, y, width, height
+            rx, ry, rw, rh = rect.x, rect.y, rect.width, rect.height
+            if rw * rh < min_rect_area:
+                continue
 
-        # Approximate with Douglas-Peucker
-        epsilon = max(2.0, perimeter * 0.008)
-        approx = cv2.approxPolyDP(cnt, epsilon, True)
-        if len(approx) < 3:
-            continue
+            # Convert image coords to DXF coords
+            x1d, y1d = _img_to_dxf(rx, ry + rh)
+            x2d, y2d = _img_to_dxf(rx + rw, ry)
 
-        # Convert each point to DXF coords
-        dxf_pts = []
-        for p in approx:
-            dx, dy = _img_to_dxf(int(p[0][0]), int(p[0][1]))
-            dxf_pts.append((dx, dy))
+            pts = [(min(x1d, x2d), min(y1d, y2d)),
+                   (max(x1d, x2d), min(y1d, y2d)),
+                   (max(x1d, x2d), max(y1d, y2d)),
+                   (min(x1d, x2d), max(y1d, y2d)),
+                   (min(x1d, x2d), min(y1d, y2d))]
 
-        # Close
-        if dxf_pts[0] != dxf_pts[-1]:
-            dxf_pts.append(dxf_pts[0])
+            poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
+            poly.close()
+            hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
+            hatch.paths.add_polyline_path(pts, is_closed=True)
+            rect_count += 1
 
-        # Draw as polyline + hatch
-        poly = msp.add_lwpolyline(dxf_pts, dxfattribs={"layer": "WALLS", "color": 7})
-        poly.close()
-        hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
-        hatch.paths.add_polyline_path(dxf_pts, is_closed=True)
-        rect_count += 1
+    except ImportError:
+        # Fallback: use contours if mosaic not available
+        contours, _ = cv2.findContours(thinned, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        for cnt in contours:
+            if cv2.contourArea(cnt) < 100:
+                continue
+            x, y, cw, ch = cv2.boundingRect(cnt)
+            x1d, y1d = _img_to_dxf(x, y + ch)
+            x2d, y2d = _img_to_dxf(x + cw, y)
+            pts = [(min(x1d,x2d), min(y1d,y2d)), (max(x1d,x2d), min(y1d,y2d)),
+                   (max(x1d,x2d), max(y1d,y2d)), (min(x1d,x2d), max(y1d,y2d)),
+                   (min(x1d,x2d), min(y1d,y2d))]
+            poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
+            poly.close()
+            hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
+            hatch.paths.add_polyline_path(pts, is_closed=True)
+            rect_count += 1
 
     # --- Draw user annotations (walls/doors/windows) ---
     if annotations:
