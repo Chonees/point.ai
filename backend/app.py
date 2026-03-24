@@ -283,53 +283,54 @@ async def api_add_openings(req: AddOpeningsRequest):
         ]
 
         for opening in openings:
-            polyline = opening.get("polyline", [])
-            if len(polyline) < 2:
-                continue
-
-            opening_type = opening.get("opening_type", "door")
+            pos = opening.get("position", {})
+            px = pos.get("x", 0)
+            py = pos.get("y", 0)
+            span = opening.get("span", 20)
+            orientation = opening.get("orientation", "horizontal")
+            kind = opening.get("kind", "door")
 
             # Convert pixel coords to DXF coords
-            # CubiCasa already flipped Y, and our scale maps to template space
-            pts = []
-            for p in polyline:
-                dx = p[0] * scale + offset_x
-                dy = p[1] * scale + offset_y
-                pts.append((dx, dy))
+            dx = px * scale + offset_x
+            dy = py * scale + offset_y
+            dspan = span * scale
 
-            if len(pts) < 2:
-                continue
-
-            # Calculate opening center and dimensions
-            xs = [p[0] for p in pts]
-            ys = [p[1] for p in pts]
-            cx = (min(xs) + max(xs)) / 2
-            cy = (min(ys) + max(ys)) / 2
-            ow = max(xs) - min(xs)
-            oh = max(ys) - min(ys)
-
-            if opening_type == "door":
-                # Door: arc swing + gap lines
-                radius = max(ow, oh)
-                lisp_lines.append(
-                    f'(command "ARC" "{cx:.2f},{cy:.2f}" "E" '
-                    f'"{cx + radius:.2f},{cy:.2f}" "A" "90")'
-                )
+            if kind == "door":
+                # Door: arc swing
+                radius = dspan * 0.9
+                if orientation == "horizontal":
+                    lisp_lines.append(
+                        f'(command "-LAYER" "S" "OPENINGS" "")'
+                    )
+                    lisp_lines.append(
+                        f'(command "ARC" "{dx:.2f},{dy:.2f}" "E" '
+                        f'"{dx + radius:.2f},{dy:.2f}" "A" "90")'
+                    )
+                else:
+                    lisp_lines.append(
+                        f'(command "-LAYER" "S" "OPENINGS" "")'
+                    )
+                    lisp_lines.append(
+                        f'(command "ARC" "{dx:.2f},{dy:.2f}" "E" '
+                        f'"{dx:.2f},{dy + radius:.2f}" "A" "90")'
+                    )
             else:
                 # Window: 3 parallel lines
-                if ow > oh:  # horizontal window
-                    for off in [-1, 0, 1]:
-                        y = cy + off * 1.5
+                if orientation == "horizontal":
+                    x1 = dx - dspan / 2
+                    x2 = dx + dspan / 2
+                    for off in [-1.5, 0, 1.5]:
                         lisp_lines.append(
-                            f'(command "LINE" "{min(xs):.2f},{y:.2f}" '
-                            f'"{max(xs):.2f},{y:.2f}" "")'
+                            f'(command "LINE" "{x1:.2f},{dy + off:.2f}" '
+                            f'"{x2:.2f},{dy + off:.2f}" "")'
                         )
-                else:  # vertical window
-                    for off in [-1, 0, 1]:
-                        x = cx + off * 1.5
+                else:
+                    y1 = dy - dspan / 2
+                    y2 = dy + dspan / 2
+                    for off in [-1.5, 0, 1.5]:
                         lisp_lines.append(
-                            f'(command "LINE" "{x:.2f},{min(ys):.2f}" '
-                            f'"{x:.2f},{max(ys):.2f}" "")'
+                            f'(command "LINE" "{dx + off:.2f},{y1:.2f}" '
+                            f'"{dx + off:.2f},{y2:.2f}" "")'
                         )
 
         # 4. Write LISP to file
