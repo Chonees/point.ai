@@ -601,27 +601,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!drawing || !startPt) return
-    const pt = getCanvasPoint(e)
-    // Redraw base + preview line
-    redraw()
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-
-    // Wait for redraw then draw preview
-    setTimeout(() => {
-      const ctx2 = canvas.getContext('2d')
-      if (!ctx2) return
-      ctx2.strokeStyle = COLORS[tool]
-      ctx2.lineWidth = tool === 'wall' ? 4 : 2
-      ctx2.setLineDash([5, 5])
-      ctx2.beginPath()
-      ctx2.moveTo(startPt.x, startPt.y)
-      ctx2.lineTo(pt.x, pt.y)
-      ctx2.stroke()
-      ctx2.setLineDash([])
-    }, 50)
+    // No redraw — just track. The line appears on mouseUp.
   }
 
   const [pendingDoor, setPendingDoor] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null)
