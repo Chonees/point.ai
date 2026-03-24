@@ -185,7 +185,7 @@ async def api_generate_v2(req: GenerateStructureRequest):
         # Use MitUNet's own DXF generator (template + rect hatch) when available
         infer_result = parsed.get("_infer_result") or {}
         if infer_result.get("source") == MITUNET_BACKEND and "_wall_mask" in infer_result:
-            generate_mitunet_dxf(infer_result, out_path)
+            generate_mitunet_dxf(infer_result, out_path, annotations=req.annotations)
         else:
             generate_structural(parsed["structure"], out_path)
     except Exception as e:

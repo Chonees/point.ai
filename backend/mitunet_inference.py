@@ -346,7 +346,8 @@ _PLAN_X2 = 1530
 _PLAN_Y2 = 1080
 
 
-def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str) -> int:
+def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
+                         annotations: list[dict] | None = None) -> int:
     """Generate DXF with MARCA REGISTRADA template + wall rectangles with hatch.
 
     Returns the number of wall rectangles drawn.
@@ -440,6 +441,112 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str) -> int:
         hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
         hatch.paths.add_polyline_path(pts, is_closed=True)
         rect_count += 1
+
+    # --- Draw user annotations (walls/doors/windows) ---
+    if annotations:
+        # Ensure layers exist
+        if "DOORS" not in doc.layers:
+            doc.layers.add("DOORS", color=157)
+        if "WINS" not in doc.layers:
+            doc.layers.add("WINS", color=121)
+
+        # The annotations are in canvas pixel coordinates (same as overlay image)
+        # We need to figure out the overlay image size to map correctly
+        # The overlay matches the original image size (h, w)
+        for ann in annotations:
+            ann_type = ann.get("type", "wall")
+            # Canvas coords → image coords (canvas matches overlay which matches image)
+            ax1, ay1 = ann["x1"], ann["y1"]
+            ax2, ay2 = ann["x2"], ann["y2"]
+
+            # But canvas may be scaled from original image size
+            # The overlay is rendered at original image size, canvas displays it scaled
+            # Annotations are in canvas pixel coords which map to image coords
+
+            # Convert to DXF coords
+            dx1, dy1 = _img_to_dxf(int(ax1), int(ay1))
+            dx2, dy2 = _img_to_dxf(int(ax2), int(ay2))
+
+            if ann_type == "wall":
+                # Wall: rectangle with hatch (same as model walls)
+                # Determine if H or V
+                adx = abs(dx2 - dx1)
+                ady = abs(dy2 - dy1)
+                thickness = 4  # wall thickness
+                if adx >= ady:  # horizontal
+                    y_mid = (dy1 + dy2) / 2
+                    x_lo, x_hi = min(dx1, dx2), max(dx1, dx2)
+                    pts = [(x_lo, y_mid - thickness/2), (x_hi, y_mid - thickness/2),
+                           (x_hi, y_mid + thickness/2), (x_lo, y_mid + thickness/2),
+                           (x_lo, y_mid - thickness/2)]
+                else:  # vertical
+                    x_mid = (dx1 + dx2) / 2
+                    y_lo, y_hi = min(dy1, dy2), max(dy1, dy2)
+                    pts = [(x_mid - thickness/2, y_lo), (x_mid + thickness/2, y_lo),
+                           (x_mid + thickness/2, y_hi), (x_mid - thickness/2, y_hi),
+                           (x_mid - thickness/2, y_lo)]
+                poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
+                poly.close()
+                hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
+                hatch.paths.add_polyline_path(pts, is_closed=True)
+                rect_count += 1
+
+            elif ann_type == "door":
+                # Door: slab (2 parallel lines 1.5" apart) + arc swing 90°
+                slab = 1.5
+                adx = abs(dx2 - dx1)
+                ady = abs(dy2 - dy1)
+                door_width = max(adx, ady)
+                hx, hy = min(dx1, dx2), min(dy1, dy2)
+
+                if adx >= ady:  # horizontal door
+                    msp.add_line((hx, hy), (hx + door_width, hy),
+                                 dxfattribs={"layer": "DOORS", "color": 157})
+                    msp.add_line((hx, hy + slab), (hx + door_width, hy + slab),
+                                 dxfattribs={"layer": "DOORS", "color": 157})
+                    msp.add_arc((hx, hy), door_width, 0, 90,
+                                dxfattribs={"layer": "DOORS", "color": 157})
+                else:  # vertical door
+                    msp.add_line((hx, hy), (hx, hy + door_width),
+                                 dxfattribs={"layer": "DOORS", "color": 157})
+                    msp.add_line((hx + slab, hy), (hx + slab, hy + door_width),
+                                 dxfattribs={"layer": "DOORS", "color": 157})
+                    msp.add_arc((hx, hy), door_width, 0, 90,
+                                dxfattribs={"layer": "DOORS", "color": 157})
+
+            elif ann_type == "window":
+                # Window: 3 parallel lines + 2 end caps + sill (5" offset)
+                adx = abs(dx2 - dx1)
+                ady = abs(dy2 - dy1)
+
+                if adx >= ady:  # horizontal window
+                    x_lo, x_hi = min(dx1, dx2), max(dx1, dx2)
+                    y_mid = (dy1 + dy2) / 2
+                    for off in [0, -1, -2]:
+                        msp.add_line((x_lo, y_mid + off), (x_hi, y_mid + off),
+                                     dxfattribs={"layer": "WINS", "color": 121})
+                    # End caps
+                    msp.add_line((x_lo, y_mid - 1), (x_lo, y_mid - 2),
+                                 dxfattribs={"layer": "WINS", "color": 121})
+                    msp.add_line((x_hi, y_mid - 1), (x_hi, y_mid - 2),
+                                 dxfattribs={"layer": "WINS", "color": 121})
+                    # Sill
+                    msp.add_line((x_lo, y_mid - 5), (x_hi, y_mid - 5),
+                                 dxfattribs={"layer": "WINS", "color": 121})
+                else:  # vertical window
+                    y_lo, y_hi = min(dy1, dy2), max(dy1, dy2)
+                    x_mid = (dx1 + dx2) / 2
+                    for off in [0, -1, 1]:
+                        msp.add_line((x_mid + off, y_lo), (x_mid + off, y_hi),
+                                     dxfattribs={"layer": "WINS", "color": 121})
+                    # End caps
+                    msp.add_line((x_mid - 1, y_lo), (x_mid, y_lo),
+                                 dxfattribs={"layer": "WINS", "color": 121})
+                    msp.add_line((x_mid - 1, y_hi), (x_mid, y_hi),
+                                 dxfattribs={"layer": "WINS", "color": 121})
+                    # Sill
+                    msp.add_line((x_mid + 5, y_lo), (x_mid + 5, y_hi),
+                                 dxfattribs={"layer": "WINS", "color": 121})
 
     doc.saveas(out_path)
     return rect_count

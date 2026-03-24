@@ -312,6 +312,7 @@ function UploadPanel() {
         const parsed = parseFloat(scaleHint)
         if (!isNaN(parsed) && parsed > 0) body.scale_hint = parsed
       }
+      if (annotations.length > 0) body.annotations = annotations
 
       const res = await fetch('/api/v2/generate-dxf', {
         method: 'POST',
@@ -326,7 +327,7 @@ function UploadPanel() {
       setStatus('error')
       setStatusMsg(e instanceof Error ? e.message : 'Unknown error')
     }
-  }, [file, modelVariant, scaleHint])
+  }, [file, modelVariant, scaleHint, annotations])
 
   return (
     <>
