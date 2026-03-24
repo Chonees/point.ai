@@ -410,7 +410,7 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
         binary = (thinned > 127).astype(bool)
         rects = rectangular_decomposition(binary)
 
-        min_rect_area = max(20, (h * w) // 10000)
+        min_rect_area = 5  # keep almost all rectangles
 
         for rect in rects:
             # rect = Rectangle(y_start, y_end, x_start, x_end)
