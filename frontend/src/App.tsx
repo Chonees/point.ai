@@ -491,7 +491,10 @@ function UploadPanel() {
 
             {/* Add Doors & Windows — sends to AutoCAD via MCP */}
             {modelVariant === 'mitunet' && file && (
-              <AddOpeningsButton imageFile={file} />
+              <div className="grid grid-cols-2 gap-2">
+                <AddOpeningsButton imageFile={file} kind="doors" label="+ Add Doors" color="emerald" />
+                <AddOpeningsButton imageFile={file} kind="windows" label="+ Add Windows" color="sky" />
+              </div>
             )}
 
             {/* Details toggle */}
@@ -528,7 +531,9 @@ function Stat({ label, value, dim = false }: { label: string; value: string; dim
   )
 }
 
-function AddOpeningsButton({ imageFile }: { imageFile: File }) {
+function AddOpeningsButton({ imageFile, kind, label, color }: {
+  imageFile: File; kind: string; label: string; color: string
+}) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [message, setMessage] = useState('')
 
@@ -545,21 +550,25 @@ function AddOpeningsButton({ imageFile }: { imageFile: File }) {
       const res = await fetch('/api/v2/add-openings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: b64 }),
+        body: JSON.stringify({ image: b64, kind }),
       })
       const data = await res.json()
       if (data.status === 'ok') {
         setStatus('done')
-        setMessage(`${data.openings_count} openings sent to AutoCAD`)
+        setMessage(`${data.count} ${kind} → AutoCAD`)
       } else {
         setStatus('done')
-        setMessage(data.message || 'No openings detected')
+        setMessage(data.message || `No ${kind} detected`)
       }
-    } catch (e) {
+    } catch {
       setStatus('error')
-      setMessage('Failed to add openings')
+      setMessage(`Failed to add ${kind}`)
     }
   }
+
+  const colorClasses = color === 'sky'
+    ? 'bg-sky-950/30 text-sky-400/80 border-sky-900/40 hover:bg-sky-950/50 hover:text-sky-300 active:bg-sky-950/60'
+    : 'bg-emerald-950/30 text-emerald-400/80 border-emerald-900/40 hover:bg-emerald-950/50 hover:text-emerald-300 active:bg-emerald-950/60'
 
   return (
     <div className="space-y-1">
@@ -567,19 +576,16 @@ function AddOpeningsButton({ imageFile }: { imageFile: File }) {
         whileTap={{ scale: 0.98 }}
         onClick={handleClick}
         disabled={status === 'loading'}
-        className="w-full py-3 sm:py-2.5 rounded-lg text-sm font-medium
-                   bg-emerald-950/30 text-emerald-400/80 border border-emerald-900/40
-                   hover:bg-emerald-950/50 hover:text-emerald-300
+        className={`w-full py-2.5 rounded-lg text-xs font-medium border
                    disabled:opacity-30 disabled:cursor-not-allowed
-                   active:bg-emerald-950/60
-                   transition-all duration-200 cursor-pointer"
+                   transition-all duration-200 cursor-pointer ${colorClasses}`}
       >
         {status === 'loading'
-          ? <span className="flex items-center justify-center gap-2"><Spinner />Detecting doors & windows...</span>
-          : '+ Add Doors & Windows to AutoCAD'}
+          ? <span className="flex items-center justify-center gap-2"><Spinner />Detecting...</span>
+          : label}
       </motion.button>
       {message && (
-        <p className={`text-[10px] text-center ${status === 'error' ? 'text-red-500' : 'text-emerald-600'}`}>
+        <p className={`text-[9px] text-center ${status === 'error' ? 'text-red-500' : 'text-zinc-500'}`}>
           {message}
         </p>
       )}

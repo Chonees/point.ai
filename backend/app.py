@@ -229,46 +229,109 @@ async def download_dxf(filename: str):
 # ---------------------------------------------------------------------------
 
 class AddOpeningsRequest(_PydanticBaseModel):
-    image: str  # base64-encoded floor plan image
+    image: str
+    kind: str = "all"  # "doors", "windows", or "all"
 
 
 class AddOpeningsResponse(_PydanticBaseModel):
     status: str
-    openings_count: int
-    lisp_file: str | None = None
+    count: int
     message: str | None = None
+
+
+# Pointe Homes standards
+_DOOR_SLAB_THICKNESS = 1.5  # inches
+_DOOR_LAYER = "DOORS"
+_DOOR_COLOR = 157
+_WIN_LAYER = "WINS"
+_WIN_COLOR = 121
+_SILL_OFFSET = 5  # inches
+
+
+def _cubicasa_to_dxf_coords(px: float, py: float, scale: float,
+                             offset_x: float, offset_y: float) -> tuple[float, float]:
+    return px * scale + offset_x, py * scale + offset_y
+
+
+def _generate_door_lisp(dx: float, dy: float, dspan: float, orientation: str) -> list[str]:
+    """Generate Pointe Homes door LISP: 2 parallel lines (slab) + 90° arc swing."""
+    DS = _DOOR_SLAB_THICKNESS
+    lines = []
+    if orientation == "horizontal":
+        # Slab: two parallel vertical lines
+        lines.append(f'(command "LINE" "{dx:.2f},{dy:.2f}" "{dx:.2f},{dy + dspan:.2f}" "")')
+        lines.append(f'(command "LINE" "{dx + DS:.2f},{dy:.2f}" "{dx + DS:.2f},{dy + dspan:.2f}" "")')
+        # Arc swing 90°
+        lines.append(f'(command "ARC" "C" "{dx:.2f},{dy:.2f}" "{dx + dspan:.2f},{dy:.2f}" "A" "90")')
+    else:
+        # Slab: two parallel horizontal lines
+        lines.append(f'(command "LINE" "{dx:.2f},{dy:.2f}" "{dx + dspan:.2f},{dy:.2f}" "")')
+        lines.append(f'(command "LINE" "{dx:.2f},{dy + DS:.2f}" "{dx + dspan:.2f},{dy + DS:.2f}" "")')
+        # Arc swing 90°
+        lines.append(f'(command "ARC" "C" "{dx:.2f},{dy:.2f}" "{dx:.2f},{dy + dspan:.2f}" "A" "90")')
+    return lines
+
+
+def _generate_window_lisp(dx: float, dy: float, dspan: float, orientation: str) -> list[str]:
+    """Generate Pointe Homes window LISP: 3 parallel lines + 2 end caps + sill."""
+    lines = []
+    if orientation == "horizontal":
+        x1 = dx - dspan / 2
+        x2 = dx + dspan / 2
+        # 3 parallel lines
+        lines.append(f'(command "LINE" "{x1:.2f},{dy:.2f}" "{x2:.2f},{dy:.2f}" "")')
+        lines.append(f'(command "LINE" "{x1:.2f},{dy - 1:.2f}" "{x2:.2f},{dy - 1:.2f}" "")')
+        lines.append(f'(command "LINE" "{x1:.2f},{dy - 2:.2f}" "{x2:.2f},{dy - 2:.2f}" "")')
+        # End caps
+        lines.append(f'(command "LINE" "{x1:.2f},{dy - 1:.2f}" "{x1:.2f},{dy - 2:.2f}" "")')
+        lines.append(f'(command "LINE" "{x2:.2f},{dy - 1:.2f}" "{x2:.2f},{dy - 2:.2f}" "")')
+        # Sill exterior
+        lines.append(f'(command "LINE" "{x1:.2f},{dy - {_SILL_OFFSET}:.2f}" "{x2:.2f},{dy - {_SILL_OFFSET}:.2f}" "")')
+    else:
+        y1 = dy - dspan / 2
+        y2 = dy + dspan / 2
+        # 3 parallel lines
+        lines.append(f'(command "LINE" "{dx:.2f},{y1:.2f}" "{dx:.2f},{y2:.2f}" "")')
+        lines.append(f'(command "LINE" "{dx - 1:.2f},{y1:.2f}" "{dx - 1:.2f},{y2:.2f}" "")')
+        lines.append(f'(command "LINE" "{dx + 1:.2f},{y1:.2f}" "{dx + 1:.2f},{y2:.2f}" "")')
+        # End caps
+        lines.append(f'(command "LINE" "{dx - 1:.2f},{y1:.2f}" "{dx:.2f},{y1:.2f}" "")')
+        lines.append(f'(command "LINE" "{dx - 1:.2f},{y2:.2f}" "{dx:.2f},{y2:.2f}" "")')
+        # Sill exterior
+        lines.append(f'(command "LINE" "{dx + {_SILL_OFFSET}:.2f},{y1:.2f}" "{dx + {_SILL_OFFSET}:.2f},{y2:.2f}" "")')
+    return lines
 
 
 @app.post("/api/v2/add-openings", response_model=AddOpeningsResponse)
 async def api_add_openings(req: AddOpeningsRequest):
-    """Detect doors & windows with CubiCasa and send LISP to AutoCAD via File IPC."""
+    """Detect doors/windows with CubiCasa and send LISP to AutoCAD."""
     from .cubicasa_inference import infer_cubicasa
     from .mitunet_inference import _PLAN_X1, _PLAN_Y1, _PLAN_X2, _PLAN_Y2
-    import json
     from pathlib import Path
 
     try:
-        # 1. Run CubiCasa baseline to get openings
         result = infer_cubicasa(req.image, model_variant="baseline")
-        openings = result.get("openings", [])
+        all_openings = result.get("openings", [])
         img_size = result.get("structure_meta", {}).get("image_size", {})
         img_w = img_size.get("width", 800)
         img_h = img_size.get("height", 600)
 
-        if not openings:
-            return AddOpeningsResponse(
-                status="no_openings",
-                openings_count=0,
-                message="No doors or windows detected.",
-            )
+        # Filter by kind
+        if req.kind == "doors":
+            openings = [o for o in all_openings if o.get("kind") == "door"]
+        elif req.kind == "windows":
+            openings = [o for o in all_openings if o.get("kind") == "window"]
+        else:
+            openings = all_openings
 
-        # 2. Calculate scale to match MitUNet DXF template coordinates
+        if not openings:
+            return AddOpeningsResponse(status="no_openings", count=0,
+                                       message="No openings detected.")
+
+        # Scale to DXF template
         plan_w = _PLAN_X2 - _PLAN_X1
         plan_h = _PLAN_Y2 - _PLAN_Y1
-        img_aspect = img_w / img_h
-        plan_aspect = plan_w / plan_h
-
-        if img_aspect > plan_aspect:
+        if (img_w / img_h) > (plan_w / plan_h):
             scale = plan_w / img_w
             offset_x = _PLAN_X1
             offset_y = _PLAN_Y1 + (plan_h - img_h * scale) / 2
@@ -277,84 +340,46 @@ async def api_add_openings(req: AddOpeningsRequest):
             offset_x = _PLAN_X1 + (plan_w - img_w * scale) / 2
             offset_y = _PLAN_Y1
 
-        # 3. Generate LISP commands for each opening
-        lisp_lines = [
-            '(command "-LAYER" "M" "OPENINGS" "C" "3" "" "")',  # green layer
-        ]
+        lisp_lines = []
+
+        # Setup layers with Pointe Homes colors
+        if req.kind in ("doors", "all"):
+            lisp_lines.append(f'(command "-LAYER" "M" "{_DOOR_LAYER}" "C" "{_DOOR_COLOR}" "" "")')
+        if req.kind in ("windows", "all"):
+            lisp_lines.append(f'(command "-LAYER" "M" "{_WIN_LAYER}" "C" "{_WIN_COLOR}" "" "")')
 
         for opening in openings:
             pos = opening.get("position", {})
-            px = pos.get("x", 0)
-            py = pos.get("y", 0)
-            span = opening.get("span", 20)
+            dx, dy = _cubicasa_to_dxf_coords(pos.get("x", 0), pos.get("y", 0),
+                                              scale, offset_x, offset_y)
+            dspan = opening.get("span", 20) * scale
             orientation = opening.get("orientation", "horizontal")
             kind = opening.get("kind", "door")
 
-            # Convert pixel coords to DXF coords
-            dx = px * scale + offset_x
-            dy = py * scale + offset_y
-            dspan = span * scale
-
             if kind == "door":
-                # Door: arc swing
-                radius = dspan * 0.9
-                if orientation == "horizontal":
-                    lisp_lines.append(
-                        f'(command "-LAYER" "S" "OPENINGS" "")'
-                    )
-                    lisp_lines.append(
-                        f'(command "ARC" "{dx:.2f},{dy:.2f}" "E" '
-                        f'"{dx + radius:.2f},{dy:.2f}" "A" "90")'
-                    )
-                else:
-                    lisp_lines.append(
-                        f'(command "-LAYER" "S" "OPENINGS" "")'
-                    )
-                    lisp_lines.append(
-                        f'(command "ARC" "{dx:.2f},{dy:.2f}" "E" '
-                        f'"{dx:.2f},{dy + radius:.2f}" "A" "90")'
-                    )
+                lisp_lines.append(f'(command "-LAYER" "S" "{_DOOR_LAYER}" "")')
+                lisp_lines.extend(_generate_door_lisp(dx, dy, dspan, orientation))
             else:
-                # Window: 3 parallel lines
-                if orientation == "horizontal":
-                    x1 = dx - dspan / 2
-                    x2 = dx + dspan / 2
-                    for off in [-1.5, 0, 1.5]:
-                        lisp_lines.append(
-                            f'(command "LINE" "{x1:.2f},{dy + off:.2f}" '
-                            f'"{x2:.2f},{dy + off:.2f}" "")'
-                        )
-                else:
-                    y1 = dy - dspan / 2
-                    y2 = dy + dspan / 2
-                    for off in [-1.5, 0, 1.5]:
-                        lisp_lines.append(
-                            f'(command "LINE" "{dx + off:.2f},{y1:.2f}" '
-                            f'"{dx + off:.2f},{y2:.2f}" "")'
-                        )
+                lisp_lines.append(f'(command "-LAYER" "S" "{_WIN_LAYER}" "")')
+                lisp_lines.extend(_generate_window_lisp(dx, dy, dspan, orientation))
 
-        # 4. Write LISP to file
-        lisp_code = "\n".join(lisp_lines)
+        # Write and send
         lisp_dir = Path("C:/temp")
         lisp_dir.mkdir(exist_ok=True)
-        lisp_path = lisp_dir / "pointai_openings.lsp"
-        lisp_path.write_text(lisp_code, encoding="utf-8")
+        lisp_path = lisp_dir / f"pointai_{req.kind}.lsp"
+        lisp_path.write_text("\n".join(lisp_lines), encoding="utf-8")
 
-        # 5. Send LISP to AutoCAD via PostMessage (same as MCP File IPC)
         autocad_status = _send_lisp_to_autocad(str(lisp_path))
-
-        log_event("api.add_openings.success", openings_count=len(openings))
+        log_event(f"api.add_{req.kind}.success", count=len(openings))
 
         return AddOpeningsResponse(
-            status="ok",
-            openings_count=len(openings),
-            lisp_file=str(lisp_path),
-            message=f"{len(openings)} openings. {autocad_status}",
+            status="ok", count=len(openings),
+            message=f"{len(openings)} {req.kind}. {autocad_status}",
         )
 
     except Exception as e:
         log_event("api.add_openings.error", message=str(e))
-        raise HTTPException(status_code=500, detail=f"Add openings failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 def _send_lisp_to_autocad(lisp_path: str) -> str:
