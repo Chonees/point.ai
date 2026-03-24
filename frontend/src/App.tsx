@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 type Mode = 'describe' | 'upload'
 type Status = 'idle' | 'loading' | 'done' | 'error'
 type ModelVariant = 'baseline' | 'mitunet'
+type AnnotationType = 'wall' | 'door' | 'window'
+interface Annotation { type: AnnotationType; x1: number; y1: number; x2: number; y2: number }
 
 interface V1Result {
   dxf_url: string
@@ -275,6 +277,7 @@ function UploadPanel() {
   const [result, setResult] = useState<V2Result | null>(null)
   const [showDetails, setShowDetails] = useState(false)
   const [dragging, setDragging] = useState(false)
+  const [annotations, setAnnotations] = useState<Annotation[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
 
   const handleFile = useCallback((f: File) => {
@@ -444,18 +447,13 @@ function UploadPanel() {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             className="mt-6 space-y-3 sm:space-y-4">
 
-            {/* Preview overlay */}
+            {/* Interactive overlay editor */}
             {result.preview_url && (
-              <div className="rounded-lg overflow-hidden border border-zinc-800/60">
-                <img
-                  src={result.preview_url}
-                  alt="structure preview"
-                  className="w-full object-contain max-h-48 sm:max-h-64"
-                />
-                <p className="text-[10px] text-zinc-700 text-center py-1.5">
-                  Detected structure overlay
-                </p>
-              </div>
+              <OverlayEditor
+                previewUrl={result.preview_url}
+                annotations={annotations}
+                setAnnotations={setAnnotations}
+              />
             )}
 
             {/* Stats row */}
@@ -525,6 +523,175 @@ function Stat({ label, value, dim = false }: { label: string; value: string; dim
   )
 }
 
+
+function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
+  previewUrl: string
+  annotations: Annotation[]
+  setAnnotations: (a: Annotation[]) => void
+}) {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [tool, setTool] = useState<AnnotationType>('wall')
+  const [drawing, setDrawing] = useState(false)
+  const [startPt, setStartPt] = useState<{ x: number; y: number } | null>(null)
+  const [imgSize, setImgSize] = useState({ w: 0, h: 0 })
+
+  const COLORS: Record<AnnotationType, string> = {
+    wall: '#ff3333',
+    door: '#33ff66',
+    window: '#3399ff',
+  }
+
+  const getCanvasPoint = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const canvas = canvasRef.current
+    if (!canvas) return { x: 0, y: 0 }
+    const rect = canvas.getBoundingClientRect()
+    return {
+      x: (e.clientX - rect.left) * (canvas.width / rect.width),
+      y: (e.clientY - rect.top) * (canvas.height / rect.height),
+    }
+  }
+
+  const redraw = useCallback(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const img = new Image()
+    img.onload = () => {
+      canvas.width = img.width
+      canvas.height = img.height
+      setImgSize({ w: img.width, h: img.height })
+      ctx.drawImage(img, 0, 0)
+
+      // Draw existing annotations
+      for (const ann of annotations) {
+        ctx.strokeStyle = COLORS[ann.type]
+        ctx.lineWidth = ann.type === 'wall' ? 4 : 2
+        ctx.beginPath()
+        ctx.moveTo(ann.x1, ann.y1)
+        ctx.lineTo(ann.x2, ann.y2)
+        ctx.stroke()
+
+        // Label
+        ctx.fillStyle = COLORS[ann.type]
+        ctx.font = '10px monospace'
+        ctx.fillText(ann.type[0].toUpperCase(), Math.min(ann.x1, ann.x2) - 12, (ann.y1 + ann.y2) / 2 + 4)
+      }
+    }
+    img.src = previewUrl
+  }, [previewUrl, annotations])
+
+  useEffect(() => { redraw() }, [redraw])
+
+  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const pt = getCanvasPoint(e)
+    setDrawing(true)
+    setStartPt(pt)
+  }
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!drawing || !startPt) return
+    const pt = getCanvasPoint(e)
+    // Redraw base + preview line
+    redraw()
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    // Wait for redraw then draw preview
+    setTimeout(() => {
+      const ctx2 = canvas.getContext('2d')
+      if (!ctx2) return
+      ctx2.strokeStyle = COLORS[tool]
+      ctx2.lineWidth = tool === 'wall' ? 4 : 2
+      ctx2.setLineDash([5, 5])
+      ctx2.beginPath()
+      ctx2.moveTo(startPt.x, startPt.y)
+      ctx2.lineTo(pt.x, pt.y)
+      ctx2.stroke()
+      ctx2.setLineDash([])
+    }, 50)
+  }
+
+  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (!drawing || !startPt) return
+    const pt = getCanvasPoint(e)
+    setDrawing(false)
+
+    const dx = Math.abs(pt.x - startPt.x)
+    const dy = Math.abs(pt.y - startPt.y)
+    if (dx < 5 && dy < 5) return // too short
+
+    setAnnotations([...annotations, {
+      type: tool,
+      x1: startPt.x, y1: startPt.y,
+      x2: pt.x, y2: pt.y,
+    }])
+    setStartPt(null)
+  }
+
+  const undo = () => {
+    if (annotations.length > 0) {
+      setAnnotations(annotations.slice(0, -1))
+    }
+  }
+
+  const tools: { type: AnnotationType; label: string; color: string }[] = [
+    { type: 'wall', label: 'Wall', color: 'bg-red-900/40 border-red-700/50 text-red-400' },
+    { type: 'door', label: 'Door', color: 'bg-green-900/40 border-green-700/50 text-green-400' },
+    { type: 'window', label: 'Window', color: 'bg-blue-900/40 border-blue-700/50 text-blue-400' },
+  ]
+
+  return (
+    <div className="rounded-lg overflow-hidden border border-zinc-800/60">
+      {/* Toolbar */}
+      <div className="flex items-center gap-1.5 px-2 py-1.5 bg-zinc-900/80 border-b border-zinc-800/40">
+        {tools.map((t) => (
+          <button
+            key={t.type}
+            onClick={() => setTool(t.type)}
+            className={`px-2.5 py-1 rounded text-[10px] font-medium border transition-all cursor-pointer
+              ${tool === t.type ? t.color + ' ring-1 ring-white/20' : 'bg-zinc-900 border-zinc-800 text-zinc-600'}`}
+          >
+            {t.label}
+          </button>
+        ))}
+        <div className="flex-1" />
+        <button
+          onClick={undo}
+          disabled={annotations.length === 0}
+          className="px-2 py-1 rounded text-[10px] text-zinc-500 hover:text-zinc-300
+                     disabled:opacity-30 cursor-pointer transition-colors"
+        >
+          Undo
+        </button>
+        <span className="text-[9px] text-zinc-700">
+          {annotations.length} drawn
+        </span>
+      </div>
+
+      {/* Canvas */}
+      <div ref={containerRef} className="relative">
+        <canvas
+          ref={canvasRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={() => { setDrawing(false); setStartPt(null) }}
+          className="w-full object-contain max-h-64 cursor-crosshair"
+          style={{ imageRendering: 'auto' }}
+        />
+      </div>
+
+      <p className="text-[9px] text-zinc-700 text-center py-1">
+        Draw lines: <span className="text-red-500">red</span>=wall <span className="text-green-500">green</span>=door <span className="text-blue-500">blue</span>=window
+      </p>
+    </div>
+  )
+}
 
 function DownloadButton({ href }: { href: string }) {
   return (
