@@ -35,6 +35,9 @@ def save_structure_artifacts(
     preview_path = run_dir / "preview.png"
     structure_preview_path = run_dir / "structure_preview.png"
     worker_overlay_path = run_dir / "worker_overlay.png"
+    region_plan_path = run_dir / "dxf_region_plan.json"
+    region_debug_path = run_dir / "mitunet_region_debug.json"
+    provenance_path = run_dir / "provenance.json"
 
     structure_path.write_text(json.dumps(structure, indent=2), encoding="utf-8")
     metrics_path.write_text(json.dumps(quality_metrics, indent=2), encoding="utf-8")
@@ -56,6 +59,16 @@ def save_structure_artifacts(
         "quality_url": f"/artifacts/{request_id}/quality.json",
         "structure_preview_url": f"/artifacts/{request_id}/structure_preview.png",
     }
+    structure_meta = structure.get("structure_meta", {})
+    if structure_meta.get("dxf_region_plan") is not None:
+        region_plan_path.write_text(json.dumps(structure_meta["dxf_region_plan"], indent=2), encoding="utf-8")
+        artifact_urls["dxf_region_plan_url"] = f"/artifacts/{request_id}/dxf_region_plan.json"
+    if structure_meta.get("mitunet_region_debug") is not None:
+        region_debug_path.write_text(json.dumps(structure_meta["mitunet_region_debug"], indent=2), encoding="utf-8")
+        artifact_urls["mitunet_region_debug_url"] = f"/artifacts/{request_id}/mitunet_region_debug.json"
+    if structure_meta.get("provenance") is not None:
+        provenance_path.write_text(json.dumps(structure_meta["provenance"], indent=2), encoding="utf-8")
+        artifact_urls["provenance_url"] = f"/artifacts/{request_id}/provenance.json"
     if worker_overlay_url is not None:
         artifact_urls["worker_overlay_url"] = worker_overlay_url
     return artifact_urls

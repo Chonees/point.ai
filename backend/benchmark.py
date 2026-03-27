@@ -21,11 +21,13 @@ from .artifacts import build_preview_image, encode_png_data
 from .image_utils import decode_image
 from .mitunet_inference import (
     MITUNET_BACKEND,
+    _prepare_mitunet_wall_mask_for_regions,
     build_mitunet_region_plan,
     generate_mitunet_region_dxf,
 )
 from .observability import log_event
 from .plan_parser import parse_structure_payload
+from .provenance import build_code_provenance, utc_now_iso
 from .structural_generator import build_render_plan, generate as generate_structural
 from .structure_postprocess import build_junction_graph
 from .worker_client import infer_structure
@@ -91,6 +93,7 @@ class BenchmarkResult:
 class BenchmarkReport:
     results: list[BenchmarkResult]
     thresholds: dict[str, float]
+    metadata: dict[str, Any] = field(default_factory=dict)
 
     @property
     def passed(self) -> list[BenchmarkResult]:
@@ -292,11 +295,31 @@ def run_benchmark(
     backend: str | None = None,
     thresholds: dict[str, float] | None = None,
     limit: int | None = None,
+    is_baseline: bool = False,
 ) -> BenchmarkReport:
     effective_thresholds = {**DEFAULT_THRESHOLDS, **(thresholds or {})}
     cases = load_cases(dataset_dir, limit=limit)
     results = [run_case(case, backend=backend, thresholds=effective_thresholds) for case in cases]
-    report = BenchmarkReport(results=results, thresholds=effective_thresholds)
+    inference_provenance = None
+    for result in results:
+        region_meta = (result.region_plan or {}).get("meta") or {}
+        if region_meta.get("provenance"):
+            inference_provenance = region_meta["provenance"]
+            break
+    report = BenchmarkReport(
+        results=results,
+        thresholds=effective_thresholds,
+        metadata={
+            "captured_at_utc": utc_now_iso(),
+            "dataset_dir": str(Path(dataset_dir).resolve()),
+            "backend": backend,
+            "limit": limit,
+            "output_dir": str(Path(output_dir).resolve()) if output_dir is not None else None,
+            "is_official_baseline": bool(is_baseline),
+            "code": build_code_provenance(),
+            "inference_provenance": inference_provenance,
+        },
+    )
     if output_dir:
         _save_report(report, Path(output_dir))
     return report
@@ -340,29 +363,48 @@ def evaluate_result_against_thresholds(
 
 def _save_report(report: BenchmarkReport, output_dir: Path) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-    (output_dir / "summary.json").write_text(json.dumps(report.summary(), indent=2), encoding="utf-8")
+    (output_dir / "summary.json").write_text(json.dumps(_json_ready(report.summary()), indent=2), encoding="utf-8")
+    (output_dir / "run_manifest.json").write_text(json.dumps(_json_ready(report.metadata), indent=2), encoding="utf-8")
+    if report.metadata.get("is_official_baseline"):
+        (output_dir / "baseline_manifest.json").write_text(
+            json.dumps(_json_ready(report.metadata), indent=2),
+            encoding="utf-8",
+        )
 
     for result in report.results:
         case_dir = output_dir / result.name
         case_dir.mkdir(parents=True, exist_ok=True)
         preview_paths: dict[str, str] = {}
+        provenance = ((result.region_plan or {}).get("meta") or {}).get("provenance")
         if result.success and result.structure:
-            (case_dir / "postprocess.json").write_text(json.dumps(result.structure, indent=2), encoding="utf-8")
-            (case_dir / "structure.json").write_text(json.dumps(result.structure, indent=2), encoding="utf-8")
+            (case_dir / "postprocess.json").write_text(json.dumps(_json_ready(result.structure), indent=2), encoding="utf-8")
+            (case_dir / "structure.json").write_text(json.dumps(_json_ready(result.structure), indent=2), encoding="utf-8")
             if result.raw_model:
-                (case_dir / "raw_model.json").write_text(json.dumps(result.raw_model, indent=2), encoding="utf-8")
+                (case_dir / "raw_model.json").write_text(json.dumps(_json_ready(result.raw_model), indent=2), encoding="utf-8")
             if result.render_plan:
-                (case_dir / "render_plan.json").write_text(json.dumps(result.render_plan, indent=2), encoding="utf-8")
+                (case_dir / "render_plan.json").write_text(json.dumps(_json_ready(result.render_plan), indent=2), encoding="utf-8")
             if result.region_plan:
-                (case_dir / "region_plan.json").write_text(json.dumps(result.region_plan, indent=2), encoding="utf-8")
+                (case_dir / "region_plan.json").write_text(json.dumps(_json_ready(result.region_plan), indent=2), encoding="utf-8")
+                region_debug = result.region_plan.get("debug")
+                if region_debug:
+                    (case_dir / "mitunet_region_debug.json").write_text(
+                        json.dumps(_json_ready(region_debug), indent=2),
+                        encoding="utf-8",
+                    )
+            if provenance:
+                (case_dir / "provenance.json").write_text(
+                    json.dumps(_json_ready(provenance), indent=2),
+                    encoding="utf-8",
+                )
 
             pipeline_debug = result.structure.get("pipeline_debug")
             if pipeline_debug:
-                (case_dir / "pipeline_debug.json").write_text(json.dumps(pipeline_debug, indent=2), encoding="utf-8")
+                (case_dir / "pipeline_debug.json").write_text(json.dumps(_json_ready(pipeline_debug), indent=2), encoding="utf-8")
 
             try:
                 _copy_original_image(result, case_dir)
                 _save_inference_input_image(result, case_dir)
+                _save_raw_model_mask_image(result, case_dir)
                 raw_preview = build_preview_image(
                     _structure_for_geometry_benchmark(result.raw_model or result.structure),
                     image_b64=result.source_image_b64,
@@ -371,18 +413,45 @@ def _save_report(report: BenchmarkReport, output_dir: Path) -> None:
                     _structure_for_geometry_benchmark(result.structure),
                     image_b64=result.source_image_b64,
                 )
+                cleaned_mask = None
+                if result.region_plan and _has_mitunet_wall_mask(result.raw_model):
+                    raw_mask = result.raw_model["_wall_mask"]
+                    image_shape = (
+                        int(result.raw_model.get("_image_shape", [raw_mask.shape[0], raw_mask.shape[1]])[0]),
+                        int(result.raw_model.get("_image_shape", [raw_mask.shape[0], raw_mask.shape[1]])[1]),
+                    )
+                    cleaned_mask = _prepare_mitunet_wall_mask_for_regions(raw_mask, image_shape=image_shape)
+                    _save_cleaned_model_mask_image(cleaned_mask, case_dir)
+                    raw_preview = _build_binary_mask_preview(raw_mask, image_b64=result.source_image_b64)
+                    postprocess_preview = _build_binary_mask_preview(cleaned_mask, image_b64=result.source_image_b64)
                 render_plan_preview = _build_wall_entities_preview(
                     (result.render_plan or {}).get("wall_lines", []),
                     image_b64=result.source_image_b64,
                 )
                 region_plan_preview = None
+                dxf_preview_entities = result.dxf_wall_entities
                 if result.region_plan:
+                    region_plan_preview_entities = _region_plan_to_image_wall_entities(result.region_plan)
+                    dxf_preview_entities = _wall_entities_to_image_space(
+                        result.dxf_wall_entities,
+                        image_shape=_region_plan_image_shape(result.region_plan),
+                        transform=(result.region_plan.get("meta") or {}).get("transform") or {},
+                    )
+                    if result.input_normalization.get("applied"):
+                        region_plan_preview_entities = _rescale_wall_entities_to_original_image(
+                            region_plan_preview_entities,
+                            result.input_normalization,
+                        )
+                        dxf_preview_entities = _rescale_wall_entities_to_original_image(
+                            dxf_preview_entities,
+                            result.input_normalization,
+                        )
                     region_plan_preview = _build_wall_entities_preview(
-                        _region_plan_to_wall_entities(result.region_plan),
+                        region_plan_preview_entities,
                         image_b64=result.source_image_b64,
                     )
                 dxf_preview = _build_wall_entities_preview(
-                    result.dxf_wall_entities,
+                    dxf_preview_entities,
                     image_b64=result.source_image_b64,
                 )
                 path_panel_label = "REGION PLAN" if region_plan_preview is not None else "RENDER PLAN"
@@ -414,6 +483,14 @@ def _save_report(report: BenchmarkReport, output_dir: Path) -> None:
                 }
                 if region_plan_preview is not None:
                     preview_paths["region_plan_preview"] = "region_plan_preview.png"
+                if (case_dir / "mitunet_region_debug.json").exists():
+                    preview_paths["mitunet_region_debug"] = "mitunet_region_debug.json"
+                if (case_dir / "raw_wall_mask.png").exists():
+                    preview_paths["raw_wall_mask"] = "raw_wall_mask.png"
+                if (case_dir / "cleaned_wall_mask.png").exists():
+                    preview_paths["cleaned_wall_mask"] = "cleaned_wall_mask.png"
+                if (case_dir / "provenance.json").exists():
+                    preview_paths["provenance"] = "provenance.json"
 
                 if result.dxf_bytes:
                     (case_dir / "output.dxf").write_bytes(result.dxf_bytes)
@@ -433,10 +510,11 @@ def _save_report(report: BenchmarkReport, output_dir: Path) -> None:
             "benchmark_review_flags": _review_flags_for_benchmark(result.review_flags),
             "comparison": result.comparison,
             "stage_comparison": result.stage_comparison,
+            "provenance": provenance,
             "artifact_files": preview_paths,
             "error": result.error,
         }
-        (case_dir / "result.json").write_text(json.dumps(result_data, indent=2), encoding="utf-8")
+        (case_dir / "result.json").write_text(json.dumps(_json_ready(result_data), indent=2), encoding="utf-8")
 
 
 def compare_structures(predicted: dict[str, Any], expected: dict[str, Any]) -> dict[str, Any]:
@@ -1338,10 +1416,56 @@ def _is_opening_related_review_flag(flag: str) -> bool:
 
 
 def _structure_for_geometry_benchmark(structure: dict[str, Any]) -> dict[str, Any]:
-    return {
-        **structure,
-        "openings": [],
-    }
+    geometry = copy.deepcopy(structure)
+    normalized_walls: list[dict[str, Any]] = []
+    for wall in geometry.get("walls", []) or []:
+        polyline = wall.get("polyline") or []
+        if len(polyline) != 2:
+            continue
+        normalized_points: list[dict[str, float]] = []
+        for point in polyline:
+            if isinstance(point, dict):
+                normalized_points.append({
+                    "x": float(point.get("x", 0.0)),
+                    "y": float(point.get("y", 0.0)),
+                })
+            elif isinstance(point, (list, tuple)) and len(point) >= 2:
+                normalized_points.append({
+                    "x": float(point[0]),
+                    "y": float(point[1]),
+                })
+        if len(normalized_points) != 2:
+            continue
+        wall["polyline"] = normalized_points
+        normalized_walls.append(wall)
+
+    geometry["walls"] = normalized_walls
+    geometry["openings"] = []
+    return geometry
+
+
+def _json_ready(value: Any) -> Any:
+    if isinstance(value, dict):
+        return {str(key): _json_ready(nested) for key, nested in value.items()}
+    if isinstance(value, list):
+        return [_json_ready(item) for item in value]
+    if isinstance(value, tuple):
+        return [_json_ready(item) for item in value]
+    if isinstance(value, np.ndarray):
+        nonzero_count = int(np.count_nonzero(value))
+        return {
+            "_type": "ndarray_summary",
+            "shape": [int(dim) for dim in value.shape],
+            "dtype": str(value.dtype),
+            "nonzero_count": nonzero_count,
+            "min": float(value.min()) if value.size else 0.0,
+            "max": float(value.max()) if value.size else 0.0,
+        }
+    if isinstance(value, np.generic):
+        return value.item()
+    if isinstance(value, Path):
+        return str(value)
+    return value
 
 
 def _copy_original_image(result: BenchmarkResult, case_dir: Path) -> None:
@@ -1354,6 +1478,60 @@ def _copy_original_image(result: BenchmarkResult, case_dir: Path) -> None:
     suffix = source_path.suffix.lower() or ".png"
     target_path = case_dir / f"original{suffix}"
     shutil.copy2(source_path, target_path)
+
+
+def _save_raw_model_mask_image(result: BenchmarkResult, case_dir: Path) -> None:
+    if not result.raw_model:
+        return
+    wall_mask = result.raw_model.get("_wall_mask")
+    if not isinstance(wall_mask, np.ndarray):
+        return
+    cv2.imwrite(str(case_dir / "raw_wall_mask.png"), wall_mask)
+
+
+def _save_cleaned_model_mask_image(cleaned_mask: np.ndarray | None, case_dir: Path) -> None:
+    if not isinstance(cleaned_mask, np.ndarray):
+        return
+    cv2.imwrite(str(case_dir / "cleaned_wall_mask.png"), cleaned_mask)
+
+
+def _has_mitunet_wall_mask(raw_model: dict[str, Any] | None) -> bool:
+    return bool(
+        raw_model
+        and raw_model.get("source") == MITUNET_BACKEND
+        and isinstance(raw_model.get("_wall_mask"), np.ndarray)
+    )
+
+
+def _resized_mask_for_canvas(mask: np.ndarray, image_b64: str | None) -> np.ndarray:
+    if image_b64 is None:
+        return mask
+    canvas = decode_image(image_b64)
+    if mask.shape[:2] == canvas.shape[:2]:
+        return mask
+    return cv2.resize(mask, (canvas.shape[1], canvas.shape[0]), interpolation=cv2.INTER_NEAREST)
+
+
+def _build_binary_mask_preview(
+    mask: np.ndarray,
+    *,
+    image_b64: str | None = None,
+    color: tuple[int, int, int] = (25, 25, 220),
+    alpha: float = 0.78,
+) -> np.ndarray:
+    if image_b64:
+        canvas = decode_image(image_b64).copy()
+    else:
+        resized = mask
+        canvas = np.full((resized.shape[0], resized.shape[1], 3), 255, dtype=np.uint8)
+
+    mask_for_canvas = _resized_mask_for_canvas(mask, image_b64)
+    binary = mask_for_canvas > 0
+    overlay = canvas.copy()
+    overlay[binary] = color
+    blended = cv2.addWeighted(overlay, alpha, canvas, 1.0 - alpha, 0.0)
+    blended[~binary] = canvas[~binary]
+    return blended
 
 
 def _save_inference_input_image(result: BenchmarkResult, case_dir: Path) -> None:
@@ -1384,6 +1562,104 @@ def _region_plan_to_wall_entities(region_plan: dict[str, Any]) -> list[dict[str,
                 }
             )
     return entities
+
+
+def _region_plan_image_shape(region_plan: dict[str, Any]) -> tuple[int, int]:
+    meta = region_plan.get("meta") or {}
+    image_shape = meta.get("image_shape") or {}
+    return (
+        int(image_shape.get("height", 0)),
+        int(image_shape.get("width", 0)),
+    )
+
+
+def _mitunet_dxf_to_image_point(
+    dx: float,
+    dy: float,
+    *,
+    image_shape: tuple[int, int],
+    transform: dict[str, Any],
+) -> dict[str, float]:
+    height, _ = image_shape
+    scale = float(transform.get("scale", 1.0) or 1.0)
+    offset_x = float(transform.get("offset_x", 0.0) or 0.0)
+    offset_y = float(transform.get("offset_y", 0.0) or 0.0)
+    ix = (float(dx) - offset_x) / scale
+    iy = float(height) - ((float(dy) - offset_y) / scale)
+    return {"x": ix, "y": iy}
+
+
+def _wall_entities_to_image_space(
+    wall_entities: list[dict[str, Any]],
+    *,
+    image_shape: tuple[int, int],
+    transform: dict[str, Any],
+) -> list[dict[str, Any]]:
+    height, width = image_shape
+    if height <= 0 or width <= 0:
+        return wall_entities
+
+    projected: list[dict[str, Any]] = []
+    for entity in wall_entities:
+        start = entity.get("start") or {}
+        end = entity.get("end") or {}
+        projected.append(
+            {
+                **entity,
+                "start": _mitunet_dxf_to_image_point(
+                    float(start.get("x", 0.0)),
+                    float(start.get("y", 0.0)),
+                    image_shape=image_shape,
+                    transform=transform,
+                ),
+                "end": _mitunet_dxf_to_image_point(
+                    float(end.get("x", 0.0)),
+                    float(end.get("y", 0.0)),
+                    image_shape=image_shape,
+                    transform=transform,
+                ),
+            }
+        )
+    return projected
+
+
+def _rescale_wall_entities_to_original_image(
+    wall_entities: list[dict[str, Any]],
+    input_normalization: dict[str, Any],
+) -> list[dict[str, Any]]:
+    if not input_normalization.get("applied"):
+        return wall_entities
+
+    scale_x = 1.0 / float(input_normalization.get("scale_x", 1.0) or 1.0)
+    scale_y = 1.0 / float(input_normalization.get("scale_y", 1.0) or 1.0)
+
+    rescaled: list[dict[str, Any]] = []
+    for entity in wall_entities:
+        start = entity.get("start") or {}
+        end = entity.get("end") or {}
+        rescaled.append(
+            {
+                **entity,
+                "start": {
+                    "x": float(start.get("x", 0.0)) * scale_x,
+                    "y": float(start.get("y", 0.0)) * scale_y,
+                },
+                "end": {
+                    "x": float(end.get("x", 0.0)) * scale_x,
+                    "y": float(end.get("y", 0.0)) * scale_y,
+                },
+            }
+        )
+    return rescaled
+
+
+def _region_plan_to_image_wall_entities(region_plan: dict[str, Any]) -> list[dict[str, Any]]:
+    meta = region_plan.get("meta") or {}
+    return _wall_entities_to_image_space(
+        _region_plan_to_wall_entities(region_plan),
+        image_shape=_region_plan_image_shape(region_plan),
+        transform=meta.get("transform") or {},
+    )
 
 
 def _region_plan_bounds(region_plan: dict[str, Any]) -> dict[str, float]:
@@ -1542,9 +1818,16 @@ def main() -> None:
     parser.add_argument("--output", default=None, help="Path to save benchmark results")
     parser.add_argument("--backend", default=None, help="Inference backend override")
     parser.add_argument("--limit", type=int, default=None, help="Optional max case count")
+    parser.add_argument("--baseline", action="store_true", help="Mark this run as the official baseline")
     args = parser.parse_args()
 
-    report = run_benchmark(args.dataset, output_dir=args.output, backend=args.backend, limit=args.limit)
+    report = run_benchmark(
+        args.dataset,
+        output_dir=args.output,
+        backend=args.backend,
+        limit=args.limit,
+        is_baseline=args.baseline,
+    )
     summary = report.summary()
 
     print(f"\nBenchmark complete: {summary['total']} cases")

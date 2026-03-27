@@ -8,6 +8,7 @@ import numpy as np
 
 from backend.benchmark import (
     BenchmarkResult,
+    _region_plan_to_image_wall_entities,
     compare_structures,
     evaluate_result_against_thresholds,
     load_cases,
@@ -15,6 +16,7 @@ from backend.benchmark import (
     run_case,
 )
 from backend.image_utils import decode_image
+from backend.mitunet_inference import build_mitunet_region_plan
 from tests.helpers import build_manual_structure, build_mitunet_infer_result
 
 
@@ -322,6 +324,81 @@ def test_run_case_tracks_region_plan_for_mitunet(tmp_path, monkeypatch):
     assert result.quality_metrics["benchmark_dxf_mode"] == "mask_regions"
     assert result.region_plan["meta"]["region_count"] > 0
     assert result.region_plan["meta"]["max_wall_thickness"] == 6.0
+    assert result.region_plan["debug"]["stage_order"] == [
+        "raw_wall_mask",
+        "cleaned_wall_mask",
+        "horizontal_extraction",
+        "vertical_extraction",
+        "trimmed_rectangles",
+        "clamped_regions",
+    ]
+    assert result.region_plan["debug"]["clamped_regions"]["region_count"] == result.region_plan["meta"]["region_count"]
     assert all(region["draw_thickness"] <= 6.0 for region in result.region_plan["regions"])
     assert "region_plan_to_dxf" in result.stage_comparison
     assert len(result.dxf_wall_entities) > 0
+
+
+def test_run_benchmark_writes_mitunet_region_debug_artifacts(tmp_path, monkeypatch):
+    dataset_root = tmp_path / "dataset"
+    dataset_root.mkdir()
+    dataset = _create_test_dataset(dataset_root)
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        "backend.benchmark.infer_structure",
+        lambda image_b64, backend=None: build_mitunet_infer_result(),
+    )
+
+    run_benchmark(dataset, backend="mitunet_local", output_dir=output_dir)
+
+    case_dir = output_dir / "simple_box"
+    raw_model = json.loads((case_dir / "raw_model.json").read_text(encoding="utf-8"))
+    region_debug = json.loads((case_dir / "mitunet_region_debug.json").read_text(encoding="utf-8"))
+    result_json = json.loads((case_dir / "result.json").read_text(encoding="utf-8"))
+
+    assert raw_model["_wall_mask"]["_type"] == "ndarray_summary"
+    assert raw_model["_wall_mask"]["shape"] == [160, 220]
+    assert region_debug["horizontal_extraction"]["candidate_count"] >= 1
+    assert region_debug["clamped_regions"]["region_count"] >= 1
+    assert (case_dir / "raw_wall_mask.png").exists()
+    assert (case_dir / "cleaned_wall_mask.png").exists()
+    assert (case_dir / "provenance.json").exists()
+    assert result_json["artifact_files"]["mitunet_region_debug"] == "mitunet_region_debug.json"
+    assert result_json["artifact_files"]["raw_wall_mask"] == "raw_wall_mask.png"
+    assert result_json["artifact_files"]["cleaned_wall_mask"] == "cleaned_wall_mask.png"
+    assert result_json["artifact_files"]["provenance"] == "provenance.json"
+
+
+def test_run_benchmark_writes_baseline_manifest(tmp_path, monkeypatch):
+    dataset_root = tmp_path / "dataset"
+    dataset_root.mkdir()
+    dataset = _create_test_dataset(dataset_root)
+    output_dir = tmp_path / "out"
+    monkeypatch.setattr(
+        "backend.benchmark.infer_structure",
+        lambda image_b64, backend=None: build_mitunet_infer_result(),
+    )
+
+    run_benchmark(dataset, backend="mitunet_local", output_dir=output_dir, is_baseline=True)
+
+    manifest = json.loads((output_dir / "baseline_manifest.json").read_text(encoding="utf-8"))
+    assert manifest["is_official_baseline"] is True
+    assert manifest["backend"] == "mitunet_local"
+    assert manifest["code"]["git_commit_sha"] is not None
+    assert manifest["inference_provenance"]["backend"] == "mitunet_local"
+
+
+def test_region_plan_preview_projects_back_to_image_space():
+    infer_result = build_mitunet_infer_result()
+    region_plan = build_mitunet_region_plan(infer_result)
+    entities = _region_plan_to_image_wall_entities(region_plan)
+
+    assert len(entities) > 0
+    height = infer_result["_image_shape"][0]
+    width = infer_result["_image_shape"][1]
+    for entity in entities:
+        start = entity["start"]
+        end = entity["end"]
+        assert -1.0 <= float(start["x"]) <= width + 1.0
+        assert -1.0 <= float(end["x"]) <= width + 1.0
+        assert -1.0 <= float(start["y"]) <= height + 1.0
+        assert -1.0 <= float(end["y"]) <= height + 1.0

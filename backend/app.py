@@ -185,7 +185,7 @@ async def api_generate_v2(req: GenerateStructureRequest):
     filename = f"{request_id}.dxf"
     out_path = str(DXF_DIR / filename)
 
-    dxf_mode = _resolve_dxf_mode(req.dxf_mode, parsed)
+    dxf_mode = _resolve_dxf_mode(parsed)
     parsed["quality_metrics"]["dxf_mode"] = dxf_mode
     parsed["structure"].setdefault("structure_meta", {})
     parsed["structure"]["structure_meta"]["dxf_mode"] = dxf_mode
@@ -196,6 +196,8 @@ async def api_generate_v2(req: GenerateStructureRequest):
             region_plan = build_mitunet_region_plan(infer_result, annotations=req.annotations)
             parsed["quality_metrics"]["dxf_region_count"] = region_plan["meta"]["region_count"]
             parsed["structure"]["structure_meta"]["dxf_region_plan"] = region_plan
+            parsed["structure"]["structure_meta"]["mitunet_region_debug"] = region_plan.get("debug", {})
+            parsed["structure"]["structure_meta"]["provenance"] = region_plan["meta"].get("provenance", {})
             generate_mitunet_region_dxf(region_plan, out_path, annotations=req.annotations)
         else:
             generate_structural(parsed["structure"], out_path)
@@ -277,18 +279,9 @@ def _parse_v2_input(
     raise ValueError("One of structure, plan or image must be provided.")
 
 
-def _resolve_dxf_mode(requested_mode: str | None, parsed: dict) -> str:
-    normalized = (requested_mode or "auto").strip().lower()
-    if normalized not in {"auto", "structural", "mask_regions"}:
-        raise ValueError(f"Unsupported dxf_mode: {requested_mode}")
-
+def _resolve_dxf_mode(parsed: dict) -> str:
     infer_result = parsed.get("_infer_result") or {}
     supports_mask_regions = (
         infer_result.get("source") == MITUNET_BACKEND and "_wall_mask" in infer_result
     )
-
-    if normalized == "auto":
-        return "mask_regions" if supports_mask_regions else "structural"
-    if normalized == "mask_regions" and not supports_mask_regions:
-        raise ValueError("dxf_mode=mask_regions is only available for MitUNet image inference.")
-    return normalized
+    return "mask_regions" if supports_mask_regions else "structural"

@@ -16,9 +16,12 @@ from typing import Any
 import cv2
 import numpy as np
 
+from .provenance import build_code_provenance, build_file_provenance, utc_now_iso
+
 MITUNET_BACKEND = "mitunet_local"
 MITUNET_MASK_REGIONS_DXF_MODE = "mask_regions"
 MAX_MITUNET_REGION_WALL_THICKNESS = 6.0
+MITUNET_MODEL_NAME = "MitUNet MiT-B4 UNet scSE"
 
 _WEIGHTS_PATH = Path(r"C:\Users\lucas\OneDrive\Escritorio\pesos\mitunet_finetune_a6_mit_b4_tversky_8864_28E.pth")
 _IMAGE_SIZE = 512
@@ -348,12 +351,31 @@ _PLAN_X2 = 1530
 _PLAN_Y2 = 1080
 
 
+def build_mitunet_provenance(*, dxf_mode: str = MITUNET_MASK_REGIONS_DXF_MODE) -> dict[str, Any]:
+    return {
+        "captured_at_utc": utc_now_iso(),
+        "backend": MITUNET_BACKEND,
+        "model_variant": "mitunet",
+        "model_name": MITUNET_MODEL_NAME,
+        "dxf_mode": dxf_mode,
+        "region_contract_version": "mitunet_region_plan_v1",
+        "max_region_wall_thickness": float(MAX_MITUNET_REGION_WALL_THICKNESS),
+        "code": build_code_provenance(),
+        "weights": build_file_provenance(_WEIGHTS_PATH),
+        "template": build_file_provenance(_TEMPLATE_PATH),
+    }
+
+
 def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
                          annotations: list[dict] | None = None) -> int:
-    """Generate DXF with MARCA REGISTRADA template + wall rectangles with hatch.
+    """Legacy entrypoint kept as a compatibility wrapper.
 
-    Returns the number of wall rectangles drawn.
+    The real MitUNet DXF path is now:
+    raw mask -> region_plan -> generate_mitunet_region_dxf
     """
+    region_plan = build_mitunet_region_plan(infer_result, annotations=annotations)
+    return generate_mitunet_region_dxf(region_plan, out_path, annotations=annotations)
+
     import ezdxf
 
     wall_mask = infer_result["_wall_mask"]
@@ -710,6 +732,66 @@ def _prepare_mitunet_wall_mask_for_regions(
     return cleaned
 
 
+def _binary_mask_bbox(mask: np.ndarray) -> dict[str, int] | None:
+    points = cv2.findNonZero(mask)
+    if points is None:
+        return None
+    x, y, w, h = cv2.boundingRect(points)
+    return {
+        "x1": int(x),
+        "y1": int(y),
+        "x2": int(x + w),
+        "y2": int(y + h),
+    }
+
+
+def _summarize_binary_mask(mask: np.ndarray) -> dict[str, Any]:
+    binary = (mask > 0).astype(np.uint8)
+    component_count = 0
+    largest_component_area = 0
+    if binary.size > 0:
+        num_components, _, stats, _ = cv2.connectedComponentsWithStats(binary, connectivity=8)
+        component_count = max(0, int(num_components - 1))
+        if component_count > 0:
+            largest_component_area = int(stats[1:, cv2.CC_STAT_AREA].max())
+
+    nonzero_pixel_count = int(np.count_nonzero(binary))
+    return {
+        "shape": {"height": int(binary.shape[0]), "width": int(binary.shape[1])},
+        "nonzero_pixel_count": nonzero_pixel_count,
+        "coverage_ratio": float(nonzero_pixel_count / float(binary.size)) if binary.size else 0.0,
+        "component_count": component_count,
+        "largest_component_area": largest_component_area,
+        "bbox": _binary_mask_bbox(binary),
+    }
+
+
+def _rect_bounds_dict(rect: list[float]) -> dict[str, float]:
+    x1, y1, x2, y2 = [float(value) for value in rect]
+    return {
+        "x1": x1,
+        "y1": y1,
+        "x2": x2,
+        "y2": y2,
+    }
+
+
+def _rect_stage_entry(
+    rect: list[float],
+    *,
+    orientation: str,
+    rect_id: str,
+) -> dict[str, Any]:
+    x1, y1, x2, y2 = [float(value) for value in rect]
+    return {
+        "id": rect_id,
+        "orientation": orientation,
+        "bounds": _rect_bounds_dict(rect),
+        "length": float(max(abs(x2 - x1), abs(y2 - y1))),
+        "thickness": float(min(abs(x2 - x1), abs(y2 - y1))),
+    }
+
+
 def _resolve_mitunet_plan_transform(image_shape: tuple[int, int]) -> dict[str, float]:
     h, w = image_shape
     plan_w = _PLAN_X2 - _PLAN_X1
@@ -755,12 +837,14 @@ def _collect_mitunet_region_rectangles(
     *,
     image_shape: tuple[int, int],
     transform: dict[str, float],
-) -> tuple[list[list[float]], list[list[float]], dict[str, float]]:
+) -> tuple[list[list[float]], list[list[float]], dict[str, Any]]:
     h, w = image_shape
     min_len = max(8, min(h, w) // 40)
     wall_thin = 0.4
     h_rects: list[list[float]] = []
     v_rects: list[list[float]] = []
+    h_components: list[dict[str, Any]] = []
+    v_components: list[dict[str, Any]] = []
 
     h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (min_len, 1))
     h_mask = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, h_kernel)
@@ -770,16 +854,39 @@ def _collect_mitunet_region_rectangles(
         y = stats_h[i, cv2.CC_STAT_TOP]
         cw = stats_h[i, cv2.CC_STAT_WIDTH]
         ch = stats_h[i, cv2.CC_STAT_HEIGHT]
+        component_entry = {
+            "component_index": int(i),
+            "orientation": "horizontal",
+            "image_bounds": {
+                "x1": int(x),
+                "y1": int(y),
+                "x2": int(x + cw),
+                "y2": int(y + ch),
+            },
+            "pixel_width": int(cw),
+            "pixel_height": int(ch),
+            "accepted": False,
+        }
         if cw < min_len or ch < 2:
+            component_entry["skip_reason"] = "too_short"
+            h_components.append(component_entry)
             continue
         if ch > 0 and cw / ch < 2.5:
+            component_entry["skip_reason"] = "insufficient_aspect_ratio"
+            h_components.append(component_entry)
             continue
         trim = ch * (1 - wall_thin) / 2
         y_s = y + trim
         ch_s = ch - 2 * trim
         x1d, y1d = _mitunet_region_img_to_dxf(x, y_s + ch_s, image_shape=image_shape, transform=transform)
         x2d, y2d = _mitunet_region_img_to_dxf(x + cw, y_s, image_shape=image_shape, transform=transform)
-        h_rects.append([min(x1d, x2d), min(y1d, y2d), max(x1d, x2d), max(y1d, y2d)])
+        rect = [min(x1d, x2d), min(y1d, y2d), max(x1d, x2d), max(y1d, y2d)]
+        h_rects.append(rect)
+        component_entry["accepted"] = True
+        component_entry["dxf_bounds"] = _rect_bounds_dict(rect)
+        component_entry["dxf_length"] = float(max(rect[2] - rect[0], rect[3] - rect[1]))
+        component_entry["dxf_thickness"] = float(min(rect[2] - rect[0], rect[3] - rect[1]))
+        h_components.append(component_entry)
 
     v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, min_len))
     v_mask = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, v_kernel)
@@ -789,18 +896,52 @@ def _collect_mitunet_region_rectangles(
         y = stats_v[i, cv2.CC_STAT_TOP]
         cw = stats_v[i, cv2.CC_STAT_WIDTH]
         ch = stats_v[i, cv2.CC_STAT_HEIGHT]
+        component_entry = {
+            "component_index": int(i),
+            "orientation": "vertical",
+            "image_bounds": {
+                "x1": int(x),
+                "y1": int(y),
+                "x2": int(x + cw),
+                "y2": int(y + ch),
+            },
+            "pixel_width": int(cw),
+            "pixel_height": int(ch),
+            "accepted": False,
+        }
         if ch < min_len or cw < 2:
+            component_entry["skip_reason"] = "too_short"
+            v_components.append(component_entry)
             continue
         if cw > 0 and ch / cw < 2.5:
+            component_entry["skip_reason"] = "insufficient_aspect_ratio"
+            v_components.append(component_entry)
             continue
         trim = cw * (1 - wall_thin) / 2
         x_s = x + trim
         cw_s = cw - 2 * trim
         x1d, y1d = _mitunet_region_img_to_dxf(x_s, y + ch, image_shape=image_shape, transform=transform)
         x2d, y2d = _mitunet_region_img_to_dxf(x_s + cw_s, y, image_shape=image_shape, transform=transform)
-        v_rects.append([min(x1d, x2d), min(y1d, y2d), max(x1d, x2d), max(y1d, y2d)])
+        rect = [min(x1d, x2d), min(y1d, y2d), max(x1d, x2d), max(y1d, y2d)]
+        v_rects.append(rect)
+        component_entry["accepted"] = True
+        component_entry["dxf_bounds"] = _rect_bounds_dict(rect)
+        component_entry["dxf_length"] = float(max(rect[2] - rect[0], rect[3] - rect[1]))
+        component_entry["dxf_thickness"] = float(min(rect[2] - rect[0], rect[3] - rect[1]))
+        v_components.append(component_entry)
 
-    return h_rects, v_rects, {"min_len": float(min_len), "wall_thin": float(wall_thin)}
+    return h_rects, v_rects, {
+        "min_len": float(min_len),
+        "wall_thin": float(wall_thin),
+        "horizontal_mask": _summarize_binary_mask(h_mask),
+        "vertical_mask": _summarize_binary_mask(v_mask),
+        "horizontal_components": h_components,
+        "vertical_components": v_components,
+        "horizontal_candidate_count": len(h_components),
+        "vertical_candidate_count": len(v_components),
+        "horizontal_accepted_count": sum(1 for component in h_components if component["accepted"]),
+        "vertical_accepted_count": sum(1 for component in v_components if component["accepted"]),
+    }
 
 
 def _trim_mitunet_region_rectangles(h_rects: list[list[float]], v_rects: list[list[float]]) -> None:
@@ -908,18 +1049,22 @@ def build_mitunet_region_plan(
     wall_mask = infer_result["_wall_mask"]
     h, w = infer_result["_image_shape"]
     image_shape = (h, w)
+    raw_mask_debug = _summarize_binary_mask(wall_mask)
 
     cleaned = _prepare_mitunet_wall_mask_for_regions(
         wall_mask,
         image_shape=image_shape,
         annotations=annotations,
     )
+    cleaned_mask_debug = _summarize_binary_mask(cleaned)
     transform = _resolve_mitunet_plan_transform(image_shape)
     h_rects, v_rects, extraction_meta = _collect_mitunet_region_rectangles(
         cleaned,
         image_shape=image_shape,
         transform=transform,
     )
+    h_rects_before_trim = [list(rect) for rect in h_rects]
+    v_rects_before_trim = [list(rect) for rect in v_rects]
     _trim_mitunet_region_rectangles(h_rects, v_rects)
     max_wall_thickness = float(MAX_MITUNET_REGION_WALL_THICKNESS)
 
@@ -944,6 +1089,90 @@ def build_mitunet_region_plan(
         ],
     ]
     clamped_region_count = sum(1 for region in regions if region.get("thickness_clamped"))
+    horizontal_adjusted_count = sum(
+        1
+        for before, after in zip(h_rects_before_trim, h_rects)
+        if any(abs(float(before[index]) - float(after[index])) > 1e-6 for index in range(4))
+    )
+    vertical_adjusted_count = sum(
+        1
+        for before, after in zip(v_rects_before_trim, v_rects)
+        if any(abs(float(before[index]) - float(after[index])) > 1e-6 for index in range(4))
+    )
+    debug = {
+        "stage_order": [
+            "raw_wall_mask",
+            "cleaned_wall_mask",
+            "horizontal_extraction",
+            "vertical_extraction",
+            "trimmed_rectangles",
+            "clamped_regions",
+        ],
+        "input": {
+            "image_shape": {"height": int(h), "width": int(w)},
+            "annotation_count": len(annotations or []),
+            "eraser_count": sum(1 for ann in (annotations or []) if ann.get("type") == "eraser"),
+        },
+        "raw_wall_mask": raw_mask_debug,
+        "cleaned_wall_mask": cleaned_mask_debug,
+        "horizontal_extraction": {
+            "mask": extraction_meta["horizontal_mask"],
+            "candidate_count": extraction_meta["horizontal_candidate_count"],
+            "accepted_count": extraction_meta["horizontal_accepted_count"],
+            "components": extraction_meta["horizontal_components"],
+            "rectangles": [
+                _rect_stage_entry(rect, orientation="horizontal", rect_id=f"h-raw-{index:04d}")
+                for index, rect in enumerate(h_rects_before_trim, start=1)
+            ],
+        },
+        "vertical_extraction": {
+            "mask": extraction_meta["vertical_mask"],
+            "candidate_count": extraction_meta["vertical_candidate_count"],
+            "accepted_count": extraction_meta["vertical_accepted_count"],
+            "components": extraction_meta["vertical_components"],
+            "rectangles": [
+                _rect_stage_entry(rect, orientation="vertical", rect_id=f"v-raw-{index:04d}")
+                for index, rect in enumerate(v_rects_before_trim, start=1)
+            ],
+        },
+        "trimmed_rectangles": {
+            "horizontal_adjusted_count": horizontal_adjusted_count,
+            "vertical_adjusted_count": vertical_adjusted_count,
+            "horizontal_before": [
+                _rect_stage_entry(rect, orientation="horizontal", rect_id=f"h-before-{index:04d}")
+                for index, rect in enumerate(h_rects_before_trim, start=1)
+            ],
+            "horizontal_after": [
+                _rect_stage_entry(rect, orientation="horizontal", rect_id=f"h-after-{index:04d}")
+                for index, rect in enumerate(h_rects, start=1)
+            ],
+            "vertical_before": [
+                _rect_stage_entry(rect, orientation="vertical", rect_id=f"v-before-{index:04d}")
+                for index, rect in enumerate(v_rects_before_trim, start=1)
+            ],
+            "vertical_after": [
+                _rect_stage_entry(rect, orientation="vertical", rect_id=f"v-after-{index:04d}")
+                for index, rect in enumerate(v_rects, start=1)
+            ],
+        },
+        "clamped_regions": {
+            "region_count": len(regions),
+            "clamped_region_count": clamped_region_count,
+            "clamped_region_ids": [region["id"] for region in regions if region.get("thickness_clamped")],
+            "regions": [
+                {
+                    "id": region["id"],
+                    "orientation": region["orientation"],
+                    "raw_bounds": region["raw_bounds"],
+                    "bounds": region["bounds"],
+                    "raw_thickness": region["raw_thickness"],
+                    "draw_thickness": region["draw_thickness"],
+                    "thickness_clamped": region["thickness_clamped"],
+                }
+                for region in regions
+            ],
+        },
+    }
 
     return {
         "mode": MITUNET_MASK_REGIONS_DXF_MODE,
@@ -957,9 +1186,12 @@ def build_mitunet_region_plan(
             "region_count": len(regions),
             "clamped_region_count": clamped_region_count,
             "max_wall_thickness": max_wall_thickness,
-            **extraction_meta,
+            "min_len": extraction_meta["min_len"],
+            "wall_thin": extraction_meta["wall_thin"],
+            "provenance": build_mitunet_provenance(),
         },
         "regions": regions,
+        "debug": debug,
     }
 
 

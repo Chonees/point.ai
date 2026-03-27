@@ -271,8 +271,6 @@ function DescribePanel() {
 function UploadPanel() {
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const [scaleHint, setScaleHint] = useState('')
-  const [modelVariant, setModelVariant] = useState<ModelVariant>('baseline')
   const [status, setStatus] = useState<Status>('idle')
   const [statusMsg, setStatusMsg] = useState('')
   const [result, setResult] = useState<V2Result | null>(null)
@@ -308,11 +306,7 @@ function UploadPanel() {
 
     try {
       const imageBase64 = await fileToBase64(file)
-      const body: Record<string, unknown> = { image: imageBase64, model_variant: modelVariant }
-      if (scaleHint) {
-        const parsed = parseFloat(scaleHint)
-        if (!isNaN(parsed) && parsed > 0) body.scale_hint = parsed
-      }
+      const body: Record<string, unknown> = { image: imageBase64, model_variant: 'mitunet' }
       if (annotations.length > 0) body.annotations = annotations
 
       const res = await fetch('/api/v2/generate-dxf', {
@@ -328,7 +322,7 @@ function UploadPanel() {
       setStatus('error')
       setStatusMsg(e instanceof Error ? e.message : 'Unknown error')
     }
-  }, [file, modelVariant, scaleHint, annotations])
+  }, [file, annotations])
 
   return (
     <>
@@ -365,55 +359,6 @@ function UploadPanel() {
             </div>
           </div>
         )}
-      </div>
-
-      {/* Scale hint */}
-      <div className="flex items-center gap-2 sm:gap-3 mt-3">
-        <div className="flex items-center gap-2 flex-1">
-          <label className="text-xs text-zinc-600 whitespace-nowrap">Scale</label>
-          <input
-            type="number"
-            value={scaleHint}
-            onChange={(e) => setScaleHint(e.target.value)}
-            placeholder="px/inch (optional)"
-            step="0.001"
-            min="0"
-            className="flex-1 min-w-0 bg-zinc-950 border border-zinc-800/60 rounded-md
-                       text-xs text-zinc-400 px-3 py-2
-                       placeholder:text-zinc-700
-                       focus:outline-none focus:border-zinc-600
-                       transition-colors duration-200"
-          />
-        </div>
-      </div>
-
-      {/* Model variant */}
-      <div className="mt-3">
-        <p className="text-xs text-zinc-600 mb-2">Model</p>
-        <div className="grid grid-cols-2 gap-2">
-          {([
-            { value: 'baseline'  as const, label: 'Baseline',  note: 'CubiCasa5k' },
-            { value: 'mitunet'   as const, label: 'MitUNet',   note: 'Walls HD' },
-          ]).map((option) => (
-            <button
-              key={option.value}
-              type="button"
-              onClick={() => {
-                setModelVariant(option.value)
-                setResult(null)
-              }}
-              className={`p-2.5 sm:p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer
-                          active:bg-white/[0.08] ${
-                modelVariant === option.value
-                  ? 'border-zinc-500 bg-white/[0.05]'
-                  : 'border-zinc-800/60 bg-zinc-950 hover:border-zinc-700'
-              }`}
-            >
-              <p className="text-xs text-zinc-300">{option.label}</p>
-              <p className="text-[10px] text-zinc-600 mt-0.5">{option.note}</p>
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Generate button */}
@@ -458,34 +403,6 @@ function UploadPanel() {
               />
             )}
 
-            {/* Stats row */}
-            <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
-              <Stat label="Walls" value={String(result.quality_metrics.wall_count ?? '—')} />
-              <Stat label="Openings" value={String(result.quality_metrics.opening_count ?? '—')} />
-              <Stat
-                label="Scale"
-                value={result.scale_status === 'calibrated' ? 'Cal.' : 'Px'}
-                dim={result.scale_status !== 'calibrated'}
-              />
-            </div>
-
-            <div className="flex items-center justify-between text-[10px] sm:text-[11px] text-zinc-600 px-1">
-              <span>{String(result.quality_metrics.model_variant ?? modelVariant)}</span>
-              <span>{String(result.quality_metrics.inference_backend ?? '—')}</span>
-            </div>
-
-            {/* Review flags */}
-            {result.needs_review && result.review_flags.length > 0 && (
-              <div className="p-3 bg-amber-950/20 border border-amber-900/30 rounded-lg">
-                <p className="text-xs text-amber-600/80 font-medium mb-1.5">Review needed</p>
-                <ul className="space-y-1 max-h-32 sm:max-h-none overflow-auto">
-                  {result.review_flags.map((flag, i) => (
-                    <li key={i} className="text-[10px] sm:text-[11px] text-amber-700/70">• {flag}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
             {/* Download */}
             <DownloadButton href={result.dxf_url} />
 
@@ -527,7 +444,7 @@ function Stat({ label, value, dim = false }: { label: string; value: string; dim
 
 
 function DoorSwingPicker({ pendingDoor, onPick, onCancel }: {
-  pendingDoor: { x1: number; y1: number; x2: number; y2: number }
+  pendingDoor: { x1: number; y1: number; x2: number; y2: number; sx: number; sy: number }
   onPick: (dir: SwingDir) => void
   onCancel: () => void
 }) {
@@ -537,21 +454,24 @@ function DoorSwingPicker({ pendingDoor, onPick, onCancel }: {
   const options: SwingDir[] = isVertical ? ['left', 'right'] : ['up', 'down']
   const arrows: Record<string, string> = { up: '↑', down: '↓', left: '←', right: '→' }
   return (
-    <div className="flex items-center justify-center gap-2 px-3 py-2 bg-green-950/30 border-t border-green-900/40">
-      <span className="text-[10px] text-green-400">Opens toward:</span>
+    <div
+      className="absolute z-50 flex items-center gap-1 px-2 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700/60 shadow-xl shadow-black/50"
+      style={{ left: pendingDoor.sx, top: pendingDoor.sy + 8, transform: 'translateX(-50%)' }}
+    >
+      <span className="text-[9px] text-zinc-400 mr-1">Opens</span>
       {options.map((dir) => (
         <button
           key={dir}
           onClick={() => onPick(dir)}
-          className="px-3 py-1.5 rounded text-[11px] font-medium bg-green-900/40 border border-green-700/50
-                     text-green-300 hover:bg-green-800/50 cursor-pointer transition-colors"
+          className="px-2.5 py-1 rounded text-[10px] font-medium bg-zinc-700/60 border border-zinc-600/50
+                     text-zinc-300 hover:bg-zinc-600/60 hover:text-white cursor-pointer transition-colors"
         >
           {arrows[dir]} {dir}
         </button>
       ))}
       <button
         onClick={onCancel}
-        className="px-2 py-1 text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
+        className="ml-1 px-1.5 py-1 text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
       >
         ✕
       </button>
@@ -566,18 +486,19 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
   setAnnotations: (a: Annotation[]) => void
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const loupeRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [tool, setTool] = useState<AnnotationType>('wall')
   const [drawing, setDrawing] = useState(false)
   const [startPt, setStartPt] = useState<{ x: number; y: number } | null>(null)
-  const [imgSize, setImgSize] = useState({ w: 0, h: 0 })
   const [fullscreen, setFullscreen] = useState(false)
-  const [loupeEnabled, setLoupeEnabled] = useState(true)
-  const [loupePos, setLoupePos] = useState<{ x: number; y: number; cx: number; cy: number } | null>(null)
   const [eraserSize, setEraserSize] = useState(10)
-  const [loupeSize, setLoupeSize] = useState(55)
-  const LOUPE_ZOOM = 4
+
+  // Pan + Zoom state
+  const [view, setView] = useState({ offsetX: 0, offsetY: 0, scale: 1 })
+  const isPanning = useRef(false)
+  const panStart = useRef({ x: 0, y: 0 })
+  const spaceDown = useRef(false)
+  const imgRef = useRef<HTMLImageElement | null>(null)
 
   const COLORS: Record<AnnotationType, string> = {
     wall: '#ff3333',
@@ -586,128 +507,213 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     eraser: '#888888',
   }
 
-  const getCanvasPoint = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // Screen mouse → world (image-pixel) coordinates, accounting for pan+zoom
+  const screenToWorld = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current
     if (!canvas) return { x: 0, y: 0 }
     const rect = canvas.getBoundingClientRect()
-    // Use nativeEvent.offsetX/offsetY for accurate position regardless of scroll
-    const offsetX = e.nativeEvent.offsetX
-    const offsetY = e.nativeEvent.offsetY
-    const scaleX = canvas.width / rect.width
-    const scaleY = canvas.height / rect.height
+    const canvasX = (clientX - rect.left) * (canvas.width / rect.width)
+    const canvasY = (clientY - rect.top) * (canvas.height / rect.height)
     return {
-      x: Math.round(offsetX * scaleX),
-      y: Math.round(offsetY * scaleY),
+      x: Math.round((canvasX - view.offsetX) / view.scale),
+      y: Math.round((canvasY - view.offsetY) / view.scale),
     }
   }
 
+  // Fit image inside canvas on load
+  const fitImage = useCallback(() => {
+    const canvas = canvasRef.current
+    const container = containerRef.current
+    const img = imgRef.current
+    if (!canvas || !container || !img) return
+
+    const cw = container.clientWidth
+    const ch = container.clientHeight || 400
+    canvas.width = cw
+    canvas.height = ch
+
+    const s = Math.min(cw / img.width, ch / img.height, 1)
+    const ox = (cw - img.width * s) / 2
+    const oy = (ch - img.height * s) / 2
+    setView({ offsetX: ox, offsetY: oy, scale: s })
+  }, [])
+
+  // Load image once into ref
+  useEffect(() => {
+    const img = new Image()
+    img.onload = () => {
+      imgRef.current = img
+      fitImage()
+    }
+    img.src = previewUrl
+  }, [previewUrl, fitImage])
+
+  // Resize canvas when container changes (fullscreen toggle)
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    const ro = new ResizeObserver(() => fitImage())
+    ro.observe(container)
+    return () => ro.disconnect()
+  }, [fitImage])
+
+  // Redraw: clear → apply transform → draw image + annotations
   const redraw = useCallback(() => {
     const canvas = canvasRef.current
-    if (!canvas) return
+    const img = imgRef.current
+    if (!canvas || !img) return
     const ctx = canvas.getContext('2d')
     if (!ctx) return
 
-    const img = new Image()
-    img.onload = () => {
-      canvas.width = img.width
-      canvas.height = img.height
-      setImgSize({ w: img.width, h: img.height })
-      ctx.drawImage(img, 0, 0)
+    // Clear in screen space
+    ctx.setTransform(1, 0, 0, 1, 0, 0)
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
 
-      // Draw existing annotations
-      for (const ann of annotations) {
-        if (ann.type === 'eraser') {
-          // Draw eraser zone as dark semi-transparent rect
-          ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
-          ctx.fillRect(ann.x1, ann.y1, ann.x2 - ann.x1, ann.y2 - ann.y1)
-          ctx.strokeStyle = '#ff4444'
-          ctx.lineWidth = 1
-          ctx.setLineDash([3, 3])
-          ctx.strokeRect(ann.x1, ann.y1, ann.x2 - ann.x1, ann.y2 - ann.y1)
-          ctx.setLineDash([])
-        } else {
-          ctx.strokeStyle = COLORS[ann.type]
-          ctx.lineWidth = ann.type === 'wall' ? 4 : 2
-          ctx.beginPath()
-          ctx.moveTo(ann.x1, ann.y1)
-          ctx.lineTo(ann.x2, ann.y2)
-          ctx.stroke()
-
-          // Label
-          ctx.fillStyle = COLORS[ann.type]
-          ctx.font = '10px monospace'
-          ctx.fillText(ann.type[0].toUpperCase(), Math.min(ann.x1, ann.x2) - 12, (ann.y1 + ann.y2) / 2 + 4)
-        }
+    // Dotted grid background
+    ctx.fillStyle = '#111111'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    const dotSpacing = 20
+    ctx.fillStyle = '#2a2a2a'
+    for (let dx = (view.offsetX % dotSpacing + dotSpacing) % dotSpacing; dx < canvas.width; dx += dotSpacing) {
+      for (let dy = (view.offsetY % dotSpacing + dotSpacing) % dotSpacing; dy < canvas.height; dy += dotSpacing) {
+        ctx.beginPath()
+        ctx.arc(dx, dy, 1, 0, Math.PI * 2)
+        ctx.fill()
       }
     }
-    img.src = previewUrl
-  }, [previewUrl, annotations])
+
+    // Apply pan+zoom
+    ctx.setTransform(view.scale, 0, 0, view.scale, view.offsetX, view.offsetY)
+
+    // Draw image at origin in world space
+    ctx.drawImage(img, 0, 0)
+
+    // Draw annotations (all coords are world/image-pixel space)
+    for (const ann of annotations) {
+      if (ann.type === 'eraser') {
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
+        ctx.fillRect(ann.x1, ann.y1, ann.x2 - ann.x1, ann.y2 - ann.y1)
+        ctx.strokeStyle = '#ff4444'
+        ctx.lineWidth = 1 / view.scale
+        ctx.setLineDash([3 / view.scale, 3 / view.scale])
+        ctx.strokeRect(ann.x1, ann.y1, ann.x2 - ann.x1, ann.y2 - ann.y1)
+        ctx.setLineDash([])
+      } else {
+        ctx.strokeStyle = COLORS[ann.type]
+        ctx.lineWidth = (ann.type === 'wall' ? 4 : 2) / view.scale
+        ctx.beginPath()
+        ctx.moveTo(ann.x1, ann.y1)
+        ctx.lineTo(ann.x2, ann.y2)
+        ctx.stroke()
+
+        ctx.fillStyle = COLORS[ann.type]
+        ctx.font = `${10 / view.scale}px monospace`
+        ctx.fillText(ann.type[0].toUpperCase(), Math.min(ann.x1, ann.x2) - 12 / view.scale, (ann.y1 + ann.y2) / 2 + 4 / view.scale)
+      }
+    }
+  }, [view, annotations])
 
   useEffect(() => { redraw() }, [redraw])
 
+  // Space key for pan mode
+  useEffect(() => {
+    const onDown = (e: KeyboardEvent) => { if (e.code === 'Space') { e.preventDefault(); spaceDown.current = true } }
+    const onUp = (e: KeyboardEvent) => { if (e.code === 'Space') spaceDown.current = false }
+    window.addEventListener('keydown', onDown)
+    window.addEventListener('keyup', onUp)
+    return () => { window.removeEventListener('keydown', onDown); window.removeEventListener('keyup', onUp) }
+  }, [])
+
+  // Wheel zoom centered on cursor
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const onWheel = (e: WheelEvent) => {
+      e.preventDefault()
+      const rect = canvas.getBoundingClientRect()
+      const mouseX = (e.clientX - rect.left) * (canvas.width / rect.width)
+      const mouseY = (e.clientY - rect.top) * (canvas.height / rect.height)
+
+      setView(v => {
+        const worldX = (mouseX - v.offsetX) / v.scale
+        const worldY = (mouseY - v.offsetY) / v.scale
+        const factor = e.deltaY < 0 ? 1.15 : 1 / 1.15
+        const newScale = Math.min(Math.max(v.scale * factor, 0.1), 30)
+        return {
+          scale: newScale,
+          offsetX: mouseX - worldX * newScale,
+          offsetY: mouseY - worldY * newScale,
+        }
+      })
+    }
+    canvas.addEventListener('wheel', onWheel, { passive: false })
+    return () => canvas.removeEventListener('wheel', onWheel)
+  }, [])
+
   const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const pt = getCanvasPoint(e)
+    // Middle-click or Space+left → pan
+    if (e.button === 1 || (e.button === 0 && spaceDown.current)) {
+      e.preventDefault()
+      isPanning.current = true
+      panStart.current = { x: e.clientX - view.offsetX, y: e.clientY - view.offsetY }
+      return
+    }
+    const pt = screenToWorld(e.clientX, e.clientY)
     setDrawing(true)
     setStartPt(pt)
   }
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    // Update loupe
-    const canvas = canvasRef.current
-    const loupe = loupeRef.current
-    if (!loupeEnabled) setLoupePos(null)
-    if (canvas && loupe && loupeEnabled) {
-      const rect = canvas.getBoundingClientRect()
-      const scaleX = canvas.width / rect.width
-      const scaleY = canvas.height / rect.height
-      const cx = Math.round(e.nativeEvent.offsetX * scaleX)
-      const cy = Math.round(e.nativeEvent.offsetY * scaleY)
-      const screenX = e.nativeEvent.offsetX
-      const screenY = e.nativeEvent.offsetY
-
-      setLoupePos({ x: screenX, y: screenY, cx, cy })
-
-      const lctx = loupe.getContext('2d')
-      if (lctx) {
-        loupe.width = loupeSize
-        loupe.height = loupeSize
-        const srcSize = loupeSize / LOUPE_ZOOM
-        lctx.clearRect(0, 0, loupeSize, loupeSize)
-        lctx.save()
-        lctx.beginPath()
-        lctx.arc(loupeSize / 2, loupeSize / 2, loupeSize / 2, 0, Math.PI * 2)
-        lctx.clip()
-        lctx.drawImage(
-          canvas,
-          cx - srcSize / 2, cy - srcSize / 2, srcSize, srcSize,
-          0, 0, loupeSize, loupeSize
-        )
-        // Crosshair
-        lctx.strokeStyle = '#000'
-        lctx.lineWidth = 0.5
-        lctx.beginPath()
-        lctx.moveTo(loupeSize / 2, 0)
-        lctx.lineTo(loupeSize / 2, loupeSize)
-        lctx.moveTo(0, loupeSize / 2)
-        lctx.lineTo(loupeSize, loupeSize / 2)
-        lctx.stroke()
-        // Border
-        lctx.strokeStyle = COLORS[tool]
-        lctx.lineWidth = 2
-        lctx.beginPath()
-        lctx.arc(loupeSize / 2, loupeSize / 2, loupeSize / 2 - 1, 0, Math.PI * 2)
-        lctx.stroke()
-        lctx.restore()
-      }
+    if (isPanning.current) {
+      setView(v => ({
+        ...v,
+        offsetX: e.clientX - panStart.current.x,
+        offsetY: e.clientY - panStart.current.y,
+      }))
+      return
     }
+
     if (!drawing || !startPt) return
+
+    // Preview while dragging
+    redraw()
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    const pt = screenToWorld(e.clientX, e.clientY)
+
+    // Apply transform for preview drawing
+    ctx.setTransform(view.scale, 0, 0, view.scale, view.offsetX, view.offsetY)
+
+    if (tool === 'eraser') {
+      const rx1 = Math.min(startPt.x, pt.x)
+      const ry1 = Math.min(startPt.y, pt.y)
+      const rw = Math.abs(pt.x - startPt.x)
+      const rh = Math.abs(pt.y - startPt.y)
+      ctx.strokeStyle = '#ff4444'
+      ctx.lineWidth = 1 / view.scale
+      ctx.setLineDash([4 / view.scale, 4 / view.scale])
+      ctx.strokeRect(rx1, ry1, rw, rh)
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.1)'
+      ctx.fillRect(rx1, ry1, rw, rh)
+      ctx.setLineDash([])
+    } else {
+      ctx.strokeStyle = COLORS[tool]
+      ctx.lineWidth = 2 / view.scale
+      ctx.beginPath()
+      ctx.moveTo(startPt.x, startPt.y)
+      ctx.lineTo(pt.x, pt.y)
+      ctx.stroke()
+    }
   }
 
-  const [pendingDoor, setPendingDoor] = useState<{ x1: number; y1: number; x2: number; y2: number } | null>(null)
+  const [pendingDoor, setPendingDoor] = useState<{ x1: number; y1: number; x2: number; y2: number; sx: number; sy: number } | null>(null)
 
   const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    if (isPanning.current) { isPanning.current = false; return }
     if (!drawing || !startPt) return
-    const pt = getCanvasPoint(e)
+    const pt = screenToWorld(e.clientX, e.clientY)
     setDrawing(false)
 
     const dx = Math.abs(pt.x - startPt.x)
@@ -715,40 +721,24 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     if (dx < 5 && dy < 5) return // too short
 
     if (tool === 'eraser') {
-      // Erase: find nearest annotation within 15px of click point and remove it
-      // Also add erase zone for model walls
-      const cx = (startPt.x + pt.x) / 2
-      const cy = (startPt.y + pt.y) / 2
-      const threshold = 20
-      let found = -1
-      for (let i = annotations.length - 1; i >= 0; i--) {
-        const a = annotations[i]
-        if (a.type === 'eraser') continue
-        // Distance from point to line segment
-        const lx = a.x2 - a.x1, ly = a.y2 - a.y1
-        const len2 = lx * lx + ly * ly
-        let t = len2 > 0 ? ((cx - a.x1) * lx + (cy - a.y1) * ly) / len2 : 0
-        t = Math.max(0, Math.min(1, t))
-        const px = a.x1 + t * lx, py = a.y1 + t * ly
-        const dist = Math.sqrt((cx - px) ** 2 + (cy - py) ** 2)
-        if (dist < threshold) { found = i; break }
-      }
-      if (found >= 0) {
-        // Remove the annotation
-        setAnnotations(annotations.filter((_, i) => i !== found))
-      } else {
-        // No annotation found — erase model wall at this area
-        setAnnotations([...annotations, {
-          type: 'eraser',
-          x1: Math.min(startPt.x, pt.x) - eraserSize,
-          y1: Math.min(startPt.y, pt.y) - eraserSize,
-          x2: Math.max(startPt.x, pt.x) + eraserSize,
-          y2: Math.max(startPt.y, pt.y) + eraserSize,
-        }])
-      }
+      const rx1 = Math.min(startPt.x, pt.x)
+      const ry1 = Math.min(startPt.y, pt.y)
+      const rx2 = Math.max(startPt.x, pt.x)
+      const ry2 = Math.max(startPt.y, pt.y)
+
+      const remaining = annotations.filter((a) => {
+        if (a.type === 'eraser') return true
+        const aMidX = (a.x1 + a.x2) / 2
+        const aMidY = (a.y1 + a.y2) / 2
+        return !(aMidX >= rx1 && aMidX <= rx2 && aMidY >= ry1 && aMidY <= ry2)
+      })
+      remaining.push({ type: 'eraser', x1: rx1, y1: ry1, x2: rx2, y2: ry2 })
+      setAnnotations(remaining)
     } else if (tool === 'door') {
-      // Ask swing direction before adding
-      setPendingDoor({ x1: startPt.x, y1: startPt.y, x2: pt.x, y2: pt.y })
+      const rect = canvasRef.current!.getBoundingClientRect()
+      const sx = e.clientX - rect.left
+      const sy = e.clientY - rect.top
+      setPendingDoor({ x1: startPt.x, y1: startPt.y, x2: pt.x, y2: pt.y, sx, sy })
     } else {
       setAnnotations([...annotations, {
         type: tool,
@@ -761,19 +751,15 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
 
   const addDoorWithSwing = (dir: SwingDir) => {
     if (!pendingDoor) return
-    setAnnotations([...annotations, {
-      type: 'door',
-      ...pendingDoor,
-      swing: dir,
-    }])
+    setAnnotations([...annotations, { type: 'door', ...pendingDoor, swing: dir }])
     setPendingDoor(null)
   }
 
   const undo = () => {
-    if (annotations.length > 0) {
-      setAnnotations(annotations.slice(0, -1))
-    }
+    if (annotations.length > 0) setAnnotations(annotations.slice(0, -1))
   }
+
+  const zoomLabel = `${Math.round(view.scale * 100)}%`
 
   const tools: { type: AnnotationType; label: string; color: string }[] = [
     { type: 'wall', label: 'Wall', color: 'bg-red-900/40 border-red-700/50 text-red-400' },
@@ -810,22 +796,16 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
                 <span className="text-[9px] text-zinc-500 w-4">{eraserSize}</span>
               </div>
             )}
+            <div className="flex items-center gap-1 ml-2">
+              <button
+                onClick={fitImage}
+                className="px-2 py-1 rounded text-[10px] text-zinc-500 hover:text-zinc-300 bg-zinc-900 border border-zinc-800 cursor-pointer transition-colors"
+              >
+                Fit
+              </button>
+              <span className="text-[9px] text-zinc-600 w-8 text-center">{zoomLabel}</span>
+            </div>
             <div className="flex-1" />
-            <button
-              onClick={() => setLoupeEnabled(!loupeEnabled)}
-              className={`px-2 py-1 rounded text-[10px] cursor-pointer transition-colors
-                ${loupeEnabled ? 'text-zinc-300 bg-zinc-800' : 'text-zinc-600'}`}
-            >
-              🔍
-            </button>
-            {loupeEnabled && (
-              <input
-                type="range" min="30" max="120" value={loupeSize}
-                onChange={(e) => setLoupeSize(Number(e.target.value))}
-                className="w-12 h-1 accent-zinc-500"
-                title={`Loupe: ${loupeSize}px`}
-              />
-            )}
             <button
               onClick={undo}
               disabled={annotations.length === 0}
@@ -838,7 +818,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
               onClick={() => setFullscreen(false)}
               className="px-2 py-1 rounded text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer transition-colors"
             >
-              ↙ Done
+              Done
             </button>
           </>
         ) : (
@@ -849,7 +829,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
               className="px-3 py-1 rounded text-[10px] font-medium text-zinc-400 bg-zinc-800/60 border border-zinc-700/50
                          hover:bg-zinc-700/60 hover:text-zinc-300 cursor-pointer transition-colors"
             >
-              ✏️ Edit
+              Edit
             </button>
           </>
         )}
@@ -859,55 +839,52 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
       </div>
 
       {/* Canvas */}
-      <div ref={containerRef} className={`relative ${fullscreen ? 'flex-1 overflow-auto' : ''}`}>
+      <div ref={containerRef} className={`relative ${fullscreen ? 'flex-1 overflow-hidden' : 'h-64'}`}>
         <canvas
           ref={canvasRef}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          onMouseLeave={() => { setDrawing(false); setStartPt(null); setLoupePos(null) }}
-          className={`w-full ${loupeEnabled ? 'cursor-none' : 'cursor-crosshair'} ${fullscreen ? 'max-h-full object-contain' : 'object-contain max-h-64'}`}
-          style={{ imageRendering: 'auto' }}
+          onMouseLeave={() => { setDrawing(false); setStartPt(null); isPanning.current = false }}
+          className="absolute inset-0 w-full h-full"
+          style={{ cursor: spaceDown.current || isPanning.current ? 'grab' : 'crosshair' }}
         />
-        {/* Loupe magnifier following cursor */}
-        <canvas
-          ref={loupeRef}
-          width={loupeSize}
-          height={loupeSize}
-          className="pointer-events-none absolute rounded-full shadow-lg"
-          style={{
-            left: loupePos ? loupePos.x - loupeSize / 2 : -999,
-            top: loupePos ? loupePos.y - loupeSize / 2 : -999,
-            width: loupeSize,
-            height: loupeSize,
-            opacity: loupePos ? 1 : 0,
-          }}
-        />
+        {/* Door swing popup — appears where user released the mouse */}
+        {pendingDoor && <DoorSwingPicker pendingDoor={pendingDoor} onPick={addDoorWithSwing} onCancel={() => setPendingDoor(null)} />}
       </div>
 
-      {/* Door swing direction picker */}
-      {pendingDoor && <DoorSwingPicker pendingDoor={pendingDoor} onPick={addDoorWithSwing} onCancel={() => setPendingDoor(null)} />}
-
-      <p className="text-[9px] text-zinc-700 text-center py-1">
-        Draw lines: <span className="text-red-500">red</span>=wall <span className="text-green-500">green</span>=door <span className="text-blue-500">blue</span>=window
-      </p>
     </div>
   )
 }
 
 function DownloadButton({ href }: { href: string }) {
+  const [name, setName] = useState('')
+
   return (
-    <a href={href} download
-      className="inline-flex items-center justify-center gap-2 w-full sm:w-auto
-                 px-4 py-3 sm:py-2.5
-                 bg-white/[0.04] border border-zinc-800/60 rounded-lg sm:rounded-md
-                 text-sm text-zinc-400
-                 hover:bg-white/[0.08] hover:text-zinc-300
-                 active:bg-white/[0.12]
-                 transition-colors duration-200">
-      <DownloadIcon />
-      Download DXF
-    </a>
+    <div className="space-y-2">
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="File name..."
+          className="flex-1 px-3 py-2 sm:py-1.5 bg-white/[0.04] border border-zinc-800/60 rounded-md
+                     text-sm text-zinc-300 placeholder:text-zinc-600 outline-none
+                     focus:border-zinc-700 transition-colors"
+        />
+        <a href={href} download={name.trim() ? `${name.trim()}.dxf` : 'floorplan.dxf'}
+          className="inline-flex items-center justify-center gap-2
+                     px-4 py-2.5 sm:py-2
+                     bg-white/[0.04] border border-zinc-800/60 rounded-md
+                     text-sm text-zinc-400
+                     hover:bg-white/[0.08] hover:text-zinc-300
+                     active:bg-white/[0.12]
+                     transition-colors duration-200">
+          <DownloadIcon />
+          .dxf
+        </a>
+      </div>
+    </div>
   )
 }
 
