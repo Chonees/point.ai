@@ -2,7 +2,7 @@
 import tempfile
 from pathlib import Path
 
-from backend.structural_generator import _apply_junction_extensions, _opening_geometry, generate
+from backend.structural_generator import _apply_junction_extensions, _opening_geometry, build_render_plan, generate
 
 
 def _structure_with_door_types():
@@ -139,3 +139,27 @@ def test_junction_extensions_use_detected_wall_thickness():
     _apply_junction_extensions([wall], junctions, wall_map)
 
     assert wall["start"] == 12.0
+
+
+def test_build_render_plan_exposes_wall_lines():
+    structure = {
+        "walls": [
+            {
+                "id": "w1",
+                "orientation": "horizontal",
+                "polyline": [{"x": 10, "y": 20}, {"x": 110, "y": 20}],
+                "thickness": 6.0,
+                "is_exterior": True,
+            }
+        ],
+        "openings": [],
+        "junctions": [],
+        "structure_meta": {"image_size": {"width": 160, "height": 120}, "scale_status": "unverified", "unit": "pixel"},
+    }
+
+    render_plan = build_render_plan(structure)
+
+    assert render_plan["meta"]["wall_count"] == 1
+    assert len(render_plan["walls"]) == 1
+    assert len(render_plan["wall_lines"]) == 2
+    assert render_plan["walls"][0]["segments"] == [{"start": 10.0, "end": 110.0}]

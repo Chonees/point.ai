@@ -105,6 +105,11 @@ def test_parse_structure_from_manual_inference_passes_quality_gate():
     assert all(opening["wall_id"] for opening in structure["openings"])
     assert parsed["quality_metrics"]["raw_wall_count"] == 5
     assert parsed["quality_metrics"]["merged_wall_count"] == 5
+    assert "pipeline_debug" in structure
+    assert "raw_segments" in structure["pipeline_debug"]
+    assert "snapped_segments" in structure["pipeline_debug"]
+    assert "merged_segments" in structure["pipeline_debug"]
+    assert "anchored_openings" in structure["pipeline_debug"]
     assert parsed["quality_metrics"]["quality_gate_passed"] is True
     assert parsed["needs_review"] is False
 

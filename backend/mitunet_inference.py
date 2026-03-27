@@ -17,6 +17,8 @@ import cv2
 import numpy as np
 
 MITUNET_BACKEND = "mitunet_local"
+MITUNET_MASK_REGIONS_DXF_MODE = "mask_regions"
+MAX_MITUNET_REGION_WALL_THICKNESS = 6.0
 
 _WEIGHTS_PATH = Path(r"C:\Users\lucas\OneDrive\Escritorio\pesos\mitunet_finetune_a6_mit_b4_tversky_8864_28E.pth")
 _IMAGE_SIZE = 512
@@ -675,6 +677,468 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
                     # Sill
                     msp.add_line((x_mid + 5, y_lo), (x_mid + 5, y_hi),
                                  dxfattribs={"layer": "WINS", "color": 121})
+
+    doc.saveas(out_path)
+    return rect_count
+
+
+def _prepare_mitunet_wall_mask_for_regions(
+    wall_mask: np.ndarray,
+    *,
+    image_shape: tuple[int, int],
+    annotations: list[dict] | None = None,
+) -> np.ndarray:
+    h, w = image_shape
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    cleaned = cv2.morphologyEx(wall_mask, cv2.MORPH_CLOSE, kernel, iterations=2)
+    cleaned = cv2.morphologyEx(
+        cleaned,
+        cv2.MORPH_OPEN,
+        cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3)),
+    )
+
+    if annotations:
+        for ann in annotations:
+            if ann.get("type") != "eraser":
+                continue
+            ex1 = max(0, int(ann["x1"]))
+            ey1 = max(0, int(ann["y1"]))
+            ex2 = min(w, int(ann["x2"]))
+            ey2 = min(h, int(ann["y2"]))
+            cleaned[ey1:ey2, ex1:ex2] = 0
+
+    return cleaned
+
+
+def _resolve_mitunet_plan_transform(image_shape: tuple[int, int]) -> dict[str, float]:
+    h, w = image_shape
+    plan_w = _PLAN_X2 - _PLAN_X1
+    plan_h = _PLAN_Y2 - _PLAN_Y1
+    img_aspect = w / h
+    plan_aspect = plan_w / plan_h
+
+    if img_aspect > plan_aspect:
+        scale = plan_w / w
+        offset_x = _PLAN_X1
+        offset_y = _PLAN_Y1 + (plan_h - h * scale) / 2
+    else:
+        scale = plan_h / h
+        offset_x = _PLAN_X1 + (plan_w - w * scale) / 2
+        offset_y = _PLAN_Y1
+
+    return {
+        "scale": float(scale),
+        "offset_x": float(offset_x),
+        "offset_y": float(offset_y),
+        "plan_x1": float(_PLAN_X1),
+        "plan_y1": float(_PLAN_Y1),
+        "plan_x2": float(_PLAN_X2),
+        "plan_y2": float(_PLAN_Y2),
+    }
+
+
+def _mitunet_region_img_to_dxf(
+    ix: float,
+    iy: float,
+    *,
+    image_shape: tuple[int, int],
+    transform: dict[str, float],
+) -> tuple[float, float]:
+    h, _ = image_shape
+    dx = ix * transform["scale"] + transform["offset_x"]
+    dy = (h - iy) * transform["scale"] + transform["offset_y"]
+    return dx, dy
+
+
+def _collect_mitunet_region_rectangles(
+    cleaned: np.ndarray,
+    *,
+    image_shape: tuple[int, int],
+    transform: dict[str, float],
+) -> tuple[list[list[float]], list[list[float]], dict[str, float]]:
+    h, w = image_shape
+    min_len = max(8, min(h, w) // 40)
+    wall_thin = 0.4
+    h_rects: list[list[float]] = []
+    v_rects: list[list[float]] = []
+
+    h_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (min_len, 1))
+    h_mask = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, h_kernel)
+    num_h, _, stats_h, _ = cv2.connectedComponentsWithStats(h_mask, connectivity=8)
+    for i in range(1, num_h):
+        x = stats_h[i, cv2.CC_STAT_LEFT]
+        y = stats_h[i, cv2.CC_STAT_TOP]
+        cw = stats_h[i, cv2.CC_STAT_WIDTH]
+        ch = stats_h[i, cv2.CC_STAT_HEIGHT]
+        if cw < min_len or ch < 2:
+            continue
+        if ch > 0 and cw / ch < 2.5:
+            continue
+        trim = ch * (1 - wall_thin) / 2
+        y_s = y + trim
+        ch_s = ch - 2 * trim
+        x1d, y1d = _mitunet_region_img_to_dxf(x, y_s + ch_s, image_shape=image_shape, transform=transform)
+        x2d, y2d = _mitunet_region_img_to_dxf(x + cw, y_s, image_shape=image_shape, transform=transform)
+        h_rects.append([min(x1d, x2d), min(y1d, y2d), max(x1d, x2d), max(y1d, y2d)])
+
+    v_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, min_len))
+    v_mask = cv2.morphologyEx(cleaned, cv2.MORPH_OPEN, v_kernel)
+    num_v, _, stats_v, _ = cv2.connectedComponentsWithStats(v_mask, connectivity=8)
+    for i in range(1, num_v):
+        x = stats_v[i, cv2.CC_STAT_LEFT]
+        y = stats_v[i, cv2.CC_STAT_TOP]
+        cw = stats_v[i, cv2.CC_STAT_WIDTH]
+        ch = stats_v[i, cv2.CC_STAT_HEIGHT]
+        if ch < min_len or cw < 2:
+            continue
+        if cw > 0 and ch / cw < 2.5:
+            continue
+        trim = cw * (1 - wall_thin) / 2
+        x_s = x + trim
+        cw_s = cw - 2 * trim
+        x1d, y1d = _mitunet_region_img_to_dxf(x_s, y + ch, image_shape=image_shape, transform=transform)
+        x2d, y2d = _mitunet_region_img_to_dxf(x_s + cw_s, y, image_shape=image_shape, transform=transform)
+        v_rects.append([min(x1d, x2d), min(y1d, y2d), max(x1d, x2d), max(y1d, y2d)])
+
+    return h_rects, v_rects, {"min_len": float(min_len), "wall_thin": float(wall_thin)}
+
+
+def _trim_mitunet_region_rectangles(h_rects: list[list[float]], v_rects: list[list[float]]) -> None:
+    tol = 2.0
+    width_margin = 1.3
+
+    for hr in h_rects:
+        hx1, hy1, hx2, hy2 = hr
+        h_cy = (hy1 + hy2) / 2
+        for vr in v_rects:
+            vx1, vy1, vx2, vy2 = vr
+            v_w = vx2 - vx1
+            if not (vy1 - tol <= h_cy <= vy2 + tol):
+                continue
+            if not (hx1 < vx2 and hx2 > vx1):
+                continue
+            if vx1 - tol < hx2 < vx2 + v_w * width_margin:
+                hr[2] = vx2
+            if vx1 - v_w * width_margin < hx1 < vx2 + tol:
+                hr[0] = vx1
+
+    for vr in v_rects:
+        vx1, vy1, vx2, vy2 = vr
+        v_cx = (vx1 + vx2) / 2
+        for hr in h_rects:
+            hx1, hy1, hx2, hy2 = hr
+            h_h = hy2 - hy1
+            if not (hx1 - tol <= v_cx <= hx2 + tol):
+                continue
+            if not (vy1 < hy2 and vy2 > hy1):
+                continue
+            if hy1 - tol < vy2 < hy2 + h_h * width_margin:
+                vr[3] = hy2
+            if hy1 - h_h * width_margin < vy1 < hy2 + tol:
+                vr[1] = hy1
+
+
+def _clamp_region_rect_to_max_thickness(
+    rect: list[float],
+    *,
+    orientation: str,
+    max_thickness: float,
+) -> tuple[list[float], float, float, bool]:
+    x1, y1, x2, y2 = [float(value) for value in rect]
+    if orientation == "horizontal":
+        raw_thickness = max(0.0, y2 - y1)
+        draw_thickness = min(raw_thickness, max_thickness)
+        if raw_thickness <= max_thickness:
+            return [x1, y1, x2, y2], raw_thickness, draw_thickness, False
+        center_y = (y1 + y2) / 2.0
+        half = draw_thickness / 2.0
+        return [x1, center_y - half, x2, center_y + half], raw_thickness, draw_thickness, True
+
+    raw_thickness = max(0.0, x2 - x1)
+    draw_thickness = min(raw_thickness, max_thickness)
+    if raw_thickness <= max_thickness:
+        return [x1, y1, x2, y2], raw_thickness, draw_thickness, False
+    center_x = (x1 + x2) / 2.0
+    half = draw_thickness / 2.0
+    return [center_x - half, y1, center_x + half, y2], raw_thickness, draw_thickness, True
+
+
+def _mitunet_region_entry(
+    region_id: str,
+    orientation: str,
+    rect: list[float],
+    *,
+    max_thickness: float,
+) -> dict[str, Any]:
+    x1, y1, x2, y2 = rect
+    clamped_rect, raw_thickness, draw_thickness, was_clamped = _clamp_region_rect_to_max_thickness(
+        rect,
+        orientation=orientation,
+        max_thickness=max_thickness,
+    )
+    cx1, cy1, cx2, cy2 = clamped_rect
+    return {
+        "id": region_id,
+        "kind": "wall_region",
+        "source": "mitunet_mask",
+        "orientation": orientation,
+        "raw_thickness": float(raw_thickness),
+        "draw_thickness": float(draw_thickness),
+        "thickness_clamped": bool(was_clamped),
+        "raw_bounds": {
+            "x1": float(x1),
+            "y1": float(y1),
+            "x2": float(x2),
+            "y2": float(y2),
+        },
+        "bounds": {
+            "x1": float(cx1),
+            "y1": float(cy1),
+            "x2": float(cx2),
+            "y2": float(cy2),
+        },
+    }
+
+
+def build_mitunet_region_plan(
+    infer_result: dict[str, Any],
+    *,
+    annotations: list[dict] | None = None,
+) -> dict[str, Any]:
+    wall_mask = infer_result["_wall_mask"]
+    h, w = infer_result["_image_shape"]
+    image_shape = (h, w)
+
+    cleaned = _prepare_mitunet_wall_mask_for_regions(
+        wall_mask,
+        image_shape=image_shape,
+        annotations=annotations,
+    )
+    transform = _resolve_mitunet_plan_transform(image_shape)
+    h_rects, v_rects, extraction_meta = _collect_mitunet_region_rectangles(
+        cleaned,
+        image_shape=image_shape,
+        transform=transform,
+    )
+    _trim_mitunet_region_rectangles(h_rects, v_rects)
+    max_wall_thickness = float(MAX_MITUNET_REGION_WALL_THICKNESS)
+
+    regions = [
+        *[
+            _mitunet_region_entry(
+                f"h-region-{index:04d}",
+                "horizontal",
+                rect,
+                max_thickness=max_wall_thickness,
+            )
+            for index, rect in enumerate(h_rects, start=1)
+        ],
+        *[
+            _mitunet_region_entry(
+                f"v-region-{index:04d}",
+                "vertical",
+                rect,
+                max_thickness=max_wall_thickness,
+            )
+            for index, rect in enumerate(v_rects, start=1)
+        ],
+    ]
+    clamped_region_count = sum(1 for region in regions if region.get("thickness_clamped"))
+
+    return {
+        "mode": MITUNET_MASK_REGIONS_DXF_MODE,
+        "meta": {
+            "backend": MITUNET_BACKEND,
+            "image_shape": {"height": int(h), "width": int(w)},
+            "transform": transform,
+            "template_used": _TEMPLATE_PATH.exists(),
+            "template_path": str(_TEMPLATE_PATH),
+            "annotation_count": len(annotations or []),
+            "region_count": len(regions),
+            "clamped_region_count": clamped_region_count,
+            "max_wall_thickness": max_wall_thickness,
+            **extraction_meta,
+        },
+        "regions": regions,
+    }
+
+
+def _load_mitunet_template_doc():
+    import ezdxf
+
+    if _TEMPLATE_PATH.exists():
+        return ezdxf.readfile(str(_TEMPLATE_PATH))
+    return ezdxf.new("R2010")
+
+
+def _draw_mitunet_annotations_from_region_plan(
+    msp: Any,
+    doc: Any,
+    annotations: list[dict] | None,
+    *,
+    image_shape: tuple[int, int],
+    transform: dict[str, float],
+) -> int:
+    if not annotations:
+        return 0
+
+    if "DOORS" not in doc.layers:
+        doc.layers.add("DOORS", color=157)
+    if "WINS" not in doc.layers:
+        doc.layers.add("WINS", color=121)
+
+    rect_count = 0
+
+    for ann in annotations:
+        ann_type = ann.get("type", "wall")
+        if ann_type == "eraser":
+            continue
+
+        dx1, dy1 = _mitunet_region_img_to_dxf(int(ann["x1"]), int(ann["y1"]), image_shape=image_shape, transform=transform)
+        dx2, dy2 = _mitunet_region_img_to_dxf(int(ann["x2"]), int(ann["y2"]), image_shape=image_shape, transform=transform)
+
+        if ann_type == "wall":
+            adx = abs(dx2 - dx1)
+            ady = abs(dy2 - dy1)
+            thickness = 4
+            if adx >= ady:
+                y_mid = (dy1 + dy2) / 2
+                x_lo, x_hi = min(dx1, dx2), max(dx1, dx2)
+                pts = [
+                    (x_lo, y_mid - thickness / 2),
+                    (x_hi, y_mid - thickness / 2),
+                    (x_hi, y_mid + thickness / 2),
+                    (x_lo, y_mid + thickness / 2),
+                    (x_lo, y_mid - thickness / 2),
+                ]
+            else:
+                x_mid = (dx1 + dx2) / 2
+                y_lo, y_hi = min(dy1, dy2), max(dy1, dy2)
+                pts = [
+                    (x_mid - thickness / 2, y_lo),
+                    (x_mid + thickness / 2, y_lo),
+                    (x_mid + thickness / 2, y_hi),
+                    (x_mid - thickness / 2, y_hi),
+                    (x_mid - thickness / 2, y_lo),
+                ]
+            poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
+            poly.close()
+            hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
+            hatch.paths.add_polyline_path(pts, is_closed=True)
+            rect_count += 1
+            continue
+
+        if ann_type == "door":
+            import math
+
+            slab = 1.5
+            swing = ann.get("swing", "up")
+            attribs = {"layer": "DOORS", "color": 157}
+            hx, hy = dx1, dy1
+            ex, ey = dx2, dy2
+            gap_dx = ex - hx
+            gap_dy = ey - hy
+            door_width = math.hypot(gap_dx, gap_dy)
+            if door_width < 2:
+                continue
+
+            gx = gap_dx / door_width
+            gy = gap_dy / door_width
+            if swing == "up":
+                sx, sy = 0, 1
+            elif swing == "down":
+                sx, sy = 0, -1
+            elif swing == "right":
+                sx, sy = 1, 0
+            else:
+                sx, sy = -1, 0
+
+            slab_end_x = hx + sx * door_width
+            slab_end_y = hy + sy * door_width
+            msp.add_line((hx, hy), (slab_end_x, slab_end_y), dxfattribs=attribs)
+            msp.add_line(
+                (hx + gx * slab, hy + gy * slab),
+                (slab_end_x + gx * slab, slab_end_y + gy * slab),
+                dxfattribs=attribs,
+            )
+
+            slab_angle = math.degrees(math.atan2(sy, sx))
+            gap_angle = math.degrees(math.atan2(gy, gx))
+            if slab_angle < 0:
+                slab_angle += 360
+            if gap_angle < 0:
+                gap_angle += 360
+            a1 = min(slab_angle, gap_angle)
+            a2 = max(slab_angle, gap_angle)
+            if a2 - a1 > 180:
+                a1, a2 = a2, a1 + 360
+            msp.add_arc((hx, hy), door_width, a1, a2, dxfattribs=attribs)
+            continue
+
+        if ann_type == "window":
+            adx = abs(dx2 - dx1)
+            ady = abs(dy2 - dy1)
+            if adx >= ady:
+                x_lo, x_hi = min(dx1, dx2), max(dx1, dx2)
+                y_mid = (dy1 + dy2) / 2
+                for off in [0, -1, -2]:
+                    msp.add_line((x_lo, y_mid + off), (x_hi, y_mid + off), dxfattribs={"layer": "WINS", "color": 121})
+                msp.add_line((x_lo, y_mid - 1), (x_lo, y_mid - 2), dxfattribs={"layer": "WINS", "color": 121})
+                msp.add_line((x_hi, y_mid - 1), (x_hi, y_mid - 2), dxfattribs={"layer": "WINS", "color": 121})
+                msp.add_line((x_lo, y_mid - 5), (x_hi, y_mid - 5), dxfattribs={"layer": "WINS", "color": 121})
+            else:
+                y_lo, y_hi = min(dy1, dy2), max(dy1, dy2)
+                x_mid = (dx1 + dx2) / 2
+                for off in [0, -1, 1]:
+                    msp.add_line((x_mid + off, y_lo), (x_mid + off, y_hi), dxfattribs={"layer": "WINS", "color": 121})
+                msp.add_line((x_mid - 1, y_lo), (x_mid, y_lo), dxfattribs={"layer": "WINS", "color": 121})
+                msp.add_line((x_mid - 1, y_hi), (x_mid, y_hi), dxfattribs={"layer": "WINS", "color": 121})
+                msp.add_line((x_mid + 5, y_lo), (x_mid + 5, y_hi), dxfattribs={"layer": "WINS", "color": 121})
+
+    return rect_count
+
+
+def generate_mitunet_region_dxf(
+    region_plan: dict[str, Any],
+    out_path: str,
+    *,
+    annotations: list[dict] | None = None,
+) -> int:
+    doc = _load_mitunet_template_doc()
+    msp = doc.modelspace()
+
+    if "WALLS" not in doc.layers:
+        doc.layers.add("WALLS", color=7)
+
+    rect_count = 0
+    for region in region_plan.get("regions", []):
+        bounds = region.get("bounds") or {}
+        x1 = float(bounds.get("x1", 0.0))
+        y1 = float(bounds.get("y1", 0.0))
+        x2 = float(bounds.get("x2", 0.0))
+        y2 = float(bounds.get("y2", 0.0))
+        if abs(x2 - x1) < 1 or abs(y2 - y1) < 1:
+            continue
+        pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]
+        poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
+        poly.close()
+        hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
+        hatch.paths.add_polyline_path(pts, is_closed=True)
+        rect_count += 1
+
+    meta = region_plan.get("meta", {})
+    image_shape_meta = meta.get("image_shape", {})
+    image_shape = (
+        int(image_shape_meta.get("height", 0)),
+        int(image_shape_meta.get("width", 0)),
+    )
+    rect_count += _draw_mitunet_annotations_from_region_plan(
+        msp,
+        doc,
+        annotations,
+        image_shape=image_shape,
+        transform=meta.get("transform", {}),
+    )
 
     doc.saveas(out_path)
     return rect_count

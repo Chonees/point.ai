@@ -44,6 +44,7 @@ class GenerateStructureRequest(BaseModel):
     image: Optional[str] = None
     scale_hint: Optional[float] = None
     model_variant: Optional[str] = None
+    dxf_mode: Optional[str] = None
     annotations: Optional[list] = None  # user-drawn walls/doors/windows
 
 

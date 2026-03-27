@@ -120,3 +120,22 @@ def build_low_quality_structure() -> dict:
     for wall in structure["walls"]:
         wall["is_exterior"] = False
     return structure
+
+
+def build_mitunet_infer_result() -> dict:
+    structure = build_manual_structure(source="mitunet_local", with_openings=False)
+    h, w = 160, 220
+    wall_mask = np.zeros((h, w), dtype=np.uint8)
+
+    cv2.rectangle(wall_mask, (20, 20), (120, 30), 255, -1)
+    cv2.rectangle(wall_mask, (20, 60), (120, 70), 255, -1)
+    cv2.rectangle(wall_mask, (150, 20), (160, 120), 255, -1)
+    cv2.rectangle(wall_mask, (180, 20), (190, 120), 255, -1)
+
+    structure["source"] = "mitunet_local"
+    structure.setdefault("inference_debug", {})
+    structure["inference_debug"]["backend"] = "mitunet_local"
+    structure["inference_debug"]["model_variant"] = "mitunet"
+    structure["_wall_mask"] = wall_mask
+    structure["_image_shape"] = (h, w)
+    return structure

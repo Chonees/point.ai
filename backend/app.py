@@ -46,7 +46,11 @@ from .worker_client import infer_structure
 from .worker_contract import WorkerError
 from .plan_parser import parse_structure_payload
 from .structural_generator import generate as generate_structural
-from .mitunet_inference import generate_mitunet_dxf, MITUNET_BACKEND
+from .mitunet_inference import (
+    MITUNET_BACKEND,
+    build_mitunet_region_plan,
+    generate_mitunet_region_dxf,
+)
 from .validation import validate_plan
 
 # App
@@ -181,11 +185,18 @@ async def api_generate_v2(req: GenerateStructureRequest):
     filename = f"{request_id}.dxf"
     out_path = str(DXF_DIR / filename)
 
+    dxf_mode = _resolve_dxf_mode(req.dxf_mode, parsed)
+    parsed["quality_metrics"]["dxf_mode"] = dxf_mode
+    parsed["structure"].setdefault("structure_meta", {})
+    parsed["structure"]["structure_meta"]["dxf_mode"] = dxf_mode
+
     try:
-        # Use MitUNet's own DXF generator (template + rect hatch) when available
-        infer_result = parsed.get("_infer_result") or {}
-        if infer_result.get("source") == MITUNET_BACKEND and "_wall_mask" in infer_result:
-            generate_mitunet_dxf(infer_result, out_path, annotations=req.annotations)
+        if dxf_mode == "mask_regions":
+            infer_result = parsed.get("_infer_result") or {}
+            region_plan = build_mitunet_region_plan(infer_result, annotations=req.annotations)
+            parsed["quality_metrics"]["dxf_region_count"] = region_plan["meta"]["region_count"]
+            parsed["structure"]["structure_meta"]["dxf_region_plan"] = region_plan
+            generate_mitunet_region_dxf(region_plan, out_path, annotations=req.annotations)
         else:
             generate_structural(parsed["structure"], out_path)
     except Exception as e:
@@ -224,6 +235,8 @@ async def download_dxf(filename: str):
     return FileResponse(str(path), media_type="application/dxf", filename=filename)
 
 
+
+
 def _parse_v2_input(
     plan: dict | None,
     structure: dict | None,
@@ -257,8 +270,25 @@ def _parse_v2_input(
         parsed["quality_metrics"]["model_variant"] = (
             inferred.get("inference_debug", {}).get("model_variant") or model_variant or "baseline"
         )
-        # Preserve raw infer result for MitUNet DXF generator
+        # Preserve raw infer result for diagnostics and benchmark tooling.
         parsed["_infer_result"] = inferred
         return parsed, image, inferred.get("inference_debug", {}).get("debug_overlay_b64")
 
     raise ValueError("One of structure, plan or image must be provided.")
+
+
+def _resolve_dxf_mode(requested_mode: str | None, parsed: dict) -> str:
+    normalized = (requested_mode or "auto").strip().lower()
+    if normalized not in {"auto", "structural", "mask_regions"}:
+        raise ValueError(f"Unsupported dxf_mode: {requested_mode}")
+
+    infer_result = parsed.get("_infer_result") or {}
+    supports_mask_regions = (
+        infer_result.get("source") == MITUNET_BACKEND and "_wall_mask" in infer_result
+    )
+
+    if normalized == "auto":
+        return "mask_regions" if supports_mask_regions else "structural"
+    if normalized == "mask_regions" and not supports_mask_regions:
+        raise ValueError("dxf_mode=mask_regions is only available for MitUNet image inference.")
+    return normalized

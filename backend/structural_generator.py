@@ -12,7 +12,7 @@ from typing import Any
 
 from .components.doors import draw_door, draw_garage_door, draw_sliding_door
 from .components.layers import setup_doc
-from .components.walls import THICKNESS, draw_wall_h, draw_wall_v
+from .components.walls import THICKNESS, draw_wall_h, draw_wall_v, split_segments
 from .components.windows import draw_window_h, draw_window_v
 
 EPSILON = 1e-6
@@ -20,27 +20,12 @@ JUNCTION_TOLERANCE = 6.0
 
 
 def generate(structure: dict[str, Any], out_path: str) -> None:
+    render_plan = build_render_plan(structure)
     doc, msp = setup_doc()
-    use_detected_thickness = _use_detected_wall_thickness(structure)
-    wall_geometries = [
-        _wall_geometry(wall, use_detected_thickness=use_detected_thickness)
-        for wall in structure.get("walls") or []
-    ]
-    wall_map = {wall["id"]: wall for wall in wall_geometries}
+    wall_map = {wall["id"]: wall for wall in render_plan["wall_geometries"]}
 
-    # Apply corner joint extensions using junction graph
-    junctions = structure.get("junctions") or []
-    if junctions:
-        _apply_junction_extensions(wall_geometries, junctions, wall_map)
-
-    openings_by_wall: dict[str, list[dict[str, Any]]] = defaultdict(list)
-    for opening in structure.get("openings") or []:
-        wall_id = opening.get("wall_id")
-        if wall_id in wall_map:
-            openings_by_wall[wall_id].append(_opening_geometry(opening, wall_map[wall_id]))
-
-    for wall in wall_geometries:
-        gaps = [(opening["start"], opening["end"]) for opening in openings_by_wall.get(wall["id"], [])]
+    for wall in render_plan["walls"]:
+        gaps = [(gap["start"], gap["end"]) for gap in wall.get("gaps", [])]
         if wall["orientation"] == "horizontal":
             draw_wall_h(
                 msp,
@@ -60,12 +45,64 @@ def generate(structure: dict[str, Any], out_path: str) -> None:
                 thickness=wall["draw_thickness"],
             )
 
-    for wall_id, openings in openings_by_wall.items():
+    for wall_id, openings in render_plan["openings_by_wall"].items():
         wall = wall_map[wall_id]
         for opening in openings:
             _draw_opening(msp, wall, opening)
 
     doc.saveas(out_path)
+
+
+def build_render_plan(structure: dict[str, Any]) -> dict[str, Any]:
+    use_detected_thickness = _use_detected_wall_thickness(structure)
+    wall_geometries = [
+        _wall_geometry(wall, use_detected_thickness=use_detected_thickness)
+        for wall in structure.get("walls") or []
+    ]
+    wall_map = {wall["id"]: wall for wall in wall_geometries}
+
+    junctions = structure.get("junctions") or []
+    if junctions:
+        _apply_junction_extensions(wall_geometries, junctions, wall_map)
+
+    openings_by_wall: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    for opening in structure.get("openings") or []:
+        wall_id = opening.get("wall_id")
+        if wall_id in wall_map:
+            openings_by_wall[wall_id].append(_opening_geometry(opening, wall_map[wall_id]))
+
+    wall_plans = []
+    wall_lines = []
+    for wall in wall_geometries:
+        gaps = [
+            {
+                "start": float(opening["start"]),
+                "end": float(opening["end"]),
+                "kind": opening["kind"],
+                "opening_id": opening["id"],
+            }
+            for opening in openings_by_wall.get(wall["id"], [])
+        ]
+        segments = split_segments(wall["start"], wall["end"], [(gap["start"], gap["end"]) for gap in gaps])
+        wall_plan = {
+            **wall,
+            "segments": [{"start": float(start), "end": float(end)} for start, end in segments],
+            "gaps": gaps,
+        }
+        wall_plans.append(wall_plan)
+        wall_lines.extend(_wall_line_entities(wall_plan))
+
+    return {
+        "meta": {
+            "use_detected_thickness": use_detected_thickness,
+            "wall_count": len(wall_geometries),
+            "opening_count": sum(len(openings) for openings in openings_by_wall.values()),
+        },
+        "wall_geometries": wall_geometries,
+        "walls": wall_plans,
+        "openings_by_wall": {wall_id: list(openings) for wall_id, openings in openings_by_wall.items()},
+        "wall_lines": wall_lines,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -125,7 +162,11 @@ def _apply_junction_extensions(
 # Wall geometry
 # ---------------------------------------------------------------------------
 
-def _wall_geometry(wall: dict[str, Any], *, use_detected_thickness: bool = False) -> dict[str, Any]:
+def _wall_geometry(
+    wall: dict[str, Any],
+    *,
+    use_detected_thickness: bool = False,
+) -> dict[str, Any]:
     polyline = wall.get("polyline") or []
     if len(polyline) != 2:
         raise ValueError(f"Wall {wall.get('id')} must have exactly 2 polyline points in phase 1.")
@@ -302,3 +343,100 @@ def _default_swing(side: str | None) -> str | None:
 def _use_detected_wall_thickness(structure: dict[str, Any]) -> bool:
     meta = structure.get("structure_meta") or {}
     return meta.get("unit") == "pixel" or meta.get("scale_status") == "unverified"
+
+
+def _wall_line_entities(wall: dict[str, Any]) -> list[dict[str, Any]]:
+    thickness = float(wall.get("draw_thickness", THICKNESS))
+    entities: list[dict[str, Any]] = []
+    if wall["orientation"] == "horizontal":
+        for segment in wall.get("segments", []):
+            start = float(segment["start"])
+            end = float(segment["end"])
+            entities.append(_line_entity(wall["id"], start, wall["coord"], end, wall["coord"], wall["is_exterior"]))
+            entities.append(
+                _line_entity(
+                    wall["id"],
+                    start,
+                    wall["coord"] + thickness,
+                    end,
+                    wall["coord"] + thickness,
+                    wall["is_exterior"],
+                )
+            )
+        for gap in wall.get("gaps", []):
+            entities.append(
+                _line_entity(
+                    wall["id"],
+                    gap["start"],
+                    wall["coord"],
+                    gap["start"],
+                    wall["coord"] + thickness,
+                    wall["is_exterior"],
+                )
+            )
+            entities.append(
+                _line_entity(
+                    wall["id"],
+                    gap["end"],
+                    wall["coord"],
+                    gap["end"],
+                    wall["coord"] + thickness,
+                    wall["is_exterior"],
+                )
+            )
+        return entities
+
+    for segment in wall.get("segments", []):
+        start = float(segment["start"])
+        end = float(segment["end"])
+        entities.append(_line_entity(wall["id"], wall["coord"], start, wall["coord"], end, wall["is_exterior"]))
+        entities.append(
+            _line_entity(
+                wall["id"],
+                wall["coord"] + thickness,
+                start,
+                wall["coord"] + thickness,
+                end,
+                wall["is_exterior"],
+            )
+        )
+    for gap in wall.get("gaps", []):
+        entities.append(
+            _line_entity(
+                wall["id"],
+                wall["coord"],
+                gap["start"],
+                wall["coord"] + thickness,
+                gap["start"],
+                wall["is_exterior"],
+            )
+        )
+        entities.append(
+            _line_entity(
+                wall["id"],
+                wall["coord"],
+                gap["end"],
+                wall["coord"] + thickness,
+                gap["end"],
+                wall["is_exterior"],
+            )
+        )
+    return entities
+
+
+def _line_entity(
+    wall_id: str,
+    x1: float,
+    y1: float,
+    x2: float,
+    y2: float,
+    is_exterior: bool,
+) -> dict[str, Any]:
+    return {
+        "type": "line",
+        "layer": "WALLS",
+        "wall_id": wall_id,
+        "is_exterior": bool(is_exterior),
+        "start": {"x": float(x1), "y": float(y1)},
+        "end": {"x": float(x2), "y": float(y2)},
+    }

@@ -13,31 +13,61 @@ Pipeline:
 """
 from __future__ import annotations
 
+from dataclasses import asdict, dataclass
 from collections import defaultdict
 from typing import Any
 
 EPSILON = 1e-6
-SNAP_TOLERANCE = 4.0
-JUNCTION_TOLERANCE = 6.0
-MERGE_GAP = 48.0
-MIN_WALL_LENGTH = 12.0
+DEFAULT_SNAP_TOLERANCE = 4.0
+DEFAULT_JUNCTION_TOLERANCE = 6.0
+DEFAULT_MERGE_GAP = 48.0
+DEFAULT_MIN_WALL_LENGTH = 12.0
 EXTERIOR_COVERAGE_THRESHOLD = 0.70
 
 # Diagonal wall projection: walls within this angle of H/V are snapped to axis
 DIAGONAL_ANGLE_THRESHOLD_DEG = 15.0
 
 # Furniture filter: closed rectangles smaller than this area are furniture
-FURNITURE_MAX_AREA = 200.0 * 200.0   # 200x200 pixels max for furniture bboxes
+DEFAULT_FURNITURE_MAX_AREA = 200.0 * 200.0   # 200x200 pixels max for furniture bboxes
 FURNITURE_MIN_AREA = 4.0 * 4.0       # ignore trivially small detections
 
 # Text filter: walls shorter than this with very low thickness are likely text
-TEXT_MAX_LENGTH = 60.0
-TEXT_MAX_THICKNESS = 6.0
+DEFAULT_TEXT_MAX_LENGTH = 60.0
+DEFAULT_TEXT_MAX_THICKNESS = 6.0
+
+
+@dataclass(frozen=True)
+class PostprocessConfig:
+    snap_tolerance: float = DEFAULT_SNAP_TOLERANCE
+    junction_tolerance: float = DEFAULT_JUNCTION_TOLERANCE
+    merge_gap: float = DEFAULT_MERGE_GAP
+    min_wall_length: float = DEFAULT_MIN_WALL_LENGTH
+    text_max_length: float = DEFAULT_TEXT_MAX_LENGTH
+    text_max_thickness: float = DEFAULT_TEXT_MAX_THICKNESS
+    furniture_max_area: float = DEFAULT_FURNITURE_MAX_AREA
+    exterior_coverage_threshold: float = EXTERIOR_COVERAGE_THRESHOLD
 
 
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
+
+def _resolve_postprocess_config(structure_meta: dict[str, Any]) -> PostprocessConfig:
+    if structure_meta.get("unit") == "pixel":
+        img_size = structure_meta.get("image_size", {})
+        img_w = img_size.get("width", 1000) if isinstance(img_size, dict) else 1000
+        scale = max(img_w / 500.0, 1.0)
+        return PostprocessConfig(
+            snap_tolerance=3.0 * scale,
+            junction_tolerance=5.0 * scale,
+            merge_gap=6.0 * scale,
+            min_wall_length=5.0 * scale,
+            text_max_length=30.0 * scale,
+            text_max_thickness=2.0 * scale,
+            furniture_max_area=(100.0 * scale) ** 2,
+        )
+
+    return PostprocessConfig()
 
 def postprocess_structure(
     *,
@@ -45,65 +75,53 @@ def postprocess_structure(
     openings: list[dict[str, Any]],
     structure_meta: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    global SNAP_TOLERANCE, JUNCTION_TOLERANCE, MERGE_GAP, MIN_WALL_LENGTH
-    global TEXT_MAX_LENGTH, TEXT_MAX_THICKNESS, FURNITURE_MAX_AREA
-
+    config = _resolve_postprocess_config(structure_meta or {})
     review_flags: list[str] = []
-
-    # Adapt thresholds for pixel-coordinate inputs (model output)
-    meta = structure_meta or {}
-    if meta.get("unit") == "pixel":
-        # Pixel images are ~800-2000px; inch plans are ~200-800 inches.
-        # Scale thresholds proportionally to avoid over-merging.
-        img_size = meta.get("image_size", {})
-        img_w = img_size.get("width", 1000) if isinstance(img_size, dict) else 1000
-        scale = max(img_w / 500.0, 1.0)  # ratio vs typical inch-based plan
-        SNAP_TOLERANCE = 3.0 * scale
-        JUNCTION_TOLERANCE = 5.0 * scale
-        MERGE_GAP = 6.0 * scale
-        MIN_WALL_LENGTH = 5.0 * scale  # keep short interior walls
-        TEXT_MAX_LENGTH = 30.0 * scale
-        TEXT_MAX_THICKNESS = 2.0 * scale  # was 4.0: only sub-2px text strokes, not thin walls
-        FURNITURE_MAX_AREA = (100.0 * scale) ** 2
-    else:
-        # Reset to defaults for inch-based inputs
-        SNAP_TOLERANCE = 4.0
-        JUNCTION_TOLERANCE = 6.0
-        MERGE_GAP = 48.0
-        MIN_WALL_LENGTH = 12.0
-        TEXT_MAX_LENGTH = 60.0
-        TEXT_MAX_THICKNESS = 6.0
-        FURNITURE_MAX_AREA = 200.0 * 200.0
+    pipeline_debug: dict[str, Any] = {
+        "config": asdict(config),
+        "raw_segments": walls,
+        "raw_openings": openings,
+    }
 
     # Project near-axis diagonal walls to H/V before anything else
     projected, diag_count = _project_diagonal_walls(walls)
+    pipeline_debug["projected_segments"] = projected
     if diag_count:
         review_flags.append(f"Projected {diag_count} near-axis diagonal wall(s) to H/V.")
 
-    snapped_walls = [_normalize_wall_geometry(wall) for wall in projected]
-    snapped_walls = _snap_walls(snapped_walls)
-    snapped_walls = _snap_to_intersections(snapped_walls)
-    merged_walls = _merge_walls(snapped_walls)
-    junctions = build_junction_graph(merged_walls)
-    classified_walls = _classify_walls_with_junctions(merged_walls, junctions)
+    normalized_walls = [_normalize_wall_geometry(wall) for wall in projected]
+    pipeline_debug["normalized_segments"] = normalized_walls
+
+    snapped_walls = _snap_walls(normalized_walls, config=config)
+    pipeline_debug["snapped_segments"] = snapped_walls
+
+    snapped_intersections = _snap_to_intersections(snapped_walls, config=config)
+    pipeline_debug["intersection_snapped_segments"] = snapped_intersections
+
+    merged_walls = _merge_walls(snapped_intersections, config=config)
+    pipeline_debug["merged_segments"] = merged_walls
+
+    junctions = build_junction_graph(merged_walls, config=config)
+    pipeline_debug["junctions"] = junctions
+    classified_walls = _classify_walls_with_junctions(merged_walls, junctions, config=config)
 
     # Filter text artifacts only after junctions exist, so short real walls that
     # genuinely connect to the graph are not discarded prematurely.
-    classified_walls, text_count = _filter_text_artifacts(classified_walls, junctions)
+    classified_walls, text_count = _filter_text_artifacts(classified_walls, junctions, config=config)
     if text_count:
         review_flags.append(f"Removed {text_count} text-like wall artifact(s).")
-        junctions = build_junction_graph(classified_walls)
-        classified_walls = _classify_walls_with_junctions(classified_walls, junctions)
+        junctions = build_junction_graph(classified_walls, config=config)
+        classified_walls = _classify_walls_with_junctions(classified_walls, junctions, config=config)
 
     # Filter isolated noisy walls (dimension annotations, symbols with no junctions)
-    classified_walls, isolated_noise_count = _filter_isolated_noisy_walls(classified_walls, junctions)
+    classified_walls, isolated_noise_count = _filter_isolated_noisy_walls(classified_walls, junctions, config=config)
     if isolated_noise_count:
         review_flags.append(f"Removed {isolated_noise_count} isolated noisy wall segment(s).")
-        junctions = build_junction_graph(classified_walls)
-        classified_walls = _classify_walls_with_junctions(classified_walls, junctions)
+        junctions = build_junction_graph(classified_walls, config=config)
+        classified_walls = _classify_walls_with_junctions(classified_walls, junctions, config=config)
 
     # Filter furniture-like openings (isolated small closed shapes not connected to walls)
-    filtered_openings, furniture_count = _filter_furniture_openings(openings, classified_walls)
+    filtered_openings, furniture_count = _filter_furniture_openings(openings, classified_walls, config=config)
     if furniture_count:
         review_flags.append(f"Removed {furniture_count} furniture-like opening(s).")
 
@@ -118,7 +136,15 @@ def postprocess_structure(
         review_flags.append(f"Removed {excess_count} excess window(s) from dense exterior wall(s).")
 
     wall_map = {wall["id"]: wall for wall in classified_walls}
-    anchored_openings, opening_metrics = _anchor_openings(filtered_openings, classified_walls, wall_map, review_flags)
+    anchored_openings, opening_metrics = _anchor_openings(
+        filtered_openings,
+        classified_walls,
+        wall_map,
+        review_flags,
+        config=config,
+    )
+    pipeline_debug["anchored_openings"] = anchored_openings
+    pipeline_debug["final_walls"] = classified_walls
 
     junction_summary = _summarize_junctions(junctions)
 
@@ -139,6 +165,7 @@ def postprocess_structure(
         "structure_meta": structure_meta or {},
         "metrics": metrics,
         "review_flags": review_flags,
+        "pipeline_debug": pipeline_debug,
     }
 
 
@@ -146,7 +173,11 @@ def postprocess_structure(
 # Junction graph (Phase 3)
 # ---------------------------------------------------------------------------
 
-def build_junction_graph(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def build_junction_graph(
+    walls: list[dict[str, Any]],
+    *,
+    config: PostprocessConfig | None = None,
+) -> list[dict[str, Any]]:
     """
     Detect L, T, and X junctions between walls.
 
@@ -155,6 +186,7 @@ def build_junction_graph(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
     - T: one wall's endpoint touches another wall's body
     - X: two walls cross each other through their bodies
     """
+    resolved = config or PostprocessConfig()
     h_walls = [w for w in walls if w["orientation"] == "horizontal"]
     v_walls = [w for w in walls if w["orientation"] == "vertical"]
 
@@ -167,7 +199,7 @@ def build_junction_graph(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
         hx2 = hw["polyline"][1]["x"]
 
         for vw in v_walls:
-            pair_tolerance = _wall_connection_tolerance(hw, vw)
+            pair_tolerance = _wall_connection_tolerance(hw, vw, config=resolved)
             vx = vw["polyline"][0]["x"]
             vy1 = vw["polyline"][0]["y"]
             vy2 = vw["polyline"][1]["y"]
@@ -247,20 +279,27 @@ def _connected_wall_ids(junctions: list[dict[str, Any]]) -> set[str]:
     return connected_ids
 
 
-def _wall_connection_tolerance(wall_a: dict[str, Any], wall_b: dict[str, Any]) -> float:
+def _wall_connection_tolerance(
+    wall_a: dict[str, Any],
+    wall_b: dict[str, Any],
+    *,
+    config: PostprocessConfig | None = None,
+) -> float:
+    resolved = config or PostprocessConfig()
     thickness_a = float(wall_a.get("thickness", 4.0))
     thickness_b = float(wall_b.get("thickness", 4.0))
-    adaptive = max(thickness_a, thickness_b) / 2.0 + SNAP_TOLERANCE
-    return min(max(JUNCTION_TOLERANCE, adaptive), JUNCTION_TOLERANCE * 2.5)
+    adaptive = max(thickness_a, thickness_b) / 2.0 + resolved.snap_tolerance
+    return min(max(resolved.junction_tolerance, adaptive), resolved.junction_tolerance * 2.5)
 
 
-def _supported_wall_ids(walls: list[dict[str, Any]]) -> set[str]:
+def _supported_wall_ids(walls: list[dict[str, Any]], *, config: PostprocessConfig | None = None) -> set[str]:
+    resolved = config or PostprocessConfig()
     supported_ids: set[str] = set()
     for wall in walls:
         for other in walls:
             if wall["id"] == other["id"] or wall["orientation"] == other["orientation"]:
                 continue
-            tolerance = _wall_connection_tolerance(wall, other)
+            tolerance = _wall_connection_tolerance(wall, other, config=resolved)
             if _wall_has_endpoint_support(wall, other, tolerance):
                 supported_ids.add(wall["id"])
                 break
@@ -300,13 +339,18 @@ def _wall_has_endpoint_support(
 # Snap to intersections (Phase 3)
 # ---------------------------------------------------------------------------
 
-def _snap_to_intersections(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _snap_to_intersections(
+    walls: list[dict[str, Any]],
+    *,
+    config: PostprocessConfig | None = None,
+) -> list[dict[str, Any]]:
     """
     Snap wall endpoints to nearby wall intersections.
 
     When a horizontal wall's endpoint is close to a vertical wall's axis
     (or vice versa), extend/trim the endpoint to meet exactly.
     """
+    resolved = config or PostprocessConfig()
     h_walls = [w for w in walls if w["orientation"] == "horizontal"]
     v_walls = [w for w in walls if w["orientation"] == "vertical"]
 
@@ -317,8 +361,8 @@ def _snap_to_intersections(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
     for wall in walls:
         start, end = wall["polyline"]
         if wall["orientation"] == "horizontal":
-            new_x1 = _snap_endpoint_to_axes(start["x"], v_x_coords, JUNCTION_TOLERANCE)
-            new_x2 = _snap_endpoint_to_axes(end["x"], v_x_coords, JUNCTION_TOLERANCE)
+            new_x1 = _snap_endpoint_to_axes(start["x"], v_x_coords, resolved.junction_tolerance)
+            new_x2 = _snap_endpoint_to_axes(end["x"], v_x_coords, resolved.junction_tolerance)
             result.append({
                 **wall,
                 "polyline": [
@@ -327,8 +371,8 @@ def _snap_to_intersections(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 ],
             })
         else:
-            new_y1 = _snap_endpoint_to_axes(start["y"], h_y_coords, JUNCTION_TOLERANCE)
-            new_y2 = _snap_endpoint_to_axes(end["y"], h_y_coords, JUNCTION_TOLERANCE)
+            new_y1 = _snap_endpoint_to_axes(start["y"], h_y_coords, resolved.junction_tolerance)
+            new_y2 = _snap_endpoint_to_axes(end["y"], h_y_coords, resolved.junction_tolerance)
             result.append({
                 **wall,
                 "polyline": [
@@ -356,6 +400,8 @@ def _snap_endpoint_to_axes(value: float, axes: list[float], tolerance: float) ->
 def _classify_walls_with_junctions(
     walls: list[dict[str, Any]],
     junctions: list[dict[str, Any]],
+    *,
+    config: PostprocessConfig | None = None,
 ) -> list[dict[str, Any]]:
     """
     Classify walls as exterior or interior using bounding box coverage
@@ -365,6 +411,7 @@ def _classify_walls_with_junctions(
     the corresponding side is exterior. Interior walls that only partially
     span are not promoted even if they touch the boundary.
     """
+    resolved = config or PostprocessConfig()
     if not walls:
         return []
 
@@ -394,24 +441,24 @@ def _classify_walls_with_junctions(
             ref_size = bbox_width if bbox_width > EPSILON else 1.0
             coverage = length / ref_size
 
-            if abs(start["y"] - min_y) <= SNAP_TOLERANCE:
-                if coverage >= EXTERIOR_COVERAGE_THRESHOLD or length >= ref_size - SNAP_TOLERANCE:
+            if abs(start["y"] - min_y) <= resolved.snap_tolerance:
+                if coverage >= resolved.exterior_coverage_threshold or length >= ref_size - resolved.snap_tolerance:
                     side = "bottom"
                     is_exterior = True
-            elif abs(start["y"] - max_y) <= SNAP_TOLERANCE:
-                if coverage >= EXTERIOR_COVERAGE_THRESHOLD or length >= ref_size - SNAP_TOLERANCE:
+            elif abs(start["y"] - max_y) <= resolved.snap_tolerance:
+                if coverage >= resolved.exterior_coverage_threshold or length >= ref_size - resolved.snap_tolerance:
                     side = "top"
                     is_exterior = True
         else:
             ref_size = bbox_height if bbox_height > EPSILON else 1.0
             coverage = length / ref_size
 
-            if abs(start["x"] - min_x) <= SNAP_TOLERANCE:
-                if coverage >= EXTERIOR_COVERAGE_THRESHOLD or length >= ref_size - SNAP_TOLERANCE:
+            if abs(start["x"] - min_x) <= resolved.snap_tolerance:
+                if coverage >= resolved.exterior_coverage_threshold or length >= ref_size - resolved.snap_tolerance:
                     side = "left"
                     is_exterior = True
-            elif abs(start["x"] - max_x) <= SNAP_TOLERANCE:
-                if coverage >= EXTERIOR_COVERAGE_THRESHOLD or length >= ref_size - SNAP_TOLERANCE:
+            elif abs(start["x"] - max_x) <= resolved.snap_tolerance:
+                if coverage >= resolved.exterior_coverage_threshold or length >= ref_size - resolved.snap_tolerance:
                     side = "right"
                     is_exterior = True
 
@@ -510,6 +557,8 @@ def _project_diagonal_walls(
 def _filter_text_artifacts(
     walls: list[dict[str, Any]],
     junctions: list[dict[str, Any]],
+    *,
+    config: PostprocessConfig | None = None,
 ) -> tuple[list[dict[str, Any]], int]:
     """Remove wall segments that are likely text or dimension labels.
 
@@ -517,8 +566,9 @@ def _filter_text_artifacts(
     short, and not structurally connected. This avoids filtering long thin wall
     returns that the model detected correctly but that happen to be short.
     """
+    resolved = config or PostprocessConfig()
     connected_ids = _connected_wall_ids(junctions)
-    supported_ids = _supported_wall_ids(walls)
+    supported_ids = _supported_wall_ids(walls, config=resolved)
     filtered = []
     removed = 0
     for wall in walls:
@@ -539,8 +589,8 @@ def _filter_text_artifacts(
         )
         if (
             not is_supported
-            and length < TEXT_MAX_LENGTH
-            and thickness < TEXT_MAX_THICKNESS
+            and length < resolved.text_max_length
+            and thickness < resolved.text_max_thickness
             and aspect_ratio < 3.0
         ):
             removed += 1
@@ -556,12 +606,15 @@ def _filter_text_artifacts(
 def _filter_furniture_openings(
     openings: list[dict[str, Any]],
     walls: list[dict[str, Any]],
+    *,
+    config: PostprocessConfig | None = None,
 ) -> tuple[list[dict[str, Any]], int]:
     """Remove opening detections that are not near any wall.
 
     An opening that cannot be placed within SNAP_TOLERANCE of any wall axis
     is likely a furniture contour (closed small rectangle) and should be dropped.
     """
+    resolved = config or PostprocessConfig()
     if not walls:
         return openings, 0
 
@@ -609,13 +662,13 @@ def _filter_furniture_openings(
         near_wall = False
         for axis in wall_axes:
             if axis["orientation"] == "horizontal":
-                if abs(py - axis["coord"]) <= SNAP_TOLERANCE * 3:
-                    if px - half <= axis["span_end"] + SNAP_TOLERANCE and px + half >= axis["span_start"] - SNAP_TOLERANCE:
+                if abs(py - axis["coord"]) <= resolved.snap_tolerance * 3:
+                    if px - half <= axis["span_end"] + resolved.snap_tolerance and px + half >= axis["span_start"] - resolved.snap_tolerance:
                         near_wall = True
                         break
             else:
-                if abs(px - axis["coord"]) <= SNAP_TOLERANCE * 3:
-                    if py - half <= axis["span_end"] + SNAP_TOLERANCE and py + half >= axis["span_start"] - SNAP_TOLERANCE:
+                if abs(px - axis["coord"]) <= resolved.snap_tolerance * 3:
+                    if py - half <= axis["span_end"] + resolved.snap_tolerance and py + half >= axis["span_start"] - resolved.snap_tolerance:
                         near_wall = True
                         break
 
@@ -634,14 +687,17 @@ def _filter_furniture_openings(
 def _filter_isolated_noisy_walls(
     walls: list[dict[str, Any]],
     junctions: list[dict[str, Any]],
+    *,
+    config: PostprocessConfig | None = None,
 ) -> tuple[list[dict[str, Any]], int]:
     """Remove short isolated wall segments caused by dimension annotations or symbols.
 
     Walls with no junctions whose thickness-to-length ratio exceeds 0.4 are
     almost certainly CAD annotation artifacts rather than structural walls.
     """
+    resolved = config or PostprocessConfig()
     connected_ids = _connected_wall_ids(junctions)
-    supported_ids = _supported_wall_ids(walls)
+    supported_ids = _supported_wall_ids(walls, config=resolved)
 
     filtered = []
     removed = 0
@@ -659,11 +715,11 @@ def _filter_isolated_noisy_walls(
         # High thickness-to-length ratio on UNCONNECTED walls = dimension symbol or
         # annotation artifact.  Structurally connected walls are kept regardless of
         # ratio because corner polygons from CubiCasa can appear nearly square.
-        if length > 0 and thickness / length > 0.55 and length < MIN_WALL_LENGTH * 2:
+        if length > 0 and thickness / length > 0.55 and length < resolved.min_wall_length * 2:
             removed += 1
             continue
         # Also drop short unconnected walls
-        if length < max(MIN_WALL_LENGTH * 1.5, thickness * 2.0):
+        if length < max(resolved.min_wall_length * 1.5, thickness * 2.0):
             removed += 1
             continue
         filtered.append(wall)
@@ -806,48 +862,66 @@ def _normalize_wall_geometry(wall: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def _snap_walls(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _snap_walls(
+    walls: list[dict[str, Any]],
+    *,
+    config: PostprocessConfig | None = None,
+) -> list[dict[str, Any]]:
+    resolved = config or PostprocessConfig()
     if not walls:
         return []
 
-    h_coords = _cluster_values([wall["polyline"][0]["y"] for wall in walls if wall["orientation"] == "horizontal"])
-    v_coords = _cluster_values([wall["polyline"][0]["x"] for wall in walls if wall["orientation"] == "vertical"])
+    h_coords = _cluster_values(
+        [wall["polyline"][0]["y"] for wall in walls if wall["orientation"] == "horizontal"],
+        tolerance=resolved.snap_tolerance,
+    )
+    v_coords = _cluster_values(
+        [wall["polyline"][0]["x"] for wall in walls if wall["orientation"] == "vertical"],
+        tolerance=resolved.snap_tolerance,
+    )
     x_values = _cluster_values(
-        [point["x"] for wall in walls for point in wall["polyline"] if wall["orientation"] == "horizontal"]
+        [point["x"] for wall in walls for point in wall["polyline"] if wall["orientation"] == "horizontal"],
+        tolerance=resolved.snap_tolerance,
     )
     y_values = _cluster_values(
-        [point["y"] for wall in walls for point in wall["polyline"] if wall["orientation"] == "vertical"]
+        [point["y"] for wall in walls for point in wall["polyline"] if wall["orientation"] == "vertical"],
+        tolerance=resolved.snap_tolerance,
     )
 
     snapped = []
     for wall in walls:
         start, end = wall["polyline"]
         if wall["orientation"] == "horizontal":
-            y = _snap_value(start["y"], h_coords)
+            y = _snap_value(start["y"], h_coords, tolerance=resolved.snap_tolerance)
             snapped.append(
                 {
                     **wall,
                     "polyline": [
-                        {"x": _snap_value(start["x"], x_values), "y": y},
-                        {"x": _snap_value(end["x"], x_values), "y": y},
+                        {"x": _snap_value(start["x"], x_values, tolerance=resolved.snap_tolerance), "y": y},
+                        {"x": _snap_value(end["x"], x_values, tolerance=resolved.snap_tolerance), "y": y},
                     ],
                 }
             )
         else:
-            x = _snap_value(start["x"], v_coords)
+            x = _snap_value(start["x"], v_coords, tolerance=resolved.snap_tolerance)
             snapped.append(
                 {
                     **wall,
                     "polyline": [
-                        {"x": x, "y": _snap_value(start["y"], y_values)},
-                        {"x": x, "y": _snap_value(end["y"], y_values)},
+                        {"x": x, "y": _snap_value(start["y"], y_values, tolerance=resolved.snap_tolerance)},
+                        {"x": x, "y": _snap_value(end["y"], y_values, tolerance=resolved.snap_tolerance)},
                     ],
                 }
             )
     return snapped
 
 
-def _merge_walls(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _merge_walls(
+    walls: list[dict[str, Any]],
+    *,
+    config: PostprocessConfig | None = None,
+) -> list[dict[str, Any]]:
+    resolved = config or PostprocessConfig()
     grouped: dict[tuple[str, float], list[dict[str, Any]]] = defaultdict(list)
     for wall in walls:
         coord = wall["polyline"][0]["y"] if wall["orientation"] == "horizontal" else wall["polyline"][0]["x"]
@@ -864,7 +938,7 @@ def _merge_walls(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
 
         current_start, current_end, current_walls = spans[0][0], spans[0][1], [spans[0][2]]
         for start, end, wall in spans[1:]:
-            if start <= current_end + MERGE_GAP:
+            if start <= current_end + resolved.merge_gap:
                 current_end = max(current_end, end)
                 current_walls.append(wall)
             else:
@@ -876,7 +950,7 @@ def _merge_walls(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
                     current_walls,
                     counter + 1,
                 )
-                if _wall_length(merged_wall) >= MIN_WALL_LENGTH:
+                if _wall_length(merged_wall) >= resolved.min_wall_length:
                     merged.append(merged_wall)
                     counter += 1
                 current_start, current_end, current_walls = start, end, [wall]
@@ -889,7 +963,7 @@ def _merge_walls(walls: list[dict[str, Any]]) -> list[dict[str, Any]]:
             current_walls,
             counter + 1,
         )
-        if _wall_length(merged_wall) >= MIN_WALL_LENGTH:
+        if _wall_length(merged_wall) >= resolved.min_wall_length:
             merged.append(merged_wall)
             counter += 1
 
@@ -930,7 +1004,10 @@ def _anchor_openings(
     walls: list[dict[str, Any]],
     wall_map: dict[str, dict[str, Any]],
     review_flags: list[str],
+    *,
+    config: PostprocessConfig | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
+    resolved = config or PostprocessConfig()
     anchored = []
     filtered = 0
     inferred_side_count = 0
@@ -941,7 +1018,7 @@ def _anchor_openings(
         if normalized.get("wall_id") and normalized["wall_id"] in wall_map:
             wall = wall_map[normalized["wall_id"]]
         else:
-            wall = _find_best_wall(normalized, walls)
+            wall = _find_best_wall(normalized, walls, config=resolved)
 
         if wall is None:
             filtered += 1
@@ -949,7 +1026,7 @@ def _anchor_openings(
             continue
 
         offset = _opening_offset_for_wall(normalized, wall)
-        if offset < -SNAP_TOLERANCE or offset + normalized["span"] > _wall_length(wall) + SNAP_TOLERANCE:
+        if offset < -resolved.snap_tolerance or offset + normalized["span"] > _wall_length(wall) + resolved.snap_tolerance:
             filtered += 1
             review_flags.append(f"Filtered opening {normalized['id']}: opening span does not fit wall {wall['id']}.")
             continue
@@ -1001,12 +1078,17 @@ def _normalize_opening(opening: dict[str, Any], counter: int) -> dict[str, Any]:
     return normalized
 
 
-def _find_best_wall(opening: dict[str, Any], walls: list[dict[str, Any]]) -> dict[str, Any] | None:
+def _find_best_wall(
+    opening: dict[str, Any],
+    walls: list[dict[str, Any]],
+    *,
+    config: PostprocessConfig | None = None,
+) -> dict[str, Any] | None:
     candidates = []
     for wall in walls:
         if opening.get("orientation") and wall["orientation"] != opening["orientation"]:
             continue
-        distance = _opening_distance_to_wall(opening, wall)
+        distance = _opening_distance_to_wall(opening, wall, config=config)
         if distance is None:
             continue
         candidates.append((distance, -_wall_length(wall), wall))
@@ -1017,7 +1099,13 @@ def _find_best_wall(opening: dict[str, Any], walls: list[dict[str, Any]]) -> dic
     return candidates[0][2]
 
 
-def _opening_distance_to_wall(opening: dict[str, Any], wall: dict[str, Any]) -> float | None:
+def _opening_distance_to_wall(
+    opening: dict[str, Any],
+    wall: dict[str, Any],
+    *,
+    config: PostprocessConfig | None = None,
+) -> float | None:
+    resolved = config or PostprocessConfig()
     if opening["position"] is None:
         return None
 
@@ -1025,11 +1113,11 @@ def _opening_distance_to_wall(opening: dict[str, Any], wall: dict[str, Any]) -> 
     start, end = _wall_span(wall)
     half_span = opening["span"] / 2.0
     if wall["orientation"] == "horizontal":
-        if point["x"] + half_span < start - SNAP_TOLERANCE or point["x"] - half_span > end + SNAP_TOLERANCE:
+        if point["x"] + half_span < start - resolved.snap_tolerance or point["x"] - half_span > end + resolved.snap_tolerance:
             return None
         return abs(point["y"] - wall["polyline"][0]["y"])
 
-    if point["y"] + half_span < start - SNAP_TOLERANCE or point["y"] - half_span > end + SNAP_TOLERANCE:
+    if point["y"] + half_span < start - resolved.snap_tolerance or point["y"] - half_span > end + resolved.snap_tolerance:
         return None
     return abs(point["x"] - wall["polyline"][0]["x"])
 
@@ -1075,24 +1163,24 @@ def _wall_length(wall: dict[str, Any]) -> float:
     return end - start
 
 
-def _cluster_values(values: list[float]) -> list[float]:
+def _cluster_values(values: list[float], *, tolerance: float) -> list[float]:
     if not values:
         return []
     sorted_values = sorted(values)
     clusters: list[list[float]] = [[sorted_values[0]]]
     for value in sorted_values[1:]:
-        if abs(value - clusters[-1][-1]) <= SNAP_TOLERANCE:
+        if abs(value - clusters[-1][-1]) <= tolerance:
             clusters[-1].append(value)
         else:
             clusters.append([value])
     return [sum(cluster) / len(cluster) for cluster in clusters]
 
 
-def _snap_value(value: float, clusters: list[float]) -> float:
+def _snap_value(value: float, clusters: list[float], *, tolerance: float) -> float:
     if not clusters:
         return value
     best = min(clusters, key=lambda cluster: abs(cluster - value))
-    if abs(best - value) <= SNAP_TOLERANCE:
+    if abs(best - value) <= tolerance:
         return best
     return value
 
