@@ -13,6 +13,8 @@ import time
 from pathlib import Path
 from typing import Any
 
+import math
+
 import cv2
 import numpy as np
 
@@ -537,7 +539,8 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
             if hy1 - h_h * V_WIDTH_MARGIN < vy1 < hy2 + TOL:
                 vr[1] = hy1  # extend V bottom to H bottom edge
 
-    # --- Draw all rects ---
+    # --- Draw all rects + compute median thickness ---
+    model_thicknesses: list[float] = []
     for r in h_rects + v_rects:
         x1, y1, x2, y2 = r
         if abs(x2 - x1) < 1 or abs(y2 - y1) < 1:
@@ -548,6 +551,15 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
         hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
         hatch.paths.add_polyline_path(pts, is_closed=True)
         rect_count += 1
+        model_thicknesses.append(min(abs(x2 - x1), abs(y2 - y1)))
+
+    # Median wall thickness from model rects (annotations should match)
+    if model_thicknesses:
+        model_thicknesses.sort()
+        _mid = len(model_thicknesses) // 2
+        ann_wall_thickness = model_thicknesses[_mid] if len(model_thicknesses) % 2 else (model_thicknesses[_mid - 1] + model_thicknesses[_mid]) / 2
+    else:
+        ann_wall_thickness = 4.0
 
     # --- Draw user annotations (walls/doors/windows) ---
     if annotations:
@@ -581,7 +593,7 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
                 # Determine if H or V
                 adx = abs(dx2 - dx1)
                 ady = abs(dy2 - dy1)
-                thickness = 4  # wall thickness
+                thickness = ann_wall_thickness  # match model wall thickness (median)
                 if adx >= ady:  # horizontal
                     y_mid = (dy1 + dy2) / 2
                     x_lo, x_hi = min(dx1, dx2), max(dx1, dx2)
@@ -616,7 +628,6 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
                 # The SLAB goes perpendicular to the gap, from hinge INTO the room
                 # Length of slab = width of gap = door width
                 # The ARC sweeps from slab end back to the gap
-                import math
                 hx, hy = dx1, dy1  # hinge (at gap edge, against wall)
                 ex, ey = dx2, dy2  # other end of gap
 
@@ -830,6 +841,75 @@ def _mitunet_region_img_to_dxf(
     dx = ix * transform["scale"] + transform["offset_x"]
     dy = (h - iy) * transform["scale"] + transform["offset_y"]
     return dx, dy
+
+
+def _mitunet_region_dxf_to_img(
+    dx: float,
+    dy: float,
+    *,
+    image_shape: tuple[int, int],
+    transform: dict[str, float],
+) -> tuple[float, float]:
+    h, _ = image_shape
+    scale = float(transform.get("scale", 1.0) or 1.0)
+    offset_x = float(transform.get("offset_x", 0.0) or 0.0)
+    offset_y = float(transform.get("offset_y", 0.0) or 0.0)
+    ix = (dx - offset_x) / scale
+    iy = h - ((dy - offset_y) / scale)
+    return ix, iy
+
+
+def regions_to_wall_annotations(
+    region_plan: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """Convert region plan wall regions to image-space wall annotations."""
+    meta = region_plan.get("meta") or {}
+    image_shape_meta = meta.get("image_shape") or {}
+    image_shape = (
+        int(image_shape_meta.get("height", 0)),
+        int(image_shape_meta.get("width", 0)),
+    )
+    transform = meta.get("transform") or {}
+    if image_shape[0] <= 0 or image_shape[1] <= 0:
+        return []
+
+    annotations: list[dict[str, Any]] = []
+    for region in region_plan.get("regions", []):
+        bounds = region.get("bounds") or {}
+        x1 = float(bounds.get("x1", 0))
+        y1 = float(bounds.get("y1", 0))
+        x2 = float(bounds.get("x2", 0))
+        y2 = float(bounds.get("y2", 0))
+        orientation = region.get("orientation", "horizontal")
+
+        # Region center line in DXF coords
+        if orientation == "horizontal":
+            mid_y = (y1 + y2) / 2
+            dxf_start, dxf_end = (x1, mid_y), (x2, mid_y)
+        else:
+            mid_x = (x1 + x2) / 2
+            dxf_start, dxf_end = (mid_x, y1), (mid_x, y2)
+
+        # Convert to image coords
+        ix1, iy1 = _mitunet_region_dxf_to_img(
+            dxf_start[0], dxf_start[1],
+            image_shape=image_shape, transform=transform,
+        )
+        ix2, iy2 = _mitunet_region_dxf_to_img(
+            dxf_end[0], dxf_end[1],
+            image_shape=image_shape, transform=transform,
+        )
+
+        annotations.append({
+            "type": "wall",
+            "x1": round(ix1, 1),
+            "y1": round(iy1, 1),
+            "x2": round(ix2, 1),
+            "y2": round(iy2, 1),
+            "_source": "mitunet_region",
+        })
+
+    return annotations
 
 
 def _collect_mitunet_region_rectangles(
@@ -1210,6 +1290,7 @@ def _draw_mitunet_annotations_from_region_plan(
     *,
     image_shape: tuple[int, int],
     transform: dict[str, float],
+    wall_thickness: float = 4.0,
 ) -> int:
     if not annotations:
         return 0
@@ -1232,7 +1313,7 @@ def _draw_mitunet_annotations_from_region_plan(
         if ann_type == "wall":
             adx = abs(dx2 - dx1)
             ady = abs(dy2 - dy1)
-            thickness = 4
+            thickness = wall_thickness  # match model wall thickness (median)
             if adx >= ady:
                 y_mid = (dy1 + dy2) / 2
                 x_lo, x_hi = min(dx1, dx2), max(dx1, dx2)
@@ -1261,71 +1342,78 @@ def _draw_mitunet_annotations_from_region_plan(
             continue
 
         if ann_type == "door":
-            import math
+            adx = abs(dx2 - dx1)
+            ady = abs(dy2 - dy1)
+            door_width = adx if adx >= ady else ady
 
-            slab = 1.5
-            swing = ann.get("swing", "up")
-            attribs = {"layer": "DOORS", "color": 157}
-            hx, hy = dx1, dy1
-            ex, ey = dx2, dy2
-            gap_dx = ex - hx
-            gap_dy = ey - hy
-            door_width = math.hypot(gap_dx, gap_dy)
             if door_width < 2:
                 continue
 
-            gx = gap_dx / door_width
-            gy = gap_dy / door_width
-            if swing == "up":
-                sx, sy = 0, 1
-            elif swing == "down":
-                sx, sy = 0, -1
-            elif swing == "right":
-                sx, sy = 1, 0
-            else:
-                sx, sy = -1, 0
+            swing = ann.get("swing")
+            if not swing:
+                continue  # No swing = skip (user must set direction first)
 
-            slab_end_x = hx + sx * door_width
-            slab_end_y = hy + sy * door_width
-            msp.add_line((hx, hy), (slab_end_x, slab_end_y), dxfattribs=attribs)
-            msp.add_line(
-                (hx + gx * slab, hy + gy * slab),
-                (slab_end_x + gx * slab, slab_end_y + gy * slab),
-                dxfattribs=attribs,
-            )
+            # Y-flip: image Y-down → DXF Y-up, so swap up↔down.
+            dxf_swing = {"up": "down", "down": "up"}.get(swing, swing)
 
-            slab_angle = math.degrees(math.atan2(sy, sx))
-            gap_angle = math.degrees(math.atan2(gy, gx))
-            if slab_angle < 0:
-                slab_angle += 360
-            if gap_angle < 0:
-                gap_angle += 360
-            a1 = min(slab_angle, gap_angle)
-            a2 = max(slab_angle, gap_angle)
-            if a2 - a1 > 180:
-                a1, a2 = a2, a1 + 360
-            msp.add_arc((hx, hy), door_width, a1, a2, dxfattribs=attribs)
+            # First point = hinge. Determine if hinge is mirrored
+            # (on the right/top end instead of the normal left/bottom).
+            hx, hy = dx1, dy1
+            is_horiz = adx >= ady
+            mirrored = (dx1 > dx2) if is_horiz else (dy1 > dy2)
+
+            DS = 1.5
+            attribs = {"layer": "DOORS", "color": 157}
+
+            if dxf_swing == "up":
+                ds_sign = -1 if mirrored else 1
+                msp.add_line((hx, hy), (hx, hy + door_width), dxfattribs=attribs)
+                msp.add_line((hx + ds_sign * DS, hy), (hx + ds_sign * DS, hy + door_width), dxfattribs=attribs)
+                if mirrored:
+                    msp.add_arc((hx, hy), door_width, 90, 180, dxfattribs=attribs)
+                else:
+                    msp.add_arc((hx, hy), door_width, 0, 90, dxfattribs=attribs)
+            elif dxf_swing == "down":
+                ds_sign = -1 if mirrored else 1
+                msp.add_line((hx, hy), (hx, hy - door_width), dxfattribs=attribs)
+                msp.add_line((hx + ds_sign * DS, hy), (hx + ds_sign * DS, hy - door_width), dxfattribs=attribs)
+                if mirrored:
+                    msp.add_arc((hx, hy), door_width, 180, 270, dxfattribs=attribs)
+                else:
+                    msp.add_arc((hx, hy), door_width, 270, 360, dxfattribs=attribs)
+            elif dxf_swing == "right":
+                ds_sign = -1 if mirrored else 1
+                msp.add_line((hx, hy), (hx + door_width, hy), dxfattribs=attribs)
+                msp.add_line((hx, hy + ds_sign * DS), (hx + door_width, hy + ds_sign * DS), dxfattribs=attribs)
+                if mirrored:
+                    msp.add_arc((hx, hy), door_width, 270, 360, dxfattribs=attribs)
+                else:
+                    msp.add_arc((hx, hy), door_width, 0, 90, dxfattribs=attribs)
+            elif dxf_swing == "left":
+                ds_sign = -1 if mirrored else 1
+                msp.add_line((hx, hy), (hx - door_width, hy), dxfattribs=attribs)
+                msp.add_line((hx, hy + ds_sign * DS), (hx - door_width, hy + ds_sign * DS), dxfattribs=attribs)
+                if mirrored:
+                    msp.add_arc((hx, hy), door_width, 180, 270, dxfattribs=attribs)
+                else:
+                    msp.add_arc((hx, hy), door_width, 90, 180, dxfattribs=attribs)
             continue
 
         if ann_type == "window":
+            from .components.windows import draw_window_h, draw_window_v  # noqa: E402
+
             adx = abs(dx2 - dx1)
             ady = abs(dy2 - dy1)
             if adx >= ady:
-                x_lo, x_hi = min(dx1, dx2), max(dx1, dx2)
+                # Horizontal window
+                x_lo = min(dx1, dx2)
                 y_mid = (dy1 + dy2) / 2
-                for off in [0, -1, -2]:
-                    msp.add_line((x_lo, y_mid + off), (x_hi, y_mid + off), dxfattribs={"layer": "WINS", "color": 121})
-                msp.add_line((x_lo, y_mid - 1), (x_lo, y_mid - 2), dxfattribs={"layer": "WINS", "color": 121})
-                msp.add_line((x_hi, y_mid - 1), (x_hi, y_mid - 2), dxfattribs={"layer": "WINS", "color": 121})
-                msp.add_line((x_lo, y_mid - 5), (x_hi, y_mid - 5), dxfattribs={"layer": "WINS", "color": 121})
+                draw_window_h(msp, x_lo, y_mid, adx, side="bottom")
             else:
-                y_lo, y_hi = min(dy1, dy2), max(dy1, dy2)
+                # Vertical window
                 x_mid = (dx1 + dx2) / 2
-                for off in [0, -1, 1]:
-                    msp.add_line((x_mid + off, y_lo), (x_mid + off, y_hi), dxfattribs={"layer": "WINS", "color": 121})
-                msp.add_line((x_mid - 1, y_lo), (x_mid, y_lo), dxfattribs={"layer": "WINS", "color": 121})
-                msp.add_line((x_mid - 1, y_hi), (x_mid, y_hi), dxfattribs={"layer": "WINS", "color": 121})
-                msp.add_line((x_mid + 5, y_lo), (x_mid + 5, y_hi), dxfattribs={"layer": "WINS", "color": 121})
+                y_lo = min(dy1, dy2)
+                draw_window_v(msp, x_mid, y_lo, ady, side="left")
 
     return rect_count
 
@@ -1335,6 +1423,7 @@ def generate_mitunet_region_dxf(
     out_path: str,
     *,
     annotations: list[dict] | None = None,
+    skip_regions: bool = False,
 ) -> int:
     doc = _load_mitunet_template_doc()
     msp = doc.modelspace()
@@ -1343,20 +1432,34 @@ def generate_mitunet_region_dxf(
         doc.layers.add("WALLS", color=7)
 
     rect_count = 0
-    for region in region_plan.get("regions", []):
-        bounds = region.get("bounds") or {}
-        x1 = float(bounds.get("x1", 0.0))
-        y1 = float(bounds.get("y1", 0.0))
-        x2 = float(bounds.get("x2", 0.0))
-        y2 = float(bounds.get("y2", 0.0))
-        if abs(x2 - x1) < 1 or abs(y2 - y1) < 1:
-            continue
-        pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]
-        poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
-        poly.close()
-        hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
-        hatch.paths.add_polyline_path(pts, is_closed=True)
-        rect_count += 1
+    region_thicknesses: list[float] = []
+
+    if not skip_regions:
+        for region in region_plan.get("regions", []):
+            bounds = region.get("bounds") or {}
+            x1 = float(bounds.get("x1", 0.0))
+            y1 = float(bounds.get("y1", 0.0))
+            x2 = float(bounds.get("x2", 0.0))
+            y2 = float(bounds.get("y2", 0.0))
+            if abs(x2 - x1) < 1 or abs(y2 - y1) < 1:
+                continue
+            pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]
+            poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
+            poly.close()
+            hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
+            hatch.paths.add_polyline_path(pts, is_closed=True)
+            rect_count += 1
+            dt = float(region.get("draw_thickness", 0.0))
+            if dt > 0:
+                region_thicknesses.append(dt)
+
+    # Use median thickness of model regions so annotations match
+    if region_thicknesses:
+        region_thicknesses.sort()
+        mid = len(region_thicknesses) // 2
+        median_thickness = region_thicknesses[mid] if len(region_thicknesses) % 2 else (region_thicknesses[mid - 1] + region_thicknesses[mid]) / 2
+    else:
+        median_thickness = 4.0  # fallback
 
     meta = region_plan.get("meta", {})
     image_shape_meta = meta.get("image_shape", {})
@@ -1370,6 +1473,7 @@ def generate_mitunet_region_dxf(
         annotations,
         image_shape=image_shape,
         transform=meta.get("transform", {}),
+        wall_thickness=median_thickness,
     )
 
     doc.saveas(out_path)
