@@ -20,7 +20,7 @@ LAYER = "WALLS"
 
 # === DRAWING ===
 
-def draw_wall_h(msp, x1, x2, y, gaps=None):
+def draw_wall_h(msp, x1, x2, y, gaps=None, thickness=THICKNESS):
     """
     Pared horizontal doble con end caps en cada abertura.
     gaps: lista de (gx1, gx2) para puertas/ventanas.
@@ -28,14 +28,14 @@ def draw_wall_h(msp, x1, x2, y, gaps=None):
     resolved_gaps = gaps or []
     segments = split_segments(x1, x2, resolved_gaps)
     for sx1, sx2 in segments:
-        add_line(msp, sx1, y,              sx2, y,              LAYER)
-        add_line(msp, sx1, y + THICKNESS,  sx2, y + THICKNESS,  LAYER)
+        add_line(msp, sx1, y,            sx2, y,            LAYER)
+        add_line(msp, sx1, y + thickness, sx2, y + thickness, LAYER)
     for gx1, gx2 in resolved_gaps:
-        add_line(msp, gx1, y, gx1, y + THICKNESS, LAYER)
-        add_line(msp, gx2, y, gx2, y + THICKNESS, LAYER)
+        add_line(msp, gx1, y, gx1, y + thickness, LAYER)
+        add_line(msp, gx2, y, gx2, y + thickness, LAYER)
 
 
-def draw_wall_v(msp, x, y1, y2, gaps=None):
+def draw_wall_v(msp, x, y1, y2, gaps=None, thickness=THICKNESS):
     """
     Pared vertical doble con end caps en cada abertura.
     gaps: lista de (gy1, gy2).
@@ -43,11 +43,11 @@ def draw_wall_v(msp, x, y1, y2, gaps=None):
     resolved_gaps = gaps or []
     segments = split_segments(y1, y2, resolved_gaps)
     for sy1, sy2 in segments:
-        add_line(msp, x,              sy1, x,              sy2, LAYER)
-        add_line(msp, x + THICKNESS,  sy1, x + THICKNESS,  sy2, LAYER)
+        add_line(msp, x,             sy1, x,             sy2, LAYER)
+        add_line(msp, x + thickness, sy1, x + thickness, sy2, LAYER)
     for gy1, gy2 in resolved_gaps:
-        add_line(msp, x, gy1, x + THICKNESS, gy1, LAYER)
-        add_line(msp, x, gy2, x + THICKNESS, gy2, LAYER)
+        add_line(msp, x, gy1, x + thickness, gy1, LAYER)
+        add_line(msp, x, gy2, x + thickness, gy2, LAYER)
 
 
 # === UTILITIES ===

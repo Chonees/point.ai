@@ -1,11 +1,10 @@
 """
 app.py — Point.ai Backend
-FastAPI: prompt/image -> Claude -> JSON -> DXF
+FastAPI: image -> inference -> structure -> DXF
 
 Run: uvicorn backend.app:app --reload
 """
 import uuid
-import json
 import tempfile
 from pathlib import Path
 
@@ -15,29 +14,17 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
 from dotenv import load_dotenv
 
-import anthropic
-
 # Paths
 ROOT_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(ROOT_DIR / ".env")
 FRONTEND_DIST = ROOT_DIR / "frontend" / "dist"
 
-# Import backend modules
-import sys
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-from generator import generate
-
 from .models import (
-    AnalyzeRequest,
-    AnalyzeResponse,
-    GenerateRequest,
-    GenerateResponse,
     GenerateStructureRequest,
     GenerateStructureResponse,
     ParseStructureRequest,
     ParseStructureResponse,
 )
-from .claude import analyze_image, generate_plan
 from .artifacts import ARTIFACT_DIR, save_structure_artifacts
 from .cubicasa_inference import warmup_models
 from .observability import log_event
@@ -45,7 +32,14 @@ from .worker_client import infer_structure
 from .worker_contract import WorkerError
 from .plan_parser import parse_structure_payload
 from .structural_generator import generate as generate_structural
-from .validation import validate_plan
+from .mitunet_inference import (
+    MITUNET_BACKEND,
+    build_mitunet_region_plan,
+    generate_mitunet_region_dxf,
+    regions_to_wall_annotations,
+)
+from .ensemble_inference import ENSEMBLE_BACKEND
+from .dxf_preview import build_dxf_preview
 
 # App
 app = FastAPI(title="Point.ai", version="0.1.0")
@@ -86,36 +80,6 @@ if FRONTEND_DIST.exists() and (FRONTEND_DIST / "assets").exists():
 app.mount("/artifacts", StaticFiles(directory=str(ARTIFACT_DIR)), name="artifacts")
 
 
-@app.post("/api/analyze", response_model=AnalyzeResponse)
-async def api_analyze(req: AnalyzeRequest):
-    try:
-        description = analyze_image(req.image)
-        return AnalyzeResponse(description=description)
-    except anthropic.APIError as e:
-        raise HTTPException(status_code=502, detail=f"Claude API error: {e}")
-
-
-@app.post("/api/generate", response_model=GenerateResponse)
-async def api_generate(req: GenerateRequest):
-    try:
-        plan = generate_plan(req.prompt, req.image)
-        plan = validate_plan(plan)
-    except json.JSONDecodeError as e:
-        raise HTTPException(status_code=422, detail=f"Claude returned invalid JSON: {e}")
-    except anthropic.APIError as e:
-        raise HTTPException(status_code=502, detail=f"Claude API error: {e}")
-
-    filename = f"{uuid.uuid4().hex[:12]}.dxf"
-    out_path = str(DXF_DIR / filename)
-
-    try:
-        parsed = parse_structure_payload(plan=plan)
-        generate_structural(parsed["structure"], out_path)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"DXF generation failed: {e}")
-
-    return GenerateResponse(dxf_url=f"/downloads/{filename}", plan=plan)
-
 
 @app.post("/api/v2/parse-structure", response_model=ParseStructureResponse)
 async def api_parse_structure(req: ParseStructureRequest):
@@ -135,12 +99,15 @@ async def api_parse_structure(req: ParseStructureRequest):
         raise HTTPException(status_code=422, detail=str(e))
 
     request_id = uuid.uuid4().hex[:12]
+    infer_result = parsed.get("_infer_result") or {}
+    auto_anns = infer_result.get("_auto_annotations", [])
     artifact_urls = save_structure_artifacts(
         request_id=request_id,
         structure=parsed["structure"],
         quality_metrics=parsed["quality_metrics"],
         image_b64=image_b64,
         debug_overlay_b64=debug_overlay_b64,
+        auto_annotations=auto_anns or None,
     )
     log_event(
         "api.parse_structure.success",
@@ -155,6 +122,7 @@ async def api_parse_structure(req: ParseStructureRequest):
         quality_metrics=parsed["quality_metrics"],
         needs_review=parsed["needs_review"],
         review_flags=parsed["review_flags"],
+        auto_annotations=auto_anns or None,
     )
 
 
@@ -179,10 +147,62 @@ async def api_generate_v2(req: GenerateStructureRequest):
     filename = f"{request_id}.dxf"
     out_path = str(DXF_DIR / filename)
 
+    dxf_mode = _resolve_dxf_mode(parsed)
+    parsed["quality_metrics"]["dxf_mode"] = dxf_mode
+    parsed["structure"].setdefault("structure_meta", {})
+    parsed["structure"]["structure_meta"]["dxf_mode"] = dxf_mode
+    user_has_annotations = req.annotations is not None
+
     try:
-        generate_structural(parsed["structure"], out_path)
+        if dxf_mode == "mask_regions":
+            infer_result = parsed.get("_infer_result") or {}
+            auto_anns = infer_result.get("_auto_annotations", [])
+            if user_has_annotations:
+                # User reviewed & edited — use ONLY their annotations.
+                # Their set already includes walls + doors + windows they kept.
+                merged_anns = req.annotations
+            else:
+                # First run: auto-detected openings only (walls come from mask).
+                merged_anns = auto_anns
+
+            # Build region plan from wall mask
+            region_plan = build_mitunet_region_plan(infer_result, annotations=merged_anns)
+            parsed["quality_metrics"]["dxf_region_count"] = region_plan["meta"]["region_count"]
+            parsed["structure"]["structure_meta"]["dxf_region_plan"] = region_plan
+            parsed["structure"]["structure_meta"]["mitunet_region_debug"] = region_plan.get("debug", {})
+            parsed["structure"]["structure_meta"]["provenance"] = region_plan["meta"].get("provenance", {})
+
+            if user_has_annotations:
+                # User edited: skip mask regions, draw everything from annotations.
+                # Wall annotations already include the walls they want.
+                generate_mitunet_region_dxf(region_plan, out_path, annotations=merged_anns, skip_regions=True)
+            else:
+                # First run: draw walls from mask + doors/windows from annotations.
+                generate_mitunet_region_dxf(region_plan, out_path, annotations=merged_anns)
+        else:
+            generate_structural(parsed["structure"], out_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DXF generation failed: {e}")
+
+    infer_result_for_anns = parsed.get("_infer_result") or {}
+    auto_anns_response = infer_result_for_anns.get("_auto_annotations", [])
+    # Include wall regions as editable annotations on first run
+    region_plan_data = parsed["structure"].get("structure_meta", {}).get("dxf_region_plan")
+    if region_plan_data and not user_has_annotations:
+        wall_anns = regions_to_wall_annotations(region_plan_data)
+        auto_anns_response = wall_anns + auto_anns_response
+
+    # Build preview from the ACTUAL DXF output (not just postprocessed inference)
+    dxf_preview_img = None
+    try:
+        region_plan_for_preview = parsed["structure"].get("structure_meta", {}).get("dxf_region_plan")
+        dxf_preview_img = build_dxf_preview(
+            out_path,
+            image_b64=image_b64,
+            region_plan=region_plan_for_preview,
+        )
+    except Exception as exc:
+        log_event("api.generate_dxf.dxf_preview_error", error=str(exc))
 
     artifact_urls = save_structure_artifacts(
         request_id=request_id,
@@ -190,6 +210,8 @@ async def api_generate_v2(req: GenerateStructureRequest):
         quality_metrics=parsed["quality_metrics"],
         image_b64=image_b64,
         debug_overlay_b64=debug_overlay_b64,
+        auto_annotations=auto_anns_response or None,
+        dxf_preview=dxf_preview_img,
     )
     log_event(
         "api.generate_dxf.success",
@@ -206,6 +228,7 @@ async def api_generate_v2(req: GenerateStructureRequest):
         scale_status=parsed["structure"]["structure_meta"]["scale_status"],
         quality_metrics=parsed["quality_metrics"],
         review_flags=parsed["review_flags"],
+        auto_annotations=auto_anns_response or None,
     )
 
 
@@ -215,6 +238,8 @@ async def download_dxf(filename: str):
     if not path.exists():
         raise HTTPException(status_code=404, detail="File not found")
     return FileResponse(str(path), media_type="application/dxf", filename=filename)
+
+
 
 
 def _parse_v2_input(
@@ -235,8 +260,10 @@ def _parse_v2_input(
     if image is not None:
         if model_variant == "r2v":
             inferred = infer_structure(image, backend="r2v_local")
-        elif model_variant == "segformer":
-            inferred = infer_structure(image, backend="segformer_local")
+        elif model_variant == "mitunet":
+            inferred = infer_structure(image, backend="mitunet_local")
+        elif model_variant == "ensemble":
+            inferred = infer_structure(image, backend="ensemble_local")
         else:
             options = {"model_variant": model_variant} if model_variant else None
             if options is None:
@@ -250,6 +277,18 @@ def _parse_v2_input(
         parsed["quality_metrics"]["model_variant"] = (
             inferred.get("inference_debug", {}).get("model_variant") or model_variant or "baseline"
         )
+        # Preserve raw infer result for diagnostics and benchmark tooling.
+        parsed["_infer_result"] = inferred
         return parsed, image, inferred.get("inference_debug", {}).get("debug_overlay_b64")
 
     raise ValueError("One of structure, plan or image must be provided.")
+
+
+def _resolve_dxf_mode(parsed: dict) -> str:
+    infer_result = parsed.get("_infer_result") or {}
+    source = infer_result.get("source", "")
+    supports_mask_regions = (
+        source in (MITUNET_BACKEND, ENSEMBLE_BACKEND)
+        and "_wall_mask" in infer_result
+    )
+    return "mask_regions" if supports_mask_regions else "structural"

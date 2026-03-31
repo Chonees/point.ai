@@ -183,7 +183,7 @@ def _normalize_structure(
     review_flags.extend(processed["review_flags"])
 
     quality_metrics = {
-        "parser_version": "v2-phase-2",
+        "parser_version": "v2-phase-1a",
         "source_contract": "structure",
         "wall_count": len(processed["walls"]),
         "opening_count": len(processed["openings"]),
@@ -202,6 +202,7 @@ def _normalize_structure(
         "openings": processed["openings"],
         "junctions": processed["junctions"],
         "structure_meta": processed["structure_meta"],
+        "pipeline_debug": processed.get("pipeline_debug", {}),
         "inference_debug": structure.get("inference_debug", {}),
     }
     return _finalize_parse_result(structure_result, quality_metrics, review_flags)

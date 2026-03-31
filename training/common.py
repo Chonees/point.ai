@@ -220,6 +220,9 @@ def save_converted_sample(
     preview_path = sample_dir / "preview.png"
 
     image_hwc = np.moveaxis(sample.image, 0, -1)
+    # Convert float32 [0,1] to uint8 [0,255] for cv2.imwrite
+    if image_hwc.dtype == np.float32 or image_hwc.dtype == np.float64:
+        image_hwc = (image_hwc * 255).clip(0, 255).astype(np.uint8)
     cv2.imwrite(str(image_path), cv2.cvtColor(image_hwc, cv2.COLOR_RGB2BGR))
     np.save(label_path, sample.label)
     heatmaps_payload = {str(channel): coords for channel, coords in sample.heatmaps.items()}

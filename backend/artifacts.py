@@ -26,6 +26,8 @@ def save_structure_artifacts(
     quality_metrics: dict[str, Any],
     image_b64: str | None = None,
     debug_overlay_b64: str | None = None,
+    auto_annotations: list[dict[str, Any]] | None = None,
+    dxf_preview: np.ndarray | None = None,
 ) -> dict[str, str]:
     run_dir = ARTIFACT_DIR / request_id
     run_dir.mkdir(parents=True, exist_ok=True)
@@ -35,20 +37,30 @@ def save_structure_artifacts(
     preview_path = run_dir / "preview.png"
     structure_preview_path = run_dir / "structure_preview.png"
     worker_overlay_path = run_dir / "worker_overlay.png"
+    region_plan_path = run_dir / "dxf_region_plan.json"
+    region_debug_path = run_dir / "mitunet_region_debug.json"
+    provenance_path = run_dir / "provenance.json"
 
     structure_path.write_text(json.dumps(structure, indent=2), encoding="utf-8")
     metrics_path.write_text(json.dumps(quality_metrics, indent=2), encoding="utf-8")
 
-    structure_preview = build_preview_image(structure, image_b64=image_b64)
+    structure_preview = build_preview_image(structure, image_b64=image_b64, auto_annotations=auto_annotations)
     structure_preview_path.write_bytes(encode_png_data(structure_preview))
+
+    # Use DXF preview (actual DXF output) as main preview when available
+    if dxf_preview is not None:
+        preview_path.write_bytes(encode_png_data(dxf_preview))
+    elif debug_overlay_b64:
+        worker_overlay_path.write_bytes(_decode_overlay(debug_overlay_b64))
+        preview_path.write_bytes(worker_overlay_path.read_bytes())
+    else:
+        preview_path.write_bytes(structure_preview_path.read_bytes())
 
     worker_overlay_url = None
     if debug_overlay_b64:
-        worker_overlay_path.write_bytes(_decode_overlay(debug_overlay_b64))
-        preview_path.write_bytes(worker_overlay_path.read_bytes())
+        if not worker_overlay_path.exists():
+            worker_overlay_path.write_bytes(_decode_overlay(debug_overlay_b64))
         worker_overlay_url = f"/artifacts/{request_id}/worker_overlay.png"
-    else:
-        preview_path.write_bytes(structure_preview_path.read_bytes())
 
     artifact_urls = {
         "preview_url": f"/artifacts/{request_id}/preview.png",
@@ -56,12 +68,26 @@ def save_structure_artifacts(
         "quality_url": f"/artifacts/{request_id}/quality.json",
         "structure_preview_url": f"/artifacts/{request_id}/structure_preview.png",
     }
+    structure_meta = structure.get("structure_meta", {})
+    if structure_meta.get("dxf_region_plan") is not None:
+        region_plan_path.write_text(json.dumps(structure_meta["dxf_region_plan"], indent=2), encoding="utf-8")
+        artifact_urls["dxf_region_plan_url"] = f"/artifacts/{request_id}/dxf_region_plan.json"
+    if structure_meta.get("mitunet_region_debug") is not None:
+        region_debug_path.write_text(json.dumps(structure_meta["mitunet_region_debug"], indent=2), encoding="utf-8")
+        artifact_urls["mitunet_region_debug_url"] = f"/artifacts/{request_id}/mitunet_region_debug.json"
+    if structure_meta.get("provenance") is not None:
+        provenance_path.write_text(json.dumps(structure_meta["provenance"], indent=2), encoding="utf-8")
+        artifact_urls["provenance_url"] = f"/artifacts/{request_id}/provenance.json"
     if worker_overlay_url is not None:
         artifact_urls["worker_overlay_url"] = worker_overlay_url
     return artifact_urls
 
 
-def build_preview_image(structure: dict[str, Any], image_b64: str | None = None) -> np.ndarray:
+def build_preview_image(
+    structure: dict[str, Any],
+    image_b64: str | None = None,
+    auto_annotations: list[dict[str, Any]] | None = None,
+) -> np.ndarray:
     offset_x = 0.0
     offset_y = 0.0
     if image_b64:
@@ -90,6 +116,23 @@ def build_preview_image(structure: dict[str, Any], image_b64: str | None = None)
             color,
             2,
         )
+
+    # Draw auto-detected openings from CubiCasa (annotation format)
+    for ann in auto_annotations or []:
+        ann_type = ann.get("type", "")
+        if ann_type not in ("door", "window"):
+            continue
+        x1 = round(float(ann.get("x1", 0)) + offset_x)
+        y1 = round(float(ann.get("y1", 0)) + offset_y)
+        x2 = round(float(ann.get("x2", 0)) + offset_x)
+        y2 = round(float(ann.get("y2", 0)) + offset_y)
+        color = (0, 220, 0) if ann_type == "door" else (255, 100, 0)
+        cv2.line(canvas, (x1, y1), (x2, y2), color, 3)
+        # Label
+        mid_x, mid_y = (x1 + x2) // 2, (y1 + y2) // 2
+        label = "D" if ann_type == "door" else "W"
+        cv2.putText(canvas, label, (mid_x - 5, mid_y - 8),
+                    cv2.FONT_HERSHEY_SIMPLEX, 0.4, color, 1)
 
     return canvas
 

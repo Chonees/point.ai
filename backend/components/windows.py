@@ -46,10 +46,10 @@ def draw_window_h(msp, x, y, width, side="bottom"):
         add_line(msp, x+width, y+1, x+width, y+2, L)  # end cap der
 
 
-def draw_window_v(msp, x, y, width, side="left"):
+def draw_window_v(msp, x, y, width, side="left", thickness=THICKNESS):
     """Ventana vertical — 3 lineas paralelas + end caps + sill exterior."""
     L = LAYER
-    T = THICKNESS
+    T = thickness
     if side == "left":
         add_line(msp, x-1, y,        x-1, y+width, L)  # sill exterior 1" afuera
         add_line(msp, x,   y,        x,   y+width, L)  # cara exterior

@@ -1,7 +1,12 @@
 from fastapi.testclient import TestClient
 
 from backend.app import app
-from tests.helpers import build_low_quality_structure, build_manual_structure, build_synthetic_structure_image
+from tests.helpers import (
+    build_low_quality_structure,
+    build_manual_structure,
+    build_mitunet_infer_result,
+    build_synthetic_structure_image,
+)
 
 
 SAMPLE_PLAN = {
@@ -130,3 +135,66 @@ def test_generate_dxf_endpoint_passes_model_variant_and_reports_it(monkeypatch):
     payload = response.json()
     assert captured["options"] == {"model_variant": "baseline"}
     assert payload["quality_metrics"]["model_variant"] == "baseline"
+
+
+def test_generate_dxf_endpoint_uses_mask_regions_mode_for_mitunet(monkeypatch):
+    def fake_infer(image: str, *, backend=None, options=None):
+        return build_mitunet_infer_result()
+
+    monkeypatch.setattr("backend.app.infer_structure", fake_infer)
+
+    response = client.post(
+        "/api/v2/generate-dxf",
+        json={"image": build_synthetic_structure_image(), "model_variant": "mitunet"},
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["quality_metrics"]["dxf_mode"] == "mask_regions"
+    assert payload["structure"]["structure_meta"]["dxf_mode"] == "mask_regions"
+    assert payload["structure"]["structure_meta"]["dxf_region_plan"]["meta"]["region_count"] > 0
+    assert payload["structure"]["structure_meta"]["dxf_region_plan"]["meta"]["max_wall_thickness"] == 6.0
+    assert payload["structure"]["structure_meta"]["mitunet_region_debug"]["stage_order"] == [
+        "raw_wall_mask",
+        "cleaned_wall_mask",
+        "horizontal_extraction",
+        "vertical_extraction",
+        "trimmed_rectangles",
+        "clamped_regions",
+    ]
+    assert payload["artifact_urls"]["dxf_region_plan_url"].startswith("/artifacts/")
+    assert payload["artifact_urls"]["mitunet_region_debug_url"].startswith("/artifacts/")
+    assert payload["artifact_urls"]["provenance_url"].startswith("/artifacts/")
+    assert all(
+        region["draw_thickness"] <= 6.0
+        for region in payload["structure"]["structure_meta"]["dxf_region_plan"]["regions"]
+    )
+    region_debug = client.get(payload["artifact_urls"]["mitunet_region_debug_url"])
+    assert region_debug.status_code == 200
+    assert region_debug.json()["clamped_regions"]["region_count"] > 0
+    provenance = client.get(payload["artifact_urls"]["provenance_url"])
+    assert provenance.status_code == 200
+    assert provenance.json()["backend"] == "mitunet_local"
+
+
+def test_generate_dxf_endpoint_ignores_legacy_dxf_mode_override_for_mitunet(monkeypatch):
+    def fake_infer(image: str, *, backend=None, options=None):
+        return build_mitunet_infer_result()
+
+    monkeypatch.setattr("backend.app.infer_structure", fake_infer)
+
+    response = client.post(
+        "/api/v2/generate-dxf",
+        json={
+            "image": build_synthetic_structure_image(),
+            "model_variant": "mitunet",
+            "dxf_mode": "structural",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["quality_metrics"]["dxf_mode"] == "mask_regions"
+    assert payload["structure"]["structure_meta"]["dxf_mode"] == "mask_regions"
+    assert "dxf_region_plan" in payload["structure"]["structure_meta"]
+    assert "mitunet_region_debug" in payload["structure"]["structure_meta"]
