@@ -273,11 +273,12 @@ function Stat({ label, value, dim = false }: { label: string; value: string; dim
 }
 
 
-function DoorSwingPicker({ pendingDoor, onPick, onCancel, onMirror }: {
+function DoorSwingPicker({ pendingDoor, onPick, onCancel, onMirror, label }: {
   pendingDoor: { x1: number; y1: number; x2: number; y2: number; sx: number; sy: number }
   onPick: (dir: SwingDir) => void
   onCancel: () => void
   onMirror?: () => void
+  label?: string
 }) {
   const adx = Math.abs(pendingDoor.x2 - pendingDoor.x1)
   const ady = Math.abs(pendingDoor.y2 - pendingDoor.y1)
@@ -289,7 +290,7 @@ function DoorSwingPicker({ pendingDoor, onPick, onCancel, onMirror }: {
       className="absolute z-50 flex items-center gap-1 px-2 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700/60 shadow-xl shadow-black/50"
       style={{ left: pendingDoor.sx, top: pendingDoor.sy + 8, transform: 'translateX(-50%)' }}
     >
-      <span className="text-[9px] text-zinc-400 mr-1">Opens</span>
+      <span className="text-[9px] text-zinc-400 mr-1">{label ?? 'Opens'}</span>
       {options.map((dir) => (
         <button
           key={dir}
@@ -465,6 +466,28 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     return null
   }
 
+  // Snap point to nearest annotation endpoint (within threshold)
+  const snapToEndpoint = (wx: number, wy: number, skipIdx: number = -1): { x: number; y: number; snapped: boolean } => {
+    const threshold = 8 / viewRef.current.scale
+    let bestDist = threshold
+    let snap = { x: wx, y: wy, snapped: false }
+    const anns = annotationsRef.current
+    for (let i = 0; i < anns.length; i++) {
+      if (i === skipIdx) continue
+      const a = anns[i]
+      if (a.type === 'eraser') continue
+      for (const [px, py] of [[a.x1, a.y1], [a.x2, a.y2]] as [number, number][]) {
+        const d = Math.sqrt((wx - px) ** 2 + (wy - py) ** 2)
+        if (d < bestDist) {
+          bestDist = d
+          snap = { x: px, y: py, snapped: true }
+        }
+      }
+    }
+    return snap
+  }
+  const snapRef = useRef<{ x: number; y: number; snapped: boolean }>({ x: 0, y: 0, snapped: false })
+
   // Screen mouse → world (image-pixel) coordinates, accounting for pan+zoom
   const screenToWorld = (clientX: number, clientY: number) => {
     const canvas = canvasRef.current
@@ -569,8 +592,8 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
           ctx.setLineDash([6 / v.scale, 4 / v.scale])
           ctx.globalAlpha = 0.8
         }
-        // Doors without swing = yellow (needs attention), with swing = green (done)
-        const color = ann.type === 'door'
+        // Doors/windows without direction = yellow (needs attention), with = green (done)
+        const color = (ann.type === 'door' || ann.type === 'window')
           ? (ann.swing ? '#33ff66' : '#ffcc00')
           : COLORS[ann.type]
         const lw = (ann.type === 'wall' ? 6 : 3) / v.scale
@@ -704,6 +727,19 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
       ctx.stroke()
     }
 
+    // Snap indicator
+    const sn = snapRef.current
+    if (sn.snapped) {
+      ctx.strokeStyle = '#44aaff'
+      ctx.fillStyle = 'rgba(68, 170, 255, 0.3)'
+      ctx.lineWidth = 1.5 / v.scale
+      ctx.setLineDash([])
+      ctx.beginPath()
+      ctx.arc(sn.x, sn.y, 6 / v.scale, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+    }
+
     // Live preview overlay while dragging
     const sp = startPtRef.current
     const cp = cursorPtRef.current
@@ -830,8 +866,8 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
           scheduleRender()
           return
         }
-        // Click on door line → open swing picker to edit
-        if (ha.type === 'door') {
+        // Click on door/window line → open picker to edit swing/side
+        if (ha.type === 'door' || ha.type === 'window') {
           const rect = canvasRef.current!.getBoundingClientRect()
           const sx = e.clientX - rect.left
           const sy = e.clientY - rect.top
@@ -841,7 +877,9 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
         }
       }
     }
-    const pt = screenToWorld(e.clientX, e.clientY)
+    const ptRaw = screenToWorld(e.clientX, e.clientY)
+    const pt = snapToEndpoint(ptRaw.x, ptRaw.y)
+    snapRef.current = pt
     setDrawing(true)
     setStartPt(pt)
     // Sync refs for live preview
@@ -860,20 +898,21 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
       return
     }
 
-    // Drag-resize endpoint
+    // Drag-resize endpoint with snap
     if (draggingRef.current) {
-      const pt = screenToWorld(e.clientX, e.clientY)
+      const ptRaw = screenToWorld(e.clientX, e.clientY)
       const { idx, endpoint } = draggingRef.current
       setAnnotations(annotations.map((a, i) => {
         if (i !== idx) return a
         if (endpoint === 'arc' && a.swing) {
-          // Drag arc handle: project onto slab direction only (doesn't affect opening)
           const slabAs: Record<string, number> = { up: -Math.PI / 2, down: Math.PI / 2, left: Math.PI, right: 0 }
           const sA = slabAs[a.swing]
-          const dx = pt.x - a.x1, dy = pt.y - a.y1
+          const dx = ptRaw.x - a.x1, dy = ptRaw.y - a.y1
           const proj = dx * Math.cos(sA) + dy * Math.sin(sA)
           return { ...a, arcRadius: Math.max(5, Math.abs(proj)) }
         }
+        const pt = snapToEndpoint(ptRaw.x, ptRaw.y, idx)
+        snapRef.current = pt
         return endpoint === 'start'
           ? { ...a, x1: pt.x, y1: pt.y }
           : { ...a, x2: pt.x, y2: pt.y }
@@ -883,8 +922,10 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     }
 
     if (drawingRef.current && startPtRef.current) {
-      // Update cursor ref and schedule a render (avoids stale closures)
-      cursorPtRef.current = screenToWorld(e.clientX, e.clientY)
+      const ptRaw = screenToWorld(e.clientX, e.clientY)
+      const snapped = snapToEndpoint(ptRaw.x, ptRaw.y)
+      snapRef.current = snapped
+      cursorPtRef.current = snapped
       scheduleRender()
       return
     }
@@ -907,7 +948,9 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     if (isPanning.current) { isPanning.current = false; return }
     if (draggingRef.current) { draggingRef.current = null; return }
     if (!drawingRef.current || !startPtRef.current) return
-    const pt = screenToWorld(e.clientX, e.clientY)
+    const ptRaw = screenToWorld(e.clientX, e.clientY)
+    const pt = snapToEndpoint(ptRaw.x, ptRaw.y)
+    snapRef.current = { x: 0, y: 0, snapped: false }
     const sp = startPtRef.current
 
     // Clear drawing state (both state and refs)
@@ -1071,7 +1114,18 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
           style={{ cursor: spaceDown.current || isPanning.current ? 'grab' : 'crosshair' }}
         />
         {/* Door swing popup — appears where user released the mouse */}
-        {pendingDoor && <DoorSwingPicker pendingDoor={pendingDoor} onPick={addDoorWithSwing} onCancel={() => { editingDoorIdxRef.current = -1; setPendingDoor(null) }} onMirror={editingDoorIdxRef.current >= 0 ? mirrorDoor : undefined} />}
+        {pendingDoor && (() => {
+          const editIdx = editingDoorIdxRef.current
+          const editingType = editIdx >= 0 ? annotations[editIdx]?.type : 'door'
+          const isWindow = editingType === 'window'
+          return <DoorSwingPicker
+            pendingDoor={pendingDoor}
+            onPick={addDoorWithSwing}
+            onCancel={() => { editingDoorIdxRef.current = -1; setPendingDoor(null) }}
+            onMirror={editIdx >= 0 && !isWindow ? mirrorDoor : undefined}
+            label={isWindow ? 'Exterior' : 'Opens'}
+          />
+        })()}
       </div>
 
     </div>

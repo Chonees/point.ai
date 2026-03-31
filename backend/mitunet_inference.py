@@ -1401,18 +1401,25 @@ def _draw_mitunet_annotations_from_region_plan(
         if ann_type == "window":
             from .components.windows import draw_window_h, draw_window_v  # noqa: E402
 
+            exterior = ann.get("swing")  # reuse swing field for exterior side
+            if not exterior:
+                continue  # No side set = skip (user must pick exterior direction)
+
             adx = abs(dx2 - dx1)
             ady = abs(dy2 - dy1)
+            # Map user direction to draw_window side parameter
             if adx >= ady:
-                # Horizontal window
+                # Horizontal window: DXF Y-flip means up→bottom, down→top
+                side = "bottom" if exterior == "up" else "top"
                 x_lo = min(dx1, dx2)
                 y_mid = (dy1 + dy2) / 2
-                draw_window_h(msp, x_lo, y_mid, adx, side="bottom")
+                draw_window_h(msp, x_lo, y_mid, adx, side=side)
             else:
-                # Vertical window
+                # Vertical window: left→left, right→right
+                side = exterior  # already "left" or "right"
                 x_mid = (dx1 + dx2) / 2
                 y_lo = min(dy1, dy2)
-                draw_window_v(msp, x_mid, y_lo, ady, side="left")
+                draw_window_v(msp, x_mid, y_lo, ady, side=side)
 
     return rect_count
 
