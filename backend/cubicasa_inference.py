@@ -408,6 +408,7 @@ def _polygon_to_wall(polygon: np.ndarray, counter: int) -> dict[str, Any] | None
         "thickness": max(thickness, 1.0),
         "is_exterior": False,
         "confidence": 0.85,
+        
     }
 
 

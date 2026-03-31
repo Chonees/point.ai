@@ -19,6 +19,7 @@ from .cubicasa_inference import CUBICASA_BACKEND, cubicasa_available, infer_cubi
 from .inference_client import HEURISTIC_BACKEND, infer_heuristic_structure
 from .r2v_inference import R2V_BACKEND, infer_r2v, r2v_available
 from .mitunet_inference import MITUNET_BACKEND, infer_mitunet, mitunet_available
+from .ensemble_inference import ENSEMBLE_BACKEND, infer_ensemble, ensemble_available
 from .observability import log_event
 from .worker_contract import (
     WorkerError,
@@ -114,6 +115,16 @@ def infer_structure(
         if not ready:
             raise WorkerError("MODEL_NOT_LOADED", reason or "MitUNet is not available.")
         result = infer_mitunet(image_b64)
+        result.setdefault("inference_debug", {})
+        result["inference_debug"]["backend"] = backend
+        log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
+        return result
+
+    if backend == ENSEMBLE_BACKEND:
+        ready, reason = ensemble_available()
+        if not ready:
+            raise WorkerError("MODEL_NOT_LOADED", reason or "Ensemble backend is not available.")
+        result = infer_ensemble(image_b64)
         result.setdefault("inference_debug", {})
         result["inference_debug"]["backend"] = backend
         log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
