@@ -26,7 +26,6 @@ class GenerateStructureRequest(BaseModel):
     structure: Optional[dict] = None
     image: Optional[str] = None
     scale_hint: Optional[float] = None
-    scale_sqft: Optional[float] = None  # user-provided total floor area for calibration
     model_variant: Optional[str] = None
     annotations: Optional[list] = None  # user-drawn walls/doors/windows
 
@@ -41,4 +40,3 @@ class GenerateStructureResponse(BaseModel):
     quality_metrics: dict = Field(default_factory=dict)
     review_flags: list[str] = Field(default_factory=list)
     auto_annotations: Optional[list] = None
-    bom: Optional[dict] = None

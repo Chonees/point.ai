@@ -40,7 +40,6 @@ from .mitunet_inference import (
 )
 from .ensemble_inference import ENSEMBLE_BACKEND
 from .dxf_preview import build_dxf_preview
-from .bom_generator import generate_bom, export_bom_csv
 
 # App
 app = FastAPI(title="Point.ai", version="0.1.0")
@@ -148,10 +147,6 @@ async def api_generate_v2(req: GenerateStructureRequest):
     filename = f"{request_id}.dxf"
     out_path = str(DXF_DIR / filename)
 
-    # Calibrate scale from user-provided square footage
-    if req.scale_sqft and req.scale_sqft > 0:
-        _apply_sqft_calibration(parsed["structure"], req.scale_sqft)
-
     dxf_mode = _resolve_dxf_mode(parsed)
     parsed["quality_metrics"]["dxf_mode"] = dxf_mode
     parsed["structure"].setdefault("structure_meta", {})
@@ -224,7 +219,6 @@ async def api_generate_v2(req: GenerateStructureRequest):
         wall_count=len(parsed["structure"].get("walls", [])),
         opening_count=len(parsed["structure"].get("openings", [])),
     )
-    bom = generate_bom(parsed["structure"])
     return GenerateStructureResponse(
         dxf_url=f"/downloads/{filename}",
         preview_url=artifact_urls["preview_url"],
@@ -235,20 +229,6 @@ async def api_generate_v2(req: GenerateStructureRequest):
         quality_metrics=parsed["quality_metrics"],
         review_flags=parsed["review_flags"],
         auto_annotations=auto_anns_response or None,
-        bom=bom,
-    )
-
-
-@app.post("/api/v2/bom-csv")
-async def api_bom_csv(req: dict):
-    """Generate BOM CSV from structure."""
-    from fastapi.responses import Response
-    bom = generate_bom(req.get("structure", {}))
-    csv_content = export_bom_csv(bom)
-    return Response(
-        content=csv_content,
-        media_type="text/csv",
-        headers={"Content-Disposition": "attachment; filename=bom.csv"},
     )
 
 
@@ -314,39 +294,3 @@ def _resolve_dxf_mode(parsed: dict) -> str:
     return "mask_regions" if supports_mask_regions else "structural"
 
 
-def _apply_sqft_calibration(structure: dict, target_sqft: float) -> None:
-    """Compute scale_hint from user-provided total floor area (sqft).
-
-    Uses the bounding box of all walls in pixel space to derive a
-    pixels-to-inches conversion factor.
-    """
-    import math
-
-    walls = structure.get("walls") or []
-    if not walls:
-        return
-
-    xs, ys = [], []
-    for wall in walls:
-        for pt in wall.get("polyline", []):
-            xs.append(float(pt["x"]))
-            ys.append(float(pt["y"]))
-    if not xs:
-        return
-
-    bbox_w_px = max(xs) - min(xs)
-    bbox_h_px = max(ys) - min(ys)
-    bbox_area_px = bbox_w_px * bbox_h_px
-    if bbox_area_px < 1:
-        return
-
-    # target_sqft → sq inches → scale factor
-    target_sqin = target_sqft * 144.0
-    scale = math.sqrt(target_sqin / bbox_area_px)
-
-    meta = structure.setdefault("structure_meta", {})
-    meta["scale_hint"] = round(scale, 6)
-    meta["scale_status"] = "calibrated"
-    meta["unit"] = "inch"
-    meta["calibration_source"] = "user_sqft"
-    meta["calibration_sqft"] = target_sqft
