@@ -40,3 +40,4 @@ class GenerateStructureResponse(BaseModel):
     quality_metrics: dict = Field(default_factory=dict)
     review_flags: list[str] = Field(default_factory=list)
     auto_annotations: Optional[list] = None
+    bom: Optional[dict] = None

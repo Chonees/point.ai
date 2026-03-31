@@ -5,6 +5,7 @@ import { fileToBase64 } from '../utils/fileToBase64'
 import { Spinner } from './Spinner'
 import { UploadIcon } from './UploadIcon'
 import { DownloadButton } from './DownloadButton'
+import { BOMPanel } from './BOMPanel'
 
 const OverlayEditor = lazy(() => import('./OverlayEditor'))
 
@@ -169,7 +170,8 @@ export function UploadPanel() {
             {/* Download */}
             <DownloadButton href={result.dxf_url} />
 
-            {/* TODO: Canvas editor for manual walls/doors/windows */}
+            {/* BOM */}
+            {result.bom && <BOMPanel bom={result.bom} structure={result.structure} />}
 
             {/* Details toggle */}
             <button onClick={() => setShowDetails(!showDetails)}

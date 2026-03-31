@@ -40,6 +40,7 @@ from .mitunet_inference import (
 )
 from .ensemble_inference import ENSEMBLE_BACKEND
 from .dxf_preview import build_dxf_preview
+from .bom_generator import generate_bom, export_bom_csv
 
 # App
 app = FastAPI(title="Point.ai", version="0.1.0")
@@ -219,6 +220,7 @@ async def api_generate_v2(req: GenerateStructureRequest):
         wall_count=len(parsed["structure"].get("walls", [])),
         opening_count=len(parsed["structure"].get("openings", [])),
     )
+    bom = generate_bom(parsed["structure"])
     return GenerateStructureResponse(
         dxf_url=f"/downloads/{filename}",
         preview_url=artifact_urls["preview_url"],
@@ -229,6 +231,20 @@ async def api_generate_v2(req: GenerateStructureRequest):
         quality_metrics=parsed["quality_metrics"],
         review_flags=parsed["review_flags"],
         auto_annotations=auto_anns_response or None,
+        bom=bom,
+    )
+
+
+@app.post("/api/v2/bom-csv")
+async def api_bom_csv(req: dict):
+    """Generate BOM CSV from structure."""
+    from fastapi.responses import Response
+    bom = generate_bom(req.get("structure", {}))
+    csv_content = export_bom_csv(bom)
+    return Response(
+        content=csv_content,
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=bom.csv"},
     )
 
 
