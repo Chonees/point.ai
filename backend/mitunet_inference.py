@@ -1353,8 +1353,7 @@ def _draw_mitunet_annotations_from_region_plan(
             if not swing:
                 continue  # No swing = skip (user must set direction first)
 
-            # Y-flip: image Y-down → DXF Y-up, so swap up↔down.
-            dxf_swing = {"up": "down", "down": "up"}.get(swing, swing)
+            dxf_swing = swing
 
             # First point = hinge. Determine if hinge is mirrored
             # (on the right/top end instead of the normal left/bottom).
