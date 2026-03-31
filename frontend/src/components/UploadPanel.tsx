@@ -7,6 +7,7 @@ import { UploadIcon } from './UploadIcon'
 import { DownloadButton } from './DownloadButton'
 
 const OverlayEditor = lazy(() => import('./OverlayEditor'))
+const FloorPlan3D = lazy(() => import('./FloorPlan3D'))
 
 export function UploadPanel() {
   const [file, setFile] = useState<File | null>(null)
@@ -18,6 +19,7 @@ export function UploadPanel() {
   const [dragging, setDragging] = useState(false)
   const [annotations, setAnnotations] = useState<Annotation[]>([])
   const [autoLoaded, setAutoLoaded] = useState(false)
+  const [view3D, setView3D] = useState(false)
   const fileRef = useRef<HTMLInputElement>(null)
 
   const handleFile = useCallback((f: File) => {
@@ -155,14 +157,38 @@ export function UploadPanel() {
           <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
             className="mt-6 space-y-3 sm:space-y-4">
 
-            {/* Interactive overlay editor */}
+            {/* 2D/3D toggle */}
+            {result.preview_url && (
+              <div className="flex items-center gap-1 mb-1">
+                <button
+                  onClick={() => setView3D(false)}
+                  className={`px-3 py-1 rounded-l-md text-[10px] font-medium border cursor-pointer transition-colors
+                    ${!view3D ? 'bg-zinc-700/60 text-zinc-200 border-zinc-600/60' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/40 hover:text-zinc-400'}`}
+                >
+                  2D Edit
+                </button>
+                <button
+                  onClick={() => setView3D(true)}
+                  className={`px-3 py-1 rounded-r-md text-[10px] font-medium border cursor-pointer transition-colors
+                    ${view3D ? 'bg-zinc-700/60 text-zinc-200 border-zinc-600/60' : 'bg-zinc-900/40 text-zinc-500 border-zinc-800/40 hover:text-zinc-400'}`}
+                >
+                  3D Preview
+                </button>
+              </div>
+            )}
+
+            {/* Editor / 3D view */}
             {result.preview_url && (
               <Suspense fallback={<div className="h-64 bg-zinc-950 animate-pulse rounded-lg" />}>
-                <OverlayEditor
-                  previewUrl={result.preview_url}
-                  annotations={annotations}
-                  setAnnotations={setAnnotations}
-                />
+                {view3D ? (
+                  <FloorPlan3D structure={result.structure} />
+                ) : (
+                  <OverlayEditor
+                    previewUrl={result.preview_url}
+                    annotations={annotations}
+                    setAnnotations={setAnnotations}
+                  />
+                )}
               </Suspense>
             )}
 
