@@ -1,45 +1,13 @@
 import { useState, useRef, useCallback, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type Status = 'idle' | 'loading' | 'done' | 'error'
-type ModelVariant = 'baseline' | 'mitunet' | 'ensemble'
-type AnnotationType = 'wall' | 'door' | 'window' | 'eraser'
-type SwingDir = 'up' | 'down' | 'left' | 'right'
-interface Annotation { type: AnnotationType; x1: number; y1: number; x2: number; y2: number; swing?: SwingDir; _source?: string; arcRadius?: number }
-
-interface V2Result {
-  dxf_url: string
-  preview_url: string | null
-  structure: Record<string, unknown>
-  quality_metrics: Record<string, unknown>
-  review_flags: string[]
-  needs_review: boolean
-  scale_status: string
-  auto_annotations?: { type: string; x1: number; y1: number; x2: number; y2: number; swing?: string; _source?: string }[]
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-    reader.onload = () => resolve(reader.result as string)
-    reader.onerror = reject
-    reader.readAsDataURL(file)
-  })
-}
-
-function Spinner() {
-  return (
-    <motion.span
-      animate={{ rotate: 360 }}
-      transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-      className="inline-block w-3.5 h-3.5 border border-zinc-600 border-t-zinc-400 rounded-full"
-    />
-  )
-}
+import type { Status, AnnotationType, SwingDir, Annotation, V2Result } from './types'
+import { fileToBase64 } from './utils/fileToBase64'
+import { Spinner } from './components/Spinner'
+import { UploadIcon } from './components/UploadIcon'
+import { DownloadButton } from './components/DownloadButton'
+import { DoorSwingPicker } from './components/DoorSwingPicker'
+import { COLORS, TOOL_DEFS } from './components/OverlayEditor/constants'
+import { hitTestAnnotation, hitTestEndpoint, snapToEndpoint } from './components/OverlayEditor/geometry'
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
@@ -263,63 +231,6 @@ function UploadPanel() {
 
 // ─── Shared components ────────────────────────────────────────────────────────
 
-function Stat({ label, value, dim = false }: { label: string; value: string; dim?: boolean }) {
-  return (
-    <div className="p-2.5 sm:p-3 bg-zinc-900/50 border border-zinc-800/40 rounded-lg text-center">
-      <p className={`text-base sm:text-lg font-light ${dim ? 'text-zinc-600' : 'text-zinc-300'}`}>{value}</p>
-      <p className="text-[9px] sm:text-[10px] text-zinc-700 mt-0.5">{label}</p>
-    </div>
-  )
-}
-
-
-function DoorSwingPicker({ pendingDoor, onPick, onCancel, onMirror, label }: {
-  pendingDoor: { x1: number; y1: number; x2: number; y2: number; sx: number; sy: number }
-  onPick: (dir: SwingDir) => void
-  onCancel: () => void
-  onMirror?: () => void
-  label?: string
-}) {
-  const adx = Math.abs(pendingDoor.x2 - pendingDoor.x1)
-  const ady = Math.abs(pendingDoor.y2 - pendingDoor.y1)
-  const isVertical = ady >= adx
-  const options: SwingDir[] = isVertical ? ['left', 'right'] : ['up', 'down']
-  const arrows: Record<string, string> = { up: '↑', down: '↓', left: '←', right: '→' }
-  return (
-    <div
-      className="absolute z-50 flex items-center gap-1 px-2 py-1.5 rounded-lg bg-zinc-800 border border-zinc-700/60 shadow-xl shadow-black/50"
-      style={{ left: pendingDoor.sx, top: pendingDoor.sy + 8, transform: 'translateX(-50%)' }}
-    >
-      <span className="text-[9px] text-zinc-400 mr-1">{label ?? 'Opens'}</span>
-      {options.map((dir) => (
-        <button
-          key={dir}
-          onClick={() => onPick(dir)}
-          className="px-2.5 py-1 rounded text-[10px] font-medium bg-zinc-700/60 border border-zinc-600/50
-                     text-zinc-300 hover:bg-zinc-600/60 hover:text-white cursor-pointer transition-colors"
-        >
-          {arrows[dir]} {dir}
-        </button>
-      ))}
-      {onMirror && (
-        <button
-          onClick={onMirror}
-          className="px-2 py-1 rounded text-[10px] font-medium bg-amber-900/40 border border-amber-700/50
-                     text-amber-300 hover:bg-amber-800/50 hover:text-amber-200 cursor-pointer transition-colors"
-          title="Flip hinge side"
-        >
-          ⇄
-        </button>
-      )}
-      <button
-        onClick={onCancel}
-        className="ml-1 px-1.5 py-1 text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
-      >
-        ✕
-      </button>
-    </div>
-  )
-}
 
 
 function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
@@ -359,134 +270,12 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
   const spaceDown = useRef(false)
   const imgRef = useRef<HTMLImageElement | null>(null)
 
-  const COLORS: Record<AnnotationType, string> = {
-    wall: '#ff3333',
-    door: '#33ff66',
-    window: '#3399ff',
-    eraser: '#888888',
-  }
-
-  // Distance from point to line segment
-  const _distToSeg = (px: number, py: number, x1: number, y1: number, x2: number, y2: number) => {
-    const dx = x2 - x1, dy = y2 - y1
-    const lenSq = dx * dx + dy * dy
-    if (lenSq < 1) return Math.sqrt((px - x1) ** 2 + (py - y1) ** 2)
-    const t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / lenSq))
-    return Math.sqrt((px - (x1 + t * dx)) ** 2 + (py - (y1 + t * dy)) ** 2)
-  }
-
-  // Check if angle is within the 90° arc sweep from sA to oA
-  const _angleInArc = (angle: number, sA: number, oA: number) => {
-    // Normalize all to [0, 2π]
-    const norm = (a: number) => ((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)
-    const a = norm(angle), s = norm(sA), o = norm(oA)
-    // Check both sweep directions, pick the one that's ≤180°
-    const cw = ((o - s) + 2 * Math.PI) % (2 * Math.PI)
-    if (cw <= Math.PI) {
-      // Clockwise from s to o
-      return ((a - s) + 2 * Math.PI) % (2 * Math.PI) <= cw
-    }
-    // Counter-clockwise from s to o
-    const ccw = 2 * Math.PI - cw
-    return ((s - a) + 2 * Math.PI) % (2 * Math.PI) <= ccw
-  }
-
-  // Hit-test: find annotation index nearest to point (within threshold)
-  const hitTestAnnotation = (wx: number, wy: number): number => {
-    const threshold = 12 / viewRef.current.scale
-    const anns = annotationsRef.current
-    for (let i = anns.length - 1; i >= 0; i--) {
-      const a = anns[i]
-      if (a.type === 'eraser') {
-        // Point inside rectangle
-        const rx1 = Math.min(a.x1, a.x2), ry1 = Math.min(a.y1, a.y2)
-        const rx2 = Math.max(a.x1, a.x2), ry2 = Math.max(a.y1, a.y2)
-        if (wx >= rx1 - threshold && wx <= rx2 + threshold && wy >= ry1 - threshold && wy <= ry2 + threshold) return i
-      } else if (a.type === 'door' && a.swing) {
-        // Hit-test door: opening line + slab lines + arc
-        const hx = a.x1, hy = a.y1
-        const openingW = Math.sqrt((a.x2 - a.x1) ** 2 + (a.y2 - a.y1) ** 2)
-        const arcR = a.arcRadius ?? openingW
-        const slabAngles: Record<string, number> = { up: -Math.PI / 2, down: Math.PI / 2, left: Math.PI, right: 0 }
-        const sA = slabAngles[a.swing]
-        const tipX = hx + Math.cos(sA) * arcR, tipY = hy + Math.sin(sA) * arcR
-
-        // Check slab line (hinge to tip)
-        const distToSlab = _distToSeg(wx, wy, hx, hy, tipX, tipY)
-        if (distToSlab < threshold) return i
-
-        // Check opening line (x1,y1 to x2,y2)
-        const distToOpening = _distToSeg(wx, wy, a.x1, a.y1, a.x2, a.y2)
-        if (distToOpening < threshold) return i
-
-        // Check arc (distance to arc curve)
-        const distFromHinge = Math.sqrt((wx - hx) ** 2 + (wy - hy) ** 2)
-        if (Math.abs(distFromHinge - arcR) < threshold) {
-          // Check angle is within the arc sweep
-          const ptAngle = Math.atan2(wy - hy, wx - hx)
-          const oA = Math.atan2(a.y2 - a.y1, a.x2 - a.x1)
-          if (_angleInArc(ptAngle, sA, oA)) return i
-        }
-      } else {
-        // Distance from point to line segment
-        const dx = a.x2 - a.x1, dy = a.y2 - a.y1
-        const lenSq = dx * dx + dy * dy
-        if (lenSq < 1) continue
-        const t = Math.max(0, Math.min(1, ((wx - a.x1) * dx + (wy - a.y1) * dy) / lenSq))
-        const px = a.x1 + t * dx, py = a.y1 + t * dy
-        const dist = Math.sqrt((wx - px) ** 2 + (wy - py) ** 2)
-        if (dist < threshold) return i
-      }
-    }
-    return -1
-  }
-
-  // Hit-test for annotation endpoints (for drag-resize)
-  const hitTestEndpoint = (wx: number, wy: number): { idx: number; endpoint: 'start' | 'end' | 'arc' } | null => {
-    const threshold = 10 / viewRef.current.scale
-    const anns = annotationsRef.current
-    for (let i = anns.length - 1; i >= 0; i--) {
-      const a = anns[i]
-      if (a.type === 'eraser') continue
-      // Arc handle for doors with swing (tip of the arc)
-      if (a.type === 'door' && a.swing) {
-        const arcR = a.arcRadius ?? Math.sqrt((a.x2 - a.x1) ** 2 + (a.y2 - a.y1) ** 2)
-        const slabAngles: Record<string, number> = { up: -Math.PI / 2, down: Math.PI / 2, left: Math.PI, right: 0 }
-        const sA = slabAngles[a.swing]
-        const tipX = a.x1 + Math.cos(sA) * arcR
-        const tipY = a.y1 + Math.sin(sA) * arcR
-        const dt = Math.sqrt((wx - tipX) ** 2 + (wy - tipY) ** 2)
-        if (dt < threshold) return { idx: i, endpoint: 'arc' }
-      }
-      const d1 = Math.sqrt((wx - a.x1) ** 2 + (wy - a.y1) ** 2)
-      if (d1 < threshold) return { idx: i, endpoint: 'start' }
-      const d2 = Math.sqrt((wx - a.x2) ** 2 + (wy - a.y2) ** 2)
-      if (d2 < threshold) return { idx: i, endpoint: 'end' }
-    }
-    return null
-  }
-
-  // Snap point to nearest annotation endpoint (within threshold)
-  const snapToEndpoint = (wx: number, wy: number, skipIdx: number = -1): { x: number; y: number; snapped: boolean } => {
-    const threshold = 8 / viewRef.current.scale
-    let bestDist = threshold
-    let snap = { x: wx, y: wy, snapped: false }
-    const anns = annotationsRef.current
-    for (let i = 0; i < anns.length; i++) {
-      if (i === skipIdx) continue
-      const a = anns[i]
-      if (a.type === 'eraser') continue
-      for (const [px, py] of [[a.x1, a.y1], [a.x2, a.y2]] as [number, number][]) {
-        const d = Math.sqrt((wx - px) ** 2 + (wy - py) ** 2)
-        if (d < bestDist) {
-          bestDist = d
-          snap = { x: px, y: py, snapped: true }
-        }
-      }
-    }
-    return snap
-  }
   const snapRef = useRef<{ x: number; y: number; snapped: boolean }>({ x: 0, y: 0, snapped: false })
+
+  // Geometry wrappers — delegate to pure functions, pass refs explicitly
+  const _hitTest = (wx: number, wy: number) => hitTestAnnotation(wx, wy, annotationsRef.current, viewRef.current.scale)
+  const _hitEndpoint = (wx: number, wy: number) => hitTestEndpoint(wx, wy, annotationsRef.current, viewRef.current.scale)
+  const _snap = (wx: number, wy: number, skipIdx = -1) => snapToEndpoint(wx, wy, annotationsRef.current, viewRef.current.scale, skipIdx)
 
   // Screen mouse → world (image-pixel) coordinates, accounting for pan+zoom
   const screenToWorld = (clientX: number, clientY: number) => {
@@ -843,7 +632,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     }
     // Check endpoint drag-resize first
     const ptDown = screenToWorld(e.clientX, e.clientY)
-    const ep = hitTestEndpoint(ptDown.x, ptDown.y)
+    const ep = _hitEndpoint(ptDown.x, ptDown.y)
     if (ep) {
       draggingRef.current = ep
       return
@@ -878,7 +667,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
       }
     }
     const ptRaw = screenToWorld(e.clientX, e.clientY)
-    const pt = snapToEndpoint(ptRaw.x, ptRaw.y)
+    const pt = _snap(ptRaw.x, ptRaw.y)
     snapRef.current = pt
     setDrawing(true)
     setStartPt(pt)
@@ -911,7 +700,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
           const proj = dx * Math.cos(sA) + dy * Math.sin(sA)
           return { ...a, arcRadius: Math.max(5, Math.abs(proj)) }
         }
-        const pt = snapToEndpoint(ptRaw.x, ptRaw.y, idx)
+        const pt = _snap(ptRaw.x, ptRaw.y, idx)
         snapRef.current = pt
         return endpoint === 'start'
           ? { ...a, x1: pt.x, y1: pt.y }
@@ -923,7 +712,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
 
     if (drawingRef.current && startPtRef.current) {
       const ptRaw = screenToWorld(e.clientX, e.clientY)
-      const snapped = snapToEndpoint(ptRaw.x, ptRaw.y)
+      const snapped = _snap(ptRaw.x, ptRaw.y)
       snapRef.current = snapped
       cursorPtRef.current = snapped
       scheduleRender()
@@ -932,9 +721,9 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
 
     // Not drawing → hit-test for hover delete + door swing tooltip + endpoint resize
     const pt = screenToWorld(e.clientX, e.clientY)
-    const epHover = hitTestEndpoint(pt.x, pt.y)
+    const epHover = _hitEndpoint(pt.x, pt.y)
     const prev = hoveredIdxRef.current
-    hoveredIdxRef.current = hitTestAnnotation(pt.x, pt.y)
+    hoveredIdxRef.current = _hitTest(pt.x, pt.y)
     if (hoveredIdxRef.current !== prev || epHover) {
       const c = canvasRef.current
       if (c) c.style.cursor = epHover ? 'grab' : hoveredIdxRef.current >= 0 ? 'pointer' : 'crosshair'
@@ -949,7 +738,7 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
     if (draggingRef.current) { draggingRef.current = null; return }
     if (!drawingRef.current || !startPtRef.current) return
     const ptRaw = screenToWorld(e.clientX, e.clientY)
-    const pt = snapToEndpoint(ptRaw.x, ptRaw.y)
+    const pt = _snap(ptRaw.x, ptRaw.y)
     snapRef.current = { x: 0, y: 0, snapped: false }
     const sp = startPtRef.current
 
@@ -1132,55 +921,3 @@ function OverlayEditor({ previewUrl, annotations, setAnnotations }: {
   )
 }
 
-function DownloadButton({ href }: { href: string }) {
-  const [name, setName] = useState('')
-
-  return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="File name..."
-          className="flex-1 px-3 py-2 sm:py-1.5 bg-white/[0.04] border border-zinc-800/60 rounded-md
-                     text-sm text-zinc-300 placeholder:text-zinc-600 outline-none
-                     focus:border-zinc-700 transition-colors"
-        />
-        <a href={href} download={name.trim() ? `${name.trim()}.dxf` : 'floorplan.dxf'}
-          className="inline-flex items-center justify-center gap-2
-                     px-4 py-2.5 sm:py-2
-                     bg-white/[0.04] border border-zinc-800/60 rounded-md
-                     text-sm text-zinc-400
-                     hover:bg-white/[0.08] hover:text-zinc-300
-                     active:bg-white/[0.12]
-                     transition-colors duration-200">
-          <DownloadIcon />
-          .dxf
-        </a>
-      </div>
-    </div>
-  )
-}
-
-function UploadIcon({ size = 14, className = '' }: { size?: number; className?: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={className}>
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="17 8 12 3 7 8" />
-      <line x1="12" y1="3" x2="12" y2="15" />
-    </svg>
-  )
-}
-
-function DownloadIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  )
-}
