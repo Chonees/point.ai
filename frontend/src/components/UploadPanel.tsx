@@ -19,6 +19,7 @@ export function UploadPanel() {
   const [dragging, setDragging] = useState(false)
   const [annotations, setAnnotations] = useState<Annotation[]>([])
   const [autoLoaded, setAutoLoaded] = useState(false)
+  const [sqft, setSqft] = useState<string>('')
   const fileRef = useRef<HTMLInputElement>(null)
 
   const handleFile = useCallback((f: File) => {
@@ -51,6 +52,8 @@ export function UploadPanel() {
     try {
       const imageBase64 = await fileToBase64(file)
       const body: Record<string, unknown> = { image: imageBase64, model_variant: 'ensemble' }
+      const sqftNum = parseFloat(sqft)
+      if (sqftNum > 0) body.scale_sqft = sqftNum
       // After auto-annotations are loaded, always send annotations
       // (even if empty = user deleted all detections).
       // On first run (autoLoaded=false), don't send → backend uses auto-detected.
@@ -122,6 +125,22 @@ export function UploadPanel() {
           </div>
         )}
       </div>
+
+      {/* Square feet input */}
+      {file && (
+        <div className="mt-3 flex items-center gap-2">
+          <input
+            type="number"
+            value={sqft}
+            onChange={(e) => setSqft(e.target.value)}
+            placeholder="Total sq ft (optional)"
+            className="flex-1 px-3 py-2 sm:py-1.5 bg-white/[0.04] border border-zinc-800/60 rounded-md
+                       text-sm text-zinc-300 placeholder:text-zinc-600 outline-none
+                       focus:border-zinc-700 transition-colors"
+          />
+          <span className="text-[10px] text-zinc-600 whitespace-nowrap">ft²</span>
+        </div>
+      )}
 
       {/* Generate button */}
       <motion.button

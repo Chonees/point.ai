@@ -148,6 +148,10 @@ async def api_generate_v2(req: GenerateStructureRequest):
     filename = f"{request_id}.dxf"
     out_path = str(DXF_DIR / filename)
 
+    # Calibrate scale from user-provided square footage
+    if req.scale_sqft and req.scale_sqft > 0:
+        _apply_sqft_calibration(parsed["structure"], req.scale_sqft)
+
     dxf_mode = _resolve_dxf_mode(parsed)
     parsed["quality_metrics"]["dxf_mode"] = dxf_mode
     parsed["structure"].setdefault("structure_meta", {})
@@ -308,3 +312,41 @@ def _resolve_dxf_mode(parsed: dict) -> str:
         and "_wall_mask" in infer_result
     )
     return "mask_regions" if supports_mask_regions else "structural"
+
+
+def _apply_sqft_calibration(structure: dict, target_sqft: float) -> None:
+    """Compute scale_hint from user-provided total floor area (sqft).
+
+    Uses the bounding box of all walls in pixel space to derive a
+    pixels-to-inches conversion factor.
+    """
+    import math
+
+    walls = structure.get("walls") or []
+    if not walls:
+        return
+
+    xs, ys = [], []
+    for wall in walls:
+        for pt in wall.get("polyline", []):
+            xs.append(float(pt["x"]))
+            ys.append(float(pt["y"]))
+    if not xs:
+        return
+
+    bbox_w_px = max(xs) - min(xs)
+    bbox_h_px = max(ys) - min(ys)
+    bbox_area_px = bbox_w_px * bbox_h_px
+    if bbox_area_px < 1:
+        return
+
+    # target_sqft → sq inches → scale factor
+    target_sqin = target_sqft * 144.0
+    scale = math.sqrt(target_sqin / bbox_area_px)
+
+    meta = structure.setdefault("structure_meta", {})
+    meta["scale_hint"] = round(scale, 6)
+    meta["scale_status"] = "calibrated"
+    meta["unit"] = "inch"
+    meta["calibration_source"] = "user_sqft"
+    meta["calibration_sqft"] = target_sqft
