@@ -1,7 +1,6 @@
 import { memo, useState, useRef, useCallback, useEffect } from 'react'
 import type { AnnotationType, SwingDir, Annotation } from '../../types'
 import { DoorSwingPicker } from '../DoorSwingPicker'
-import { COLORS, TOOL_DEFS } from './constants'
 import { hitTestAnnotation, hitTestEndpoint, snapToEndpoint } from './geometry'
 import { renderCanvas as renderCanvasFn } from './renderCanvas'
 
@@ -13,8 +12,6 @@ export default memo(function OverlayEditor({ previewUrl, annotations, setAnnotat
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [tool, setTool] = useState<AnnotationType>('wall')
-  const [drawing, setDrawing] = useState(false)
-  const [startPt, setStartPt] = useState<{ x: number; y: number } | null>(null)
   const [fullscreen, setFullscreen] = useState(false)
   const [eraserSize, setEraserSize] = useState(10)
 
@@ -205,8 +202,6 @@ export default memo(function OverlayEditor({ previewUrl, annotations, setAnnotat
     const ptRaw = screenToWorld(e.clientX, e.clientY)
     const pt = _snap(ptRaw.x, ptRaw.y)
     snapRef.current = pt
-    setDrawing(true)
-    setStartPt(pt)
     // Sync refs for live preview
     drawingRef.current = true
     startPtRef.current = pt
@@ -279,13 +274,12 @@ export default memo(function OverlayEditor({ previewUrl, annotations, setAnnotat
     const sp = startPtRef.current
 
     // Clear drawing state (both state and refs)
-    setDrawing(false)
     drawingRef.current = false
     cursorPtRef.current = null
 
     const dx = Math.abs(pt.x - sp.x)
     const dy = Math.abs(pt.y - sp.y)
-    if (dx < 5 && dy < 5) { setStartPt(null); startPtRef.current = null; scheduleRender(); return }
+    if (dx < 5 && dy < 5) { startPtRef.current = null; scheduleRender(); return }
 
     if (tool === 'eraser') {
       const rx1 = Math.min(sp.x, pt.x)
@@ -313,7 +307,6 @@ export default memo(function OverlayEditor({ previewUrl, annotations, setAnnotat
         x2: pt.x, y2: pt.y,
       }])
     }
-    setStartPt(null)
     startPtRef.current = null
     scheduleRender()
   }
@@ -434,7 +427,7 @@ export default memo(function OverlayEditor({ previewUrl, annotations, setAnnotat
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
-          onMouseLeave={() => { setDrawing(false); setStartPt(null); drawingRef.current = false; startPtRef.current = null; cursorPtRef.current = null; isPanning.current = false; hoveredIdxRef.current = -1; draggingRef.current = null; scheduleRender() }}
+          onMouseLeave={() => { drawingRef.current = false; startPtRef.current = null; cursorPtRef.current = null; isPanning.current = false; hoveredIdxRef.current = -1; draggingRef.current = null; scheduleRender() }}
           className="absolute inset-0 w-full h-full"
           style={{ cursor: spaceDown.current || isPanning.current ? 'grab' : 'crosshair' }}
         />
