@@ -25,44 +25,59 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
   const scene = useMemo(() => structureTo3D(structure), [structure])
   const camDist = Math.max(scene.floor.width, scene.floor.depth) * 1.2
 
-  // Convert annotations (image coords) to 3D openings (DXF coords)
-  const openings3D = useMemo(() => {
+  // Convert ALL annotations (image coords) → 3D (DXF coords)
+  const { annWalls3D, annOpenings3D } = useMemo(() => {
     const meta = (structure.structure_meta as any) || {}
     const rp = meta.dxf_region_plan || {}
     const rpMeta = rp.meta || {}
     const transform = rpMeta.transform || {}
     const imageShape = rpMeta.image_shape || {}
     const imgH = Number(imageShape.height || 0)
-    const scale = Number(transform.scale || 1)
+    const sc = Number(transform.scale || 1)
     const offX = Number(transform.offset_x || 0)
     const offY = Number(transform.offset_y || 0)
 
-    // image → DXF coord conversion (same as _mitunet_region_img_to_dxf)
     const toDxf = (ix: number, iy: number) => ({
-      x: ix * scale + offX,
-      y: (imgH - iy) * scale + offY,
+      x: ix * sc + offX,
+      y: (imgH - iy) * sc + offY,
     })
 
-    return annotations
-      .filter(a => (a.type === 'door' || a.type === 'window') && a.swing)
-      .map(a => {
-        const p1 = toDxf(a.x1, a.y1)
-        const p2 = toDxf(a.x2, a.y2)
-        const cx = (p1.x + p2.x) / 2
-        const cy = (p1.y + p2.y) / 2
-        const span = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2)
-        const adx = Math.abs(p2.x - p1.x)
-        const ady = Math.abs(p2.y - p1.y)
-        const isH = adx >= ady
-        return {
-          kind: a.type as 'door' | 'window',
-          x: cx, z: -cy, // DXF→3D: Z = -DXF_Y
+    const walls: Wall3D[] = []
+    const openings: Opening3D[] = []
+
+    for (const a of annotations) {
+      if (a.type === 'eraser') continue
+      const p1 = toDxf(a.x1, a.y1)
+      const p2 = toDxf(a.x2, a.y2)
+      const cx = (p1.x + p2.x) / 2
+      const cy = (p1.y + p2.y) / 2
+      const adx = Math.abs(p2.x - p1.x)
+      const ady = Math.abs(p2.y - p1.y)
+      const isH = adx >= ady
+      const span = Math.sqrt(adx * adx + ady * ady)
+
+      if (a.type === 'wall') {
+        const thickness = 4 * sc
+        walls.push({
+          id: `ann-wall-${walls.length}`,
+          x: cx, z: -cy,
+          width: isH ? span : thickness,
+          depth: isH ? thickness : span,
+          height: WALL_HEIGHT,
+          isExterior: false,
+        })
+      } else if ((a.type === 'door' || a.type === 'window') && a.swing) {
+        openings.push({
+          kind: a.type,
+          x: cx, z: -cy,
           width: isH ? span : 4,
           depth: isH ? 4 : span,
           height: a.type === 'door' ? 80 : 36,
           windowHeight: a.type === 'window' ? 36 : undefined,
-        }
-      })
+        })
+      }
+    }
+    return { annWalls3D: walls, annOpenings3D: openings }
   }, [annotations, structure])
 
   const [fullscreen, setFullscreen] = useState(false)
@@ -224,8 +239,13 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
             <OpeningMesh key={`op-${i}`} opening={op} />
           ))}
 
+          {/* User-drawn walls from annotations */}
+          {annWalls3D.map((wall) => (
+            <WallMesh key={wall.id} wall={wall} material={wallMat} />
+          ))}
+
           {/* Doors/windows from annotations */}
-          {openings3D.map((op, i) => (
+          {annOpenings3D.map((op, i) => (
             <OpeningMesh key={`ann-${i}`} opening={op} />
           ))}
 
