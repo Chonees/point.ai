@@ -18,7 +18,7 @@ export interface MaterialPreset {
 }
 
 const AV = 'archviz/'
-const S = 80
+const S = 1  // scale baked into GLB during conversion
 
 export const FURNITURE: FurnitureItem[] = [
   // Living Room
