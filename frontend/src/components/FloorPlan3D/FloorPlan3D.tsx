@@ -4,6 +4,7 @@ import { OrbitControls, Grid, useGLTF } from '@react-three/drei'
 import { structureTo3D } from './structureTo3D'
 import type { Wall3D, Opening3D } from './structureTo3D'
 import { FURNITURE, MATERIALS, CATEGORIES } from './catalog'
+import type { Annotation } from '../../types'
 import type { FurnitureItem, MaterialPreset } from './catalog'
 
 const WALL_HEIGHT = 96
@@ -20,9 +21,49 @@ function GLBModel({ url, scale }: { url: string; scale: number }) {
   return <primitive object={cloned} scale={[scale, scale, scale]} />
 }
 
-export default function FloorPlan3D({ structure }: { structure: Record<string, unknown> }) {
+export default function FloorPlan3D({ structure, annotations = [] }: { structure: Record<string, unknown>; annotations?: Annotation[] }) {
   const scene = useMemo(() => structureTo3D(structure), [structure])
   const camDist = Math.max(scene.floor.width, scene.floor.depth) * 1.2
+
+  // Convert annotations (image coords) to 3D openings (DXF coords)
+  const openings3D = useMemo(() => {
+    const meta = (structure.structure_meta as any) || {}
+    const rp = meta.dxf_region_plan || {}
+    const rpMeta = rp.meta || {}
+    const transform = rpMeta.transform || {}
+    const imageShape = rpMeta.image_shape || {}
+    const imgH = Number(imageShape.height || 0)
+    const scale = Number(transform.scale || 1)
+    const offX = Number(transform.offset_x || 0)
+    const offY = Number(transform.offset_y || 0)
+
+    // image → DXF coord conversion (same as _mitunet_region_img_to_dxf)
+    const toDxf = (ix: number, iy: number) => ({
+      x: ix * scale + offX,
+      y: (imgH - iy) * scale + offY,
+    })
+
+    return annotations
+      .filter(a => (a.type === 'door' || a.type === 'window') && a.swing)
+      .map(a => {
+        const p1 = toDxf(a.x1, a.y1)
+        const p2 = toDxf(a.x2, a.y2)
+        const cx = (p1.x + p2.x) / 2
+        const cy = (p1.y + p2.y) / 2
+        const span = Math.sqrt((p2.x - p1.x) ** 2 + (p2.y - p1.y) ** 2)
+        const adx = Math.abs(p2.x - p1.x)
+        const ady = Math.abs(p2.y - p1.y)
+        const isH = adx >= ady
+        return {
+          kind: a.type as 'door' | 'window',
+          x: cx, z: -cy, // DXF→3D: Z = -DXF_Y
+          width: isH ? span : 4,
+          depth: isH ? 4 : span,
+          height: a.type === 'door' ? 80 : 36,
+          windowHeight: a.type === 'window' ? 36 : undefined,
+        }
+      })
+  }, [annotations, structure])
 
   const [fullscreen, setFullscreen] = useState(false)
   const [tab, setTab] = useState<'furniture' | 'materials'>('furniture')
@@ -181,6 +222,11 @@ export default function FloorPlan3D({ structure }: { structure: Record<string, u
           {/* Openings */}
           {scene.openings.map((op, i) => (
             <OpeningMesh key={`op-${i}`} opening={op} />
+          ))}
+
+          {/* Doors/windows from annotations */}
+          {openings3D.map((op, i) => (
+            <OpeningMesh key={`ann-${i}`} opening={op} />
           ))}
 
           {/* Placed furniture */}

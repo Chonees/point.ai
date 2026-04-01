@@ -181,7 +181,7 @@ export function UploadPanel() {
             {result.preview_url && (
               <Suspense fallback={<div className="h-64 bg-zinc-950 animate-pulse rounded-lg" />}>
                 {view3D ? (
-                  <FloorPlan3D structure={result.structure} />
+                  <FloorPlan3D structure={result.structure} annotations={annotations} />
                 ) : (
                   <OverlayEditor
                     previewUrl={result.preview_url}
