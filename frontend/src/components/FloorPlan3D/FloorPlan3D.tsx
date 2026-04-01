@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef, useCallback, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Grid, useGLTF, Environment } from '@react-three/drei'
+import { OrbitControls, Grid, useGLTF } from '@react-three/drei'
 import { WalkControls } from './WalkControls'
 import type { Wall3D, Opening3D } from './structureTo3D'
 import { FURNITURE, MATERIALS, CATEGORIES } from './catalog'
@@ -220,10 +220,9 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
             fov: 45, near: 1, far: camDist * 10,
           }}
         >
-          <ambientLight intensity={0.4} />
-          <directionalLight position={[camDist, camDist * 1.5, camDist * 0.5]} intensity={1} castShadow
-            shadow-mapSize-width={2048} shadow-mapSize-height={2048} />
-          <Environment preset="apartment" background={false} environmentIntensity={0.3} />
+          <ambientLight intensity={0.6} />
+          <directionalLight position={[camDist, camDist * 1.5, camDist * 0.5]} intensity={0.8} />
+          <hemisphereLight args={['#b1e1ff', '#b97a20', 0.3]} />
 
           {walkMode ? (
             <WalkControls center={center} />
