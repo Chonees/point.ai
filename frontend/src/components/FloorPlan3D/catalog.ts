@@ -18,7 +18,7 @@ export interface MaterialPreset {
 }
 
 const AV = 'archviz/'
-const S = 0.4
+const S = 80
 
 export const FURNITURE: FurnitureItem[] = [
   // Living Room
