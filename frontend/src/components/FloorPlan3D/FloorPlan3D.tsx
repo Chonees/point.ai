@@ -1,7 +1,6 @@
-import { useState, useMemo, useRef, useCallback } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
-import { OrbitControls, Grid } from '@react-three/drei'
-import * as THREE from 'three'
+import { useState, useMemo, useRef, useCallback, Suspense } from 'react'
+import { Canvas } from '@react-three/fiber'
+import { OrbitControls, Grid, useGLTF } from '@react-three/drei'
 import { structureTo3D } from './structureTo3D'
 import type { Wall3D, Opening3D } from './structureTo3D'
 import { FURNITURE, MATERIALS, CATEGORIES } from './catalog'
@@ -13,6 +12,12 @@ interface PlacedFurniture {
   item: FurnitureItem
   x: number; z: number
   rotation: number
+}
+
+function GLBModel({ url, scale }: { url: string; scale: number }) {
+  const { scene } = useGLTF(url)
+  const cloned = useMemo(() => scene.clone(), [scene])
+  return <primitive object={cloned} scale={[scale, scale, scale]} />
 }
 
 export default function FloorPlan3D({ structure }: { structure: Record<string, unknown> }) {
@@ -180,8 +185,10 @@ export default function FloorPlan3D({ structure }: { structure: Record<string, u
 
           {/* Placed furniture */}
           {placed.map((p, i) => (
-            <FurnitureMesh key={i} placed={p} selected={selectedPlaced === i}
-              onClick={() => setSelectedPlaced(selectedPlaced === i ? -1 : i)} />
+            <Suspense key={i} fallback={<FurnitureBoxFallback placed={p} />}>
+              <FurnitureMesh placed={p} selected={selectedPlaced === i}
+                onClick={() => setSelectedPlaced(selectedPlaced === i ? -1 : i)} />
+            </Suspense>
           ))}
         </Canvas>
 
@@ -278,18 +285,24 @@ function FurnitureMesh({ placed, selected, onClick }: {
 }) {
   const { item, x, z, rotation } = placed
   return (
-    <group position={[x, item.height / 2, z]} rotation={[0, rotation, 0]} onClick={(e) => { e.stopPropagation(); onClick() }}>
-      <mesh castShadow>
-        <boxGeometry args={[item.width, item.height, item.depth]} />
-        <meshStandardMaterial color={item.color} roughness={0.7} />
-      </mesh>
-      {/* Selection highlight */}
+    <group position={[x, 0, z]} rotation={[0, rotation, 0]} onClick={(e) => { e.stopPropagation(); onClick() }}>
+      <GLBModel url={`/models/${item.glb}`} scale={item.scale} />
       {selected && (
-        <mesh>
-          <boxGeometry args={[item.width + 2, item.height + 2, item.depth + 2]} />
-          <meshBasicMaterial color="#4488ff" wireframe transparent opacity={0.5} />
+        <mesh position={[0, item.scale * 0.5, 0]}>
+          <boxGeometry args={[item.scale, item.scale, item.scale]} />
+          <meshBasicMaterial color="#4488ff" wireframe transparent opacity={0.4} />
         </mesh>
       )}
     </group>
+  )
+}
+
+function FurnitureBoxFallback({ placed }: { placed: PlacedFurniture }) {
+  const s = placed.item.scale * 0.3
+  return (
+    <mesh position={[placed.x, s / 2, placed.z]}>
+      <boxGeometry args={[s, s, s]} />
+      <meshStandardMaterial color="#666" />
+    </mesh>
   )
 }
