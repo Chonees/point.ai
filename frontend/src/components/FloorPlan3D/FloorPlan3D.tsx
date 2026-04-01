@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef, useCallback, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls, Grid, useGLTF } from '@react-three/drei'
-import { structureTo3D } from './structureTo3D'
 import type { Wall3D, Opening3D } from './structureTo3D'
 import { FURNITURE, MATERIALS, CATEGORIES } from './catalog'
 import type { Annotation } from '../../types'
@@ -22,11 +21,8 @@ function GLBModel({ url, scale }: { url: string; scale: number }) {
 }
 
 export default function FloorPlan3D({ structure, annotations = [] }: { structure: Record<string, unknown>; annotations?: Annotation[] }) {
-  const scene = useMemo(() => structureTo3D(structure), [structure])
-  const camDist = Math.max(scene.floor.width, scene.floor.depth) * 1.2
-
-  // Convert ALL annotations (image coords) → 3D (DXF coords)
-  const { annWalls3D, annOpenings3D } = useMemo(() => {
+  // Build 3D scene ONLY from annotations (the editable 2D elements)
+  const { walls3D, openings3D, floorBounds, center } = useMemo(() => {
     const meta = (structure.structure_meta as any) || {}
     const rp = meta.dxf_region_plan || {}
     const rpMeta = rp.meta || {}
@@ -44,13 +40,18 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
 
     const walls: Wall3D[] = []
     const openings: Opening3D[] = []
+    let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity
+    const track = (x: number, z: number) => {
+      if (x < minX) minX = x; if (x > maxX) maxX = x
+      if (z < minZ) minZ = z; if (z > maxZ) maxZ = z
+    }
 
     for (const a of annotations) {
       if (a.type === 'eraser') continue
       const p1 = toDxf(a.x1, a.y1)
       const p2 = toDxf(a.x2, a.y2)
       const cx = (p1.x + p2.x) / 2
-      const cy = (p1.y + p2.y) / 2
+      const cz = -(p1.y + p2.y) / 2
       const adx = Math.abs(p2.x - p1.x)
       const ady = Math.abs(p2.y - p1.y)
       const isH = adx >= ady
@@ -58,18 +59,20 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
 
       if (a.type === 'wall') {
         const thickness = 4 * sc
+        const w = isH ? span : thickness
+        const d = isH ? thickness : span
+        track(cx - w / 2, cz - d / 2)
+        track(cx + w / 2, cz + d / 2)
         walls.push({
-          id: `ann-wall-${walls.length}`,
-          x: cx, z: -cy,
-          width: isH ? span : thickness,
-          depth: isH ? thickness : span,
-          height: WALL_HEIGHT,
-          isExterior: false,
+          id: `w-${walls.length}`,
+          x: cx, z: cz, width: w, depth: d,
+          height: WALL_HEIGHT, isExterior: false,
         })
       } else if ((a.type === 'door' || a.type === 'window') && a.swing) {
+        track(cx, cz)
         openings.push({
           kind: a.type,
-          x: cx, z: -cy,
+          x: cx, z: cz,
           width: isH ? span : 4,
           depth: isH ? 4 : span,
           height: a.type === 'door' ? 80 : 36,
@@ -77,8 +80,20 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
         })
       }
     }
-    return { annWalls3D: walls, annOpenings3D: openings }
+
+    if (minX === Infinity) { minX = -100; maxX = 100; minZ = -100; maxZ = 100 }
+    const pad = 30
+    const fx = (minX + maxX) / 2, fz = (minZ + maxZ) / 2
+    const fw = maxX - minX + pad * 2, fd = maxZ - minZ + pad * 2
+    return {
+      walls3D: walls,
+      openings3D: openings,
+      floorBounds: { x: fx, z: fz, w: fw, d: fd },
+      center: { x: fx, z: fz },
+    }
   }, [annotations, structure])
+
+  const camDist = Math.max(floorBounds.w, floorBounds.d) * 1.2
 
   const [fullscreen, setFullscreen] = useState(false)
   const [tab, setTab] = useState<'furniture' | 'materials'>('furniture')
@@ -199,7 +214,7 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
       <div className="flex-1 relative">
         <Canvas
           camera={{
-            position: [scene.center.x + camDist * 0.5, camDist * 0.6, scene.center.z + camDist * 0.5],
+            position: [center.x + camDist * 0.5, camDist * 0.6, center.z + camDist * 0.5],
             fov: 45, near: 1, far: camDist * 10,
           }}
         >
@@ -207,13 +222,13 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
           <directionalLight position={[camDist, camDist, camDist * 0.5]} intensity={0.8} />
 
           <OrbitControls
-            target={[scene.center.x, WALL_HEIGHT * 0.3, scene.center.z]}
+            target={[center.x, WALL_HEIGHT * 0.3, center.z]}
             enableDamping dampingFactor={0.1}
             minDistance={camDist * 0.1} maxDistance={camDist * 3}
           />
 
           {/* Floor */}
-          <FloorMesh scene={scene} material={floorMat} selectedItem={selectedItem}
+          <FloorMesh floorBounds={floorBounds} material={floorMat} selectedItem={selectedItem}
             onPlace={(x, z) => {
               if (selectedItem) {
                 setPlaced([...placed, { item: selectedItem, x, z, rotation: 0 }])
@@ -222,31 +237,22 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
           />
 
           <Grid
-            position={[scene.center.x, 0.1, scene.center.z]}
-            args={[scene.floor.width, scene.floor.depth]}
+            position={[center.x, 0.1, center.z]}
+            args={[floorBounds.w, floorBounds.d]}
             cellSize={12} cellColor="#333333"
             sectionSize={48} sectionColor="#444444"
             fadeDistance={camDist * 2} infiniteGrid={false}
           />
 
           {/* Walls */}
-          {scene.walls.map(wall => (
-            <WallMesh key={wall.id} wall={wall} material={wallMat} />
-          ))}
-
-          {/* Openings */}
-          {scene.openings.map((op, i) => (
-            <OpeningMesh key={`op-${i}`} opening={op} />
-          ))}
-
-          {/* User-drawn walls from annotations */}
-          {annWalls3D.map((wall) => (
+          {/* Walls from annotations */}
+          {walls3D.map(wall => (
             <WallMesh key={wall.id} wall={wall} material={wallMat} />
           ))}
 
           {/* Doors/windows from annotations */}
-          {annOpenings3D.map((op, i) => (
-            <OpeningMesh key={`ann-${i}`} opening={op} />
+          {openings3D.map((op, i) => (
+            <OpeningMesh key={`op-${i}`} opening={op} />
           ))}
 
           {/* Placed furniture */}
@@ -292,28 +298,25 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
 
 // ─── Sub-components ──────────────────────────────────────────────────
 
-function FloorMesh({ scene, material, selectedItem, onPlace }: {
-  scene: ReturnType<typeof structureTo3D>
+function FloorMesh({ floorBounds, material, selectedItem, onPlace }: {
+  floorBounds: { x: number; z: number; w: number; d: number }
   material: MaterialPreset
   selectedItem: FurnitureItem | null
   onPlace: (x: number, z: number) => void
 }) {
-  const meshRef = useRef<THREE.Mesh>(null)
-
   const handleClick = useCallback((e: any) => {
     if (!selectedItem) return
     e.stopPropagation()
-    const pt = e.point
-    onPlace(pt.x, pt.z)
+    onPlace(e.point.x, e.point.z)
   }, [selectedItem, onPlace])
 
   return (
-    <mesh ref={meshRef} position={[scene.floor.x, -0.5, scene.floor.z]}
+    <mesh position={[floorBounds.x, -0.5, floorBounds.z]}
       rotation={[-Math.PI / 2, 0, 0]} receiveShadow onClick={handleClick}
       onPointerOver={() => { if (selectedItem) document.body.style.cursor = 'crosshair' }}
       onPointerOut={() => { document.body.style.cursor = 'default' }}
     >
-      <planeGeometry args={[scene.floor.width, scene.floor.depth]} />
+      <planeGeometry args={[floorBounds.w, floorBounds.d]} />
       <meshStandardMaterial color={material.color} roughness={material.roughness} />
     </mesh>
   )
