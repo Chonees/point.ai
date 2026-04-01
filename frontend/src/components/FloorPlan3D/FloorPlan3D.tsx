@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useCallback, Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { OrbitControls, Grid, useGLTF } from '@react-three/drei'
+import { OrbitControls, Grid, useGLTF, Environment } from '@react-three/drei'
+import { WalkControls } from './WalkControls'
 import type { Wall3D, Opening3D } from './structureTo3D'
 import { FURNITURE, MATERIALS, CATEGORIES } from './catalog'
 import type { Annotation } from '../../types'
@@ -96,6 +97,7 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
   const camDist = Math.max(floorBounds.w, floorBounds.d) * 1.2
 
   const [fullscreen, setFullscreen] = useState(false)
+  const [walkMode, setWalkMode] = useState(false)
   const [tab, setTab] = useState<'furniture' | 'materials'>('furniture')
   const [category, setCategory] = useState(CATEGORIES[0])
   const [selectedItem, setSelectedItem] = useState<FurnitureItem | null>(null)
@@ -218,14 +220,20 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
             fov: 45, near: 1, far: camDist * 10,
           }}
         >
-          <ambientLight intensity={0.5} />
-          <directionalLight position={[camDist, camDist, camDist * 0.5]} intensity={0.8} />
+          <ambientLight intensity={0.4} />
+          <directionalLight position={[camDist, camDist * 1.5, camDist * 0.5]} intensity={1} castShadow
+            shadow-mapSize-width={2048} shadow-mapSize-height={2048} />
+          <Environment preset="apartment" background={false} environmentIntensity={0.3} />
 
-          <OrbitControls
-            target={[center.x, WALL_HEIGHT * 0.3, center.z]}
-            enableDamping dampingFactor={0.1}
-            minDistance={camDist * 0.1} maxDistance={camDist * 3}
-          />
+          {walkMode ? (
+            <WalkControls center={center} />
+          ) : (
+            <OrbitControls
+              target={[center.x, WALL_HEIGHT * 0.3, center.z]}
+              enableDamping dampingFactor={0.1}
+              minDistance={camDist * 0.1} maxDistance={camDist * 3}
+            />
+          )}
 
           {/* Floor */}
           <FloorMesh floorBounds={floorBounds} material={floorMat} selectedItem={selectedItem}
@@ -278,7 +286,14 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
               </button>
             </>
           )}
-          <button onClick={() => { setFullscreen(!fullscreen); setSelectedItem(null); setSelectedPlaced(-1) }}
+          {fullscreen && (
+            <button onClick={() => setWalkMode(!walkMode)}
+              className={`px-2 py-1 rounded text-[10px] font-medium border cursor-pointer transition-colors
+                ${walkMode ? 'bg-green-900/50 border-green-700/40 text-green-300' : 'bg-zinc-800/80 border-zinc-700/40 text-zinc-400 hover:text-zinc-200'}`}>
+              {walkMode ? '🚶 Walking (ESC to exit)' : '🚶 Walk'}
+            </button>
+          )}
+          <button onClick={() => { setFullscreen(!fullscreen); setSelectedItem(null); setSelectedPlaced(-1); setWalkMode(false) }}
             className="px-3 py-1 rounded text-[10px] font-medium bg-zinc-800/80 border border-zinc-700/40
                        text-zinc-400 hover:text-zinc-200 cursor-pointer transition-colors">
             {fullscreen ? 'Done' : 'Edit'}
@@ -286,11 +301,10 @@ export default function FloorPlan3D({ structure, annotations = [] }: { structure
         </div>
 
         {/* Hint */}
-        {!fullscreen && (
-          <div className="absolute bottom-2 left-2 text-[9px] text-zinc-600">
-            Click Edit to add furniture & materials
-          </div>
-        )}
+        <div className="absolute bottom-2 left-2 text-[9px] text-zinc-600">
+          {walkMode ? 'Click to lock mouse · WASD to move · ESC to unlock' :
+           !fullscreen ? 'Click Edit to add furniture & materials' : null}
+        </div>
       </div>
     </div>
   )
