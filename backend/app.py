@@ -153,36 +153,52 @@ async def api_generate_v2(req: GenerateStructureRequest):
     parsed["structure"]["structure_meta"]["dxf_mode"] = dxf_mode
     user_has_annotations = req.annotations is not None
 
+    computed_rooms = None
+    region_overlay = None
     try:
         if dxf_mode == "mask_regions":
             infer_result = parsed.get("_infer_result") or {}
             auto_anns = infer_result.get("_auto_annotations", [])
             if user_has_annotations:
-                # User reviewed & edited — use ONLY their annotations.
-                # Their set already includes walls + doors + windows they kept.
                 merged_anns = req.annotations
             else:
-                # First run: auto-detected openings only (walls come from mask).
                 merged_anns = auto_anns
 
-            # Build region plan from wall mask
             region_plan = build_mitunet_region_plan(infer_result, annotations=merged_anns)
+
             parsed["quality_metrics"]["dxf_region_count"] = region_plan["meta"]["region_count"]
             parsed["structure"]["structure_meta"]["dxf_region_plan"] = region_plan
             parsed["structure"]["structure_meta"]["mitunet_region_debug"] = region_plan.get("debug", {})
             parsed["structure"]["structure_meta"]["provenance"] = region_plan["meta"].get("provenance", {})
 
+            total_area_val = req.total_area if req.total_area is not None else req.total_sqft
             if user_has_annotations:
-                # User edited: skip mask regions, draw everything from annotations.
-                # Wall annotations already include the walls they want.
-                generate_mitunet_region_dxf(region_plan, out_path, annotations=merged_anns, skip_regions=True)
+                _, dims_result = generate_mitunet_region_dxf(
+                    region_plan,
+                    out_path,
+                    annotations=merged_anns,
+                    skip_regions=True,
+                    total_area_sqft=total_area_val,
+                )
             else:
-                # First run: draw walls from mask + doors/windows from annotations.
-                generate_mitunet_region_dxf(region_plan, out_path, annotations=merged_anns)
+                _, dims_result = generate_mitunet_region_dxf(
+                    region_plan,
+                    out_path,
+                    annotations=merged_anns,
+                    total_area_sqft=total_area_val,
+                )
+            if dims_result:
+                computed_rooms = dims_result.get("computed_rooms")
+                region_overlay = dims_result.get("region_overlay")
         else:
             generate_structural(parsed["structure"], out_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"DXF generation failed: {e}")
+
+    # Strip non-serializable numpy arrays from structure before JSON serialization
+    _rp = parsed["structure"].get("structure_meta", {}).get("dxf_region_plan")
+    if _rp and "meta" in _rp:
+        _rp["meta"].pop("_wall_mask", None)
 
     infer_result_for_anns = parsed.get("_infer_result") or {}
     auto_anns_response = infer_result_for_anns.get("_auto_annotations", [])
@@ -229,6 +245,8 @@ async def api_generate_v2(req: GenerateStructureRequest):
         quality_metrics=parsed["quality_metrics"],
         review_flags=parsed["review_flags"],
         auto_annotations=auto_anns_response or None,
+        computed_rooms=computed_rooms,
+        region_overlay=region_overlay,
     )
 
 

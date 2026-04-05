@@ -20,6 +20,7 @@ export function renderCanvas(
   hoveredIdx: number,
   snap: SnapState,
   drawing: DrawingState,
+  regionOverlay?: HTMLImageElement | HTMLCanvasElement | null,
 ): void {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
@@ -47,6 +48,11 @@ export function renderCanvas(
   // Draw image at origin in world space
   ctx.drawImage(img, 0, 0)
 
+  // Draw region overlay (colored room zones from flood-fill)
+  if (regionOverlay) {
+    ctx.drawImage(regionOverlay, 0, 0)
+  }
+
   // Draw committed annotations
   for (const ann of anns) {
     const isAuto = ann._source === 'ensemble_cubicasa'
@@ -58,16 +64,58 @@ export function renderCanvas(
       ctx.setLineDash([3 / v.scale, 3 / v.scale])
       ctx.strokeRect(ann.x1, ann.y1, ann.x2 - ann.x1, ann.y2 - ann.y1)
       ctx.setLineDash([])
+    } else if (ann.type === 'label') {
+      // Room label: name + sqft centered at point — dark/black style
+      const lx = ann.x1, ly = ann.y1
+      const name = ann.roomName || 'ROOM'
+      const sqft = ann.sqft ? `${ann.sqft} SQ FT` : ''
+
+      const nameSize = 14 / v.scale
+      const sqftSize = 10 / v.scale
+      const pad = 6 / v.scale
+
+      // White background for readability
+      const bw = Math.max(name.length, sqft.length) * nameSize * 0.6 + pad * 2
+      const bh = (sqft ? nameSize + sqftSize + pad : nameSize) + pad * 2
+      const bx = lx - bw / 2, by = ly - bh / 2
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
+      ctx.strokeStyle = '#333333'
+      ctx.lineWidth = 1.5 / v.scale
+      ctx.beginPath()
+      ctx.roundRect(bx, by, bw, bh, 3 / v.scale)
+      ctx.fill()
+      ctx.stroke()
+
+      // Room name — black
+      ctx.fillStyle = '#000000'
+      ctx.font = `bold ${nameSize}px sans-serif`
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(name.toUpperCase(), lx, sqft ? ly - sqftSize * 0.4 : ly)
+
+      // Sqft — dark gray
+      if (sqft) {
+        ctx.fillStyle = '#444444'
+        ctx.font = `${sqftSize}px sans-serif`
+        ctx.fillText(sqft, lx, ly + nameSize * 0.5)
+      }
+
+      ctx.textAlign = 'start'
+      ctx.textBaseline = 'alphabetic'
     } else {
       // AI-detected annotations: dashed + slightly transparent
       if (isAuto) {
         ctx.setLineDash([6 / v.scale, 4 / v.scale])
         ctx.globalAlpha = 0.8
       }
+      // Separator lines: white, same thickness as doors/windows
+      const isSeparator = (ann.type as string) === 'separator'
       // Doors/windows without direction = yellow (needs attention), with = green (done)
-      const color = (ann.type === 'door' || ann.type === 'window')
-        ? (ann.swing ? '#33ff66' : '#ffcc00')
-        : COLORS[ann.type]
+      const color = isSeparator
+        ? '#33ff66'
+        : (ann.type === 'door' || ann.type === 'window')
+          ? (ann.swing ? '#33ff66' : '#ffcc00')
+          : COLORS[ann.type]
       const lw = (ann.type === 'wall' ? 6 : 3) / v.scale
       ctx.strokeStyle = color
       ctx.lineWidth = lw
@@ -217,6 +265,27 @@ export function renderCanvas(
       ctx.fillStyle = 'rgba(255, 0, 0, 0.1)'
       ctx.fillRect(rx1, ry1, rw, rh)
       ctx.setLineDash([])
+    } else if (drawing.tool === 'paint') {
+      // Separator preview: green dashed line
+      ctx.strokeStyle = '#33ff66'
+      ctx.lineWidth = 4 / v.scale
+      ctx.globalAlpha = 0.8
+      ctx.setLineDash([6 / v.scale, 4 / v.scale])
+      ctx.beginPath()
+      ctx.moveTo(sp.x, sp.y)
+      ctx.lineTo(cp.x, cp.y)
+      ctx.stroke()
+      ctx.setLineDash([])
+      ctx.globalAlpha = 1.0
+
+      const dotR = 4 / v.scale
+      ctx.fillStyle = '#33ff66'
+      ctx.beginPath()
+      ctx.arc(sp.x, sp.y, dotR, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.arc(cp.x, cp.y, dotR, 0, Math.PI * 2)
+      ctx.fill()
     } else {
       ctx.strokeStyle = COLORS[drawing.tool]
       ctx.lineWidth = (drawing.tool === 'wall' ? 6 : 4) / v.scale

@@ -5,11 +5,25 @@ export const COLORS: Record<AnnotationType, string> = {
   door: '#33ff66',
   window: '#3399ff',
   eraser: '#888888',
+  label: '#1a1a1a',
+  paint: '#ffffff',
 }
 
-export const TOOL_DEFS: { type: AnnotationType; label: string; color: string }[] = [
-  { type: 'wall', label: 'Wall', color: 'bg-red-900/40 border-red-700/50 text-red-400' },
-  { type: 'door', label: 'Door', color: 'bg-green-900/40 border-green-700/50 text-green-400' },
-  { type: 'window', label: 'Window', color: 'bg-blue-900/40 border-blue-700/50 text-blue-400' },
-  { type: 'eraser', label: 'Eraser', color: 'bg-zinc-700/40 border-zinc-500/50 text-zinc-300' },
+// Must match backend ROOM_PALETTE in scale_calibrator.py
+export const ROOM_PALETTE: [number, number, number][] = [
+  [66, 133, 244],    // Blue
+  [219, 68, 55],     // Red
+  [244, 180, 0],     // Yellow
+  [15, 157, 88],     // Green
+  [171, 71, 188],    // Purple
+  [255, 112, 67],    // Orange
+  [0, 172, 193],     // Teal
+  [255, 167, 38],    // Amber
+  [121, 85, 72],     // Brown
+  [96, 125, 139],    // Blue Grey
+  [233, 30, 99],     // Pink
+  [0, 150, 136],     // Teal Dark
+  [63, 81, 181],     // Indigo
+  [205, 220, 57],    // Lime
+  [255, 87, 34],     // Deep Orange
 ]

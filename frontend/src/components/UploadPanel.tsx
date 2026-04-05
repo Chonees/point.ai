@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback, lazy, Suspense } from 'react'
+import { useState, useRef, useCallback, useEffect, lazy, Suspense } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { Status, AnnotationType, SwingDir, Annotation, V2Result } from '../types'
+import type { PlanData, PlanScene } from '../hooks/useProject'
 import { fileToBase64 } from '../utils/fileToBase64'
 import { Spinner } from './Spinner'
 import { UploadIcon } from './UploadIcon'
@@ -9,7 +10,14 @@ import { DownloadButton } from './DownloadButton'
 const OverlayEditor = lazy(() => import('./OverlayEditor'))
 const FloorPlan3D = lazy(() => import('./FloorPlan3D'))
 
-export function UploadPanel() {
+interface UploadPanelProps {
+  project?: PlanData | null
+  onSceneChange?: (scene: PlanScene) => void
+  onStructureChange?: (structure: Record<string, unknown>) => void
+  onSaveNow?: (updates: { structure?: Record<string, unknown>; scene?: PlanScene; imageData?: string }) => void
+}
+
+export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveNow }: UploadPanelProps = {}) {
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [status, setStatus] = useState<Status>('idle')
@@ -20,7 +28,45 @@ export function UploadPanel() {
   const [annotations, setAnnotations] = useState<Annotation[]>([])
   const [autoLoaded, setAutoLoaded] = useState(false)
   const [view3D, setView3D] = useState(false)
+  const [totalSqft, setTotalSqft] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
+
+  // Load project state when project changes
+  useEffect(() => {
+    if (!project) return
+    if (project.scene.annotations2d.length > 0) {
+      setAnnotations(project.scene.annotations2d)
+      setAutoLoaded(true)
+    }
+    // Restore saved image
+    if (project.imageData) {
+      setPreview(project.imageData)
+    }
+    if (project.structure) {
+      const savedPreview = (project.structure as any)._preview_data ?? null
+      setResult({
+        dxf_url: '',
+        preview_url: savedPreview,
+        structure: project.structure,
+        quality_metrics: {},
+        review_flags: [],
+        needs_review: false,
+        scale_status: 'loaded',
+      })
+      setStatus('done')
+    }
+  }, [project?.id])
+
+  // Notify parent when annotations change (for auto-save)
+  const notifySceneChange = useCallback((newAnnotations: Annotation[]) => {
+    if (!onSceneChange || !project) return
+    onSceneChange({
+      annotations2d: newAnnotations,
+      placedItems3d: project.scene.placedItems3d,
+      floorMaterial: project.scene.floorMaterial,
+      wallMaterial: project.scene.wallMaterial,
+    })
+  }, [onSceneChange, project])
 
   const handleFile = useCallback((f: File) => {
     setFile(f)
@@ -29,9 +75,15 @@ export function UploadPanel() {
     setStatusMsg('')
     setAnnotations([])
     setAutoLoaded(false)
-    const url = URL.createObjectURL(f)
-    setPreview(url)
-  }, [])
+    // Create preview + save image to DB as base64
+    const reader = new FileReader()
+    reader.onload = () => {
+      const dataUrl = reader.result as string
+      setPreview(dataUrl)
+      if (onSaveNow) onSaveNow({ imageData: dataUrl })
+    }
+    reader.readAsDataURL(f)
+  }, [onSaveNow])
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0]
@@ -46,12 +98,14 @@ export function UploadPanel() {
   }
 
   const generate = useCallback(async () => {
-    if (!file) { setStatus('error'); setStatusMsg('Upload a floor plan image first.'); return }
+    if (!file && !preview) { setStatus('error'); setStatusMsg('Upload a floor plan image first.'); return }
     setStatus('loading'); setStatusMsg('Processing floor plan...'); setResult(null)
 
     try {
-      const imageBase64 = await fileToBase64(file)
+      // Use file if available, otherwise use saved base64 preview
+      const imageBase64 = file ? await fileToBase64(file) : preview!.replace(/^data:image\/\w+;base64,/, '')
       const body: Record<string, unknown> = { image: imageBase64, model_variant: 'ensemble' }
+      if (totalSqft) body.total_sqft = Number(totalSqft)
       // After auto-annotations are loaded, always send annotations
       // (even if empty = user deleted all detections).
       // On first run (autoLoaded=false), don't send → backend uses auto-detected.
@@ -69,7 +123,21 @@ export function UploadPanel() {
 
       if (!res.ok) throw new Error((await res.json()).detail ?? `Error ${res.status}`)
       const data: V2Result = await res.json()
+      // Fetch the preview image and convert to base64 for persistence
+      if (data.preview_url) {
+        try {
+          const previewRes = await fetch(data.preview_url)
+          const blob = await previewRes.blob()
+          const reader = new FileReader()
+          const previewDataUrl = await new Promise<string>((resolve) => {
+            reader.onload = () => resolve(reader.result as string)
+            reader.readAsDataURL(blob)
+          })
+          data.structure = { ...data.structure, _preview_data: previewDataUrl }
+        } catch { /* preview fetch failed, continue without */ }
+      }
       setResult(data); setStatus('done'); setStatusMsg('')
+      if (onStructureChange) onStructureChange(data.structure)
 
       // Load auto-detected annotations into editor on first run
       if (!autoLoaded && data.auto_annotations?.length) {
@@ -81,11 +149,23 @@ export function UploadPanel() {
         })))
         setAutoLoaded(true)
       }
+
+      // Merge computed sqft into existing label annotations
+      if (data.computed_rooms?.length) {
+        setAnnotations(prev => prev.map(ann => {
+          if (ann.type !== 'label' || !ann.roomName) return ann
+          const match = data.computed_rooms!.find(
+            r => r.roomName === ann.roomName!.toUpperCase()
+              && Math.abs(r.x1 - ann.x1) < 5 && Math.abs(r.y1 - ann.y1) < 5
+          )
+          return match ? { ...ann, sqft: match.sqft } : ann
+        }))
+      }
     } catch (e) {
       setStatus('error')
       setStatusMsg(e instanceof Error ? e.message : 'Unknown error')
     }
-  }, [file, annotations, autoLoaded])
+  }, [file, preview, annotations, autoLoaded, totalSqft])
 
   return (
     <>
@@ -124,11 +204,28 @@ export function UploadPanel() {
         )}
       </div>
 
+      {/* Total sq ft input */}
+      <div className="mt-3">
+        <input
+          type="number"
+          placeholder="Total SQ FT (e.g. 2000)"
+          value={totalSqft}
+          onChange={e => setTotalSqft(e.target.value)}
+          className="w-full px-3 py-2.5 sm:py-2 rounded-lg text-sm
+                     bg-zinc-950 border border-zinc-800/60 text-zinc-300
+                     placeholder:text-zinc-600 outline-none
+                     focus:border-zinc-600 transition-colors"
+        />
+        <p className="text-[10px] text-zinc-600 mt-1 ml-1">
+          {totalSqft ? `Scale from ${totalSqft} sq ft` : 'Optional — enables precise measurements'}
+        </p>
+      </div>
+
       {/* Generate button */}
       <motion.button
         whileTap={{ scale: 0.98 }}
         onClick={generate}
-        disabled={status === 'loading' || !file}
+        disabled={status === 'loading' || (!file && !preview)}
         className="w-full mt-4 py-3.5 sm:py-3 rounded-lg text-sm font-medium
                    bg-white/[0.06] text-zinc-400 border border-zinc-800/60
                    hover:bg-white/[0.09] hover:text-zinc-300
@@ -181,19 +278,35 @@ export function UploadPanel() {
             {result.preview_url && (
               <Suspense fallback={<div className="h-64 bg-zinc-950 animate-pulse rounded-lg" />}>
                 {view3D ? (
-                  <FloorPlan3D structure={result.structure} annotations={annotations} />
+                  <FloorPlan3D
+                    structure={result.structure}
+                    annotations={annotations}
+                    initialScene={project?.scene}
+                    onSceneChange={onSceneChange}
+                  />
                 ) : (
                   <OverlayEditor
                     previewUrl={result.preview_url}
+                    regionOverlay={result.region_overlay}
                     annotations={annotations}
-                    setAnnotations={setAnnotations}
+                    setAnnotations={(a) => {
+                      const next = typeof a === 'function' ? a(annotations) : a
+                      setAnnotations(next)
+                      notifySceneChange(next)
+                    }}
                   />
                 )}
               </Suspense>
             )}
 
-            {/* Download */}
-            <DownloadButton href={result.dxf_url} />
+            {/* Download — only show when a real DXF was generated */}
+            {result.dxf_url ? (
+              <DownloadButton href={result.dxf_url} />
+            ) : (
+              <p className="text-[10px] text-zinc-600 text-center">
+                Hit "Generate DXF" to create a downloadable file
+              </p>
+            )}
 
 
             {/* Details toggle */}
