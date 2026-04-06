@@ -1,22 +1,20 @@
-"""
-mitunet_inference.py — backward-compatibility re-export barrel.
-
-All logic has moved to backend/mitunet/. This module re-exports everything
-so existing imports continue to work without modification.
-"""
-from .mitunet import (
+from .model import (
     MITUNET_BACKEND,
     MITUNET_MASK_REGIONS_DXF_MODE,
     MAX_MITUNET_REGION_WALL_THICKNESS,
     MITUNET_MODEL_NAME,
     mitunet_available,
-    infer_mitunet,
+)
+from .pipeline import infer_mitunet
+from .regions import (
     build_mitunet_region_plan,
-    regions_to_wall_annotations,
+    _prepare_mitunet_wall_mask_for_regions,
+)
+from .annotations import regions_to_wall_annotations
+from .dxf_writer import (
     generate_mitunet_dxf,
     generate_mitunet_region_dxf,
     build_mitunet_provenance,
-    _prepare_mitunet_wall_mask_for_regions,
 )
 
 __all__ = [
