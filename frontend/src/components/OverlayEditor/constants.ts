@@ -1,6 +1,7 @@
 import type { AnnotationType } from '../../types'
 
 export const COLORS: Record<AnnotationType, string> = {
+  select: '#ffffff',
   wall: '#ff3333',
   door: '#33ff66',
   window: '#3399ff',

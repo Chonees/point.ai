@@ -67,6 +67,7 @@ def _draw_mitunet_annotations_from_region_plan(
     image_shape: tuple[int, int],
     transform: dict[str, float],
     wall_thickness: float = 4.0,
+    regions: list[dict] | None = None,
 ) -> int:
     if not annotations:
         return 0
@@ -78,6 +79,107 @@ def _draw_mitunet_annotations_from_region_plan(
 
     rect_count = 0
 
+    # Pre-compute region DXF rects for thickness lookup
+    _region_rects: list[tuple[float, float, float, float, float]] = []
+    for region in (regions or []):
+        bounds = region.get("bounds") or {}
+        rx1 = float(bounds.get("x1", 0))
+        ry1 = float(bounds.get("y1", 0))
+        rx2 = float(bounds.get("x2", 0))
+        ry2 = float(bounds.get("y2", 0))
+        dt = float(region.get("draw_thickness", 0))
+        if dt > 0:
+            _region_rects.append((rx1, ry1, rx2, ry2, dt))
+
+    # Compute median for snap threshold
+    all_dt = [r[4] for r in _region_rects]
+    if all_dt:
+        all_dt.sort()
+        m = len(all_dt) // 2
+        _thickness_median = all_dt[m] if len(all_dt) % 2 else (all_dt[m - 1] + all_dt[m]) / 2
+    else:
+        _thickness_median = wall_thickness
+
+    def _resolve_wall_thickness(dx1: float, dy1: float, dx2: float, dy2: float) -> float:
+        """Find the closest region to this wall annotation and snap its thickness."""
+        mid_x = (dx1 + dx2) / 2
+        mid_y = (dy1 + dy2) / 2
+        best_dt = 0.0
+        best_dist = float("inf")
+        for rx1, ry1, rx2, ry2, dt in _region_rects:
+            rmx = (rx1 + rx2) / 2
+            rmy = (ry1 + ry2) / 2
+            d = abs(mid_x - rmx) + abs(mid_y - rmy)
+            if d < best_dist:
+                best_dist = d
+                best_dt = dt
+        if best_dt > 0:
+            return 6.0 if best_dt > _thickness_median else 4.0
+        return wall_thickness
+
+    # Pre-compute wall DXF coords for junction detection
+    wall_dxf_coords: list[tuple[float, float, float, float]] = []
+    for ann in annotations:
+        if ann.get("type") != "wall":
+            continue
+        wx1, wy1 = _mitunet_region_img_to_dxf(int(ann["x1"]), int(ann["y1"]), image_shape=image_shape, transform=transform)
+        wx2, wy2 = _mitunet_region_img_to_dxf(int(ann["x2"]), int(ann["y2"]), image_shape=image_shape, transform=transform)
+        wall_dxf_coords.append((wx1, wy1, wx2, wy2))
+
+    def _find_parent_wall_edges(
+        win_lo: float, win_hi: float, win_mid: float, is_horizontal: bool,
+    ) -> tuple[float, float] | None:
+        """Find the wall that contains this window and return (edge_minus, edge_plus).
+
+        A wall is the parent if:
+        1. Same orientation (horizontal window on horizontal wall)
+        2. Its centerline is close to the window centerline (perpendicular axis)
+        3. The window span overlaps with the wall span (parallel axis)
+        """
+        ht = wall_thickness / 2
+        tolerance = wall_thickness * 1.5
+        best: tuple[float, float] | None = None
+        best_overlap = 0.0
+
+        for wx1, wy1, wx2, wy2 in wall_dxf_coords:
+            if is_horizontal:
+                wall_mid = (wy1 + wy2) / 2
+                wall_lo = min(wx1, wx2)
+                wall_hi = max(wx1, wx2)
+            else:
+                wall_mid = (wx1 + wx2) / 2
+                wall_lo = min(wy1, wy2)
+                wall_hi = max(wy1, wy2)
+
+            # Check centerline proximity (perpendicular axis)
+            if abs(wall_mid - win_mid) > tolerance:
+                continue
+
+            # Check span overlap (parallel axis)
+            overlap_lo = max(win_lo, wall_lo)
+            overlap_hi = min(win_hi, wall_hi)
+            overlap = overlap_hi - overlap_lo
+            if overlap <= 0:
+                continue
+
+            if overlap > best_overlap:
+                best_overlap = overlap
+                best = (wall_mid - ht, wall_mid + ht)
+
+        return best
+
+    def _has_junction(px: float, py: float, skip_idx: int) -> bool:
+        """Check if another wall endpoint is near (px, py)."""
+        snap = wall_thickness * 1.5
+        for i, (wx1, wy1, wx2, wy2) in enumerate(wall_dxf_coords):
+            if i == skip_idx:
+                continue
+            for ex, ey in [(wx1, wy1), (wx2, wy2)]:
+                if abs(px - ex) <= snap and abs(py - ey) <= snap:
+                    return True
+        return False
+
+    wall_idx = 0
     for ann in annotations:
         ann_type = ann.get("type", "wall")
         if ann_type == "eraser":
@@ -89,10 +191,17 @@ def _draw_mitunet_annotations_from_region_plan(
         if ann_type == "wall":
             adx = abs(dx2 - dx1)
             ady = abs(dy2 - dy1)
-            thickness = wall_thickness  # match model wall thickness (median)
+            thickness = _resolve_wall_thickness(dx1, dy1, dx2, dy2)
+            ext = thickness / 2  # extension for junctions
+
             if adx >= ady:
                 y_mid = (dy1 + dy2) / 2
                 x_lo, x_hi = min(dx1, dx2), max(dx1, dx2)
+                # Extend horizontally at junctions
+                if _has_junction(x_lo, y_mid, wall_idx):
+                    x_lo -= ext
+                if _has_junction(x_hi, y_mid, wall_idx):
+                    x_hi += ext
                 pts = [
                     (x_lo, y_mid - thickness / 2),
                     (x_hi, y_mid - thickness / 2),
@@ -103,6 +212,11 @@ def _draw_mitunet_annotations_from_region_plan(
             else:
                 x_mid = (dx1 + dx2) / 2
                 y_lo, y_hi = min(dy1, dy2), max(dy1, dy2)
+                # Extend vertically at junctions
+                if _has_junction(x_mid, y_lo, wall_idx):
+                    y_lo -= ext
+                if _has_junction(x_mid, y_hi, wall_idx):
+                    y_hi += ext
                 pts = [
                     (x_mid - thickness / 2, y_lo),
                     (x_mid + thickness / 2, y_lo),
@@ -115,6 +229,7 @@ def _draw_mitunet_annotations_from_region_plan(
             hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
             hatch.paths.add_polyline_path(pts, is_closed=True)
             rect_count += 1
+            wall_idx += 1
             continue
 
         if ann_type == "door":
@@ -175,26 +290,40 @@ def _draw_mitunet_annotations_from_region_plan(
             continue
 
         if ann_type == "window":
-            from ..components.windows import draw_window_h, draw_window_v  # noqa: E402
+            from ..components.windows import draw_window_h, draw_window_v, H_SILL_OFFSET, V_SILL_OUT
 
-            exterior = ann.get("swing")  # reuse swing field for exterior side
+            exterior = ann.get("swing")
             if not exterior:
-                continue  # No side set = skip (user must pick exterior direction)
+                continue
 
             adx = abs(dx2 - dx1)
             ady = abs(dy2 - dy1)
-            # Map user direction to draw_window side parameter
+
             if adx >= ady:
-                # Horizontal window: DXF Y-flip means up→bottom, down→top
                 side = "bottom" if exterior == "up" else "top"
-                x_lo = min(dx1, dx2)
+                x_lo, x_hi = min(dx1, dx2), max(dx1, dx2)
                 y_mid = (dy1 + dy2) / 2
-                draw_window_h(msp, x_lo, y_mid, adx, side=side)
+                edges = _find_parent_wall_edges(x_lo, x_hi, y_mid, is_horizontal=True)
+                if edges:
+                    sill_target = edges[0] if side == "bottom" else edges[1]
+                    y_param = sill_target + H_SILL_OFFSET if side == "bottom" else sill_target - H_SILL_OFFSET
+                else:
+                    y_param = y_mid
+                draw_window_h(msp, x_lo, y_param, adx, side=side)
             else:
-                # Vertical window: left→left, right→right
-                side = exterior  # already "left" or "right"
+                side = exterior
                 x_mid = (dx1 + dx2) / 2
-                y_lo = min(dy1, dy2)
-                draw_window_v(msp, x_mid, y_lo, ady, side=side)
+                y_lo, y_hi = min(dy1, dy2), max(dy1, dy2)
+                edges = _find_parent_wall_edges(y_lo, y_hi, x_mid, is_horizontal=False)
+                if edges:
+                    if side == "left":
+                        sill_target = edges[0]
+                        x_param = sill_target + V_SILL_OUT
+                    else:
+                        sill_target = edges[1]
+                        x_param = sill_target - V_SILL_OUT - wall_thickness
+                    draw_window_v(msp, x_param, y_lo, ady, side=side, thickness=wall_thickness)
+                else:
+                    draw_window_v(msp, x_mid, y_lo, ady, side=side, thickness=wall_thickness)
 
     return rect_count

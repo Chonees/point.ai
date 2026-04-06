@@ -21,6 +21,7 @@ const toolGroups: ToolGroup[] = [
   {
     title: 'Edit',
     items: [
+      { type: 'select', label: 'Select', hint: 'Move/Resize' },
       { type: 'eraser', label: 'Eraser', hint: 'Cleanup' },
     ],
   },

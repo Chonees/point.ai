@@ -105,12 +105,16 @@ export function useCanvasInteractions(
       return
     }
     const ptDown = screenToWorld(e.clientX, e.clientY)
-    const ep = _hitEndpoint(ptDown.x, ptDown.y)
-    if (ep) {
-      draggingRef.current = ep
-      return
+    const activeTool = state.toolRef.current
+    const isSelectTool = activeTool === 'select'
+    if (isSelectTool) {
+      const ep = _hitEndpoint(ptDown.x, ptDown.y)
+      if (ep) {
+        draggingRef.current = ep
+        return
+      }
     }
-    if (hoveredIdxRef.current >= 0) {
+    if (isSelectTool && hoveredIdxRef.current >= 0) {
       const idx = hoveredIdxRef.current
       const ha = annotationsRef.current[idx]
       if (ha) {
@@ -136,6 +140,7 @@ export function useCanvasInteractions(
         }
       }
     }
+    if (isSelectTool) return
     const ptRaw = screenToWorld(e.clientX, e.clientY)
     const pt = _snap(ptRaw.x, ptRaw.y)
     snapRef.current = pt
@@ -209,7 +214,8 @@ export function useCanvasInteractions(
     hoveredIdxRef.current = _hitTest(pt.x, pt.y)
     if (hoveredIdxRef.current !== prev || epHover) {
       const c = canvasRef.current
-      if (c) c.style.cursor = epHover ? 'grab' : hoveredIdxRef.current >= 0 ? 'pointer' : 'crosshair'
+      const defaultCursor = state.toolRef.current === 'select' ? 'default' : 'crosshair'
+      if (c) c.style.cursor = epHover ? 'grab' : hoveredIdxRef.current >= 0 ? 'pointer' : defaultCursor
       scheduleRender()
     }
   }

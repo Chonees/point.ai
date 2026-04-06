@@ -146,30 +146,43 @@ export function renderCanvas(
         ctx.quadraticCurveTo(cpX, cpY, ann.x2, ann.y2)
         ctx.stroke()
       } else if (ann.type === 'window') {
-        // Draw window preview: 3 parallel lines + end caps
+        // Draw window: 3 parallel lines centered on wall + end caps + sill
         const adx = Math.abs(ann.x2 - ann.x1)
         const ady = Math.abs(ann.y2 - ann.y1)
         const sp = 2 / v.scale
+        const sillDist = 8 / v.scale
+        // swing indicates exterior direction
+        const ext = ann.swing ?? 'up'
         if (adx >= ady) {
           const xLo = Math.min(ann.x1, ann.x2), xHi = Math.max(ann.x1, ann.x2)
           const yM = (ann.y1 + ann.y2) / 2
-          for (const off of [0, -sp, -sp * 2]) {
+          // 3 lines centered
+          for (const off of [-sp, 0, sp]) {
             ctx.beginPath(); ctx.moveTo(xLo, yM + off); ctx.lineTo(xHi, yM + off); ctx.stroke()
           }
+          // End caps
           ctx.beginPath()
-          ctx.moveTo(xLo, yM - sp); ctx.lineTo(xLo, yM - sp * 2)
-          ctx.moveTo(xHi, yM - sp); ctx.lineTo(xHi, yM - sp * 2)
+          ctx.moveTo(xLo, yM - sp); ctx.lineTo(xLo, yM + sp)
+          ctx.moveTo(xHi, yM - sp); ctx.lineTo(xHi, yM + sp)
           ctx.stroke()
+          // Sill toward exterior
+          const sillY = ext === 'up' ? yM + sillDist : yM - sillDist
+          ctx.beginPath(); ctx.moveTo(xLo, sillY); ctx.lineTo(xHi, sillY); ctx.stroke()
         } else {
           const yLo = Math.min(ann.y1, ann.y2), yHi = Math.max(ann.y1, ann.y2)
           const xM = (ann.x1 + ann.x2) / 2
-          for (const off of [0, -sp, sp]) {
+          // 3 lines centered
+          for (const off of [-sp, 0, sp]) {
             ctx.beginPath(); ctx.moveTo(xM + off, yLo); ctx.lineTo(xM + off, yHi); ctx.stroke()
           }
+          // End caps
           ctx.beginPath()
-          ctx.moveTo(xM - sp, yLo); ctx.lineTo(xM, yLo)
-          ctx.moveTo(xM - sp, yHi); ctx.lineTo(xM, yHi)
+          ctx.moveTo(xM - sp, yLo); ctx.lineTo(xM + sp, yLo)
+          ctx.moveTo(xM - sp, yHi); ctx.lineTo(xM + sp, yHi)
           ctx.stroke()
+          // Sill toward exterior
+          const sillX = ext === 'left' ? xM + sillDist : xM - sillDist
+          ctx.beginPath(); ctx.moveTo(sillX, yLo); ctx.lineTo(sillX, yHi); ctx.stroke()
         }
       } else {
         // Walls and doors without swing: simple line
@@ -209,6 +222,36 @@ export function renderCanvas(
       if (isAuto) {
         ctx.setLineDash([])
         ctx.globalAlpha = 1.0
+      }
+    }
+  }
+
+  // Fill junction gaps where 2+ walls share an endpoint
+  const wallAnns = anns.filter(a => a.type === 'wall')
+  if (wallAnns.length > 1) {
+    const wallLw = 6 / v.scale
+    const junctionR = wallLw / 2
+    const snapDist = 2 / v.scale
+    const seen = new Set<string>()
+    for (const w of wallAnns) {
+      for (const [px, py] of [[w.x1, w.y1], [w.x2, w.y2]] as [number, number][]) {
+        const key = `${Math.round(px)},${Math.round(py)}`
+        if (seen.has(key)) continue
+        let count = 0
+        for (const other of wallAnns) {
+          if (other === w) continue
+          for (const [ox, oy] of [[other.x1, other.y1], [other.x2, other.y2]] as [number, number][]) {
+            if (Math.abs(px - ox) <= snapDist && Math.abs(py - oy) <= snapDist) { count++; break }
+          }
+          if (count > 0) break
+        }
+        if (count > 0) {
+          ctx.fillStyle = COLORS.wall
+          ctx.beginPath()
+          ctx.arc(px, py, junctionR, 0, Math.PI * 2)
+          ctx.fill()
+          seen.add(key)
+        }
       }
     }
   }

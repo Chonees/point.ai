@@ -161,6 +161,10 @@ def generate_mitunet_region_dxf(
     rect_count = 0
     region_thicknesses: list[float] = []
 
+    def _snap_thickness(raw: float) -> float:
+        """Snap detected thickness to standard: 4" (interior) or 6" (exterior)."""
+        return 6.0 if raw >= 5.0 else 4.0
+
     if not skip_regions:
         for region in region_plan.get("regions", []):
             bounds = region.get("bounds") or {}
@@ -170,23 +174,33 @@ def generate_mitunet_region_dxf(
             y2 = float(bounds.get("y2", 0.0))
             if abs(x2 - x1) < 1 or abs(y2 - y1) < 1:
                 continue
+
+            # Snap to standard thickness (4" or 6") and re-center
+            dt = float(region.get("draw_thickness", 4.0))
+            std = _snap_thickness(dt)
+            orientation = region.get("orientation", "horizontal")
+            if orientation == "horizontal":
+                cy = (y1 + y2) / 2
+                y1, y2 = cy - std / 2, cy + std / 2
+            else:
+                cx = (x1 + x2) / 2
+                x1, x2 = cx - std / 2, cx + std / 2
+
             pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]
             poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
             poly.close()
             hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
             hatch.paths.add_polyline_path(pts, is_closed=True)
             rect_count += 1
-            dt = float(region.get("draw_thickness", 0.0))
-            if dt > 0:
-                region_thicknesses.append(dt)
+            region_thicknesses.append(std)
 
-    # Use median thickness of model regions so annotations match
+    # Median standard thickness for manual wall annotations
     if region_thicknesses:
         region_thicknesses.sort()
         mid = len(region_thicknesses) // 2
         median_thickness = region_thicknesses[mid] if len(region_thicknesses) % 2 else (region_thicknesses[mid - 1] + region_thicknesses[mid]) / 2
     else:
-        median_thickness = 4.0  # fallback
+        median_thickness = 4.0
 
     meta = region_plan.get("meta", {})
     image_shape_meta = meta.get("image_shape", {})
@@ -201,6 +215,7 @@ def generate_mitunet_region_dxf(
         image_shape=image_shape,
         transform=meta.get("transform", {}),
         wall_thickness=median_thickness,
+        regions=region_plan.get("regions", []),
     )
 
     # --- Dimensions + room labels from label annotations ---

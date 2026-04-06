@@ -87,7 +87,21 @@ export function snapToEndpoint(wx: number, wy: number, annotations: Annotation[]
     if (i === skipIdx) continue
     const a = annotations[i]
     if (a.type === 'eraser') continue
+    // Endpoints first (higher priority — tighter snap wins)
     for (const [px, py] of [[a.x1, a.y1], [a.x2, a.y2]] as [number, number][]) {
+      const d = Math.sqrt((wx - px) ** 2 + (wy - py) ** 2)
+      if (d < bestDist) {
+        bestDist = d
+        snap = { x: px, y: py, snapped: true }
+      }
+    }
+    // Perpendicular projection onto segment (walls, windows, separators)
+    if (a.type === 'wall' || a.type === 'window' || (a.type as string) === 'separator') {
+      const dx = a.x2 - a.x1, dy = a.y2 - a.y1
+      const lenSq = dx * dx + dy * dy
+      if (lenSq < 1) continue
+      const t = Math.max(0, Math.min(1, ((wx - a.x1) * dx + (wy - a.y1) * dy) / lenSq))
+      const px = a.x1 + t * dx, py = a.y1 + t * dy
       const d = Math.sqrt((wx - px) ** 2 + (wy - py) ** 2)
       if (d < bestDist) {
         bestDist = d
