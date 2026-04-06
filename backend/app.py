@@ -4,8 +4,10 @@ FastAPI: image -> inference -> structure -> DXF
 
 Run: uvicorn backend.app:app --reload
 """
+import os
 import uuid
 import tempfile
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -41,12 +43,27 @@ from .mitunet_inference import (
 from .ensemble_inference import ENSEMBLE_BACKEND
 from .dxf_preview import build_dxf_preview
 
-# App
-app = FastAPI(title="Point.ai", version="0.1.0")
+
+# ─── LIFESPAN ────────────────────────────────────────────────────────────────
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Pre-load available CubiCasa models so the first request doesn't cold-start."""
+    warmup_models()
+    yield
+
+
+# ─── APP ─────────────────────────────────────────────────────────────────────
+
+_cors_origins = os.getenv(
+    "POINTAI_CORS_ORIGINS", "http://localhost:5173"
+).split(",")
+
+app = FastAPI(title="Point.ai", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=_cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -54,14 +71,6 @@ app.add_middleware(
 # DXF output directory
 DXF_DIR = Path(tempfile.gettempdir()) / "pointai_dxf"
 DXF_DIR.mkdir(exist_ok=True)
-
-
-# ─── STARTUP ─────────────────────────────────────────────────────────────────
-
-@app.on_event("startup")
-async def _warmup() -> None:
-    """Pre-load available CubiCasa models so the first request doesn't cold-start."""
-    warmup_models()
 
 
 # ─── ROUTES ──────────────────────────────────────────────────────────────────
