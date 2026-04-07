@@ -224,10 +224,11 @@ def _draw_mitunet_annotations_from_region_plan(
                     (x_mid - thickness / 2, y_hi),
                     (x_mid - thickness / 2, y_lo),
                 ]
-            poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
+            from ..components.hatch import add_wall_hatch
+
+            poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7, "lineweight": 100})
             poly.close()
-            hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
-            hatch.paths.add_polyline_path(pts, is_closed=True)
+            add_wall_hatch(msp, doc, pts, thickness)
             rect_count += 1
             wall_idx += 1
             continue

@@ -156,7 +156,9 @@ def generate_mitunet_region_dxf(
     msp = doc.modelspace()
 
     if "WALLS" not in doc.layers:
-        doc.layers.add("WALLS", color=7)
+        doc.layers.add("WALLS", color=7, dxfattribs={"lineweight": 100})
+    else:
+        doc.layers.get("WALLS").dxf.lineweight = 60
 
     rect_count = 0
     region_thicknesses: list[float] = []
@@ -186,11 +188,12 @@ def generate_mitunet_region_dxf(
                 cx = (x1 + x2) / 2
                 x1, x2 = cx - std / 2, cx + std / 2
 
+            from ..components.hatch import add_wall_hatch
+
             pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]
-            poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7})
+            poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7, "lineweight": 100})
             poly.close()
-            hatch = msp.add_hatch(color=7, dxfattribs={"layer": "WALLS"})
-            hatch.paths.add_polyline_path(pts, is_closed=True)
+            add_wall_hatch(msp, doc, pts, std)
             rect_count += 1
             region_thicknesses.append(std)
 
