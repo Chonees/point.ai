@@ -36,104 +36,136 @@ export function LoginPage({ onSignIn, onSignUp, onGoogleSignIn, onSkip }: LoginP
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
-      <div className="w-full max-w-sm">
-        {/* Logo */}
-        <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
-            Pointe<span className="text-white/30">.ai</span>
-          </h1>
-          <p className="mt-2 text-sm text-zinc-500">
-            Floor plan to professional DXF
-          </p>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              required
-              className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-200 placeholder-zinc-600 outline-none transition-colors focus:border-zinc-600"
-            />
+    <div className="min-h-screen bg-[#090909] text-zinc-100">
+      <div className="mx-auto flex min-h-screen max-w-7xl flex-col px-4 py-6 sm:px-6 lg:px-8">
+        <header className="flex items-center justify-between py-2">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-sm font-semibold text-zinc-100">
+              P
+            </div>
+            <div>
+              <h1 className="text-lg font-semibold tracking-tight text-zinc-100">
+                Pointe<span className="text-white/30">.ai</span>
+              </h1>
+              <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Floor plan workspace</p>
+            </div>
           </div>
-          <div>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              required
-              minLength={6}
-              className="w-full rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-200 placeholder-zinc-600 outline-none transition-colors focus:border-zinc-600"
-            />
+          <div className="hidden rounded-full border border-white/8 px-3 py-1 text-[10px] uppercase tracking-[0.22em] text-zinc-600 sm:block">
+            {mode === 'signin' ? 'Sign in' : 'Create account'}
           </div>
+        </header>
 
-          {error && (
-            <p className="rounded-md bg-red-900/30 px-3 py-2 text-xs text-red-400">
-              {error}
-            </p>
-          )}
-          {success && (
-            <p className="rounded-md bg-green-900/30 px-3 py-2 text-xs text-green-400">
-              {success}
-            </p>
-          )}
+        <main className="flex flex-1 items-center justify-center py-10">
+          <div className="w-full max-w-md rounded-[28px] border border-white/6 bg-[#101010] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.35)] sm:p-8">
+            <div className="mb-8">
+              <p className="text-xs uppercase tracking-[0.3em] text-zinc-600">{mode === 'signin' ? 'Welcome back' : 'Create account'}</p>
+              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-100">
+                {mode === 'signin' ? 'Sign in to your workspace' : 'Create your workspace'}
+              </h2>
+              <p className="mt-2 text-sm leading-6 text-zinc-500">
+                {mode === 'signin'
+                  ? 'Open your saved projects and continue working.'
+                  : 'Start a clean workspace for plans, labels and DXF export.'}
+              </p>
+            </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full cursor-pointer rounded-lg bg-white/[0.06] py-3 text-sm font-medium text-zinc-400 border border-zinc-800/60 transition-all hover:bg-white/[0.09] hover:text-zinc-300 disabled:opacity-50"
-          >
-            {loading ? '...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
-          </button>
-        </form>
-
-        {/* Google */}
-        <button
-          onClick={onGoogleSignIn}
-          className="mt-3 w-full cursor-pointer rounded-lg border border-zinc-800/60 bg-white/[0.03] py-3 text-sm text-zinc-500 transition-all hover:bg-white/[0.06] hover:text-zinc-300"
-        >
-          Continue with Google
-        </button>
-
-        {/* Toggle mode */}
-        <p className="mt-4 text-center text-xs text-zinc-600">
-          {mode === 'signin' ? (
-            <>
-              No account?{' '}
+            <div className="mb-6 inline-flex rounded-2xl border border-white/8 bg-zinc-950/80 p-1">
               <button
-                onClick={() => { setMode('signup'); setError('') }}
-                className="cursor-pointer text-zinc-400 hover:text-zinc-300"
-              >
-                Sign up
-              </button>
-            </>
-          ) : (
-            <>
-              Already have an account?{' '}
-              <button
-                onClick={() => { setMode('signin'); setError('') }}
-                className="cursor-pointer text-zinc-400 hover:text-zinc-300"
+                type="button"
+                onClick={() => {
+                  setMode('signin')
+                  setError('')
+                  setSuccess('')
+                }}
+                className={`rounded-xl px-4 py-2 text-xs font-medium transition-colors ${
+                  mode === 'signin' ? 'bg-white/[0.08] text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
+                }`}
               >
                 Sign in
               </button>
-            </>
-          )}
-        </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setMode('signup')
+                  setError('')
+                  setSuccess('')
+                }}
+                className={`rounded-xl px-4 py-2 text-xs font-medium transition-colors ${
+                  mode === 'signup' ? 'bg-white/[0.08] text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
+                }`}
+              >
+                Create account
+              </button>
+            </div>
 
-        {/* Skip (dev mode / no supabase) */}
-        {!isSupabaseConfigured && (
-          <button
-            onClick={onSkip}
-            className="mt-6 w-full cursor-pointer text-center text-xs text-zinc-700 hover:text-zinc-500"
-          >
-            Continue without account (dev mode)
-          </button>
-        )}
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <label className="block">
+                <span className="mb-2 block text-[11px] uppercase tracking-[0.22em] text-zinc-600">Email</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@studio.com"
+                  required
+                  className="w-full rounded-2xl border border-white/8 bg-zinc-950 px-4 py-3 text-sm text-zinc-200 placeholder-zinc-600 outline-none transition-colors focus:border-white/18"
+                />
+              </label>
+              <label className="block">
+                <span className="mb-2 block text-[11px] uppercase tracking-[0.22em] text-zinc-600">Password</span>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Minimum 6 characters"
+                  required
+                  minLength={6}
+                  className="w-full rounded-2xl border border-white/8 bg-zinc-950 px-4 py-3 text-sm text-zinc-200 placeholder-zinc-600 outline-none transition-colors focus:border-white/18"
+                />
+              </label>
+
+              {error && (
+                <p className="rounded-2xl border border-red-500/15 bg-red-500/8 px-3 py-2.5 text-xs text-red-300">
+                  {error}
+                </p>
+              )}
+              {success && (
+                <p className="rounded-2xl border border-emerald-500/15 bg-emerald-500/8 px-3 py-2.5 text-xs text-emerald-300">
+                  {success}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full rounded-2xl border border-white/10 bg-white/[0.06] py-3 text-sm font-medium text-zinc-200 transition-all hover:bg-white/[0.09] disabled:opacity-50"
+              >
+                {loading ? 'Please wait...' : mode === 'signin' ? 'Sign In' : 'Create Account'}
+              </button>
+            </form>
+
+            <div className="my-5 flex items-center gap-3">
+              <div className="h-px flex-1 bg-white/6" />
+              <span className="text-[10px] uppercase tracking-[0.28em] text-zinc-700">or</span>
+              <div className="h-px flex-1 bg-white/6" />
+            </div>
+
+            <button
+              onClick={onGoogleSignIn}
+              className="w-full rounded-2xl border border-white/8 bg-zinc-950 py-3 text-sm text-zinc-300 transition-colors hover:border-white/14 hover:bg-white/[0.03]"
+            >
+              Continue with Google
+            </button>
+
+            {!isSupabaseConfigured && (
+              <button
+                onClick={onSkip}
+                className="mt-6 w-full text-center text-xs text-zinc-600 transition-colors hover:text-zinc-400"
+              >
+                Continue without account (dev mode)
+              </button>
+            )}
+          </div>
+        </main>
       </div>
     </div>
   )

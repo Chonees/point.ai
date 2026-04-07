@@ -155,6 +155,18 @@ export function OverlayToolbar({
             </button>
             <span className="text-[10px] text-zinc-500 w-10 text-center">{zoomLabel}</span>
           </div>
+          <div className="flex items-center gap-3 ml-3 rounded-2xl border border-white/6 bg-white/[0.02] px-3 py-1.5">
+            <span className="text-[9px] uppercase tracking-[0.2em] text-zinc-600">Wall Legend</span>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block w-5 h-[3px] rounded-sm" style={{ backgroundColor: '#00ccff', boxShadow: '0 0 0 1px #000' }} />
+              <span className="text-[10px] text-zinc-400">2×4 <span className="text-zinc-600">studs 16&quot; OC</span></span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="inline-block w-5 h-[5px] rounded-sm" style={{ backgroundColor: '#999999', boxShadow: '0 0 0 1px #000' }} />
+              <span className="text-[10px] text-zinc-400">2×6 <span className="text-zinc-600">studs 16&quot; OC</span></span>
+            </div>
+            {tool === 'select' && <span className="text-[9px] text-zinc-600 italic">click wall to toggle</span>}
+          </div>
           <div className="flex-1" />
           <button
             onClick={undo}

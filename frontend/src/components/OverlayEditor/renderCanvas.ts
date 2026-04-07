@@ -65,14 +65,14 @@ export function renderCanvas(
       ctx.strokeRect(ann.x1, ann.y1, ann.x2 - ann.x1, ann.y2 - ann.y1)
       ctx.setLineDash([])
     } else if (ann.type === 'label') {
-      // Room label: name + sqft centered at point — dark/black style
+      // Room label: name + sqft centered at point — world-space (scales with zoom)
       const lx = ann.x1, ly = ann.y1
       const name = ann.roomName || 'ROOM'
       const sqft = ann.sqft ? `${ann.sqft} SQ FT` : ''
 
-      const nameSize = 14 / v.scale
-      const sqftSize = 10 / v.scale
-      const pad = 6 / v.scale
+      const nameSize = 32
+      const sqftSize = 22
+      const pad = 12
 
       // White background for readability
       const bw = Math.max(name.length, sqft.length) * nameSize * 0.6 + pad * 2
@@ -80,9 +80,9 @@ export function renderCanvas(
       const bx = lx - bw / 2, by = ly - bh / 2
       ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
       ctx.strokeStyle = '#333333'
-      ctx.lineWidth = 1.5 / v.scale
+      ctx.lineWidth = 3
       ctx.beginPath()
-      ctx.roundRect(bx, by, bw, bh, 3 / v.scale)
+      ctx.roundRect(bx, by, bw, bh, 6)
       ctx.fill()
       ctx.stroke()
 
@@ -105,18 +105,22 @@ export function renderCanvas(
     } else {
       // AI-detected annotations: dashed + slightly transparent
       if (isAuto) {
-        ctx.setLineDash([6 / v.scale, 4 / v.scale])
+        ctx.setLineDash([12, 8])
         ctx.globalAlpha = 0.8
       }
       // Separator lines: white, same thickness as doors/windows
       const isSeparator = (ann.type as string) === 'separator'
+      // Wall colors: 4" = cyan, 6" = gray
+      const isWall6 = ann.type === 'wall' && ann.thickness === 6
       // Doors/windows without direction = yellow (needs attention), with = green (done)
       const color = isSeparator
         ? '#33ff66'
-        : (ann.type === 'door' || ann.type === 'window')
-          ? (ann.swing ? '#33ff66' : '#ffcc00')
-          : COLORS[ann.type]
-      const lw = (ann.type === 'wall' ? 6 : 3) / v.scale
+        : ann.type === 'wall'
+          ? (isWall6 ? '#999999' : '#00ccff')
+          : (ann.type === 'door' || ann.type === 'window')
+            ? (ann.swing ? '#33ff66' : '#ffcc00')
+            : COLORS[ann.type]
+      const lw = ann.type === 'wall' ? (isWall6 ? 12 : 6) : 3
       ctx.strokeStyle = color
       ctx.lineWidth = lw
 
@@ -125,7 +129,7 @@ export function renderCanvas(
         const openingW = Math.sqrt((ann.x2 - ann.x1) ** 2 + (ann.y2 - ann.y1) ** 2)
         const arcR = ann.arcRadius ?? openingW
         const hx = ann.x1, hy = ann.y1
-        const ds = 3 / v.scale
+        const ds = 3
 
         const sA = SLAB_ANGLES[ann.swing]
         const oA = Math.atan2(ann.y2 - ann.y1, ann.x2 - ann.x1)
@@ -149,8 +153,8 @@ export function renderCanvas(
         // Draw window: 3 parallel lines centered on wall + end caps + sill
         const adx = Math.abs(ann.x2 - ann.x1)
         const ady = Math.abs(ann.y2 - ann.y1)
-        const sp = 2 / v.scale
-        const sillDist = 8 / v.scale
+        const sp = 4
+        const sillDist = 16
         // swing indicates exterior direction
         const ext = ann.swing ?? 'up'
         if (adx >= ady) {
@@ -184,8 +188,24 @@ export function renderCanvas(
           const sillX = ext === 'left' ? xM + sillDist : xM - sillDist
           ctx.beginPath(); ctx.moveTo(sillX, yLo); ctx.lineTo(sillX, yHi); ctx.stroke()
         }
+      } else if (ann.type === 'wall') {
+        // Walls: black border + colored fill
+        ctx.beginPath()
+        ctx.moveTo(ann.x1, ann.y1)
+        ctx.lineTo(ann.x2, ann.y2)
+        // Black border (wider)
+        ctx.strokeStyle = '#000000'
+        ctx.lineWidth = lw + 6
+        ctx.stroke()
+        // Colored fill (original width)
+        ctx.strokeStyle = color
+        ctx.lineWidth = lw
+        ctx.beginPath()
+        ctx.moveTo(ann.x1, ann.y1)
+        ctx.lineTo(ann.x2, ann.y2)
+        ctx.stroke()
       } else {
-        // Walls and doors without swing: simple line
+        // Doors without swing: simple line
         ctx.beginPath()
         ctx.moveTo(ann.x1, ann.y1)
         ctx.lineTo(ann.x2, ann.y2)
@@ -193,9 +213,9 @@ export function renderCanvas(
       }
 
       ctx.fillStyle = color
-      ctx.font = `${10 / v.scale}px monospace`
-      const label = ann.type[0].toUpperCase()
-      ctx.fillText(label, Math.min(ann.x1, ann.x2) - 12 / v.scale, (ann.y1 + ann.y2) / 2 + 4 / v.scale)
+      ctx.font = `bold 22px monospace`
+      const label = ann.type === 'wall' && ann.thickness ? `${ann.thickness}"` : ann.type[0].toUpperCase()
+      ctx.fillText(label, Math.min(ann.x1, ann.x2) - 28, (ann.y1 + ann.y2) / 2 + 8)
 
       // Endpoint handles on hovered annotation
       if (hoveredIdx === anns.indexOf(ann)) {
@@ -229,11 +249,10 @@ export function renderCanvas(
   // Fill junction gaps where 2+ walls share an endpoint
   const wallAnns = anns.filter(a => a.type === 'wall')
   if (wallAnns.length > 1) {
-    const wallLw = 6 / v.scale
-    const junctionR = wallLw / 2
-    const snapDist = 2 / v.scale
+    const snapDist = 4
     const seen = new Set<string>()
     for (const w of wallAnns) {
+      const wLw = w.thickness === 6 ? 12 : 6
       for (const [px, py] of [[w.x1, w.y1], [w.x2, w.y2]] as [number, number][]) {
         const key = `${Math.round(px)},${Math.round(py)}`
         if (seen.has(key)) continue
@@ -246,9 +265,9 @@ export function renderCanvas(
           if (count > 0) break
         }
         if (count > 0) {
-          ctx.fillStyle = COLORS.wall
+          ctx.fillStyle = w.thickness === 6 ? '#999999' : '#00ccff'
           ctx.beginPath()
-          ctx.arc(px, py, junctionR, 0, Math.PI * 2)
+          ctx.arc(px, py, wLw / 2, 0, Math.PI * 2)
           ctx.fill()
           seen.add(key)
         }

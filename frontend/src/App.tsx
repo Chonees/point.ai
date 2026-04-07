@@ -1,4 +1,4 @@
-import { lazy, Suspense, useRef, useState } from 'react'
+import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from './hooks/useAuth'
 import { useProjectList, usePlanList, usePlanSave } from './hooks/useProject'
@@ -23,6 +23,12 @@ export default function App() {
   const { saving, lastSaved, saveNow } = usePlanSave(currentPlan?.id ?? null)
   const pendingSceneRef = useRef<ProjectScene | null>(null)
   const pendingStructureRef = useRef<Record<string, unknown> | null>(null)
+  const saveState = useMemo(() => {
+    if (!currentPlan) return 'Not saved yet'
+    if (saving) return 'Saving...'
+    if (lastSaved) return `Saved ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
+    return 'Autosave ready'
+  }, [currentPlan, lastSaved, saving])
 
   const handleSave = async () => {
     if (!currentPlan) return
@@ -101,62 +107,71 @@ export default function App() {
   // Editor
   const projectName = projectList.projects.find((p) => p.id === currentPlan?.projectId)?.name
   return (
-    <div className="min-h-screen flex flex-col items-center px-4 sm:px-5 py-8 sm:py-16 safe-area-inset">
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="text-center mb-6 sm:mb-10"
-      >
-        <div className="flex items-center justify-center gap-3">
-          {auth.user && (
-            <button
-              onClick={() => {
-                setCurrentPlan(null)
-                setPage('projects')
-                projectList.refresh()
-                planList.refresh()
-              }}
-              className="cursor-pointer rounded-md border border-zinc-800 px-3 py-1 text-xs text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300"
-            >
-              Projects
-            </button>
-          )}
-          <h1 className="text-3xl sm:text-4xl font-light tracking-tight text-white/90">
-            Pointe<span className="text-white/30">.ai</span>
-          </h1>
-          {currentPlan && auth.user && (
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className="cursor-pointer rounded-md border border-zinc-800 px-3 py-1 text-xs text-zinc-500 hover:bg-zinc-800 hover:text-zinc-300 disabled:opacity-40"
-            >
-              {saving ? 'Saving...' : 'Save'}
-            </button>
-          )}
-        </div>
-        {currentPlan && (
-          <p className="mt-2 text-xs text-zinc-600">
-            {projectName} / {currentPlan.name}
-            {lastSaved && ` · Last saved ${lastSaved.toLocaleTimeString()}`}
-          </p>
-        )}
-        <p className="text-[10px] sm:text-xs tracking-[0.2em] uppercase text-zinc-600 mt-1.5 sm:mt-2">
-          Floor Plan to DXF
-        </p>
-      </motion.div>
+    <div className="min-h-screen bg-[#090909] text-zinc-100 safe-area-inset">
+      <div className="border-b border-white/6 bg-zinc-950/85 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
+          <div className="flex items-center gap-3">
+            {auth.user && (
+              <button
+                onClick={() => {
+                  setCurrentPlan(null)
+                  setPage('projects')
+                  projectList.refresh()
+                  planList.refresh()
+                }}
+                className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-2 text-sm text-zinc-300 transition-colors hover:border-white/14 hover:bg-white/[0.05]"
+              >
+                Projects
+              </button>
+            )}
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04] text-sm font-semibold text-zinc-100">
+              P
+            </div>
+            <div>
+              <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
+                Pointe<span className="text-white/30">.ai</span>
+              </h1>
+              <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Floor plan workspace</p>
+            </div>
+          </div>
 
-      <div className="w-full max-w-[640px]">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            {currentPlan && (
+              <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Current plan</p>
+                <p className="mt-1 text-sm text-zinc-200">{projectName} / {currentPlan.name}</p>
+              </div>
+            )}
+            <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Save status</p>
+              <p className="mt-1 text-sm text-zinc-200">{saveState}</p>
+            </div>
+            {currentPlan && auth.user && (
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-zinc-200 transition-colors hover:bg-white/[0.1] disabled:opacity-40"
+              >
+                Save now
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.25 }}
         >
-          <Suspense fallback={
-            <div className="flex h-40 items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-zinc-400" />
-            </div>
-          }>
+          <Suspense
+            fallback={
+              <div className="flex h-40 items-center justify-center rounded-[28px] border border-white/6 bg-zinc-950/80">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-zinc-400" />
+              </div>
+            }
+          >
             <UploadPanel
               project={currentPlan}
               onSceneChange={(scene) => {

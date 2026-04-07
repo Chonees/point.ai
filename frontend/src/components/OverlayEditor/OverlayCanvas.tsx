@@ -47,13 +47,16 @@ export function OverlayCanvas({
     <div ref={containerRef} className={`relative ${fullscreen ? 'flex-1 overflow-hidden' : 'h-64'}`}>
       <canvas
         ref={canvasRef}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={onMouseUp}
-        onMouseLeave={onMouseLeave}
-        onContextMenu={(e) => { if (tool === 'paint') e.preventDefault() }}
+        onMouseDown={fullscreen ? onMouseDown : undefined}
+        onMouseMove={fullscreen ? onMouseMove : undefined}
+        onMouseUp={fullscreen ? onMouseUp : undefined}
+        onMouseLeave={fullscreen ? onMouseLeave : undefined}
+        onContextMenu={(e) => { if (fullscreen && tool === 'paint') e.preventDefault() }}
         className="absolute inset-0 w-full h-full"
-        style={{ cursor: spaceDown.current || isPanning.current ? 'grab' : tool === 'paint' ? (selectedRoomIdx >= 0 ? 'crosshair' : 'pointer') : 'crosshair' }}
+        style={{ cursor: fullscreen
+          ? (spaceDown.current || isPanning.current ? 'grab' : tool === 'paint' ? (selectedRoomIdx >= 0 ? 'crosshair' : 'pointer') : 'crosshair')
+          : 'default'
+        }}
       />
       {pendingLabel && (
         <RoomLabelDialog

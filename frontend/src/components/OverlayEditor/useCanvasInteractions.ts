@@ -130,6 +130,13 @@ export function useCanvasInteractions(
           scheduleRender()
           return
         }
+        if (ha.type === 'wall') {
+          // Toggle wall thickness: 4 → 6 → 4
+          const newThickness = ha.thickness === 6 ? 4 : 6
+          setAnnotations(annotations.map((a, i) => i === idx ? { ...a, thickness: newThickness } : a))
+          scheduleRender()
+          return
+        }
         if (ha.type === 'door' || ha.type === 'window') {
           const rect = canvasRef.current!.getBoundingClientRect()
           const sx = e.clientX - rect.left

@@ -76,11 +76,11 @@ def _build_closed_mask(
 
     for ann in annotations:
         atype = ann.get("type")
-        if atype in ("door", "window", "separator"):
+        if atype in ("wall", "door", "window", "separator"):
             x1, y1 = int(ann.get("x1", 0)), int(ann.get("y1", 0))
             x2, y2 = int(ann.get("x2", 0)), int(ann.get("y2", 0))
-            # Separators thicker to guarantee sealing wall-to-wall gaps
-            thickness = 14 if atype == "separator" else 6
+            # Walls and separators thicker to guarantee sealing
+            thickness = 14 if atype in ("wall", "separator") else 6
             cv2.line(closed, (x1, y1), (x2, y2), 255, thickness=thickness)
 
     return closed

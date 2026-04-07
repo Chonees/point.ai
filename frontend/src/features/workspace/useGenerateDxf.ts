@@ -84,10 +84,39 @@ export function useGenerateDxf({
             x2: annotation.x2,
             y2: annotation.y2,
             ...(annotation.swing ? { swing: annotation.swing as SwingDir } : {}),
+            ...(annotation.thickness ? { thickness: annotation.thickness } : {}),
             _source: annotation._source ?? 'ensemble_cubicasa',
           })),
         )
         onAutoLoaded()
+      }
+
+      // Always enrich wall annotations with thickness from backend response
+      const wallsWithThickness = (data.auto_annotations ?? []).filter(
+        (a) => a.type === 'wall' && a.thickness,
+      )
+      if (wallsWithThickness.length > 0) {
+        onAnnotationsUpdate((prev) =>
+          prev.map((ann) => {
+            if (ann.type !== 'wall') return ann
+            if (ann.thickness) return ann
+            // Find closest matching wall by midpoint distance
+            const mx = (ann.x1 + ann.x2) / 2
+            const my = (ann.y1 + ann.y2) / 2
+            let bestDist = 15 // tolerance in pixels
+            let bestThickness: number | undefined
+            for (const w of wallsWithThickness) {
+              const wmx = (w.x1 + w.x2) / 2
+              const wmy = (w.y1 + w.y2) / 2
+              const d = Math.abs(mx - wmx) + Math.abs(my - wmy)
+              if (d < bestDist) {
+                bestDist = d
+                bestThickness = w.thickness
+              }
+            }
+            return bestThickness ? { ...ann, thickness: bestThickness } : ann
+          }),
+        )
       }
 
       if (data.computed_rooms?.length) {

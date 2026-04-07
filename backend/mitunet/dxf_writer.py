@@ -168,6 +168,8 @@ def generate_mitunet_region_dxf(
         return 6.0 if raw >= 5.0 else 4.0
 
     if not skip_regions:
+        # --- Phase 1: collect snapped regions ---
+        snapped: list[dict] = []
         for region in region_plan.get("regions", []):
             bounds = region.get("bounds") or {}
             x1 = float(bounds.get("x1", 0.0))
@@ -177,7 +179,6 @@ def generate_mitunet_region_dxf(
             if abs(x2 - x1) < 1 or abs(y2 - y1) < 1:
                 continue
 
-            # Snap to standard thickness (4" or 6") and re-center
             dt = float(region.get("draw_thickness", 4.0))
             std = _snap_thickness(dt)
             orientation = region.get("orientation", "horizontal")
@@ -188,8 +189,56 @@ def generate_mitunet_region_dxf(
                 cx = (x1 + x2) / 2
                 x1, x2 = cx - std / 2, cx + std / 2
 
-            from ..components.hatch import add_wall_hatch
+            snapped.append({"x1": x1, "y1": y1, "x2": x2, "y2": y2,
+                            "orientation": orientation, "std": std})
 
+        # --- Phase 2: fix L-corners (T-junctions untouched) ---
+        # L-corner = BOTH walls end at the junction.
+        # T-junction = only ONE wall ends → detection fails → skip.
+        #
+        # Strategy: H extends its full rect to cover V's width at the
+        # corner.  V trims its start/end to H's outer edge so they
+        # meet flush with zero overlap and zero gap.
+        for i, h_reg in enumerate(snapped):
+            if h_reg["orientation"] != "horizontal":
+                continue
+            h_cy = (h_reg["y1"] + h_reg["y2"]) / 2
+            tol = h_reg["std"] * 1.5
+
+            for j, v_reg in enumerate(snapped):
+                if v_reg["orientation"] != "vertical":
+                    continue
+                v_cx = (v_reg["x1"] + v_reg["x2"]) / 2
+
+                h_ends_right = abs(h_reg["x2"] - v_cx) < tol
+                h_ends_left = abs(h_reg["x1"] - v_cx) < tol
+                v_ends_bottom = abs(v_reg["y1"] - h_cy) < tol
+                v_ends_top = abs(v_reg["y2"] - h_cy) < tol
+
+                if not ((h_ends_right or h_ends_left)
+                        and (v_ends_bottom or v_ends_top)):
+                    continue  # T-junction or no junction → skip
+
+                # H covers the corner square
+                if h_ends_right:
+                    h_reg["x2"] = max(h_reg["x2"], v_reg["x2"])
+                if h_ends_left:
+                    h_reg["x1"] = min(h_reg["x1"], v_reg["x1"])
+
+                # V trims to start/end at H's outer edge
+                if v_ends_bottom:
+                    v_reg["y1"] = max(v_reg["y1"], h_reg["y2"])
+                if v_ends_top:
+                    v_reg["y2"] = min(v_reg["y2"], h_reg["y1"])
+
+        # --- Phase 3: draw regions ---
+        from ..components.hatch import add_wall_hatch
+
+        for reg in snapped:
+            x1, y1, x2, y2 = reg["x1"], reg["y1"], reg["x2"], reg["y2"]
+            if x2 - x1 < 0.5 or y2 - y1 < 0.5:
+                continue  # degenerate after L-corner trim
+            std = reg["std"]
             pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]
             poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7, "lineweight": 100})
             poly.close()
@@ -238,6 +287,23 @@ def generate_mitunet_region_dxf(
             img_h,
             total_area_sqft=total_area_sqft,
         )
+
+    # --- Wall Legend ---
+    from ..components.wall_legend import add_wall_legend
+
+    # Place legend to the right of the floor plan extents
+    try:
+        from ezdxf import bbox as ezdxf_bbox
+        extents = ezdxf_bbox.extents(msp)
+        if extents.has_data:
+            legend_x = extents.extmax.x + 20
+            legend_y = extents.extmax.y
+        else:
+            legend_x, legend_y = 0, 0
+    except Exception:
+        legend_x, legend_y = 0, 0
+
+    add_wall_legend(msp, doc, legend_x, legend_y)
 
     doc.saveas(out_path)
     return rect_count, dims_result
