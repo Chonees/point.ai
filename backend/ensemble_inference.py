@@ -9,6 +9,7 @@ mask_regions DXF pipeline.
 from __future__ import annotations
 
 import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from .mitunet_inference import infer_mitunet, mitunet_available
@@ -42,16 +43,17 @@ def infer_ensemble(
     """Run ensemble inference: MitUNet for walls, CubiCasa for openings."""
     t0 = time.time()
 
-    # --- Step 1: MitUNet walls (required) ---
-    mitunet_result = infer_mitunet(image_b64)
+    # --- Steps 1 & 2: Run both models in parallel ---
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        mitunet_future = pool.submit(infer_mitunet, image_b64)
+        cubicasa_future = pool.submit(
+            infer_cubicasa, image_b64, model_variant=cubicasa_model_variant,
+        )
+        mitunet_result = mitunet_future.result()
+        cubi_result = cubicasa_future.result()
+
     h, w = mitunet_result["_image_shape"]
     mitunet_walls = mitunet_result["walls"]
-
-    # --- Step 2: CubiCasa openings (required) ---
-    cubi_result = infer_cubicasa(
-        image_b64,
-        model_variant=cubicasa_model_variant,
-    )
     cubicasa_openings = cubi_result.get("openings", [])
     cubicasa_debug = {
         "raw_opening_count": len(cubicasa_openings),
