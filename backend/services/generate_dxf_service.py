@@ -71,13 +71,9 @@ def generate_dxf(
     infer_result_for_anns = parsed.get("_infer_result") or {}
     auto_anns_response = infer_result_for_anns.get("_auto_annotations", [])
     region_plan_data = parsed["structure"].get("structure_meta", {}).get("dxf_region_plan")
-    if region_plan_data:
+    if region_plan_data and not user_has_annotations:
         wall_anns = regions_to_wall_annotations(region_plan_data)
-        if user_has_annotations:
-            # User already has walls — don't duplicate, just return thickness map
-            auto_anns_response = wall_anns + auto_anns_response
-        else:
-            auto_anns_response = wall_anns + auto_anns_response
+        auto_anns_response = wall_anns + auto_anns_response
 
     # Build DXF preview
     dxf_preview_img = None
