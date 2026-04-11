@@ -1,6 +1,8 @@
 """
 parse_service — Resolve input (structure / plan / image) into a parsed structure dict.
 """
+import os
+
 from ..worker_client import infer_structure
 from ..plan_parser import parse_structure_payload
 from ..mitunet_inference import MITUNET_BACKEND
@@ -27,7 +29,10 @@ def parse_v2_input(
         return parsed, None, None
 
     if image is not None:
-        if model_variant == "r2v":
+        forced_backend = os.getenv("POINTAI_INFERENCE_BACKEND")
+        if forced_backend:
+            inferred = infer_structure(image, backend=forced_backend)
+        elif model_variant == "r2v":
             inferred = infer_structure(image, backend="r2v_local")
         elif model_variant == "mitunet":
             inferred = infer_structure(image, backend="mitunet_local")
