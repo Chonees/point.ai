@@ -163,6 +163,8 @@ def infer_cubicasa(image_b64: str, *, model_variant: str | None = None, preproce
     if pad_h or pad_w:
         fplan = np.pad(fplan, ((0, 0), (0, pad_h), (0, pad_w)), mode="constant", constant_values=-1)
 
+    import time as _time
+
     tensor = torch.from_numpy(fplan).unsqueeze(0).to(device)
 
     # Single forward pass. TTA disabled: 90°/270° rotations corrupt directional
