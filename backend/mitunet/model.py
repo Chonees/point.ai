@@ -27,42 +27,17 @@ _PLAN_Y2 = 1080
 
 _model = None
 _device = None
-_onnx_session = None
-
-_ONNX_PATH = _WEIGHTS_PATH.parent / "mitunet_mit_b4.onnx"
 
 
 def mitunet_available() -> tuple[bool, str | None]:
-    if not _WEIGHTS_PATH.exists() and not _ONNX_PATH.exists():
+    if not _WEIGHTS_PATH.exists():
         return False, f"No weights found: {_WEIGHTS_PATH}"
     try:
         import torch
         import segmentation_models_pytorch as smp
         return True, None
     except ImportError as e:
-        # ONNX-only mode: PyTorch not needed if ONNX file exists
-        if _ONNX_PATH.exists():
-            try:
-                import onnxruntime
-                return True, None
-            except ImportError:
-                pass
         return False, str(e)
-
-
-def _load_onnx_session():
-    global _onnx_session
-    if _onnx_session is not None:
-        return _onnx_session
-
-    import onnxruntime as ort
-    opts = ort.SessionOptions()
-    opts.inter_op_num_threads = 2
-    opts.intra_op_num_threads = 4
-    opts.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-    _onnx_session = ort.InferenceSession(str(_ONNX_PATH), opts, providers=["CPUExecutionProvider"])
-    print(f"[MitUNet] ONNX session loaded from {_ONNX_PATH}")
-    return _onnx_session
 
 
 def _load_model():
@@ -93,14 +68,3 @@ def _load_model():
     _model = model
     print(f"[MitUNet] Model loaded on {_device}")
     return _model, _device
-
-
-def onnx_available() -> bool:
-    """Check if ONNX runtime is available for MitUNet."""
-    if not _ONNX_PATH.exists():
-        return False
-    try:
-        import onnxruntime
-        return True
-    except ImportError:
-        return False
