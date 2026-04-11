@@ -37,7 +37,7 @@ def _orthogonal_regularize(points: list[list[int]], angle_thresh: float = 15.0) 
     return result
 
 
-def _merge_collinear_walls(walls: list[dict], img_h: int, gap: int = 15, dist: int = 8) -> list[dict]:
+def _merge_collinear_walls(walls: list[dict], img_h: int, gap: int = 15, dist: int = 16) -> list[dict]:
     """Merge wall segments that are collinear and close together."""
     h_walls = [w for w in walls if w["orientation"] == "horizontal"]
     v_walls = [w for w in walls if w["orientation"] == "vertical"]
@@ -119,8 +119,8 @@ def _extract_walls_from_mask(wall_mask: np.ndarray, h: int, w: int) -> list[dict
 
     min_area = max(100, (h * w) // 5000)  # minimum wall area in pixels
 
-    # 2. Find contours — RETR_LIST gets all contours (external + holes)
-    contours, _ = cv2.findContours(cleaned, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    # 2. Find contours — RETR_EXTERNAL avoids duplicate inner/outer boundaries
+    contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     for cnt in contours:
         area = cv2.contourArea(cnt)
