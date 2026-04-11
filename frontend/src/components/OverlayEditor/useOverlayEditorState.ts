@@ -145,6 +145,7 @@ export function useOverlayEditorState(
 
   useEffect(() => {
     const img = new Image()
+    img.crossOrigin = 'anonymous'
     img.onload = () => {
       imgRef.current = img
       fitImage()
@@ -155,6 +156,7 @@ export function useOverlayEditorState(
   useEffect(() => {
     if (!regionOverlay) { regionCanvasRef.current = null; overlayImgRef.current = null; return }
     const img = new Image()
+    img.crossOrigin = 'anonymous'
     img.onload = () => {
       overlayImgRef.current = img
       const offscreen = document.createElement('canvas')
