@@ -45,15 +45,11 @@ async def lifespan(app: FastAPI):
 
 # ─── APP ─────────────────────────────────────────────────────────────────────
 
-_cors_origins = os.getenv(
-    "POINTAI_CORS_ORIGINS", "http://localhost:5173,http://localhost:8000"
-).split(",")
-
 app = FastAPI(title="Point.ai", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
