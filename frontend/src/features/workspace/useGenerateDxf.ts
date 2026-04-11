@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react'
 import type { Annotation, AnnotationType, SwingDir, V2Result } from '../../types'
 import { fileToBase64 } from '../../utils/fileToBase64'
+import { apiUrl } from '../../lib/api'
 
 interface UseGenerateDxfOptions {
   file: File | null
@@ -46,7 +47,7 @@ export function useGenerateDxf({
         body.annotations = annotations.map(({ _source, ...rest }) => rest)
       }
 
-      const response = await fetch('/api/v2/generate-dxf', {
+      const response = await fetch(apiUrl('/api/v2/generate-dxf'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
@@ -57,7 +58,7 @@ export function useGenerateDxf({
 
       if (data.preview_url) {
         try {
-          const previewResponse = await fetch(data.preview_url)
+          const previewResponse = await fetch(apiUrl(data.preview_url))
           const blob = await previewResponse.blob()
           const reader = new FileReader()
           const previewDataUrl = await new Promise<string>((resolve) => {

@@ -1,7 +1,9 @@
 import { memo, useState } from 'react'
 import { DownloadIcon } from './DownloadIcon'
+import { apiUrl } from '../lib/api'
 
 export const DownloadButton = memo(function DownloadButton({ href }: { href: string }) {
+  const resolvedHref = apiUrl(href)
   const [name, setName] = useState('')
 
   return (
@@ -16,7 +18,7 @@ export const DownloadButton = memo(function DownloadButton({ href }: { href: str
                      text-sm text-zinc-300 placeholder:text-zinc-600 outline-none
                      focus:border-zinc-700 transition-colors"
         />
-        <a href={href} download={name.trim() ? `${name.trim()}.dxf` : 'floorplan.dxf'}
+        <a href={resolvedHref} download={name.trim() ? `${name.trim()}.dxf` : 'floorplan.dxf'}
           className="inline-flex items-center justify-center gap-2
                      px-4 py-2.5 sm:py-2
                      bg-white/[0.04] border border-zinc-800/60 rounded-md

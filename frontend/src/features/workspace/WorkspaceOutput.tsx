@@ -3,6 +3,9 @@ import { motion, AnimatePresence } from 'framer-motion'
 import type { V2Result, Annotation } from '../../types'
 import type { PlanScene } from '../projects/project.types'
 import { DownloadButton } from '../../components/DownloadButton'
+import { apiUrl } from '../../lib/api'
+
+const ENABLE_3D = false
 
 const OverlayEditor = lazy(() => import('../../components/OverlayEditor'))
 const FloorPlan3D = lazy(() => import('../../components/FloorPlan3D'))
@@ -40,7 +43,7 @@ export function WorkspaceOutput({
           </div>
           <div className="flex items-center gap-3">
             {result.preview_url && (
-              <div className="inline-flex rounded-2xl border border-white/8 bg-white/[0.03] p-1">
+              <div className="inline-flex items-center rounded-2xl border border-white/8 bg-white/[0.03] p-1">
                 <button
                   onClick={() => setView3D(false)}
                   className={`rounded-xl px-3 py-2 text-xs font-medium transition-colors ${
@@ -49,14 +52,21 @@ export function WorkspaceOutput({
                 >
                   2D Edit
                 </button>
-                <button
-                  onClick={() => setView3D(true)}
-                  className={`rounded-xl px-3 py-2 text-xs font-medium transition-colors ${
-                    view3D ? 'bg-white/[0.08] text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
-                  }`}
-                >
-                  3D Preview
-                </button>
+                {ENABLE_3D ? (
+                  <button
+                    onClick={() => setView3D(true)}
+                    className={`rounded-xl px-3 py-2 text-xs font-medium transition-colors ${
+                      view3D ? 'bg-white/[0.08] text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                  >
+                    3D Preview
+                  </button>
+                ) : (
+                  <span className="flex items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-medium text-zinc-600 cursor-default" title="In development — coming soon">
+                    3D Preview
+                    <span className="rounded-full bg-amber-500/15 px-1.5 py-0.5 text-[10px] font-semibold text-amber-400/80">Soon</span>
+                  </span>
+                )}
               </div>
             )}
             {result.dxf_url ? (
@@ -71,7 +81,7 @@ export function WorkspaceOutput({
       <div className="p-5 sm:p-6">
         {result.preview_url && (
           <Suspense fallback={<div className="h-64 animate-pulse rounded-[24px] bg-zinc-950" />}>
-            {view3D ? (
+            {ENABLE_3D && view3D ? (
               <FloorPlan3D
                 structure={result.structure}
                 annotations={annotations}
@@ -80,7 +90,7 @@ export function WorkspaceOutput({
               />
             ) : (
               <OverlayEditor
-                previewUrl={result.preview_url}
+                previewUrl={apiUrl(result.preview_url)}
                 regionOverlay={result.region_overlay}
                 annotations={annotations}
                 setAnnotations={setAnnotations}

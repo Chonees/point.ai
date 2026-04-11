@@ -46,7 +46,7 @@ async def lifespan(app: FastAPI):
 # ─── APP ─────────────────────────────────────────────────────────────────────
 
 _cors_origins = os.getenv(
-    "POINTAI_CORS_ORIGINS", "http://localhost:5173"
+    "POINTAI_CORS_ORIGINS", "http://localhost:5173,http://localhost:8000"
 ).split(",")
 
 app = FastAPI(title="Point.ai", version="0.1.0", lifespan=lifespan)
