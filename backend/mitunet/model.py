@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import numpy as np
@@ -9,7 +10,10 @@ MITUNET_MASK_REGIONS_DXF_MODE = "mask_regions"
 MAX_MITUNET_REGION_WALL_THICKNESS = 6.0
 MITUNET_MODEL_NAME = "MitUNet MiT-B4 UNet scSE"
 
-_WEIGHTS_PATH = Path(r"C:\Users\lucas\OneDrive\Escritorio\pesos\mitunet_finetune_a6_mit_b4_tversky_8864_28E.pth")
+_WEIGHTS_PATH = Path(os.getenv(
+    "POINTAI_MITUNET_WEIGHTS",
+    r"C:\Users\lucas\OneDrive\Escritorio\pesos\mitunet_finetune_a6_mit_b4_tversky_8864_28E.pth",
+))
 _IMAGE_SIZE = 512
 _IMAGENET_MEAN = np.array([0.485, 0.456, 0.406])
 _IMAGENET_STD = np.array([0.229, 0.224, 0.225])

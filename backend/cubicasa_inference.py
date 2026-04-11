@@ -22,7 +22,10 @@ from .image_utils import decode_image, preprocess_for_cubicasa
 ROOT_DIR = Path(__file__).resolve().parent.parent
 
 # Add CubiCasa5k repo to path for model + post-processing imports.
-_CUBICASA_ROOT = Path(__file__).resolve().parent.parent.parent / "floorplan-research" / "CubiCasa5k"
+_CUBICASA_ROOT = Path(os.getenv(
+    "POINTAI_CUBICASA_ROOT",
+    str(Path(__file__).resolve().parent.parent.parent / "floorplan-research" / "CubiCasa5k"),
+))
 if str(_CUBICASA_ROOT) not in sys.path:
     sys.path.insert(0, str(_CUBICASA_ROOT))
 
@@ -35,7 +38,10 @@ _MAX_MODEL_SIDE = int(os.getenv("POINTAI_CUBICASA_MAX_SIDE", "1024"))
 _OPENING_ICON_CLASSES = {1: "window", 2: "door"}
 _DEFAULT_VARIANT = "baseline"
 
-_FINETUNED_WEIGHTS_PATH = Path(r"D:\training_v2\runs\checkpoints\best_inference.pt")
+_FINETUNED_WEIGHTS_PATH = Path(os.getenv(
+    "POINTAI_CUBICASA_FINETUNED_WEIGHTS",
+    r"D:\training_v2\runs\checkpoints\best_inference.pt",
+))
 
 _MODEL_VARIANTS = {
     "baseline": {

@@ -1,4 +1,4 @@
-# Point.ai Backend — Production (CPU only, heuristic backend)
+# Point.ai Backend — Production (CPU inference)
 fastapi>=0.135.0
 uvicorn[standard]>=0.41.0
 httpx>=0.28.0
@@ -16,6 +16,14 @@ shapely>=2.1.0
 
 # DXF generation
 ezdxf>=1.4.0
+
+# ML inference (CPU)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch
+torchvision
+timm>=1.0.0
+segmentation_models_pytorch>=0.5.0
+huggingface_hub>=1.7.0
 
 # Observability / misc
 rich>=14.0.0
