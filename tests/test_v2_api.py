@@ -66,7 +66,7 @@ def test_generate_dxf_endpoint_writes_downloadable_file():
 
 
 def test_parse_structure_endpoint_accepts_image_and_routes_through_worker_client(monkeypatch):
-    monkeypatch.setattr("backend.app.infer_structure", lambda image: build_manual_structure(source="cubicasa_local"))
+    monkeypatch.setattr("backend.services.parse_service.infer_structure", lambda image: build_manual_structure(source="cubicasa_local"))
 
     response = client.post("/api/v2/parse-structure", json={"image": build_synthetic_structure_image()})
 
@@ -85,7 +85,7 @@ def test_parse_structure_endpoint_accepts_image_and_routes_through_worker_client
 
 
 def test_generate_dxf_endpoint_accepts_image_and_produces_preview_and_dxf(monkeypatch):
-    monkeypatch.setattr("backend.app.infer_structure", lambda image: build_manual_structure(source="cubicasa_local"))
+    monkeypatch.setattr("backend.services.parse_service.infer_structure", lambda image: build_manual_structure(source="cubicasa_local"))
 
     response = client.post("/api/v2/generate-dxf", json={"image": build_synthetic_structure_image()})
 
@@ -106,7 +106,7 @@ def test_generate_dxf_endpoint_accepts_image_and_produces_preview_and_dxf(monkey
 
 
 def test_generate_dxf_endpoint_marks_low_quality_image_results_for_review(monkeypatch):
-    monkeypatch.setattr("backend.app.infer_structure", lambda image: build_low_quality_structure())
+    monkeypatch.setattr("backend.services.parse_service.infer_structure", lambda image: build_low_quality_structure())
 
     response = client.post("/api/v2/generate-dxf", json={"image": build_synthetic_structure_image()})
 
@@ -124,7 +124,7 @@ def test_generate_dxf_endpoint_passes_model_variant_and_reports_it(monkeypatch):
         captured["options"] = options
         return build_manual_structure(source="cubicasa_local")
 
-    monkeypatch.setattr("backend.app.infer_structure", fake_infer)
+    monkeypatch.setattr("backend.services.parse_service.infer_structure", fake_infer)
 
     response = client.post(
         "/api/v2/generate-dxf",
@@ -141,7 +141,7 @@ def test_generate_dxf_endpoint_uses_mask_regions_mode_for_mitunet(monkeypatch):
     def fake_infer(image: str, *, backend=None, options=None):
         return build_mitunet_infer_result()
 
-    monkeypatch.setattr("backend.app.infer_structure", fake_infer)
+    monkeypatch.setattr("backend.services.parse_service.infer_structure", fake_infer)
 
     response = client.post(
         "/api/v2/generate-dxf",
@@ -181,7 +181,7 @@ def test_generate_dxf_endpoint_ignores_legacy_dxf_mode_override_for_mitunet(monk
     def fake_infer(image: str, *, backend=None, options=None):
         return build_mitunet_infer_result()
 
-    monkeypatch.setattr("backend.app.infer_structure", fake_infer)
+    monkeypatch.setattr("backend.services.parse_service.infer_structure", fake_infer)
 
     response = client.post(
         "/api/v2/generate-dxf",

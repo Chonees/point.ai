@@ -1,0 +1,309 @@
+from __future__ import annotations
+
+import math
+from pathlib import Path
+from typing import Any
+
+import cv2
+import numpy as np
+
+from ..provenance import build_code_provenance, build_file_provenance, utc_now_iso
+from .annotations import _draw_mitunet_annotations_from_region_plan
+from .model import (
+    MITUNET_BACKEND,
+    MITUNET_MASK_REGIONS_DXF_MODE,
+    MITUNET_MODEL_NAME,
+    _TEMPLATE_PATH,
+    _WEIGHTS_PATH,
+)
+
+
+def build_mitunet_provenance(*, dxf_mode: str = MITUNET_MASK_REGIONS_DXF_MODE) -> dict[str, Any]:
+    return {
+        "captured_at_utc": utc_now_iso(),
+        "backend": MITUNET_BACKEND,
+        "model_variant": "mitunet",
+        "model_name": MITUNET_MODEL_NAME,
+        "dxf_mode": dxf_mode,
+        "region_contract_version": "mitunet_region_plan_v1",
+        "max_region_wall_thickness": float(6.0),
+        "code": build_code_provenance(),
+        "weights": build_file_provenance(_WEIGHTS_PATH),
+        "template": build_file_provenance(_TEMPLATE_PATH),
+    }
+
+
+def _load_mitunet_template_doc():
+    import ezdxf
+
+    if _TEMPLATE_PATH.exists():
+        return ezdxf.readfile(str(_TEMPLATE_PATH))
+    return ezdxf.new("R2010")
+
+
+def _add_dims_and_labels(doc, msp, annotations, wall_mask, image_shape, transform, img_h, *, total_area_sqft: float | None = None) -> dict | None:
+    """Generate simplified exterior dimensions + manual room labels.
+
+    Returns dict with 'computed_rooms' and 'region_overlay' when available.
+    """
+    try:
+        from ..scale_calibrator import calibrate_scale, generate_region_overlay, encode_overlay_png
+        from ..components.dimensions import generate_all_dimensions
+        from ..observability import log_event
+
+        has_labels = any(a.get("type") == "label" for a in annotations)
+        if not has_labels:
+            log_event("dims_pipeline_skipped", reason="no_labels")
+            return None
+
+        has_sqft = any(a.get("type") == "label" and a.get("sqft") for a in annotations)
+        has_total_area = total_area_sqft is not None and float(total_area_sqft) > 0
+        render_dimensions = bool((has_total_area or has_sqft) and wall_mask is not None)
+        scale_ipp = 1.0
+        measurement_context = None
+        if render_dimensions:
+            measurement_context = calibrate_scale(
+                annotations,
+                wall_mask,
+                image_shape,
+                total_area_sqft=float(total_area_sqft) if has_total_area else None,
+            )
+            if measurement_context is None:
+                scale_ipp = 1.0
+                render_dimensions = False
+            else:
+                scale_ipp = float(measurement_context["scale_ipp"])
+        log_event(
+            "dims_pipeline_start",
+            label_count=sum(1 for a in annotations if a.get("type") == "label"),
+            has_sqft=has_sqft,
+            has_total_area=has_total_area,
+            total_area_sqft=round(float(total_area_sqft), 4) if has_total_area else None,
+            wall_mask_present=wall_mask is not None,
+            render_dimensions=render_dimensions,
+            scale_ipp=round(scale_ipp, 6),
+            calibration_mode=measurement_context["calibration_mode"] if measurement_context else None,
+        )
+
+        counts = generate_all_dimensions(
+            doc, msp, annotations,
+            scale_ipp=scale_ipp,
+            image_shape=image_shape,
+            transform=transform,
+            wall_mask=wall_mask,
+            render_dimensions=render_dimensions,
+            measurement_context=measurement_context,
+        )
+        total = sum(counts.values())
+        log_event("dims_pipeline_done", total=total, counts=counts)
+        print(f"[DIMS] Generated {total} elements: {counts}", flush=True)
+
+        # Extract computed rooms + region overlay for the API response
+        result: dict = {}
+        if measurement_context and "room_analysis" in measurement_context:
+            room_analysis = measurement_context["room_analysis"]
+            rooms = room_analysis.get("rooms", [])
+            computed = []
+            for room in rooms:
+                if room.get("computed_sqft") is not None:
+                    label = room.get("label", {})
+                    computed.append({
+                        "roomName": str(room.get("room_name") or label.get("roomName", "ROOM")).upper(),
+                        "sqft": round(float(room["computed_sqft"])),
+                        "x1": float(label.get("x1", 0)),
+                        "y1": float(label.get("y1", 0)),
+                    })
+            if computed:
+                result["computed_rooms"] = computed
+
+            # Generate colored region overlay
+            overlay = generate_region_overlay(room_analysis, image_shape)
+            overlay_b64 = encode_overlay_png(overlay)
+            if overlay_b64:
+                result["region_overlay"] = overlay_b64
+
+        return result if result else None
+
+    except Exception:
+        import traceback
+        traceback.print_exc()
+        return None
+
+
+def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
+                         annotations: list[dict] | None = None) -> int:
+    """Legacy entrypoint kept as a compatibility wrapper.
+
+    The real MitUNet DXF path is now:
+    raw mask -> region_plan -> generate_mitunet_region_dxf
+    """
+    from .regions import build_mitunet_region_plan
+
+    region_plan = build_mitunet_region_plan(infer_result, annotations=annotations)
+    rect_count, _ = generate_mitunet_region_dxf(region_plan, out_path, annotations=annotations)
+    return rect_count
+
+
+def generate_mitunet_region_dxf(
+    region_plan: dict[str, Any],
+    out_path: str,
+    *,
+    annotations: list[dict] | None = None,
+    skip_regions: bool = False,
+    total_area_sqft: float | None = None,
+) -> tuple[int, dict | None]:
+    doc = _load_mitunet_template_doc()
+    msp = doc.modelspace()
+
+    if "WALLS" not in doc.layers:
+        doc.layers.add("WALLS", color=7, dxfattribs={"lineweight": 100})
+    else:
+        doc.layers.get("WALLS").dxf.lineweight = 60
+
+    rect_count = 0
+    region_thicknesses: list[float] = []
+
+    def _snap_thickness(raw: float) -> float:
+        """Snap detected thickness to standard: 4" (interior) or 6" (exterior)."""
+        return 6.0 if raw >= 5.0 else 4.0
+
+    if not skip_regions:
+        # --- Phase 1: collect snapped regions ---
+        snapped: list[dict] = []
+        for region in region_plan.get("regions", []):
+            bounds = region.get("bounds") or {}
+            x1 = float(bounds.get("x1", 0.0))
+            y1 = float(bounds.get("y1", 0.0))
+            x2 = float(bounds.get("x2", 0.0))
+            y2 = float(bounds.get("y2", 0.0))
+            if abs(x2 - x1) < 1 or abs(y2 - y1) < 1:
+                continue
+
+            dt = float(region.get("draw_thickness", 4.0))
+            std = _snap_thickness(dt)
+            orientation = region.get("orientation", "horizontal")
+            if orientation == "horizontal":
+                cy = (y1 + y2) / 2
+                y1, y2 = cy - std / 2, cy + std / 2
+            else:
+                cx = (x1 + x2) / 2
+                x1, x2 = cx - std / 2, cx + std / 2
+
+            snapped.append({"x1": x1, "y1": y1, "x2": x2, "y2": y2,
+                            "orientation": orientation, "std": std})
+
+        # --- Phase 2: fix L-corners (T-junctions untouched) ---
+        # L-corner = BOTH walls end at the junction.
+        # T-junction = only ONE wall ends → detection fails → skip.
+        #
+        # Strategy: H extends its full rect to cover V's width at the
+        # corner.  V trims its start/end to H's outer edge so they
+        # meet flush with zero overlap and zero gap.
+        for i, h_reg in enumerate(snapped):
+            if h_reg["orientation"] != "horizontal":
+                continue
+            h_cy = (h_reg["y1"] + h_reg["y2"]) / 2
+            tol = h_reg["std"] * 1.5
+
+            for j, v_reg in enumerate(snapped):
+                if v_reg["orientation"] != "vertical":
+                    continue
+                v_cx = (v_reg["x1"] + v_reg["x2"]) / 2
+
+                h_ends_right = abs(h_reg["x2"] - v_cx) < tol
+                h_ends_left = abs(h_reg["x1"] - v_cx) < tol
+                v_ends_bottom = abs(v_reg["y1"] - h_cy) < tol
+                v_ends_top = abs(v_reg["y2"] - h_cy) < tol
+
+                if not ((h_ends_right or h_ends_left)
+                        and (v_ends_bottom or v_ends_top)):
+                    continue  # T-junction or no junction → skip
+
+                # H covers the corner square
+                if h_ends_right:
+                    h_reg["x2"] = max(h_reg["x2"], v_reg["x2"])
+                if h_ends_left:
+                    h_reg["x1"] = min(h_reg["x1"], v_reg["x1"])
+
+                # V trims to start/end at H's outer edge
+                if v_ends_bottom:
+                    v_reg["y1"] = max(v_reg["y1"], h_reg["y2"])
+                if v_ends_top:
+                    v_reg["y2"] = min(v_reg["y2"], h_reg["y1"])
+
+        # --- Phase 3: draw regions ---
+        from ..components.hatch import add_wall_hatch
+
+        for reg in snapped:
+            x1, y1, x2, y2 = reg["x1"], reg["y1"], reg["x2"], reg["y2"]
+            if x2 - x1 < 0.5 or y2 - y1 < 0.5:
+                continue  # degenerate after L-corner trim
+            std = reg["std"]
+            pts = [(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)]
+            poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7, "lineweight": 100})
+            poly.close()
+            add_wall_hatch(msp, doc, pts, std)
+            rect_count += 1
+            region_thicknesses.append(std)
+
+    # Median standard thickness for manual wall annotations
+    if region_thicknesses:
+        region_thicknesses.sort()
+        mid = len(region_thicknesses) // 2
+        median_thickness = region_thicknesses[mid] if len(region_thicknesses) % 2 else (region_thicknesses[mid - 1] + region_thicknesses[mid]) / 2
+    else:
+        median_thickness = 4.0
+
+    meta = region_plan.get("meta", {})
+    image_shape_meta = meta.get("image_shape", {})
+    image_shape = (
+        int(image_shape_meta.get("height", 0)),
+        int(image_shape_meta.get("width", 0)),
+    )
+    rect_count += _draw_mitunet_annotations_from_region_plan(
+        msp,
+        doc,
+        annotations,
+        image_shape=image_shape,
+        transform=meta.get("transform", {}),
+        wall_thickness=median_thickness,
+        regions=region_plan.get("regions", []),
+    )
+
+    # --- Dimensions + room labels from label annotations ---
+    dims_result = None
+    if annotations:
+        wall_mask = region_plan.get("meta", {}).get("_wall_mask")
+        transform = meta.get("transform", {})
+        img_h = image_shape[0]
+
+        dims_result = _add_dims_and_labels(
+            doc,
+            msp,
+            annotations,
+            wall_mask,
+            image_shape,
+            transform,
+            img_h,
+            total_area_sqft=total_area_sqft,
+        )
+
+    # --- Wall Legend ---
+    from ..components.wall_legend import add_wall_legend
+
+    # Place legend to the right of the floor plan extents
+    try:
+        from ezdxf import bbox as ezdxf_bbox
+        extents = ezdxf_bbox.extents(msp)
+        if extents.has_data:
+            legend_x = extents.extmax.x + 20
+            legend_y = extents.extmax.y
+        else:
+            legend_x, legend_y = 0, 0
+    except Exception:
+        legend_x, legend_y = 0, 0
+
+    add_wall_legend(msp, doc, legend_x, legend_y)
+
+    doc.saveas(out_path)
+    return rect_count, dims_result
