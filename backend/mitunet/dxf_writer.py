@@ -9,6 +9,7 @@ import numpy as np
 
 from ..provenance import build_code_provenance, build_file_provenance, utc_now_iso
 from .annotations import _draw_mitunet_annotations_from_region_plan
+from .junctions import resolve_wall_junctions
 from .model import (
     MITUNET_BACKEND,
     MITUNET_MASK_REGIONS_DXF_MODE,
@@ -192,44 +193,36 @@ def generate_mitunet_region_dxf(
             snapped.append({"x1": x1, "y1": y1, "x2": x2, "y2": y2,
                             "orientation": orientation, "std": std})
 
-        # --- Phase 2: fix L-corners (T-junctions untouched) ---
-        # L-corner = BOTH walls end at the junction.
-        # T-junction = only ONE wall ends → detection fails → skip.
-        #
-        # Strategy: H extends its full rect to cover V's width at the
-        # corner.  V trims its start/end to H's outer edge so they
-        # meet flush with zero overlap and zero gap.
-        for i, h_reg in enumerate(snapped):
-            if h_reg["orientation"] != "horizontal":
-                continue
-            h_cy = (h_reg["y1"] + h_reg["y2"]) / 2
-            tol = h_reg["std"] * 1.5
+        # --- Phase 2: resolve junctions (L-corners + T-junctions) ---
+        junction_input = []
+        for reg in snapped:
+            ori = reg["orientation"]
+            if ori == "horizontal":
+                junction_input.append({
+                    "orientation": "horizontal",
+                    "mid": (reg["y1"] + reg["y2"]) / 2,
+                    "span_lo": reg["x1"],
+                    "span_hi": reg["x2"],
+                    "half_lw": reg["std"] / 2,
+                })
+            else:
+                junction_input.append({
+                    "orientation": "vertical",
+                    "mid": (reg["x1"] + reg["x2"]) / 2,
+                    "span_lo": reg["y1"],
+                    "span_hi": reg["y2"],
+                    "half_lw": reg["std"] / 2,
+                })
 
-            for j, v_reg in enumerate(snapped):
-                if v_reg["orientation"] != "vertical":
-                    continue
-                v_cx = (v_reg["x1"] + v_reg["x2"]) / 2
+        resolved = resolve_wall_junctions(junction_input)
 
-                h_ends_right = abs(h_reg["x2"] - v_cx) < tol
-                h_ends_left = abs(h_reg["x1"] - v_cx) < tol
-                v_ends_bottom = abs(v_reg["y1"] - h_cy) < tol
-                v_ends_top = abs(v_reg["y2"] - h_cy) < tol
-
-                if not ((h_ends_right or h_ends_left)
-                        and (v_ends_bottom or v_ends_top)):
-                    continue  # T-junction or no junction → skip
-
-                # H covers the corner square
-                if h_ends_right:
-                    h_reg["x2"] = max(h_reg["x2"], v_reg["x2"])
-                if h_ends_left:
-                    h_reg["x1"] = min(h_reg["x1"], v_reg["x1"])
-
-                # V trims to start/end at H's outer edge
-                if v_ends_bottom:
-                    v_reg["y1"] = max(v_reg["y1"], h_reg["y2"])
-                if v_ends_top:
-                    v_reg["y2"] = min(v_reg["y2"], h_reg["y1"])
+        for reg, adj in zip(snapped, resolved):
+            if reg["orientation"] == "horizontal":
+                reg["x1"] = adj["span_lo"]
+                reg["x2"] = adj["span_hi"]
+            else:
+                reg["y1"] = adj["span_lo"]
+                reg["y2"] = adj["span_hi"]
 
         # --- Phase 3: draw regions ---
         from ..components.hatch import add_wall_hatch
