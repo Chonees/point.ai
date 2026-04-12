@@ -50,7 +50,7 @@ export function useCanvasInteractions(
   const _hitEndpoint = (wx: number, wy: number) => hitTestEndpoint(wx, wy, annotationsRef.current, viewRef.current.scale)
   const _snap = (wx: number, wy: number, skipIdx = -1) => snapToEndpoint(wx, wy, annotationsRef.current, viewRef.current.scale, skipIdx)
 
-  const handleMouseDown = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (e.button === 1 || (e.button === 0 && spaceDown.current)) {
       e.preventDefault()
       isPanning.current = true
@@ -156,7 +156,7 @@ export function useCanvasInteractions(
     cursorPtRef.current = pt
   }
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (isPanning.current) {
       setView(v => ({
         ...v,
@@ -227,7 +227,7 @@ export function useCanvasInteractions(
     }
   }
 
-  const handleMouseUp = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (isPanning.current) { isPanning.current = false; return }
     if (paintingRef.current) {
       if (paintModeRef.current === 'separator' && separatorStartRef.current) {
@@ -285,21 +285,7 @@ export function useCanvasInteractions(
 
     if (dx < 5 && dy < 5) { startPtRef.current = null; scheduleRender(); return }
 
-    if (tool === 'eraser') {
-      const rx1 = Math.min(sp.x, pt.x)
-      const ry1 = Math.min(sp.y, pt.y)
-      const rx2 = Math.max(sp.x, pt.x)
-      const ry2 = Math.max(sp.y, pt.y)
-
-      const remaining = annotations.filter((a) => {
-        if (a.type === 'eraser') return true
-        const aMidX = (a.x1 + a.x2) / 2
-        const aMidY = (a.y1 + a.y2) / 2
-        return !(aMidX >= rx1 && aMidX <= rx2 && aMidY >= ry1 && aMidY <= ry2)
-      })
-      remaining.push({ type: 'eraser', x1: rx1, y1: ry1, x2: rx2, y2: ry2 })
-      setAnnotations(remaining)
-    } else if (tool === 'door') {
+    if (tool === 'door') {
       const rect = canvasRef.current!.getBoundingClientRect()
       const sx = e.clientX - rect.left
       const sy = e.clientY - rect.top
@@ -341,7 +327,7 @@ export function useCanvasInteractions(
     if (annotations.length > 0) setAnnotations(annotations.slice(0, -1))
   }
 
-  const handleMouseLeave = () => {
+  const handlePointerLeave = () => {
     drawingRef.current = false
     paintingRef.current = false
     startPtRef.current = null
@@ -352,5 +338,5 @@ export function useCanvasInteractions(
     scheduleRender()
   }
 
-  return { handleMouseDown, handleMouseMove, handleMouseUp, handleMouseLeave, addDoorWithSwing, mirrorDoor, undo }
+  return { handlePointerDown, handlePointerMove, handlePointerUp, handlePointerLeave, addDoorWithSwing, mirrorDoor, undo }
 }

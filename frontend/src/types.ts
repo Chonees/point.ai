@@ -1,6 +1,6 @@
 export type Status = 'idle' | 'loading' | 'done' | 'error'
 export type ModelVariant = 'baseline' | 'mitunet' | 'ensemble'
-export type AnnotationType = 'select' | 'wall' | 'door' | 'window' | 'eraser' | 'label' | 'paint'
+export type AnnotationType = 'select' | 'wall' | 'door' | 'window' | 'label' | 'paint'
 export type SwingDir = 'up' | 'down' | 'left' | 'right'
 export interface Annotation { type: AnnotationType; x1: number; y1: number; x2: number; y2: number; swing?: SwingDir; _source?: string; arcRadius?: number; roomName?: string; sqft?: number; thickness?: number }
 

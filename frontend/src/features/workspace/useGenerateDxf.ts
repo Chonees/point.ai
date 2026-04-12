@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import type { Annotation, AnnotationType, SwingDir, V2Result } from '../../types'
 import { fileToBase64 } from '../../utils/fileToBase64'
 import { apiUrl } from '../../lib/api'
+import { snapEndpointsToWallEdges } from '../../components/OverlayEditor/geometry'
 
 interface UseGenerateDxfOptions {
   file: File | null
@@ -77,8 +78,8 @@ export function useGenerateDxf({
       if (onStructureChange) onStructureChange(data.structure)
 
       if (!autoLoaded && data.auto_annotations?.length) {
-        onAnnotationsUpdate(() =>
-          data.auto_annotations!.map((annotation) => ({
+        onAnnotationsUpdate(() => {
+          const raw: Annotation[] = data.auto_annotations!.map((annotation) => ({
             type: annotation.type as AnnotationType,
             x1: annotation.x1,
             y1: annotation.y1,
@@ -87,8 +88,10 @@ export function useGenerateDxf({
             ...(annotation.swing ? { swing: annotation.swing as SwingDir } : {}),
             ...(annotation.thickness ? { thickness: annotation.thickness } : {}),
             _source: annotation._source ?? 'ensemble_cubicasa',
-          })),
-        )
+          }))
+          // Adjust wall endpoints from centerline to edge where they meet other walls
+          return snapEndpointsToWallEdges(raw)
+        })
         onAutoLoaded()
       }
 

@@ -56,15 +56,7 @@ export function renderCanvas(
   // Draw committed annotations
   for (const ann of anns) {
     const isAuto = ann._source === 'ensemble_cubicasa'
-    if (ann.type === 'eraser') {
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.7)'
-      ctx.fillRect(ann.x1, ann.y1, ann.x2 - ann.x1, ann.y2 - ann.y1)
-      ctx.strokeStyle = '#ff4444'
-      ctx.lineWidth = 1 / v.scale
-      ctx.setLineDash([3 / v.scale, 3 / v.scale])
-      ctx.strokeRect(ann.x1, ann.y1, ann.x2 - ann.x1, ann.y2 - ann.y1)
-      ctx.setLineDash([])
-    } else if (ann.type === 'label') {
+    if (ann.type === 'label') {
       // Room label: name + sqft centered at point — world-space (scales with zoom)
       const lx = ann.x1, ly = ann.y1
       const name = ann.roomName || 'ROOM'
@@ -120,7 +112,7 @@ export function renderCanvas(
           : (ann.type === 'door' || ann.type === 'window')
             ? (ann.swing ? '#33ff66' : '#ffcc00')
             : COLORS[ann.type]
-      const lw = ann.type === 'wall' ? (isWall6 ? 12 : 6) : 3
+      const lw = ann.type === 'wall' ? (isWall6 ? 8 : 4) : 3
       ctx.strokeStyle = color
       ctx.lineWidth = lw
 
@@ -193,9 +185,9 @@ export function renderCanvas(
         ctx.beginPath()
         ctx.moveTo(ann.x1, ann.y1)
         ctx.lineTo(ann.x2, ann.y2)
-        // Black border (wider)
-        ctx.strokeStyle = '#000000'
-        ctx.lineWidth = lw + 6
+        // Subtle dark outline
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.4)'
+        ctx.lineWidth = lw + 2
         ctx.stroke()
         // Colored fill (original width)
         ctx.strokeStyle = color
@@ -252,7 +244,7 @@ export function renderCanvas(
     const snapDist = 4
     const seen = new Set<string>()
     for (const w of wallAnns) {
-      const wLw = w.thickness === 6 ? 12 : 6
+      const wLw = w.thickness === 6 ? 8 : 4
       for (const [px, py] of [[w.x1, w.y1], [w.x2, w.y2]] as [number, number][]) {
         const key = `${Math.round(px)},${Math.round(py)}`
         if (seen.has(key)) continue
@@ -315,19 +307,7 @@ export function renderCanvas(
     const cp = drawing.cursor
     ctx.setTransform(v.scale, 0, 0, v.scale, v.offsetX, v.offsetY)
 
-    if (drawing.tool === 'eraser') {
-      const rx1 = Math.min(sp.x, cp.x)
-      const ry1 = Math.min(sp.y, cp.y)
-      const rw = Math.abs(cp.x - sp.x)
-      const rh = Math.abs(cp.y - sp.y)
-      ctx.strokeStyle = '#ff4444'
-      ctx.lineWidth = 1 / v.scale
-      ctx.setLineDash([4 / v.scale, 4 / v.scale])
-      ctx.strokeRect(rx1, ry1, rw, rh)
-      ctx.fillStyle = 'rgba(255, 0, 0, 0.1)'
-      ctx.fillRect(rx1, ry1, rw, rh)
-      ctx.setLineDash([])
-    } else if (drawing.tool === 'paint') {
+    if (drawing.tool === 'paint') {
       // Separator preview: green dashed line
       ctx.strokeStyle = '#33ff66'
       ctx.lineWidth = 4 / v.scale
@@ -350,7 +330,7 @@ export function renderCanvas(
       ctx.fill()
     } else {
       ctx.strokeStyle = COLORS[drawing.tool]
-      ctx.lineWidth = (drawing.tool === 'wall' ? 6 : 4) / v.scale
+      ctx.lineWidth = 4 / v.scale
       ctx.globalAlpha = 0.6
       ctx.beginPath()
       ctx.moveTo(sp.x, sp.y)

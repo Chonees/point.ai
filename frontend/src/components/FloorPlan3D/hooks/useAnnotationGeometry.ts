@@ -42,7 +42,6 @@ export function useAnnotationGeometry(
     }
 
     for (const annotation of annotations) {
-      if (annotation.type === 'eraser') continue
       const p1 = toDxf(annotation.x1, annotation.y1)
       const p2 = toDxf(annotation.x2, annotation.y2)
       const centerX = (p1.x + p2.x) / 2

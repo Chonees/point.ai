@@ -14,8 +14,6 @@ export function useOverlayEditorState(
   const containerRef = useRef<HTMLDivElement>(null)
   const [tool, setTool] = useState<AnnotationType>('wall')
   const [fullscreen, setFullscreen] = useState(false)
-  const [eraserSize, setEraserSize] = useState(10)
-
   const [paintBrushSize, setPaintBrushSize] = useState(15)
   const [selectedRoomIdx, setSelectedRoomIdx] = useState<number>(-1)
   const [paintMode, setPaintMode] = useState<'brush' | 'separator'>('brush')
@@ -234,7 +232,6 @@ export function useOverlayEditorState(
     containerRef,
     tool, setTool,
     fullscreen, setFullscreen,
-    eraserSize, setEraserSize,
     paintBrushSize, setPaintBrushSize,
     selectedRoomIdx, setSelectedRoomIdx,
     paintMode, setPaintMode,
