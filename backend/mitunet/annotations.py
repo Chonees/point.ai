@@ -276,6 +276,21 @@ def _draw_mitunet_annotations_from_region_plan(
 
     _resolved_walls = resolve_wall_junctions(_junction_input)
 
+    # Debug: log junction adjustments
+    for i, (orig, adj) in enumerate(zip(_junction_input, _resolved_walls)):
+        if orig["span_lo"] != adj["span_lo"] or orig["span_hi"] != adj["span_hi"]:
+            print(f"[DXF-Junction] wall {i} {orig['orientation']}: "
+                  f"span {orig['span_lo']:.1f}..{orig['span_hi']:.1f} → "
+                  f"{adj['span_lo']:.1f}..{adj['span_hi']:.1f}", flush=True)
+    if not any(o["span_lo"] != a["span_lo"] or o["span_hi"] != a["span_hi"]
+               for o, a in zip(_junction_input, _resolved_walls)):
+        print(f"[DXF-Junction] NO adjustments made! {len(_junction_input)} walls, "
+              f"H={len([w for w in _junction_input if w['orientation']=='horizontal'])}, "
+              f"V={len([w for w in _junction_input if w['orientation']=='vertical'])}", flush=True)
+        # Dump first few walls for debugging
+        for w in _junction_input[:6]:
+            print(f"  {w['orientation']} mid={w['mid']:.1f} span={w['span_lo']:.1f}..{w['span_hi']:.1f} hlw={w['half_lw']:.1f}", flush=True)
+
     wall_idx = 0
     for ann in annotations:
         ann_type = ann.get("type", "wall")
