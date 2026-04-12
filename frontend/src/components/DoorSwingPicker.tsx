@@ -23,7 +23,7 @@ export const DoorSwingPicker = memo(function DoorSwingPicker({ pendingDoor, onPi
         <button
           key={dir}
           onClick={() => onPick(dir)}
-          className="px-2.5 py-1 rounded text-[10px] font-medium bg-zinc-700/60 border border-zinc-600/50
+          className="px-3.5 py-2 rounded text-[11px] font-medium bg-zinc-700/60 border border-zinc-600/50
                      text-zinc-300 hover:bg-zinc-600/60 hover:text-white cursor-pointer transition-colors"
         >
           {arrows[dir]} {dir}
@@ -32,7 +32,7 @@ export const DoorSwingPicker = memo(function DoorSwingPicker({ pendingDoor, onPi
       {onMirror && (
         <button
           onClick={onMirror}
-          className="px-2 py-1 rounded text-[10px] font-medium bg-amber-900/40 border border-amber-700/50
+          className="px-3 py-2 rounded text-[11px] font-medium bg-amber-900/40 border border-amber-700/50
                      text-amber-300 hover:bg-amber-800/50 hover:text-amber-200 cursor-pointer transition-colors"
           title="Flip hinge side"
         >
@@ -41,7 +41,7 @@ export const DoorSwingPicker = memo(function DoorSwingPicker({ pendingDoor, onPi
       )}
       <button
         onClick={onCancel}
-        className="ml-1 px-1.5 py-1 text-[10px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
+        className="ml-1 px-2.5 py-2 text-[11px] text-zinc-500 hover:text-zinc-300 cursor-pointer"
       >
         ✕
       </button>

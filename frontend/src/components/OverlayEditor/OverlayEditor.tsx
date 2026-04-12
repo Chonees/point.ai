@@ -35,8 +35,6 @@ export default memo(function OverlayEditor({ previewUrl, regionOverlay, annotati
         setTool={state.setTool}
         fullscreen={state.fullscreen}
         setFullscreen={state.setFullscreen}
-        eraserSize={state.eraserSize}
-        setEraserSize={state.setEraserSize}
         paintBrushSize={state.paintBrushSize}
         setPaintBrushSize={state.setPaintBrushSize}
         paintMode={state.paintMode}
@@ -67,10 +65,10 @@ export default memo(function OverlayEditor({ previewUrl, regionOverlay, annotati
         annotations={annotations}
         setAnnotations={setAnnotations}
         editingDoorIdxRef={state.editingDoorIdxRef}
-        onMouseDown={interactions.handleMouseDown}
-        onMouseMove={interactions.handleMouseMove}
-        onMouseUp={interactions.handleMouseUp}
-        onMouseLeave={interactions.handleMouseLeave}
+        onPointerDown={interactions.handlePointerDown}
+        onPointerMove={interactions.handlePointerMove}
+        onPointerUp={interactions.handlePointerUp}
+        onPointerLeave={interactions.handlePointerLeave}
         addDoorWithSwing={interactions.addDoorWithSwing}
         mirrorDoor={interactions.mirrorDoor}
       />

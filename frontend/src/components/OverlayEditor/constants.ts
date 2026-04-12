@@ -5,7 +5,7 @@ export const COLORS: Record<AnnotationType, string> = {
   wall: '#ff3333',
   door: '#33ff66',
   window: '#3399ff',
-  eraser: '#888888',
+
   label: '#1a1a1a',
   paint: '#ffffff',
 }

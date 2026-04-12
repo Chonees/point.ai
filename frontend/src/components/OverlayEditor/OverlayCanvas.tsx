@@ -24,10 +24,10 @@ interface OverlayCanvasProps {
   annotations: Annotation[]
   setAnnotations: (a: Annotation[]) => void
   editingDoorIdxRef: React.MutableRefObject<number>
-  onMouseDown: (e: React.MouseEvent<HTMLCanvasElement>) => void
-  onMouseMove: (e: React.MouseEvent<HTMLCanvasElement>) => void
-  onMouseUp: (e: React.MouseEvent<HTMLCanvasElement>) => void
-  onMouseLeave: () => void
+  onPointerDown: (e: React.PointerEvent<HTMLCanvasElement>) => void
+  onPointerMove: (e: React.PointerEvent<HTMLCanvasElement>) => void
+  onPointerUp: (e: React.PointerEvent<HTMLCanvasElement>) => void
+  onPointerLeave: () => void
   addDoorWithSwing: (dir: SwingDir) => void
   mirrorDoor: () => void
 }
@@ -40,20 +40,21 @@ export function OverlayCanvas({
   labelName, setLabelName, labelSqft, setLabelSqft,
   annotations, setAnnotations,
   editingDoorIdxRef,
-  onMouseDown, onMouseMove, onMouseUp, onMouseLeave,
+  onPointerDown, onPointerMove, onPointerUp, onPointerLeave,
   addDoorWithSwing, mirrorDoor,
 }: OverlayCanvasProps) {
   return (
     <div ref={containerRef} className={`relative ${fullscreen ? 'flex-1 overflow-hidden' : 'h-64'}`}>
       <canvas
         ref={canvasRef}
-        onMouseDown={fullscreen ? onMouseDown : undefined}
-        onMouseMove={fullscreen ? onMouseMove : undefined}
-        onMouseUp={fullscreen ? onMouseUp : undefined}
-        onMouseLeave={fullscreen ? onMouseLeave : undefined}
+        onPointerDown={fullscreen ? onPointerDown : undefined}
+        onPointerMove={fullscreen ? onPointerMove : undefined}
+        onPointerUp={fullscreen ? onPointerUp : undefined}
+        onPointerLeave={fullscreen ? onPointerLeave : undefined}
+        onPointerCancel={fullscreen ? onPointerLeave : undefined}
         onContextMenu={(e) => { if (fullscreen && tool === 'paint') e.preventDefault() }}
         className="absolute inset-0 w-full h-full"
-        style={{ cursor: fullscreen
+        style={{ touchAction: 'none', cursor: fullscreen
           ? (spaceDown.current || isPanning.current ? 'grab' : tool === 'paint' ? (selectedRoomIdx >= 0 ? 'crosshair' : 'pointer') : 'crosshair')
           : 'default'
         }}

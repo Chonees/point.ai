@@ -3,6 +3,7 @@ from __future__ import annotations
 import math
 from typing import Any
 
+from .junctions import resolve_wall_junctions
 from .regions import _mitunet_region_dxf_to_img, _mitunet_region_img_to_dxf
 
 
@@ -74,10 +75,72 @@ def regions_to_wall_annotations(
             "x2": round(ix2, 1),
             "y2": round(iy2, 1),
             "thickness": thickness,
+            "orientation": orientation,
             "_source": "mitunet_region",
         })
 
+    # Post-process: push endpoints from centerline to wall edge
+    _snap_annotations_to_wall_edges(annotations)
+
+    # Remove internal-only fields before returning
+    for ann in annotations:
+        ann.pop("orientation", None)
+
     return annotations
+
+
+def _snap_annotations_to_wall_edges(annotations: list[dict[str, Any]]) -> None:
+    """Adjust wall annotation endpoints using the shared junction resolver.
+
+    Converts image-space annotations to the normalized format expected by
+    resolve_wall_junctions(), applies junction logic, then writes back.
+    Visual line widths (px): 4" wall → 4px, 6" wall → 8px.
+    """
+    wall_anns = [a for a in annotations if a["type"] == "wall"]
+    if len(wall_anns) < 2:
+        return
+
+    # Convert to junction resolver format
+    junction_walls = []
+    for a in wall_anns:
+        ori = a.get("orientation", "horizontal")
+        hlw = (8 if a["thickness"] == 6 else 4) / 2
+        if ori == "horizontal":
+            junction_walls.append({
+                "orientation": "horizontal",
+                "mid": (a["y1"] + a["y2"]) / 2,
+                "span_lo": min(a["x1"], a["x2"]),
+                "span_hi": max(a["x1"], a["x2"]),
+                "half_lw": hlw,
+            })
+        else:
+            junction_walls.append({
+                "orientation": "vertical",
+                "mid": (a["x1"] + a["x2"]) / 2,
+                "span_lo": min(a["y1"], a["y2"]),
+                "span_hi": max(a["y1"], a["y2"]),
+                "half_lw": hlw,
+            })
+
+    resolved = resolve_wall_junctions(junction_walls)
+
+    # Write adjusted spans back to annotations
+    for a, orig, adj in zip(wall_anns, junction_walls, resolved):
+        ori = a.get("orientation", "horizontal")
+        if ori == "horizontal":
+            if a["x1"] <= a["x2"]:
+                a["x1"] = round(adj["span_lo"], 1)
+                a["x2"] = round(adj["span_hi"], 1)
+            else:
+                a["x1"] = round(adj["span_hi"], 1)
+                a["x2"] = round(adj["span_lo"], 1)
+        else:
+            if a["y1"] <= a["y2"]:
+                a["y1"] = round(adj["span_lo"], 1)
+                a["y2"] = round(adj["span_hi"], 1)
+            else:
+                a["y1"] = round(adj["span_hi"], 1)
+                a["y2"] = round(adj["span_lo"], 1)
 
 
 def _draw_mitunet_annotations_from_region_plan(
@@ -189,79 +252,29 @@ def _draw_mitunet_annotations_from_region_plan(
 
         return best
 
-    # Pre-compute wall info: (is_horiz, mid, ht, span_lo, span_hi) for each wall
-    _wall_info: list[tuple[bool, float, float, float, float]] = []
-    _wall_ann_idx = 0
-    for ann in annotations:
+    # Pre-resolve all wall junctions using the shared resolver
+    _junction_input = []
+    _wall_ann_indices = []
+    _wall_thicknesses = []
+    for i, ann in enumerate(annotations):
         if ann.get("type") != "wall":
             continue
-        wx1, wy1, wx2, wy2 = wall_dxf_coords[_wall_ann_idx]
-        is_h = abs(wx2 - wx1) >= abs(wy2 - wy1)
-        wt = float(ann["thickness"]) if ann.get("thickness") else _resolve_wall_thickness(wx1, wy1, wx2, wy2)
-        if is_h:
-            _wall_info.append((True, (wy1 + wy2) / 2, wt / 2, min(wx1, wx2), max(wx1, wx2)))
-        else:
-            _wall_info.append((False, (wx1 + wx2) / 2, wt / 2, min(wy1, wy2), max(wy1, wy2)))
-        _wall_ann_idx += 1
+        wx1, wy1, wx2, wy2 = wall_dxf_coords[len(_junction_input)]
+        adx, ady = abs(wx2 - wx1), abs(wy2 - wy1)
+        thickness = float(ann["thickness"]) if ann.get("thickness") else _resolve_wall_thickness(wx1, wy1, wx2, wy2)
+        ht = thickness / 2
+        is_h = adx >= ady
+        _junction_input.append({
+            "orientation": "horizontal" if is_h else "vertical",
+            "mid": (wy1 + wy2) / 2 if is_h else (wx1 + wx2) / 2,
+            "span_lo": min(wx1, wx2) if is_h else min(wy1, wy2),
+            "span_hi": max(wx1, wx2) if is_h else max(wy1, wy2),
+            "half_lw": ht,
+        })
+        _wall_ann_indices.append(i)
+        _wall_thicknesses.append(thickness)
 
-    def _has_junction(px: float, py: float, skip_idx: int) -> bool:
-        snap = wall_thickness * 1.5
-        for i, (wx1, wy1, wx2, wy2) in enumerate(wall_dxf_coords):
-            if i == skip_idx:
-                continue
-            for ex, ey in [(wx1, wy1), (wx2, wy2)]:
-                if abs(px - ex) <= snap and abs(py - ey) <= snap:
-                    return True
-        return False
-
-    def _trim_hatch_at_junctions(
-        wall_idx: int, is_horiz: bool, mid: float, my_ht: float,
-        span_lo: float, span_hi: float,
-    ) -> tuple[float, float, bool, bool]:
-        """Trim (or extend) a wall's hatch span at perpendicular junctions.
-
-        Returns (t_lo, t_hi, lc_lo, lc_hi).  lc_lo/lc_hi are True when
-        that endpoint is an L-corner so the caller can skip polyline
-        extension there.
-
-        L-corner (both walls end) vs T-junction (one passes through):
-        - T-junction: wall that ends gets trimmed to the other's inner edge.
-        - L-corner:   horizontal wall EXTENDS to the other's outer edge
-                      (it covers the corner square).  Vertical wall still
-                      trims to the horizontal's outer edge.
-        """
-        tol = wall_thickness * 2
-        t_lo, t_hi = span_lo, span_hi
-        lc_lo = lc_hi = False
-        for j, (other_h, other_mid, other_ht, other_lo, other_hi) in enumerate(_wall_info):
-            if j == wall_idx or other_h == is_horiz:
-                continue
-            if other_lo > mid + my_ht + tol or other_hi < mid - my_ht - tol:
-                continue
-            # Does the OTHER wall also end at this junction? → L-corner
-            other_ends_here = (abs(other_lo - mid) < tol
-                               or abs(other_hi - mid) < tol)
-
-            if abs(other_mid - span_lo) < tol:
-                if is_horiz and other_ends_here:
-                    # L-corner: H extends hatch to V's outer edge
-                    t_lo = min(t_lo, other_mid - other_ht)
-                    lc_lo = True
-                else:
-                    t_lo = max(t_lo, other_mid + other_ht)
-                    if other_ends_here:
-                        lc_lo = True  # V at L-corner: flag for polyline
-
-            if abs(other_mid - span_hi) < tol:
-                if is_horiz and other_ends_here:
-                    # L-corner: H extends hatch to V's outer edge
-                    t_hi = max(t_hi, other_mid + other_ht)
-                    lc_hi = True
-                else:
-                    t_hi = min(t_hi, other_mid - other_ht)
-                    if other_ends_here:
-                        lc_hi = True  # V at L-corner: flag for polyline
-        return t_lo, t_hi, lc_lo, lc_hi
+    _resolved_walls = resolve_wall_junctions(_junction_input)
 
     wall_idx = 0
     for ann in annotations:
@@ -273,67 +286,33 @@ def _draw_mitunet_annotations_from_region_plan(
         dx2, dy2 = _mitunet_region_img_to_dxf(int(ann["x2"]), int(ann["y2"]), image_shape=image_shape, transform=transform)
 
         if ann_type == "wall":
-            adx = abs(dx2 - dx1)
-            ady = abs(dy2 - dy1)
-            # User override from 2D editor takes priority over region detection
-            thickness = float(ann["thickness"]) if ann.get("thickness") else _resolve_wall_thickness(dx1, dy1, dx2, dy2)
-            ext = thickness / 2  # extension for junctions
-
+            thickness = _wall_thicknesses[wall_idx]
             ht = thickness / 2
-
-            is_horiz = adx >= ady
+            rw = _resolved_walls[wall_idx]
+            is_horiz = rw["orientation"] == "horizontal"
 
             if is_horiz:
-                y_mid = (dy1 + dy2) / 2
-                x_lo, x_hi = min(dx1, dx2), max(dx1, dx2)
-                hx_lo, hx_hi, lc_lo, lc_hi = _trim_hatch_at_junctions(
-                    wall_idx, True, y_mid, ht, x_lo, x_hi,
-                )
-                if hx_lo < hx_hi:
-                    hatch_pts = [
-                        (hx_lo, y_mid - ht), (hx_hi, y_mid - ht),
-                        (hx_hi, y_mid + ht), (hx_lo, y_mid + ht),
-                        (hx_lo, y_mid - ht),
-                    ]
-                else:
-                    hatch_pts = None
-                # Polyline: at L-corners match hatch (already extended);
-                # at T-junctions extend outline by ext as before.
-                p_lo = hx_lo if lc_lo else ((hx_lo - ext) if _has_junction(x_lo, y_mid, wall_idx) else hx_lo)
-                p_hi = hx_hi if lc_hi else ((hx_hi + ext) if _has_junction(x_hi, y_mid, wall_idx) else hx_hi)
-                pts = [
-                    (p_lo, y_mid - ht), (p_hi, y_mid - ht),
-                    (p_hi, y_mid + ht), (p_lo, y_mid + ht),
-                    (p_lo, y_mid - ht),
+                y_mid = rw["mid"]
+                hatch_pts = [
+                    (rw["span_lo"], y_mid - ht), (rw["span_hi"], y_mid - ht),
+                    (rw["span_hi"], y_mid + ht), (rw["span_lo"], y_mid + ht),
+                    (rw["span_lo"], y_mid - ht),
                 ]
+                pts = list(hatch_pts)
             else:
-                x_mid = (dx1 + dx2) / 2
-                y_lo, y_hi = min(dy1, dy2), max(dy1, dy2)
-                hy_lo, hy_hi, lc_lo, lc_hi = _trim_hatch_at_junctions(
-                    wall_idx, False, x_mid, ht, y_lo, y_hi,
-                )
-                if hy_lo < hy_hi:
-                    hatch_pts = [
-                        (x_mid - ht, hy_lo), (x_mid + ht, hy_lo),
-                        (x_mid + ht, hy_hi), (x_mid - ht, hy_hi),
-                        (x_mid - ht, hy_lo),
-                    ]
-                else:
-                    hatch_pts = None
-                # Polyline: at L-corners match hatch; at T-junctions extend.
-                p_lo = hy_lo if lc_lo else ((hy_lo - ext) if _has_junction(x_mid, y_lo, wall_idx) else hy_lo)
-                p_hi = hy_hi if lc_hi else ((hy_hi + ext) if _has_junction(x_mid, y_hi, wall_idx) else hy_hi)
-                pts = [
-                    (x_mid - ht, p_lo), (x_mid + ht, p_lo),
-                    (x_mid + ht, p_hi), (x_mid - ht, p_hi),
-                    (x_mid - ht, p_lo),
+                x_mid = rw["mid"]
+                hatch_pts = [
+                    (x_mid - ht, rw["span_lo"]), (x_mid + ht, rw["span_lo"]),
+                    (x_mid + ht, rw["span_hi"]), (x_mid - ht, rw["span_hi"]),
+                    (x_mid - ht, rw["span_lo"]),
                 ]
+                pts = list(hatch_pts)
+
             from ..components.hatch import add_wall_hatch
 
             poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7, "lineweight": 100})
             poly.close()
-            if hatch_pts is not None:
-                add_wall_hatch(msp, doc, hatch_pts, thickness)
+            add_wall_hatch(msp, doc, hatch_pts, thickness)
             rect_count += 1
             wall_idx += 1
             continue
