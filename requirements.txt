@@ -15,7 +15,7 @@ scipy>=1.17.0
 shapely>=2.1.0
 
 # DXF generation
-ezdxf>=1.4.0
+ezdxf==1.4.3
 
 # ML inference (CPU)
 --extra-index-url https://download.pytorch.org/whl/cpu
