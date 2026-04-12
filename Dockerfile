@@ -10,6 +10,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Force cache bust: 2026-04-12
 COPY backend/ ./backend/
 COPY scripts/download_weights.py ./scripts/download_weights.py
 
