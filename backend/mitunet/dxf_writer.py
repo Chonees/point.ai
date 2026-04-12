@@ -214,7 +214,7 @@ def generate_mitunet_region_dxf(
                     "half_lw": reg["std"] / 2,
                 })
 
-        resolved = resolve_wall_junctions(junction_input)
+        resolved = resolve_wall_junctions(junction_input, mode="dxf")
 
         for reg, adj in zip(snapped, resolved):
             if reg["orientation"] == "horizontal":

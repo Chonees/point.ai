@@ -14,6 +14,8 @@ from typing import Any
 
 def resolve_wall_junctions(
     walls: list[dict[str, Any]],
+    *,
+    mode: str = "canvas",
 ) -> list[dict[str, Any]]:
     """Adjust wall spans so perpendicular walls connect cleanly.
 
@@ -24,17 +26,24 @@ def resolve_wall_junctions(
         span_hi:     end on parallel axis
         half_lw:     half of visual line width (pixels or inches)
 
+    Args:
+        mode: "canvas" or "dxf".
+            - canvas: T-junction ending wall extends THROUGH (line covers line).
+            - dxf: T-junction ending wall TRIMS to inner edge (rectangles
+              must not overlap or outlines/hatches double up).
+
     Returns a new list of wall dicts with adjusted span_lo / span_hi.
     Original dicts are NOT mutated.
 
-    Junction rules:
+    Junction rules (both modes):
     - **L-corner** (both walls end at same point):
         Horizontal extends to vertical's outer edge (covers corner square).
         Vertical trims to horizontal's inner edge.
-    - **T-junction** (one wall ends, other continues through):
-        The ending wall extends THROUGH the continuing wall to its far edge,
-        so it visually covers the junction point.
     - **X-cross** (both walls pass through): no adjustment.
+
+    T-junction rules (mode-dependent):
+    - **canvas**: ending wall extends THROUGH continuing wall to far edge.
+    - **dxf**: ending wall TRIMS to continuing wall's inner edge.
     """
     if len(walls) < 2:
         return [dict(w) for w in walls]
@@ -78,11 +87,19 @@ def resolve_wall_junctions(
                     else:
                         result[vi]["span_lo"] = hw["mid"] + hw_hlw
                 else:
-                    # T-junction: V extends THROUGH H to far edge
-                    if body_toward_lo:
-                        result[vi]["span_hi"] = hw["mid"] + hw_hlw
+                    # T-junction: mode-dependent
+                    if mode == "dxf":
+                        # DXF: trim to inner edge (avoid rectangle overlap)
+                        if body_toward_lo:
+                            result[vi]["span_hi"] = hw["mid"] - hw_hlw
+                        else:
+                            result[vi]["span_lo"] = hw["mid"] + hw_hlw
                     else:
-                        result[vi]["span_lo"] = hw["mid"] - hw_hlw
+                        # Canvas: extend through to far edge (line covers line)
+                        if body_toward_lo:
+                            result[vi]["span_hi"] = hw["mid"] + hw_hlw
+                        else:
+                            result[vi]["span_lo"] = hw["mid"] - hw_hlw
                 break
 
     # --- Horizontal walls meeting vertical walls ---
@@ -107,11 +124,19 @@ def resolve_wall_junctions(
                     else:
                         result[hi]["span_lo"] = vw["mid"] - vw_hlw
                 else:
-                    # T-junction: H extends THROUGH V to far edge
-                    if body_toward_lo:
-                        result[hi]["span_hi"] = vw["mid"] + vw_hlw
+                    # T-junction: mode-dependent
+                    if mode == "dxf":
+                        # DXF: trim to inner edge
+                        if body_toward_lo:
+                            result[hi]["span_hi"] = vw["mid"] - vw_hlw
+                        else:
+                            result[hi]["span_lo"] = vw["mid"] + vw_hlw
                     else:
-                        result[hi]["span_lo"] = vw["mid"] - vw_hlw
+                        # Canvas: extend through to far edge
+                        if body_toward_lo:
+                            result[hi]["span_hi"] = vw["mid"] + vw_hlw
+                        else:
+                            result[hi]["span_lo"] = vw["mid"] - vw_hlw
                 break
 
     return result

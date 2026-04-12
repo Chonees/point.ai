@@ -274,7 +274,7 @@ def _draw_mitunet_annotations_from_region_plan(
         _wall_ann_indices.append(i)
         _wall_thicknesses.append(thickness)
 
-    _resolved_walls = resolve_wall_junctions(_junction_input)
+    _resolved_walls = resolve_wall_junctions(_junction_input, mode="dxf")
 
     # Debug: log junction adjustments
     for i, (orig, adj) in enumerate(zip(_junction_input, _resolved_walls)):
