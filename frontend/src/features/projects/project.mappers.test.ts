@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { rowToPlan } from './project.mappers'
 import type { PlanRow } from '../../lib/database.types'
+import { DEFAULT_VISIBILITY } from '../../types'
 
 const makeRow = (overrides: Partial<PlanRow> = {}): PlanRow => ({
   id: 'plan-1',
@@ -12,6 +13,8 @@ const makeRow = (overrides: Partial<PlanRow> = {}): PlanRow => ({
   placed_items_3d: [],
   floor_material: 'hardwood',
   wall_material: 'white-paint',
+  editor_visibility: DEFAULT_VISIBILITY,
+  total_sqft: null,
   created_at: '2026-01-01T00:00:00Z',
   updated_at: '2026-01-02T00:00:00Z',
   ...overrides,

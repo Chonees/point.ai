@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { FURNITURE, MATERIALS } from '../catalog'
 import type { MaterialPreset } from '../catalog'
 import type { PlacedFurniture } from '../types'
-import type { Annotation } from '../../../types'
+import { DEFAULT_VISIBILITY, type Annotation, type Visibility } from '../../../types'
 import type { PlanScene } from '../../../hooks/useProject'
 import type { PlacedItemDB } from '../../../lib/database.types'
 
@@ -56,12 +56,14 @@ export function useAutoSave({
   floorMat,
   wallMat,
   annotations,
+  visibility,
   onSceneChange,
 }: {
   placed: PlacedFurniture[]
   floorMat: MaterialPreset
   wallMat: MaterialPreset
   annotations: Annotation[]
+  visibility?: Visibility
   onSceneChange?: (scene: PlanScene) => void
 }) {
   useEffect(() => {
@@ -71,6 +73,7 @@ export function useAutoSave({
       placedItems3d: placedToDb(placed),
       floorMaterial: floorMat.id,
       wallMaterial: wallMat.id,
+      visibility: visibility ?? DEFAULT_VISIBILITY,
     })
-  }, [placed, floorMat, wallMat]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [placed, floorMat, wallMat, visibility]) // eslint-disable-line react-hooks/exhaustive-deps
 }
