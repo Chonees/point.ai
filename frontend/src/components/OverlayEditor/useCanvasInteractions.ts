@@ -1,3 +1,4 @@
+import { useRef } from 'react'
 import type React from 'react'
 import type { Annotation, SwingDir } from '../../types'
 import { hitTestAnnotation, hitTestEndpoint, snapToEndpoint } from './geometry'
@@ -38,6 +39,8 @@ export function useCanvasInteractions(
     paintPointsRef,
     draggingRef,
     editingDoorIdxRef,
+    longPressIdxRef,
+    longPressActiveRef,
     setSelectedRoomIdx,
     setView,
     commitStroke,
@@ -46,16 +49,47 @@ export function useCanvasInteractions(
     scheduleRender,
   } = state
 
+  const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const longPressStartRef = useRef<{ x: number; y: number } | null>(null)
+
+  const cancelLongPress = () => {
+    if (longPressTimerRef.current) {
+      clearTimeout(longPressTimerRef.current)
+      longPressTimerRef.current = null
+    }
+    longPressStartRef.current = null
+    if (longPressActiveRef.current) {
+      longPressActiveRef.current = false
+      longPressIdxRef.current = -1
+      scheduleRender()
+    }
+  }
+
   const _hitTest = (wx: number, wy: number) => hitTestAnnotation(wx, wy, annotationsRef.current, viewRef.current.scale)
   const _hitEndpoint = (wx: number, wy: number) => hitTestEndpoint(wx, wy, annotationsRef.current, viewRef.current.scale)
   const _snap = (wx: number, wy: number, skipIdx = -1) => snapToEndpoint(wx, wy, annotationsRef.current, viewRef.current.scale, skipIdx)
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    cancelLongPress()
     if (e.button === 1 || (e.button === 0 && spaceDown.current)) {
       e.preventDefault()
       isPanning.current = true
       panStart.current = { x: e.clientX - viewRef.current.offsetX, y: e.clientY - viewRef.current.offsetY }
       return
+    }
+    // Start long-press timer for delete (works in any tool)
+    if (e.button === 0) {
+      const ptLP = screenToWorld(e.clientX, e.clientY)
+      const hitIdx = _hitTest(ptLP.x, ptLP.y)
+      if (hitIdx >= 0) {
+        longPressStartRef.current = { x: e.clientX, y: e.clientY }
+        longPressTimerRef.current = setTimeout(() => {
+          longPressIdxRef.current = hitIdx
+          longPressActiveRef.current = true
+          if (navigator.vibrate) navigator.vibrate(30)
+          scheduleRender()
+        }, 400)
+      }
     }
     if (hoveredIdxRef.current >= 0) {
       const idx = hoveredIdxRef.current
@@ -157,6 +191,12 @@ export function useCanvasInteractions(
   }
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    // Cancel long-press if pointer moves significantly
+    if (longPressStartRef.current) {
+      const dx = e.clientX - longPressStartRef.current.x
+      const dy = e.clientY - longPressStartRef.current.y
+      if (dx * dx + dy * dy > 64) cancelLongPress()
+    }
     if (isPanning.current) {
       setView(v => ({
         ...v,
@@ -228,6 +268,20 @@ export function useCanvasInteractions(
   }
 
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    // Long-press delete: if active, delete and bail
+    if (longPressActiveRef.current) {
+      const idx = longPressIdxRef.current
+      if (idx >= 0 && idx < annotations.length) {
+        setAnnotations(annotations.filter((_, i) => i !== idx))
+      }
+      longPressActiveRef.current = false
+      longPressIdxRef.current = -1
+      hoveredIdxRef.current = -1
+      cancelLongPress()
+      scheduleRender()
+      return
+    }
+    cancelLongPress()
     if (isPanning.current) { isPanning.current = false; return }
     if (paintingRef.current) {
       if (paintModeRef.current === 'separator' && separatorStartRef.current) {
@@ -328,6 +382,7 @@ export function useCanvasInteractions(
   }
 
   const handlePointerLeave = () => {
+    cancelLongPress()
     drawingRef.current = false
     paintingRef.current = false
     startPtRef.current = null

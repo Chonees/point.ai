@@ -54,6 +54,8 @@ export function useOverlayEditorState(
   const paintEraseRef = useRef(false)
 
   const editingDoorIdxRef = useRef<number>(-1)
+  const longPressIdxRef = useRef<number>(-1)
+  const longPressActiveRef = useRef(false)
 
   const strokeToPath = useCallback((points: number[][]) => {
     if (points.length < 2) return null
@@ -184,6 +186,7 @@ export function useOverlayEditorState(
       hoveredIdxRef.current, snapRef.current,
       { active: drawingRef.current, start: startPtRef.current, cursor: cursorPtRef.current, tool: toolRef.current },
       regionCanvasRef.current ?? overlayImgRef.current,
+      longPressActiveRef.current ? longPressIdxRef.current : -1,
     )
   }, [])
 
@@ -257,6 +260,8 @@ export function useOverlayEditorState(
     paintPointsRef,
     paintEraseRef,
     editingDoorIdxRef,
+    longPressIdxRef,
+    longPressActiveRef,
     commitStroke,
     findLabelAtWorld,
     screenToWorld,

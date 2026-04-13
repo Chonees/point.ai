@@ -52,7 +52,7 @@ export function OverlayCanvas({
         onPointerUp={fullscreen ? onPointerUp : undefined}
         onPointerLeave={fullscreen ? onPointerLeave : undefined}
         onPointerCancel={fullscreen ? onPointerLeave : undefined}
-        onContextMenu={(e) => { if (fullscreen && tool === 'paint') e.preventDefault() }}
+        onContextMenu={(e) => { if (fullscreen) e.preventDefault() }}
         className="absolute inset-0 w-full h-full"
         style={{ touchAction: 'none', cursor: fullscreen
           ? (spaceDown.current || isPanning.current ? 'grab' : tool === 'paint' ? (selectedRoomIdx >= 0 ? 'crosshair' : 'pointer') : 'crosshair')

@@ -21,6 +21,7 @@ export function renderCanvas(
   snap: SnapState,
   drawing: DrawingState,
   regionOverlay?: HTMLImageElement | HTMLCanvasElement | null,
+  longPressIdx = -1,
 ): void {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
@@ -286,6 +287,39 @@ export function renderCanvas(
     ctx.lineTo(cx + d, cy + d)
     ctx.moveTo(cx + d, cy - d)
     ctx.lineTo(cx - d, cy + d)
+    ctx.stroke()
+  }
+
+  // Long-press delete indicator
+  if (longPressIdx >= 0 && longPressIdx < anns.length) {
+    const la = anns[longPressIdx]
+    const cx = la.type === 'label' ? la.x1 : (la.x1 + la.x2) / 2
+    const cy = la.type === 'label' ? la.y1 : (la.y1 + la.y2) / 2
+
+    // Red line overlay on the annotation
+    if (la.type !== 'label') {
+      ctx.strokeStyle = 'rgba(239, 68, 68, 0.6)'
+      ctx.lineWidth = (la.type === 'wall' && la.thickness === 6 ? 14 : 10)
+      ctx.setLineDash([])
+      ctx.beginPath()
+      ctx.moveTo(la.x1, la.y1)
+      ctx.lineTo(la.x2, la.y2)
+      ctx.stroke()
+    }
+
+    // Red circle with × at center
+    const r = 14 / v.scale
+    ctx.fillStyle = 'rgba(239, 68, 68, 0.9)'
+    ctx.beginPath()
+    ctx.arc(cx, cy, r, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 2 / v.scale
+    ctx.setLineDash([])
+    const d = r * 0.45
+    ctx.beginPath()
+    ctx.moveTo(cx - d, cy - d); ctx.lineTo(cx + d, cy + d)
+    ctx.moveTo(cx + d, cy - d); ctx.lineTo(cx - d, cy + d)
     ctx.stroke()
   }
 

@@ -41,7 +41,6 @@ export default memo(function OverlayEditor({ previewUrl, regionOverlay, annotati
         setPaintMode={state.setPaintMode}
         selectedRoomIdx={state.selectedRoomIdx}
         annotations={annotations}
-        view={state.view}
         fitImage={state.fitImage}
         undo={interactions.undo}
         onClearLabels={clearLabels}
