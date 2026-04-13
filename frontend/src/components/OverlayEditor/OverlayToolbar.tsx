@@ -1,6 +1,7 @@
+import { useState, useRef, useEffect } from 'react'
 import type { AnnotationType, Annotation } from '../../types'
 import { ROOM_PALETTE } from './constants'
-import type { ToolGroup } from './types'
+import type { ToolGroup, Visibility } from './types'
 
 const TOOL_ICONS: Record<string, string> = {
   wall: '▬',
@@ -46,6 +47,8 @@ interface OverlayToolbarProps {
   setPaintMode: (m: 'brush' | 'separator') => void
   selectedRoomIdx: number
   annotations: Annotation[]
+  visibility: Visibility
+  setVisibility: (v: Visibility) => void
   fitImage: () => void
   undo: () => void
   onClearLabels: () => void
@@ -56,8 +59,34 @@ export function OverlayToolbar({
   paintBrushSize, setPaintBrushSize,
   paintMode, setPaintMode,
   selectedRoomIdx, annotations,
+  visibility, setVisibility,
   fitImage, undo, onClearLabels,
 }: OverlayToolbarProps) {
+  const [hidePanelOpen, setHidePanelOpen] = useState(false)
+  const hidePanelRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    if (!hidePanelOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (hidePanelRef.current && !hidePanelRef.current.contains(e.target as Node)) {
+        setHidePanelOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDown)
+    return () => document.removeEventListener('mousedown', onDown)
+  }, [hidePanelOpen])
+
+  const anyHidden = Object.values(visibility).some(v => !v)
+  const toggleLayer = (key: keyof Visibility) => setVisibility({ ...visibility, [key]: !visibility[key] })
+  const HIDE_LAYERS: { key: keyof Visibility; label: string }[] = [
+    { key: 'bg', label: 'Background image' },
+    { key: 'regions', label: 'Room colors' },
+    { key: 'walls', label: 'Walls' },
+    { key: 'doors', label: 'Doors' },
+    { key: 'windows', label: 'Windows' },
+    { key: 'labels', label: 'Room labels' },
+    { key: 'separators', label: 'Separators' },
+  ]
   const labelCount = annotations.filter(a => a.type === 'label').length
 
   const allTools = toolGroups.flatMap(g => g.items)
@@ -138,6 +167,40 @@ export function OverlayToolbar({
             <span className="text-[14px] leading-none">⊡</span>
             <span className="text-[8px] mt-0.5">Fit</span>
           </button>
+          <div className="relative" ref={hidePanelRef}>
+            <button
+              onClick={() => setHidePanelOpen(!hidePanelOpen)}
+              title="Show/hide layers"
+              className={`flex flex-col items-center justify-center w-11 h-11 rounded-xl cursor-pointer transition-colors ${
+                anyHidden ? 'bg-white/[0.08] text-zinc-100' : 'text-zinc-500'
+              }`}
+            >
+              <span className="text-[14px] leading-none">👁</span>
+              <span className="text-[8px] mt-0.5">Hide</span>
+            </button>
+            {hidePanelOpen && (
+              <div
+                className="absolute bottom-full mb-2 right-0 w-48 rounded-xl border border-white/8 bg-zinc-900/95 backdrop-blur shadow-xl p-2 z-50"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="text-[10px] uppercase tracking-[0.2em] text-zinc-500 px-2 py-1.5">Visibility</div>
+                {HIDE_LAYERS.map(({ key, label }) => (
+                  <label
+                    key={key}
+                    className="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-white/[0.04] cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={visibility[key]}
+                      onChange={() => toggleLayer(key)}
+                      className="w-3.5 h-3.5 accent-zinc-300 cursor-pointer"
+                    />
+                    <span className="text-[11px] text-zinc-200 select-none">{label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
           <button onClick={undo} disabled={annotations.length === 0} className="flex flex-col items-center justify-center w-11 h-11 rounded-xl text-zinc-500 disabled:opacity-30 cursor-pointer">
             <span className="text-[14px] leading-none">↩</span>
             <span className="text-[8px] mt-0.5">Undo</span>

@@ -49,6 +49,12 @@ create table plans (
   floor_material  text not null default 'hardwood',
   wall_material   text not null default 'white-paint',
 
+  -- 2D Editor visibility toggles (user preference per plan)
+  editor_visibility jsonb not null default '{"bg":true,"regions":true,"walls":true,"doors":true,"windows":true,"labels":true,"separators":true}'::jsonb,
+
+  -- Plan metadata (user-provided total floor area for scale calibration)
+  total_sqft      real,
+
   -- Metadata
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now()
@@ -96,3 +102,14 @@ create trigger projects_updated_at before update on projects
 
 create trigger plans_updated_at before update on plans
   for each row execute function update_updated_at();
+
+-- ============================================================
+-- Migrations for existing databases (idempotent)
+-- ============================================================
+
+alter table plans
+  add column if not exists editor_visibility jsonb not null default
+  '{"bg":true,"regions":true,"walls":true,"doors":true,"windows":true,"labels":true,"separators":true}'::jsonb;
+
+alter table plans
+  add column if not exists total_sqft real;

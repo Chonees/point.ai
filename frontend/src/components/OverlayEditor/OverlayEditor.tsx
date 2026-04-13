@@ -1,28 +1,42 @@
-import { memo, useState } from 'react'
-import type { Annotation } from '../../types'
+import { memo, useEffect, useRef, useState } from 'react'
+import type { Annotation, Visibility } from '../../types'
 import { useOverlayEditorState } from './useOverlayEditorState'
 import { useCanvasInteractions } from './useCanvasInteractions'
 import { OverlayToolbar } from './OverlayToolbar'
 import { OverlayCanvas } from './OverlayCanvas'
-import type { PendingDoor, PendingLabel } from './types'
+import type { PendingDoor, PendingLabel, EditingLabel } from './types'
 
-export default memo(function OverlayEditor({ previewUrl, regionOverlay, annotations, setAnnotations }: {
+export default memo(function OverlayEditor({
+  previewUrl, regionOverlay, annotations, setAnnotations,
+  initialVisibility, onVisibilityChange,
+}: {
   previewUrl: string
   regionOverlay?: string
   annotations: Annotation[]
   setAnnotations: (a: Annotation[]) => void
+  initialVisibility?: Visibility
+  onVisibilityChange?: (v: Visibility) => void
 }) {
-  const state = useOverlayEditorState(previewUrl, regionOverlay, annotations)
+  const state = useOverlayEditorState(previewUrl, regionOverlay, annotations, initialVisibility)
+
+  // Notify parent when visibility changes (but not on initial mount)
+  const mounted = useRef(false)
+  useEffect(() => {
+    if (!mounted.current) { mounted.current = true; return }
+    onVisibilityChange?.(state.visibility)
+  }, [state.visibility, onVisibilityChange])
 
   const [pendingDoor, setPendingDoor] = useState<PendingDoor | null>(null)
   const [pendingLabel, setPendingLabel] = useState<PendingLabel | null>(null)
   const [labelName, setLabelName] = useState('')
   const [labelSqft, setLabelSqft] = useState('')
+  const [editingLabel, setEditingLabel] = useState<EditingLabel | null>(null)
 
   const interactions = useCanvasInteractions(
     state, annotations, setAnnotations,
     pendingDoor, setPendingDoor,
     setPendingLabel, setLabelName, setLabelSqft,
+    setEditingLabel,
   )
 
   const clearLabels = () => setAnnotations(annotations.filter(a => a.type !== 'label'))
@@ -41,6 +55,8 @@ export default memo(function OverlayEditor({ previewUrl, regionOverlay, annotati
         setPaintMode={state.setPaintMode}
         selectedRoomIdx={state.selectedRoomIdx}
         annotations={annotations}
+        visibility={state.visibility}
+        setVisibility={state.setVisibility}
         fitImage={state.fitImage}
         undo={interactions.undo}
         onClearLabels={clearLabels}
@@ -63,6 +79,8 @@ export default memo(function OverlayEditor({ previewUrl, regionOverlay, annotati
         setLabelSqft={setLabelSqft}
         annotations={annotations}
         setAnnotations={setAnnotations}
+        editingLabel={editingLabel}
+        setEditingLabel={setEditingLabel}
         editingDoorIdxRef={state.editingDoorIdxRef}
         onPointerDown={interactions.handlePointerDown}
         onPointerMove={interactions.handlePointerMove}

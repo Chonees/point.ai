@@ -2,6 +2,40 @@ import type { Annotation } from '../../types'
 
 const SLAB_ANGLES: Record<string, number> = { up: -Math.PI / 2, down: Math.PI / 2, left: Math.PI, right: 0 }
 
+/**
+ * Compute the LOCAL (unrotated) axis-aligned bounding box of a label annotation.
+ * Mirrors the sizing used in renderCanvas so hit-test and rendering agree.
+ */
+export function labelBoundingBox(a: Annotation): { x: number; y: number; w: number; h: number } {
+  const scale = a.labelScale ?? 1
+  const name = a.roomName || 'ROOM'
+  const sqft = a.sqft ? `${a.sqft} SQ FT` : ''
+  const nameSize = 32 * scale
+  const sqftSize = 22 * scale
+  const pad = 12 * scale
+  const w = Math.max(name.length, sqft.length) * nameSize * 0.6 + pad * 2
+  const h = (sqft ? nameSize + sqftSize + pad : nameSize) + pad * 2
+  return { x: a.x1 - w / 2, y: a.y1 - h / 2, w, h }
+}
+
+/** Rotate a point around the label's center (x1, y1). Used for handle positions. */
+export function labelLocalToWorld(a: Annotation, lx: number, ly: number): { x: number; y: number } {
+  const rot = a.labelRotation ?? 0
+  if (rot === 0) return { x: lx, y: ly }
+  const c = Math.cos(rot), s = Math.sin(rot)
+  const dx = lx - a.x1, dy = ly - a.y1
+  return { x: dx * c - dy * s + a.x1, y: dx * s + dy * c + a.y1 }
+}
+
+/** Inverse of labelLocalToWorld — used for hit testing. */
+export function labelWorldToLocal(a: Annotation, wx: number, wy: number): { x: number; y: number } {
+  const rot = a.labelRotation ?? 0
+  if (rot === 0) return { x: wx, y: wy }
+  const c = Math.cos(-rot), s = Math.sin(-rot)
+  const dx = wx - a.x1, dy = wy - a.y1
+  return { x: dx * c - dy * s + a.x1, y: dx * s + dy * c + a.y1 }
+}
+
 export function distToSeg(px: number, py: number, x1: number, y1: number, x2: number, y2: number): number {
   const dx = x2 - x1, dy = y2 - y1
   const lenSq = dx * dx + dy * dy
@@ -43,6 +77,11 @@ export function hitTestAnnotation(wx: number, wy: number, annotations: Annotatio
         const oA = Math.atan2(a.y2 - a.y1, a.x2 - a.x1)
         if (angleInArc(ptAngle, sA, oA)) return i
       }
+    } else if (a.type === 'label') {
+      // Labels: transform cursor into label's local (unrotated) space, then bbox test
+      const lp = labelWorldToLocal(a, wx, wy)
+      const bb = labelBoundingBox(a)
+      if (lp.x >= bb.x && lp.x <= bb.x + bb.w && lp.y >= bb.y && lp.y <= bb.y + bb.h) return i
     } else {
       const dx = a.x2 - a.x1, dy = a.y2 - a.y1
       const lenSq = dx * dx + dy * dy
@@ -56,10 +95,20 @@ export function hitTestAnnotation(wx: number, wy: number, annotations: Annotatio
   return -1
 }
 
-export function hitTestEndpoint(wx: number, wy: number, annotations: Annotation[], scale: number): { idx: number; endpoint: 'start' | 'end' | 'arc' } | null {
+export function hitTestEndpoint(wx: number, wy: number, annotations: Annotation[], scale: number): { idx: number; endpoint: 'start' | 'end' | 'arc' | 'resize' | 'rotate' } | null {
   const threshold = (isCoarse ? 20 : 10) / scale
   for (let i = annotations.length - 1; i >= 0; i--) {
     const a = annotations[i]
+    if (a.type === 'label') {
+      // Handles are at local positions; rotate them to world space for the distance check
+      const bb = labelBoundingBox(a)
+      const handleR = (isCoarse ? 18 : 12) / scale
+      const resize = labelLocalToWorld(a, bb.x + bb.w, bb.y + bb.h)
+      if (Math.sqrt((wx - resize.x) ** 2 + (wy - resize.y) ** 2) < handleR) return { idx: i, endpoint: 'resize' }
+      const rotate = labelLocalToWorld(a, a.x1, bb.y - 24 / scale)
+      if (Math.sqrt((wx - rotate.x) ** 2 + (wy - rotate.y) ** 2) < handleR) return { idx: i, endpoint: 'rotate' }
+      continue
+    }
     if (a.type === 'door' && a.swing) {
       const arcR = a.arcRadius ?? Math.sqrt((a.x2 - a.x1) ** 2 + (a.y2 - a.y1) ** 2)
       const sA = SLAB_ANGLES[a.swing]

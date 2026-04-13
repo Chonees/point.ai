@@ -1,4 +1,5 @@
 import type { PlanRow } from '../../lib/database.types'
+import { DEFAULT_VISIBILITY } from '../../types'
 import type { PlanData } from './project.types'
 
 export function rowToPlan(row: PlanRow): PlanData {
@@ -13,7 +14,9 @@ export function rowToPlan(row: PlanRow): PlanData {
       placedItems3d: row.placed_items_3d ?? [],
       floorMaterial: row.floor_material,
       wallMaterial: row.wall_material,
+      visibility: row.editor_visibility ?? DEFAULT_VISIBILITY,
     },
+    totalSqft: row.total_sqft ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   }

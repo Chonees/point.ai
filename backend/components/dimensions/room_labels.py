@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+
 import backend.components.dimensions as _dims_pkg
 
 from ezdxf.enums import TextEntityAlignment
@@ -7,6 +9,11 @@ from ezdxf.enums import TextEntityAlignment
 from .coord_transform import CoordTransform, ROOM_NAME_HEIGHT, ROOM_DIM_HEIGHT
 from .exterior import _plan_width_dxf
 from .room_metrics import _label_room_metrics
+
+
+def _rotate_offset(ox: float, oy: float, cos_r: float, sin_r: float) -> tuple[float, float]:
+    """Rotate a 2D offset by the precomputed cos/sin of the angle."""
+    return (ox * cos_r - oy * sin_r, ox * sin_r + oy * cos_r)
 
 
 def _label_sizes(plan_width_dxf: float) -> tuple[float, float, float]:
@@ -52,8 +59,27 @@ def _render_manual_room_labels(
         lx, ly = float(label["x1"]), float(label["y1"])
         dx, dy = ct.to_dxf(lx, ly)
 
-        name_text = msp.add_text(room_name, dxfattribs={"layer": "ROOM LBLS", "height": name_h})
-        name_text.set_placement((dx, dy + label_spacing), align=TextEntityAlignment.MIDDLE_CENTER)
+        # Per-label transform: scale + rotation set by the user in the 2D editor.
+        # Canvas rotation is clockwise (Y-down); DXF rotation is counter-clockwise (Y-up),
+        # so we negate the angle when converting.
+        label_scale = float(label.get("labelScale") or 1.0)
+        canvas_rot = float(label.get("labelRotation") or 0.0)
+        dxf_rot_rad = -canvas_rot
+        rotation_deg = math.degrees(dxf_rot_rad)
+        cos_r = math.cos(dxf_rot_rad)
+        sin_r = math.sin(dxf_rot_rad)
+
+        scaled_name_h = name_h * label_scale
+        scaled_dim_h = dim_h * label_scale
+        scaled_spacing = label_spacing * label_scale
+
+        # Room name — offset (0, spacing) in local space (up), then rotated
+        name_ox, name_oy = _rotate_offset(0.0, scaled_spacing, cos_r, sin_r)
+        name_text = msp.add_text(
+            room_name,
+            dxfattribs={"layer": "ROOM LBLS", "height": scaled_name_h, "rotation": rotation_deg},
+        )
+        name_text.set_placement((dx + name_ox, dy + name_oy), align=TextEntityAlignment.MIDDLE_CENTER)
         counts["room_labels"] += 1
         _dims_pkg.log_event(
             "room_label_added",
@@ -62,22 +88,29 @@ def _render_manual_room_labels(
             anchor_dxf={"x": round(dx, 4), "y": round(dy, 4)},
             sqft=round(sqft_value, 4) if sqft_value is not None else None,
             sqft_source=sqft_source if sqft_value is not None else None,
+            label_scale=round(label_scale, 4),
+            label_rotation_deg=round(rotation_deg, 2),
         )
 
         dims_text = _label_room_metrics(annotations, wall_mask, image_shape, label, scale_ipp, room_context=room_context)
         if dims_text:
-            dims_label = msp.add_text(dims_text, dxfattribs={"layer": "ROOM LBLS", "height": dim_h})
-            dims_label.set_placement((dx, dy - label_spacing * 0.3), align=TextEntityAlignment.MIDDLE_CENTER)
+            dims_ox, dims_oy = _rotate_offset(0.0, -scaled_spacing * 0.3, cos_r, sin_r)
+            dims_label = msp.add_text(
+                dims_text,
+                dxfattribs={"layer": "ROOM LBLS", "height": scaled_dim_h, "rotation": rotation_deg},
+            )
+            dims_label.set_placement((dx + dims_ox, dy + dims_oy), align=TextEntityAlignment.MIDDLE_CENTER)
             counts["room_size_labels"] += 1
             _dims_pkg.log_event("room_size_label_added", room_name=room_name, dims_text=dims_text)
 
         if sqft_value is not None:
-            sqft_y = dy - (label_spacing * 1.2 if dims_text else label_spacing * 0.3)
+            sqft_local_y = -(scaled_spacing * 1.2 if dims_text else scaled_spacing * 0.3)
+            sqft_ox, sqft_oy = _rotate_offset(0.0, sqft_local_y, cos_r, sin_r)
             sqft_text = msp.add_text(
                 f"{int(round(float(sqft_value)))} SQ FT",
-                dxfattribs={"layer": "ROOM LBLS", "height": dim_h},
+                dxfattribs={"layer": "ROOM LBLS", "height": scaled_dim_h, "rotation": rotation_deg},
             )
-            sqft_text.set_placement((dx, sqft_y), align=TextEntityAlignment.MIDDLE_CENTER)
+            sqft_text.set_placement((dx + sqft_ox, dy + sqft_oy), align=TextEntityAlignment.MIDDLE_CENTER)
             counts["sqft_labels"] += 1
             _dims_pkg.log_event(
                 "room_sqft_label_added",

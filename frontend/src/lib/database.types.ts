@@ -1,4 +1,4 @@
-import type { Annotation } from '../types'
+import type { Annotation, Visibility } from '../types'
 
 /** Mirrors the PlacedFurniture interface from FloorPlan3D */
 export type PlacedItemDB = {
@@ -31,6 +31,8 @@ export type PlanRow = {
   placed_items_3d: PlacedItemDB[]
   floor_material: string
   wall_material: string
+  editor_visibility: Visibility
+  total_sqft: number | null
   created_at: string
   updated_at: string
 }
@@ -61,6 +63,8 @@ export type Database = {
           placed_items_3d: PlacedItemDB[]
           floor_material: string
           wall_material: string
+          editor_visibility?: Visibility
+          total_sqft?: number | null
         }
         Update: {
           name?: string
@@ -70,6 +74,8 @@ export type Database = {
           placed_items_3d?: PlacedItemDB[]
           floor_material?: string
           wall_material?: string
+          editor_visibility?: Visibility
+          total_sqft?: number | null
           updated_at?: string
         }
         Relationships: []

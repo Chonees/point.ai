@@ -1,5 +1,7 @@
 import type { Annotation, AnnotationType } from '../../types'
 import { COLORS, WALL_LINE_WIDTH, WALL_COLOR, SNAP_DISTANCE } from './constants'
+import type { Visibility } from './types'
+import { DEFAULT_VISIBILITY } from './types'
 
 interface View { offsetX: number; offsetY: number; scale: number }
 interface DrawingState {
@@ -22,6 +24,7 @@ export function renderCanvas(
   drawing: DrawingState,
   regionOverlay?: HTMLImageElement | HTMLCanvasElement | null,
   longPressIdx = -1,
+  visibility: Visibility = DEFAULT_VISIBILITY,
 ): void {
   const ctx = canvas.getContext('2d')
   if (!ctx) return
@@ -46,36 +49,55 @@ export function renderCanvas(
   // Apply pan+zoom
   ctx.setTransform(v.scale, 0, 0, v.scale, v.offsetX, v.offsetY)
 
-  // Draw image at origin in world space
-  ctx.drawImage(img, 0, 0)
+  // Draw image at origin in world space (toggleable)
+  if (visibility.bg) {
+    ctx.drawImage(img, 0, 0)
+  }
 
   // Draw region overlay (colored room zones from flood-fill)
-  if (regionOverlay) {
+  if (regionOverlay && visibility.regions) {
     ctx.drawImage(regionOverlay, 0, 0)
   }
 
-  // Draw committed annotations
+  // Draw committed annotations (respecting visibility)
   for (const ann of anns) {
     const isAuto = ann._source === 'ensemble_cubicasa'
+    if (ann.type === 'label' && !visibility.labels) continue
+    if (ann.type === 'wall' && !visibility.walls) continue
+    if (ann.type === 'door' && !visibility.doors) continue
+    if (ann.type === 'window' && !visibility.windows) continue
+    if ((ann.type as string) === 'separator' && !visibility.separators) continue
     if (ann.type === 'label') {
       // Room label: name + sqft centered at point — world-space (scales with zoom)
       const lx = ann.x1, ly = ann.y1
       const name = ann.roomName || 'ROOM'
       const sqft = ann.sqft ? `${ann.sqft} SQ FT` : ''
+      const labelScale = ann.labelScale ?? 1
+      const labelRotation = ann.labelRotation ?? 0
 
-      const nameSize = 32
-      const sqftSize = 22
-      const pad = 12
+      const nameSize = 32 * labelScale
+      const sqftSize = 22 * labelScale
+      const pad = 12 * labelScale
 
-      // White background for readability
       const bw = Math.max(name.length, sqft.length) * nameSize * 0.6 + pad * 2
       const bh = (sqft ? nameSize + sqftSize + pad : nameSize) + pad * 2
       const bx = lx - bw / 2, by = ly - bh / 2
+      const isHovered = hoveredIdx === anns.indexOf(ann)
+
+      // Apply rotation around the label center
+      ctx.save()
+      if (labelRotation !== 0) {
+        ctx.translate(lx, ly)
+        ctx.rotate(labelRotation)
+        ctx.translate(-lx, -ly)
+      }
+
+      // White background for readability
       ctx.fillStyle = 'rgba(255, 255, 255, 0.85)'
-      ctx.strokeStyle = '#333333'
-      ctx.lineWidth = 3
+      ctx.strokeStyle = isHovered ? '#3b82f6' : '#333333'
+      ctx.lineWidth = isHovered ? 4 : 3
       ctx.beginPath()
-      ctx.roundRect(bx, by, bw, bh, 6)
+      ctx.roundRect(bx, by, bw, bh, 6 * labelScale)
       ctx.fill()
       ctx.stroke()
 
@@ -95,6 +117,39 @@ export function renderCanvas(
 
       ctx.textAlign = 'start'
       ctx.textBaseline = 'alphabetic'
+
+      // Handles (drawn in rotated space so they stay attached to the box)
+      if (isHovered) {
+        const handleR = 7 / v.scale
+        ctx.setLineDash([])
+
+        // Resize handle — bottom-right corner
+        ctx.fillStyle = '#3b82f6'
+        ctx.strokeStyle = '#ffffff'
+        ctx.lineWidth = 2 / v.scale
+        ctx.beginPath()
+        ctx.arc(bx + bw, by + bh, handleR, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.stroke()
+
+        // Rotate handle — above top-center, with a connecting line
+        const rotY = by - 24 / v.scale
+        ctx.strokeStyle = '#3b82f6'
+        ctx.lineWidth = 1.5 / v.scale
+        ctx.beginPath()
+        ctx.moveTo(lx, by)
+        ctx.lineTo(lx, rotY + handleR)
+        ctx.stroke()
+        ctx.fillStyle = '#22c55e'
+        ctx.strokeStyle = '#ffffff'
+        ctx.lineWidth = 2 / v.scale
+        ctx.beginPath()
+        ctx.arc(lx, rotY, handleR, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.stroke()
+      }
+
+      ctx.restore()
     } else {
       // AI-detected annotations: dashed + slightly transparent
       if (isAuto) {
@@ -240,7 +295,9 @@ export function renderCanvas(
   }
 
   // Fill junction gaps where 2+ walls share an endpoint
-  _renderJunctionFills(ctx, anns)
+  if (visibility.walls) {
+    _renderJunctionFills(ctx, anns)
+  }
 
   // Hover delete indicator: draw × on hovered annotation
   if (hoveredIdx >= 0 && hoveredIdx < anns.length) {

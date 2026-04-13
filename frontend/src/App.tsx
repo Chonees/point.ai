@@ -20,9 +20,10 @@ export default function App() {
   const planList = usePlanList(selectedProjectId)
   const [currentPlan, setCurrentPlan] = useState<PlanData | null>(null)
   const [page, setPage] = useState<Page>(isSupabaseConfigured ? 'login' : 'editor')
-  const { saving, lastSaved, saveNow } = usePlanSave(currentPlan?.id ?? null)
+  const { saving, lastSaved, saveNow, debouncedSave } = usePlanSave(currentPlan?.id ?? null)
   const pendingSceneRef = useRef<ProjectScene | null>(null)
   const pendingStructureRef = useRef<Record<string, unknown> | null>(null)
+  const pendingTotalSqftRef = useRef<number | null | undefined>(undefined)
   const saveState = useMemo(() => {
     if (!currentPlan) return 'Not saved yet'
     if (saving) return 'Saving...'
@@ -35,6 +36,7 @@ export default function App() {
     const updates: Record<string, unknown> = {}
     if (pendingSceneRef.current) updates.scene = pendingSceneRef.current
     if (pendingStructureRef.current) updates.structure = pendingStructureRef.current
+    if (pendingTotalSqftRef.current !== undefined) updates.totalSqft = pendingTotalSqftRef.current
     await saveNow(updates)
   }
 
@@ -176,14 +178,21 @@ export default function App() {
               project={currentPlan}
               onSceneChange={(scene) => {
                 pendingSceneRef.current = scene
+                debouncedSave({ scene })
               }}
               onStructureChange={(structure) => {
                 pendingStructureRef.current = structure
+                debouncedSave({ structure })
+              }}
+              onTotalSqftChange={(value) => {
+                pendingTotalSqftRef.current = value
+                debouncedSave({ totalSqft: value })
               }}
               onSaveNow={(updates) => {
                 if (updates.imageData) saveNow({ imageData: updates.imageData })
                 if (updates.structure) pendingStructureRef.current = updates.structure
                 if (updates.scene) pendingSceneRef.current = updates.scene
+                if (updates.totalSqft !== undefined) pendingTotalSqftRef.current = updates.totalSqft
               }}
             />
           </Suspense>

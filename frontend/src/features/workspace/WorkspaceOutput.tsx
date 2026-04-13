@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { V2Result, Annotation } from '../../types'
+import type { V2Result, Annotation, Visibility } from '../../types'
 import type { PlanScene } from '../projects/project.types'
 import { DownloadButton } from '../../components/DownloadButton'
 import { apiUrl } from '../../lib/api'
@@ -14,6 +14,8 @@ interface WorkspaceOutputProps {
   result: V2Result
   annotations: Annotation[]
   setAnnotations: (annotations: Annotation[]) => void
+  visibility: Visibility
+  onVisibilityChange: (v: Visibility) => void
   initialScene?: PlanScene
   onSceneChange?: (scene: PlanScene) => void
 }
@@ -22,6 +24,8 @@ export function WorkspaceOutput({
   result,
   annotations,
   setAnnotations,
+  visibility,
+  onVisibilityChange,
   initialScene,
   onSceneChange,
 }: WorkspaceOutputProps) {
@@ -94,6 +98,8 @@ export function WorkspaceOutput({
                 regionOverlay={result.region_overlay}
                 annotations={annotations}
                 setAnnotations={setAnnotations}
+                initialVisibility={visibility}
+                onVisibilityChange={onVisibilityChange}
               />
             )}
           </Suspense>

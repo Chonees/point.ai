@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { motion } from 'framer-motion'
-import type { Annotation } from '../types'
+import type { Annotation, Visibility } from '../types'
+import { DEFAULT_VISIBILITY } from '../types'
 import type { PlanData, PlanScene } from '../features/projects'
 import { useGenerateDxf } from '../features/workspace/useGenerateDxf'
 import { PlanSourceCard } from '../features/workspace/PlanSourceCard'
@@ -12,16 +13,28 @@ interface UploadPanelProps {
   project?: PlanData | null
   onSceneChange?: (scene: PlanScene) => void
   onStructureChange?: (structure: Record<string, unknown>) => void
-  onSaveNow?: (updates: { structure?: Record<string, unknown>; scene?: PlanScene; imageData?: string }) => void
+  onTotalSqftChange?: (value: number | null) => void
+  onSaveNow?: (updates: { structure?: Record<string, unknown>; scene?: PlanScene; imageData?: string; totalSqft?: number | null }) => void
 }
 
-export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveNow }: UploadPanelProps = {}) {
+export function UploadPanel({ project, onSceneChange, onStructureChange, onTotalSqftChange, onSaveNow }: UploadPanelProps = {}) {
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [annotations, setAnnotations] = useState<Annotation[]>([])
   const [autoLoaded, setAutoLoaded] = useState(false)
-  const [totalSqft, setTotalSqft] = useState('')
+  const [totalSqft, setTotalSqft] = useState(
+    project?.totalSqft != null ? String(project.totalSqft) : '',
+  )
   const [dragging, setDragging] = useState(false)
+  const [visibility, setVisibility] = useState<Visibility>(project?.scene.visibility ?? DEFAULT_VISIBILITY)
+
+  const handleTotalSqftChange = useCallback((value: string) => {
+    setTotalSqft(value)
+    if (onTotalSqftChange) {
+      const parsed = value.trim() === '' ? null : Number(value)
+      onTotalSqftChange(Number.isFinite(parsed) ? (parsed as number) : null)
+    }
+  }, [onTotalSqftChange])
 
   const { status, statusMsg, result, generate } = useGenerateDxf({
     file,
@@ -47,6 +60,8 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveN
     if (project.imageData) {
       setPreview(project.imageData)
     }
+    setVisibility(project.scene.visibility ?? DEFAULT_VISIBILITY)
+    setTotalSqft(project.totalSqft != null ? String(project.totalSqft) : '')
     if (project.structure) {
       // Restored from saved project — handled by the hook's setResult isn't available here,
       // but useGenerateDxf only manages generation results. For restored state we set result via
@@ -54,13 +69,17 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveN
     }
   }, [project?.id])
 
-  const notifySceneChange = useCallback((newAnnotations: Annotation[]) => {
+  const notifySceneChange = useCallback((
+    newAnnotations: Annotation[],
+    newVisibility: Visibility,
+  ) => {
     if (!onSceneChange || !project) return
     onSceneChange({
       annotations2d: newAnnotations,
       placedItems3d: project.scene.placedItems3d,
       floorMaterial: project.scene.floorMaterial,
       wallMaterial: project.scene.wallMaterial,
+      visibility: newVisibility,
     })
   }, [onSceneChange, project])
 
@@ -101,7 +120,7 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveN
           />
           <PlanMetadataCard
             totalSqft={totalSqft}
-            onTotalSqftChange={setTotalSqft}
+            onTotalSqftChange={handleTotalSqftChange}
             labelCount={labelCount}
             computedRoomCount={computedRoomCount}
             status={status}
@@ -135,7 +154,12 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveN
             annotations={annotations}
             setAnnotations={(next) => {
               setAnnotations(next)
-              notifySceneChange(next)
+              notifySceneChange(next, visibility)
+            }}
+            visibility={visibility}
+            onVisibilityChange={(next) => {
+              setVisibility(next)
+              notifySceneChange(annotations, next)
             }}
             initialScene={project?.scene}
             onSceneChange={onSceneChange}

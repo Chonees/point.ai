@@ -1,4 +1,4 @@
-import type { Annotation } from '../../types'
+import type { Annotation, Visibility } from '../../types'
 import type { PlacedItemDB } from '../../lib/database.types'
 
 export interface ProjectData {
@@ -14,6 +14,7 @@ export interface PlanScene {
   placedItems3d: PlacedItemDB[]
   floorMaterial: string
   wallMaterial: string
+  visibility: Visibility
 }
 
 export type ProjectScene = PlanScene
@@ -25,6 +26,7 @@ export interface PlanData {
   imageData: string | null
   structure: Record<string, unknown> | null
   scene: PlanScene
+  totalSqft: number | null
   createdAt: string
   updatedAt: string
 }

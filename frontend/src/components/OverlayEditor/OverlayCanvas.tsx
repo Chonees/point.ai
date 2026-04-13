@@ -2,7 +2,8 @@ import type React from 'react'
 import type { Annotation } from '../../types'
 import { DoorSwingPicker } from '../DoorSwingPicker'
 import { RoomLabelDialog } from './RoomLabelDialog'
-import type { PendingDoor, PendingLabel } from './types'
+import { LabelEditDialog } from './LabelEditDialog'
+import type { PendingDoor, PendingLabel, EditingLabel } from './types'
 import type { SwingDir } from '../../types'
 
 interface OverlayCanvasProps {
@@ -23,6 +24,8 @@ interface OverlayCanvasProps {
   setLabelSqft: (s: string) => void
   annotations: Annotation[]
   setAnnotations: (a: Annotation[]) => void
+  editingLabel: EditingLabel | null
+  setEditingLabel: (e: EditingLabel | null) => void
   editingDoorIdxRef: React.MutableRefObject<number>
   onPointerDown: (e: React.PointerEvent<HTMLCanvasElement>) => void
   onPointerMove: (e: React.PointerEvent<HTMLCanvasElement>) => void
@@ -39,6 +42,7 @@ export function OverlayCanvas({
   pendingLabel, setPendingLabel,
   labelName, setLabelName, labelSqft, setLabelSqft,
   annotations, setAnnotations,
+  editingLabel, setEditingLabel,
   editingDoorIdxRef,
   onPointerDown, onPointerMove, onPointerUp, onPointerLeave,
   addDoorWithSwing, mirrorDoor,
@@ -69,6 +73,14 @@ export function OverlayCanvas({
           annotations={annotations}
           setAnnotations={setAnnotations}
           setPendingLabel={setPendingLabel}
+        />
+      )}
+      {editingLabel && (
+        <LabelEditDialog
+          editingLabel={editingLabel}
+          annotations={annotations}
+          setAnnotations={setAnnotations}
+          setEditingLabel={setEditingLabel}
         />
       )}
       {pendingDoor && (() => {

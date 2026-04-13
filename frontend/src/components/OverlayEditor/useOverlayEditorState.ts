@@ -3,12 +3,14 @@ import type { AnnotationType, Annotation } from '../../types'
 import { renderCanvas as renderCanvasFn } from './renderCanvas'
 import { ROOM_PALETTE } from './constants'
 import { getStroke } from 'perfect-freehand'
-import type { View, SnapState } from './types'
+import type { View, SnapState, Visibility } from './types'
+import { DEFAULT_VISIBILITY } from './types'
 
 export function useOverlayEditorState(
   previewUrl: string,
   regionOverlay: string | undefined,
   annotations: Annotation[],
+  initialVisibility: Visibility = DEFAULT_VISIBILITY,
 ) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
@@ -17,6 +19,17 @@ export function useOverlayEditorState(
   const [paintBrushSize, setPaintBrushSize] = useState(15)
   const [selectedRoomIdx, setSelectedRoomIdx] = useState<number>(-1)
   const [paintMode, setPaintMode] = useState<'brush' | 'separator'>('brush')
+  const [visibility, setVisibility] = useState<Visibility>(initialVisibility)
+  const lastInitialVisibilityJsonRef = useRef<string>(JSON.stringify(initialVisibility))
+
+  // Reset local visibility only when the parent genuinely swaps the plan
+  useEffect(() => {
+    const nextJson = JSON.stringify(initialVisibility)
+    if (nextJson !== lastInitialVisibilityJsonRef.current) {
+      lastInitialVisibilityJsonRef.current = nextJson
+      setVisibility(initialVisibility)
+    }
+  }, [initialVisibility])
   const regionCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const paintingRef = useRef(false)
   const separatorStartRef = useRef<{ x: number; y: number } | null>(null)
@@ -31,7 +44,7 @@ export function useOverlayEditorState(
   const hoveredIdxRef = useRef<number>(-1)
   const selectedRoomIdxRef = useRef<number>(-1)
   const paintBrushSizeRef = useRef(paintBrushSize)
-  const draggingRef = useRef<{ idx: number; endpoint: 'start' | 'end' | 'arc' } | null>(null)
+  const draggingRef = useRef<{ idx: number; endpoint: 'start' | 'end' | 'arc' | 'resize' | 'rotate' | 'move' } | null>(null)
 
   useEffect(() => { toolRef.current = tool }, [tool])
   useEffect(() => { annotationsRef.current = annotations }, [annotations])
@@ -187,15 +200,16 @@ export function useOverlayEditorState(
       { active: drawingRef.current, start: startPtRef.current, cursor: cursorPtRef.current, tool: toolRef.current },
       regionCanvasRef.current ?? overlayImgRef.current,
       longPressActiveRef.current ? longPressIdxRef.current : -1,
+      visibility,
     )
-  }, [])
+  }, [visibility])
 
   const scheduleRender = useCallback(() => {
     cancelAnimationFrame(rafId.current)
     rafId.current = requestAnimationFrame(() => renderCanvas())
   }, [renderCanvas])
 
-  useEffect(() => { scheduleRender() }, [view, annotations, regionOverlay, scheduleRender])
+  useEffect(() => { scheduleRender() }, [view, annotations, regionOverlay, visibility, scheduleRender])
 
   useEffect(() => {
     const onDown = (e: KeyboardEvent) => { if (e.code === 'Space') { e.preventDefault(); spaceDown.current = true } }
@@ -238,6 +252,7 @@ export function useOverlayEditorState(
     paintBrushSize, setPaintBrushSize,
     selectedRoomIdx, setSelectedRoomIdx,
     paintMode, setPaintMode,
+    visibility, setVisibility,
     regionCanvasRef,
     paintingRef,
     separatorStartRef,

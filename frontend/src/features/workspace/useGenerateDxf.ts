@@ -127,6 +127,9 @@ export function useGenerateDxf({
         onAnnotationsUpdate((previous) =>
           previous.map((annotation) => {
             if (annotation.type !== 'label' || !annotation.roomName) return annotation
+            // Preserve user-edited sqft — only fill in when empty.
+            // Also preserve labelScale / labelRotation via the spread below.
+            if (annotation.sqft != null) return annotation
             const match = data.computed_rooms!.find(
               (room) => room.roomName === annotation.roomName!.toUpperCase()
                 && Math.abs(room.x1 - annotation.x1) < 5

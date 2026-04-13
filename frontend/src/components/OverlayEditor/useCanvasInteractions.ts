@@ -2,7 +2,7 @@ import { useRef } from 'react'
 import type React from 'react'
 import type { Annotation, SwingDir } from '../../types'
 import { hitTestAnnotation, hitTestEndpoint, snapToEndpoint } from './geometry'
-import type { PendingDoor, PendingLabel } from './types'
+import type { PendingDoor, PendingLabel, EditingLabel } from './types'
 import type { useOverlayEditorState } from './useOverlayEditorState'
 
 type EditorState = ReturnType<typeof useOverlayEditorState>
@@ -16,6 +16,7 @@ export function useCanvasInteractions(
   setPendingLabel: (l: PendingLabel | null) => void,
   setLabelName: (s: string) => void,
   setLabelSqft: (s: string) => void,
+  setEditingLabel: (e: EditingLabel | null) => void,
 ) {
   const {
     canvasRef,
@@ -51,6 +52,7 @@ export function useCanvasInteractions(
 
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const longPressStartRef = useRef<{ x: number; y: number } | null>(null)
+  const labelDragStartRef = useRef<{ clientX: number; clientY: number; moved: boolean } | null>(null)
 
   const cancelLongPress = () => {
     if (longPressTimerRef.current) {
@@ -152,6 +154,12 @@ export function useCanvasInteractions(
       const idx = hoveredIdxRef.current
       const ha = annotationsRef.current[idx]
       if (ha) {
+        // Labels: start move drag (click without drag → edit dialog on pointerUp)
+        if (ha.type === 'label') {
+          draggingRef.current = { idx, endpoint: 'move' }
+          labelDragStartRef.current = { clientX: e.clientX, clientY: e.clientY, moved: false }
+          return
+        }
         const cx = (ha.x1 + ha.x2) / 2
         const cy = (ha.y1 + ha.y2) / 2
         const pt = screenToWorld(e.clientX, e.clientY)
@@ -227,8 +235,36 @@ export function useCanvasInteractions(
     if (draggingRef.current) {
       const ptRaw = screenToWorld(e.clientX, e.clientY)
       const { idx, endpoint } = draggingRef.current
+      // Track if the label drag actually moved (for click-vs-drag)
+      if (labelDragStartRef.current) {
+        const ddx = e.clientX - labelDragStartRef.current.clientX
+        const ddy = e.clientY - labelDragStartRef.current.clientY
+        if (ddx * ddx + ddy * ddy > 9) labelDragStartRef.current.moved = true
+      }
       setAnnotations(annotations.map((a, i) => {
         if (i !== idx) return a
+        // Label move: update all coords to cursor position (labels are points)
+        if (endpoint === 'move' && a.type === 'label') {
+          return { ...a, x1: ptRaw.x, y1: ptRaw.y, x2: ptRaw.x, y2: ptRaw.y }
+        }
+        // Label resize: distance from label center → scale factor
+        if (endpoint === 'resize' && a.type === 'label') {
+          const name = a.roomName || 'ROOM'
+          const sqft = a.sqft ? `${a.sqft} SQ FT` : ''
+          const baseW = Math.max(name.length, sqft.length) * 32 * 0.6 + 24
+          const baseH = (sqft ? 32 + 22 + 12 : 32) + 24
+          const baseDiag = Math.sqrt(baseW * baseW + baseH * baseH) / 2
+          const curDiag = Math.sqrt((ptRaw.x - a.x1) ** 2 + (ptRaw.y - a.y1) ** 2)
+          const newScale = Math.max(0.3, Math.min(5, curDiag / baseDiag))
+          return { ...a, labelScale: newScale }
+        }
+        // Label rotate: angle from center to cursor; handle starts at top (−PI/2 unrotated)
+        if (endpoint === 'rotate' && a.type === 'label') {
+          const angle = Math.atan2(ptRaw.y - a.y1, ptRaw.x - a.x1)
+          // Handle is at top-center (pointing "up" in local space = angle −PI/2).
+          // Align that rest position to rotation 0.
+          return { ...a, labelRotation: angle + Math.PI / 2 }
+        }
         if (endpoint === 'arc' && a.swing) {
           const slabAs: Record<string, number> = { up: -Math.PI / 2, down: Math.PI / 2, left: Math.PI, right: 0 }
           const sA = slabAs[a.swing]
@@ -312,7 +348,27 @@ export function useCanvasInteractions(
       scheduleRender()
       return
     }
-    if (draggingRef.current) { draggingRef.current = null; return }
+    if (draggingRef.current) {
+      // If the user clicked on a label without dragging, open the edit dialog
+      const dr = draggingRef.current
+      if (dr.endpoint === 'move' && labelDragStartRef.current && !labelDragStartRef.current.moved) {
+        const ann = annotationsRef.current[dr.idx]
+        if (ann && ann.type === 'label') {
+          const rect = canvasRef.current!.getBoundingClientRect()
+          const sx = e.clientX - rect.left
+          const sy = e.clientY - rect.top
+          setEditingLabel({
+            idx: dr.idx,
+            name: ann.roomName || '',
+            sqft: ann.sqft != null ? String(ann.sqft) : '',
+            sx, sy,
+          })
+        }
+      }
+      labelDragStartRef.current = null
+      draggingRef.current = null
+      return
+    }
     if (!drawingRef.current || !startPtRef.current) return
     const ptRaw = screenToWorld(e.clientX, e.clientY)
     const pt = _snap(ptRaw.x, ptRaw.y)
