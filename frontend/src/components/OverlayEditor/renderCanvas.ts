@@ -1,5 +1,5 @@
 import type { Annotation, AnnotationType } from '../../types'
-import { COLORS } from './constants'
+import { COLORS, WALL_LINE_WIDTH, WALL_COLOR, SNAP_DISTANCE } from './constants'
 
 interface View { offsetX: number; offsetY: number; scale: number }
 interface DrawingState {
@@ -240,33 +240,7 @@ export function renderCanvas(
   }
 
   // Fill junction gaps where 2+ walls share an endpoint
-  const wallAnns = anns.filter(a => a.type === 'wall')
-  if (wallAnns.length > 1) {
-    const snapDist = 4
-    const seen = new Set<string>()
-    for (const w of wallAnns) {
-      const wLw = w.thickness === 6 ? 8 : 4
-      for (const [px, py] of [[w.x1, w.y1], [w.x2, w.y2]] as [number, number][]) {
-        const key = `${Math.round(px)},${Math.round(py)}`
-        if (seen.has(key)) continue
-        let count = 0
-        for (const other of wallAnns) {
-          if (other === w) continue
-          for (const [ox, oy] of [[other.x1, other.y1], [other.x2, other.y2]] as [number, number][]) {
-            if (Math.abs(px - ox) <= snapDist && Math.abs(py - oy) <= snapDist) { count++; break }
-          }
-          if (count > 0) break
-        }
-        if (count > 0) {
-          ctx.fillStyle = w.thickness === 6 ? '#999999' : '#00ccff'
-          ctx.beginPath()
-          ctx.arc(px, py, wLw / 2, 0, Math.PI * 2)
-          ctx.fill()
-          seen.add(key)
-        }
-      }
-    }
-  }
+  _renderJunctionFills(ctx, anns)
 
   // Hover delete indicator: draw × on hovered annotation
   if (hoveredIdx >= 0 && hoveredIdx < anns.length) {
@@ -385,6 +359,47 @@ export function renderCanvas(
       ctx.fillStyle = '#ffffff'
       ctx.font = `bold ${11 / v.scale}px monospace`
       ctx.fillText(`${lenPx}px`, (sp.x + cp.x) / 2 + 6 / v.scale, (sp.y + cp.y) / 2 - 6 / v.scale)
+    }
+  }
+}
+
+
+// ---------------------------------------------------------------------------
+// Junction fill — covers small gaps where 2+ walls share an endpoint
+// ---------------------------------------------------------------------------
+
+function _renderJunctionFills(ctx: CanvasRenderingContext2D, anns: Annotation[]): void {
+  const walls = anns.filter(a => a.type === 'wall')
+  if (walls.length < 2) return
+
+  const seen = new Set<string>()
+  for (const w of walls) {
+    const wLw = WALL_LINE_WIDTH[w.thickness ?? 4] ?? 4
+    for (const [px, py] of [[w.x1, w.y1], [w.x2, w.y2]] as [number, number][]) {
+      const key = `${Math.round(px)},${Math.round(py)}`
+      if (seen.has(key)) continue
+
+      let maxLw = wLw
+      let matched = false
+      for (const other of walls) {
+        if (other === w) continue
+        const otherLw = WALL_LINE_WIDTH[other.thickness ?? 4] ?? 4
+        for (const [ox, oy] of [[other.x1, other.y1], [other.x2, other.y2]] as [number, number][]) {
+          if (Math.abs(px - ox) <= SNAP_DISTANCE && Math.abs(py - oy) <= SNAP_DISTANCE) {
+            matched = true
+            maxLw = Math.max(maxLw, otherLw)
+            break
+          }
+        }
+        if (matched) break
+      }
+      if (matched) {
+        ctx.fillStyle = WALL_COLOR[w.thickness ?? 4] ?? '#00ccff'
+        ctx.beginPath()
+        ctx.arc(px, py, maxLw / 2 + 1, 0, Math.PI * 2)
+        ctx.fill()
+        seen.add(key)
+      }
     }
   }
 }

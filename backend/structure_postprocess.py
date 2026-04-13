@@ -25,7 +25,7 @@ DEFAULT_MIN_WALL_LENGTH = 12.0
 EXTERIOR_COVERAGE_THRESHOLD = 0.70
 
 # Diagonal wall projection: walls within this angle of H/V are snapped to axis
-DIAGONAL_ANGLE_THRESHOLD_DEG = 15.0
+from .geometry_utils import DIAGONAL_ANGLE_THRESHOLD_DEG, is_diagonal as _is_diagonal_wall
 
 # Furniture filter: closed rectangles smaller than this area are furniture
 DEFAULT_FURNITURE_MAX_AREA = 200.0 * 200.0   # 200x200 pixels max for furniture bboxes
@@ -360,7 +360,9 @@ def _snap_to_intersections(
     result = []
     for wall in walls:
         start, end = wall["polyline"]
-        if wall["orientation"] == "horizontal":
+        if wall["orientation"] == "diagonal":
+            result.append(wall)
+        elif wall["orientation"] == "horizontal":
             new_x1 = _snap_endpoint_to_axes(start["x"], v_x_coords, resolved.junction_tolerance)
             new_x2 = _snap_endpoint_to_axes(end["x"], v_x_coords, resolved.junction_tolerance)
             result.append({
@@ -449,7 +451,7 @@ def _classify_walls_with_junctions(
                 if coverage >= resolved.exterior_coverage_threshold or length >= ref_size - resolved.snap_tolerance:
                     side = "top"
                     is_exterior = True
-        else:
+        elif wall["orientation"] == "vertical":
             ref_size = bbox_height if bbox_height > EPSILON else 1.0
             coverage = length / ref_size
 
@@ -461,6 +463,7 @@ def _classify_walls_with_junctions(
                 if coverage >= resolved.exterior_coverage_threshold or length >= ref_size - resolved.snap_tolerance:
                     side = "right"
                     is_exterior = True
+        # Diagonal walls: keep defaults (not exterior, no side)
 
         confidence = wall["confidence"]
         if is_exterior:
@@ -841,7 +844,7 @@ def _limit_exterior_wall_windows(
 def _normalize_wall_geometry(wall: dict[str, Any]) -> dict[str, Any]:
     points = wall.get("polyline") or []
     if len(points) != 2:
-        raise ValueError("postprocess only supports 2-point axis-aligned walls")
+        raise ValueError("postprocess only supports 2-point walls")
 
     start = _point(points[0])
     end = _point(points[1])
@@ -849,6 +852,8 @@ def _normalize_wall_geometry(wall: dict[str, Any]) -> dict[str, Any]:
     if orientation == "horizontal" and start["x"] > end["x"]:
         start, end = end, start
     if orientation == "vertical" and start["y"] > end["y"]:
+        start, end = end, start
+    if orientation == "diagonal" and start["x"] > end["x"]:
         start, end = end, start
 
     return {
@@ -891,7 +896,10 @@ def _snap_walls(
     snapped = []
     for wall in walls:
         start, end = wall["polyline"]
-        if wall["orientation"] == "horizontal":
+        if wall["orientation"] == "diagonal":
+            # Pass diagonal walls through without axis-snapping
+            snapped.append(wall)
+        elif wall["orientation"] == "horizontal":
             y = _snap_value(start["y"], h_coords, tolerance=resolved.snap_tolerance)
             snapped.append(
                 {
@@ -922,8 +930,11 @@ def _merge_walls(
     config: PostprocessConfig | None = None,
 ) -> list[dict[str, Any]]:
     resolved = config or PostprocessConfig()
+    # Diagonal walls can't be merged — pass through directly
+    diagonals = [w for w in walls if w["orientation"] == "diagonal"]
+    hv_walls = [w for w in walls if w["orientation"] != "diagonal"]
     grouped: dict[tuple[str, float], list[dict[str, Any]]] = defaultdict(list)
-    for wall in walls:
+    for wall in hv_walls:
         coord = wall["polyline"][0]["y"] if wall["orientation"] == "horizontal" else wall["polyline"][0]["x"]
         grouped[(wall["orientation"], coord)].append(wall)
 
@@ -967,6 +978,7 @@ def _merge_walls(
             merged.append(merged_wall)
             counter += 1
 
+    merged.extend(diagonals)
     return merged
 
 
@@ -1148,6 +1160,11 @@ def _wall_span(wall: dict[str, Any]) -> tuple[float, float]:
     start, end = wall["polyline"]
     if wall["orientation"] == "horizontal":
         return float(start["x"]), float(end["x"])
+    if wall["orientation"] == "diagonal":
+        # For diagonals, span is the full Euclidean length anchored at 0
+        dx = float(end["x"]) - float(start["x"])
+        dy = float(end["y"]) - float(start["y"])
+        return 0.0, (dx * dx + dy * dy) ** 0.5
     return float(start["y"]), float(end["y"])
 
 
@@ -1190,7 +1207,7 @@ def _orientation(start: dict[str, float], end: dict[str, float]) -> str:
         return "horizontal"
     if abs(start["x"] - end["x"]) <= EPSILON:
         return "vertical"
-    raise ValueError("wall is not axis-aligned")
+    return "diagonal"
 
 
 def _default_side_for_wall(wall: dict[str, Any]) -> str:

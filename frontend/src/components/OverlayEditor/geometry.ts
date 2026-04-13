@@ -77,7 +77,7 @@ export function hitTestEndpoint(wx: number, wy: number, annotations: Annotation[
 }
 
 export function snapToEndpoint(wx: number, wy: number, annotations: Annotation[], scale: number, skipIdx: number = -1): { x: number; y: number; snapped: boolean } {
-  const threshold = (isCoarse ? 16 : 8) / scale
+  const threshold = (isCoarse ? 24 : 14) / scale
   let bestDist = threshold
   let snap = { x: wx, y: wy, snapped: false }
   for (let i = 0; i < annotations.length; i++) {

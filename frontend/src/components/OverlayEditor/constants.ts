@@ -10,6 +10,11 @@ export const COLORS: Record<AnnotationType, string> = {
   paint: '#ffffff',
 }
 
+// Wall rendering constants — single source of truth
+export const WALL_LINE_WIDTH: Record<number, number> = { 4: 4, 6: 8 }   // px per wall thickness
+export const WALL_COLOR: Record<number, string> = { 4: '#00ccff', 6: '#999999' }
+export const SNAP_DISTANCE = 6  // px — endpoint junction fill tolerance
+
 // Must match backend ROOM_PALETTE in scale_calibrator.py
 export const ROOM_PALETTE: [number, number, number][] = [
   [66, 133, 244],    // Blue

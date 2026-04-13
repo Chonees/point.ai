@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 from typing import Any
 
+from ..geometry_utils import is_diagonal as _is_diagonal, snap_endpoint_clusters
+from ..diagonal_walls import diagonal_wall_hatch_pts
 from .junctions import resolve_wall_junctions
 from .regions import _mitunet_region_dxf_to_img, _mitunet_region_img_to_dxf
 
@@ -95,15 +97,21 @@ def _snap_annotations_to_wall_edges(annotations: list[dict[str, Any]]) -> None:
     Converts image-space annotations to the normalized format expected by
     resolve_wall_junctions(), applies junction logic, then writes back.
     Visual line widths (px): 4" wall → 4px, 6" wall → 8px.
+    Diagonal walls are excluded from junction resolution.
     """
     wall_anns = [a for a in annotations if a["type"] == "wall"]
     if len(wall_anns) < 2:
         return
 
+    # Separate H/V walls from diagonals
+    hv_anns = [a for a in wall_anns if a.get("orientation") in ("horizontal", "vertical")]
+    if len(hv_anns) < 2:
+        return
+
     # Convert to junction resolver format
     junction_walls = []
-    for a in wall_anns:
-        ori = a.get("orientation", "horizontal")
+    for a in hv_anns:
+        ori = a["orientation"]
         hlw = (8 if a["thickness"] == 6 else 4) / 2
         if ori == "horizontal":
             junction_walls.append({
@@ -124,9 +132,9 @@ def _snap_annotations_to_wall_edges(annotations: list[dict[str, Any]]) -> None:
 
     resolved = resolve_wall_junctions(junction_walls)
 
-    # Write adjusted spans back to annotations
-    for a, orig, adj in zip(wall_anns, junction_walls, resolved):
-        ori = a.get("orientation", "horizontal")
+    # Write adjusted spans back to H/V annotations
+    for a, orig, adj in zip(hv_anns, junction_walls, resolved):
+        ori = a["orientation"]
         if ori == "horizontal":
             if a["x1"] <= a["x2"]:
                 a["x1"] = round(adj["span_lo"], 1)
@@ -210,6 +218,9 @@ def _draw_mitunet_annotations_from_region_plan(
         wx2, wy2 = _mitunet_region_img_to_dxf(int(ann["x2"]), int(ann["y2"]), image_shape=image_shape, transform=transform)
         wall_dxf_coords.append((wx1, wy1, wx2, wy2))
 
+    # Snap nearby wall endpoints together (freehand drawing tolerance)
+    wall_dxf_coords = snap_endpoint_clusters(wall_dxf_coords, tolerance=12.0)
+
     def _find_parent_wall_edges(
         win_lo: float, win_hi: float, win_mid: float, is_horizontal: bool,
     ) -> tuple[float, float] | None:
@@ -253,41 +264,58 @@ def _draw_mitunet_annotations_from_region_plan(
         return best
 
     # Pre-resolve all wall junctions using the shared resolver
+    # Diagonal walls are excluded from the junction resolver (H/V only)
     _junction_input = []
     _wall_ann_indices = []
     _wall_thicknesses = []
+    _wall_is_diagonal: list[bool] = []
+    _junction_to_wall_idx: list[int] = []  # maps junction idx → wall idx
+    wall_count = 0
     for i, ann in enumerate(annotations):
         if ann.get("type") != "wall":
             continue
-        wx1, wy1, wx2, wy2 = wall_dxf_coords[len(_junction_input)]
+        wx1, wy1, wx2, wy2 = wall_dxf_coords[wall_count]
         adx, ady = abs(wx2 - wx1), abs(wy2 - wy1)
         thickness = float(ann["thickness"]) if ann.get("thickness") else _resolve_wall_thickness(wx1, wy1, wx2, wy2)
         ht = thickness / 2
-        is_h = adx >= ady
-        _junction_input.append({
-            "orientation": "horizontal" if is_h else "vertical",
-            "mid": (wy1 + wy2) / 2 if is_h else (wx1 + wx2) / 2,
-            "span_lo": min(wx1, wx2) if is_h else min(wy1, wy2),
-            "span_hi": max(wx1, wx2) if is_h else max(wy1, wy2),
-            "half_lw": ht,
-        })
         _wall_ann_indices.append(i)
         _wall_thicknesses.append(thickness)
 
-    _resolved_walls = resolve_wall_junctions(_junction_input, mode="dxf")
+        is_diag = _is_diagonal(wx2 - wx1, wy2 - wy1)
+        _wall_is_diagonal.append(is_diag)
+
+        if not is_diag:
+            is_h = adx >= ady
+            _junction_input.append({
+                "orientation": "horizontal" if is_h else "vertical",
+                "mid": (wy1 + wy2) / 2 if is_h else (wx1 + wx2) / 2,
+                "span_lo": min(wx1, wx2) if is_h else min(wy1, wy2),
+                "span_hi": max(wx1, wx2) if is_h else max(wy1, wy2),
+                "half_lw": ht,
+            })
+            _junction_to_wall_idx.append(wall_count)
+        wall_count += 1
+
+    _resolved_junctions = resolve_wall_junctions(_junction_input, mode="dxf")
+    # Build resolved lookup: wall_idx → resolved junction data (only for H/V walls)
+    _resolved_walls: dict[int, dict] = {}
+    for ji, rw in enumerate(_resolved_junctions):
+        _resolved_walls[_junction_to_wall_idx[ji]] = rw
 
     # Debug: log junction adjustments
-    for i, (orig, adj) in enumerate(zip(_junction_input, _resolved_walls)):
+    diag_count = sum(1 for d in _wall_is_diagonal if d)
+    if diag_count:
+        print(f"[DXF-Junction] {diag_count} diagonal wall(s) skipped from junction resolver", flush=True)
+    for i, (orig, adj) in enumerate(zip(_junction_input, _resolved_junctions)):
         if orig["span_lo"] != adj["span_lo"] or orig["span_hi"] != adj["span_hi"]:
-            print(f"[DXF-Junction] wall {i} {orig['orientation']}: "
+            print(f"[DXF-Junction] wall {_junction_to_wall_idx[i]} {orig['orientation']}: "
                   f"span {orig['span_lo']:.1f}..{orig['span_hi']:.1f} → "
                   f"{adj['span_lo']:.1f}..{adj['span_hi']:.1f}", flush=True)
     if not any(o["span_lo"] != a["span_lo"] or o["span_hi"] != a["span_hi"]
-               for o, a in zip(_junction_input, _resolved_walls)):
-        print(f"[DXF-Junction] NO adjustments made! {len(_junction_input)} walls, "
+               for o, a in zip(_junction_input, _resolved_junctions)):
+        print(f"[DXF-Junction] NO adjustments made! {len(_junction_input)} H/V walls, "
               f"H={len([w for w in _junction_input if w['orientation']=='horizontal'])}, "
               f"V={len([w for w in _junction_input if w['orientation']=='vertical'])}", flush=True)
-        # Dump first few walls for debugging
         for w in _junction_input[:6]:
             print(f"  {w['orientation']} mid={w['mid']:.1f} span={w['span_lo']:.1f}..{w['span_hi']:.1f} hlw={w['half_lw']:.1f}", flush=True)
 
@@ -303,28 +331,43 @@ def _draw_mitunet_annotations_from_region_plan(
         if ann_type == "wall":
             thickness = _wall_thicknesses[wall_idx]
             ht = thickness / 2
-            rw = _resolved_walls[wall_idx]
-            is_horiz = rw["orientation"] == "horizontal"
+            is_diag = _wall_is_diagonal[wall_idx]
 
-            if is_horiz:
-                y_mid = rw["mid"]
-                hatch_pts = [
-                    (rw["span_lo"], y_mid - ht), (rw["span_hi"], y_mid - ht),
-                    (rw["span_hi"], y_mid + ht), (rw["span_lo"], y_mid + ht),
-                    (rw["span_lo"], y_mid - ht),
-                ]
-                pts = list(hatch_pts)
+            if not is_diag and wall_idx in _resolved_walls:
+                rw = _resolved_walls[wall_idx]
+                is_horiz = rw["orientation"] == "horizontal"
+
+                if is_horiz:
+                    y_mid = rw["mid"]
+                    hatch_pts = [
+                        (rw["span_lo"], y_mid - ht), (rw["span_hi"], y_mid - ht),
+                        (rw["span_hi"], y_mid + ht), (rw["span_lo"], y_mid + ht),
+                        (rw["span_lo"], y_mid - ht),
+                    ]
+                else:
+                    x_mid = rw["mid"]
+                    hatch_pts = [
+                        (x_mid - ht, rw["span_lo"]), (x_mid + ht, rw["span_lo"]),
+                        (x_mid + ht, rw["span_hi"]), (x_mid - ht, rw["span_hi"]),
+                        (x_mid - ht, rw["span_lo"]),
+                    ]
             else:
-                x_mid = rw["mid"]
-                hatch_pts = [
-                    (x_mid - ht, rw["span_lo"]), (x_mid + ht, rw["span_lo"]),
-                    (x_mid + ht, rw["span_hi"]), (x_mid - ht, rw["span_hi"]),
-                    (x_mid - ht, rw["span_lo"]),
+                # Diagonal wall — delegate polygon computation
+                neighbours = [
+                    (*wall_dxf_coords[owi], _wall_thicknesses[owi] / 2)
+                    for owi in range(len(wall_dxf_coords))
+                    if owi != wall_idx
                 ]
-                pts = list(hatch_pts)
+                hatch_pts = diagonal_wall_hatch_pts(
+                    dx1, dy1, dx2, dy2, ht, neighbours,
+                )
+                if hatch_pts is None:
+                    wall_idx += 1
+                    continue
 
             from ..components.hatch import add_wall_hatch
 
+            pts = list(hatch_pts)
             poly = msp.add_lwpolyline(pts, dxfattribs={"layer": "WALLS", "color": 7, "lineweight": 100})
             poly.close()
             add_wall_hatch(msp, doc, hatch_pts, thickness)
