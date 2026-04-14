@@ -525,9 +525,10 @@ function _renderDimension(
     ctx.textBaseline = 'alphabetic'
   }
 
-  // Endpoint handles (draggable) — drawn on the measured span, not the dim line.
+  // Endpoint handles on the DIM LINE (where the user sees the cota).
+  // Dragging them stretches the measured span.
   if (isHovered) {
-    for (const [px, py] of [[x1, y1], [x2, y2]] as [number, number][]) {
+    for (const [px, py] of [[dx1, dy1], [dx2, dy2]] as [number, number][]) {
       ctx.fillStyle = '#ffffff'
       ctx.strokeStyle = color
       ctx.lineWidth = 1.5 / viewScale

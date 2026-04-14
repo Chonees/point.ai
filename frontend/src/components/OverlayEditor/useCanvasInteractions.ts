@@ -312,17 +312,24 @@ export function useCanvasInteractions(
             return { ...a, offsetPx: newOffset, outward: newOutward }
           }
         }
-        // Dimension endpoint drag → reposition start/end of the span freely
-        // (walls support diagonals, dimensions must too). Detach from walls
+        // Dimension endpoint drag → reposition start/end of the span freely.
+        // The user grabs the DIM LINE endpoint (with offset), so we subtract
+        // the offset to get the underlying span position. Detach from walls
         // so the recompute pass leaves it where the user put it.
         if ((endpoint === 'start' || endpoint === 'end') && a.type === 'dimension') {
+          const ori = a.orientation ?? 'H'
+          const offOut = a.outward ?? 1
+          const offPx = a.offsetPx ?? 40
+          // Remove the visual offset so the cursor maps to the SPAN, not the dim line
+          const snapX = ori === 'V' ? ptRaw.x - offOut * offPx : ptRaw.x
+          const snapY = ori === 'H' ? ptRaw.y + offOut * offPx : ptRaw.y
           const updated: Partial<typeof a> = { wallIds: [] }
           if (endpoint === 'start') {
-            updated.x1 = ptRaw.x
-            updated.y1 = ptRaw.y
+            updated.x1 = snapX
+            updated.y1 = snapY
           } else {
-            updated.x2 = ptRaw.x
-            updated.y2 = ptRaw.y
+            updated.x2 = snapX
+            updated.y2 = snapY
           }
           // Recompute orientation from new geometry (could have become diagonal)
           const nx1 = updated.x1 ?? a.x1, ny1 = updated.y1 ?? a.y1

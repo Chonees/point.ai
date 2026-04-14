@@ -120,11 +120,16 @@ export function hitTestEndpoint(wx: number, wy: number, annotations: Annotation[
       continue
     }
     if (a.type === 'dimension') {
-      // Endpoints of a dimension sit on the MEASURED span (not the offset
-      // dim line). Dragging them repositions the span.
-      const d1 = Math.sqrt((wx - a.x1) ** 2 + (wy - a.y1) ** 2)
+      // Endpoints sit on the DIM LINE (with offset), matching where the
+      // user sees the handles. Dragging them stretches the measured span.
+      const offset = a.offsetPx ?? 40
+      const outward = a.outward ?? 1
+      const ori = a.orientation ?? 'H'
+      const offY = ori === 'H' ? -outward * offset : 0
+      const offX = ori === 'V' ? outward * offset : 0
+      const d1 = Math.sqrt((wx - (a.x1 + offX)) ** 2 + (wy - (a.y1 + offY)) ** 2)
       if (d1 < threshold) return { idx: i, endpoint: 'start' }
-      const d2 = Math.sqrt((wx - a.x2) ** 2 + (wy - a.y2) ** 2)
+      const d2 = Math.sqrt((wx - (a.x2 + offX)) ** 2 + (wy - (a.y2 + offY)) ** 2)
       if (d2 < threshold) return { idx: i, endpoint: 'end' }
       continue
     }
