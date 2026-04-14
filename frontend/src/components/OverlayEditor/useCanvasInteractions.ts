@@ -331,10 +331,16 @@ export function useCanvasInteractions(
             updated.x2 = snapX
             updated.y2 = snapY
           }
-          // Recompute orientation from new geometry (could have become diagonal)
+          // Recompute orientation + measurement from new geometry in real time
           const nx1 = updated.x1 ?? a.x1, ny1 = updated.y1 ?? a.y1
           const nx2 = updated.x2 ?? a.x2, ny2 = updated.y2 ?? a.y2
           updated.orientation = Math.abs(nx2 - nx1) >= Math.abs(ny2 - ny1) ? 'H' : 'V'
+          const spanPx = Math.sqrt((nx2 - nx1) ** 2 + (ny2 - ny1) ** 2)
+          if (scaleIpp > 0 && !a.locked) {
+            const inches = spanPx * scaleIpp
+            updated.valueInches = inches
+            updated.valueText = inchesToFeetInches(inches)
+          }
           return { ...a, ...updated }
         }
         // Label move: update all coords to cursor position (labels are points)
