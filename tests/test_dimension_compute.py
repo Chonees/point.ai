@@ -68,7 +68,9 @@ def test_compute_assigns_uuid_to_each_dimension():
 
 def test_compute_value_text_uses_architectural_format():
     walls = _rect_walls_with_ids()
-    # 100 px * 1.0 in/px = 100" = 8'-4"
+    # Horizontal walls: 100px centerline + 2px half_lw on each end = 104px
+    # → 104" = 8'-8"
+    # Vertical walls: 80px centerline + 2px each end = 84px → 84" = 7'-0"
     dims = compute_dimension_annotations(
         walls + [{"id": "L1", "type": "label", "x1": 60, "y1": 60, "x2": 60, "y2": 60}],
         scale_ipp=1.0,
@@ -76,7 +78,8 @@ def test_compute_value_text_uses_architectural_format():
     )
     exteriors = [d for d in dims if d["subtype"] == "exterior"]
     values = {d["value_text"] for d in exteriors}
-    assert "8'-4\"" in values, f"Expected 8'-4\" in {values}"
+    assert "8'-8\"" in values, f"Expected 8'-8\" (outer face) in {values}"
+    assert "7'-0\"" in values, f"Expected 7'-0\" (outer face) in {values}"
 
 
 def test_compute_emits_window_chain_on_wall_with_window():

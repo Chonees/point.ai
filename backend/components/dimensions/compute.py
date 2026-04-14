@@ -170,16 +170,24 @@ def _annotation_exterior_segments_with_ids(
 ) -> list[dict[str, Any]]:
     """Exterior segments carrying the wall ids that compose each segment.
 
-    Mirrors :func:`backend.components.dimensions.exterior._annotation_exterior_segments`
-    but threads ``wall_ids`` through merging so dimensions can later recompute
-    when any of those walls change geometry in the frontend editor.
+    Extends each segment by the wall's visual half-width so the dimension
+    measures outer-face-to-outer-face instead of centerline-to-centerline.
+    This matches how architects dimension exterior walls (the measurement
+    runs to the outer face of the building, not the center of the stud).
     """
+    # Visual half-line-width per wall thickness (mirrors frontend WALL_LINE_WIDTH)
+    _HALF_LW: dict[int, float] = {4: 2.0, 6: 4.0}
+
     segments: list[dict[str, Any]] = []
     for wall in _find_exterior_walls(walls):
         orientation = _wall_orientation(wall)
         start, end, coord = _wall_extent(wall, orientation)
         if abs(end - start) < 3:
             continue
+        # Extend to outer face of the wall
+        half_lw = _HALF_LW.get(int(wall.get("thickness") or 4), 2.0)
+        start -= half_lw
+        end += half_lw
         wid = wall.get("id")
         segments.append(
             {
