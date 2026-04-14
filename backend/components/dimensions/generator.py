@@ -42,42 +42,49 @@ def render_dimensions_to_dxf(
     _ensure_layers(doc)
     ct = CoordTransform(image_shape, transform, scale_ipp=1.0)
     plan_width_dxf = plan_width_hint if plan_width_hint is not None else 1490.0
-    dimstyle = setup_dim_style(doc, ct.dimlfac, plan_width_dxf)
+    # Use dimlfac=1.0 so the DIMLINEAR text shows exactly what we pass
+    # (the user-confirmed value_text). No automatic recomputation.
+    dimstyle = setup_dim_style(doc, 1.0, plan_width_dxf)
 
     count = 0
     for ann in dimension_annotations:
         if ann.get("type") != "dimension":
             continue
 
-        orientation = str(ann.get("orientation", "H")).upper()
         x1, y1 = float(ann.get("x1", 0.0)), float(ann.get("y1", 0.0))
         x2, y2 = float(ann.get("x2", 0.0)), float(ann.get("y2", 0.0))
-        offset_px = float(ann.get("offset_px", 60.0))
+        # Support both snake_case (backend-computed) and camelCase (frontend-sent)
+        offset_px = float(ann.get("offset_px") or ann.get("offsetPx") or 60.0)
         outward = int(ann.get("outward", 1)) or 1
-        dim_text = str(ann.get("value_text", "") or "")
+        dim_text = str(ann.get("value_text") or ann.get("valueText") or "")
 
-        if orientation == "H":
-            wall_coord_px = (y1 + y2) / 2
-            p1_px, p2_px = x1, x2
-        else:
-            wall_coord_px = (x1 + x2) / 2
-            p1_px, p2_px = y1, y2
-
+        # Convert span endpoints from image pixels to DXF coordinates
+        dp1 = ct.to_dxf(x1, y1)
+        dp2 = ct.to_dxf(x2, y2)
+        # Signed perpendicular distance for the dim line placement.
+        # ezdxf's `distance` is positive = left side of p1→p2 vector.
+        # We compute the sign from the outward direction + orientation.
+        orientation = str(ann.get("orientation", "H")).upper()
         offset_dxf = offset_px * ct.t_scale
+        # In image space, outward=-1 for H means "up" (lower y), which after
+        # the y-flip becomes "higher DXF y" = left side of a left→right segment.
+        # For V, outward=1 means "right in DXF" = left side of a bottom→top segment.
+        # ezdxf aligned_dim: positive distance = left of p1→p2.
+        signed_dist = outward * offset_dxf
 
-        _add_dim_along_wall(
-            msp,
-            ct,
-            orientation,
-            wall_coord_px,
-            p1_px,
-            p2_px,
-            outward,
-            offset_dxf,
-            dimstyle,
-            dim_text,
-        )
-        count += 1
+        try:
+            dim = msp.add_aligned_dim(
+                p1=dp1,
+                p2=dp2,
+                distance=signed_dist,
+                text=dim_text,
+                dimstyle=dimstyle,
+                dxfattribs={"layer": "DIMS"},
+            )
+            dim.render()
+            count += 1
+        except Exception:
+            pass
 
     return count
 
