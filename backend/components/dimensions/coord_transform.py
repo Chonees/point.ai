@@ -1,11 +1,19 @@
 from __future__ import annotations
 
 
-DIM_TEXT_HEIGHT = 7.0
-DIM_DOT_SIZE = 5.0
-ROOM_NAME_HEIGHT = 12.0
-ROOM_DIM_HEIGHT = 6.0
+# These are PIXEL sizes matching the frontend 2D editor (renderCanvas.ts).
+# They get multiplied by t_scale to produce DXF units, guaranteeing the
+# DXF looks proportionally identical to the 2D editor.
+DIM_TEXT_HEIGHT_PX = 14    # _renderDimension: fontSize = 14
+DIM_DOT_SIZE_PX = 8
+ROOM_NAME_HEIGHT_PX = 32   # renderCanvas label: nameSize = 32 * labelScale
+ROOM_DIM_HEIGHT_PX = 22    # renderCanvas label: sqftSize = 22 * labelScale
 FIRST_CHAIN_OFFSET = 8.0
+
+# Legacy aliases kept for any external code that imports the old names
+DIM_TEXT_HEIGHT = DIM_TEXT_HEIGHT_PX
+ROOM_NAME_HEIGHT = ROOM_NAME_HEIGHT_PX
+ROOM_DIM_HEIGHT = ROOM_DIM_HEIGHT_PX
 
 
 class CoordTransform:
@@ -35,17 +43,26 @@ def _ensure_dot_block(doc):
     blk.add_lwpolyline([(-0.5, 0, 1.0), (0.5, 0, 1.0)], format="xyb", close=True)
 
 
-def setup_dim_style(doc, dimlfac: float, plan_width_dxf: float = 1490.0) -> str:
-    """Create a dimension style that matches the Seminole visual ratio."""
+def setup_dim_style(doc, dimlfac: float, plan_width_dxf: float = 1490.0, *, t_scale: float = 0.0) -> str:
+    """Create a dimension style that mirrors the 2D editor text sizes.
+
+    When ``t_scale`` is provided, text heights are computed from the pixel
+    sizes used in the frontend renderer (renderCanvas.ts) multiplied by
+    ``t_scale`` — guaranteeing the DXF is a proportional 1:1 match.
+    Falls back to a plan-width ratio when t_scale is unknown.
+    """
     name = "POINTAI_DIMS"
     if name in doc.dimstyles:
         doc.dimstyles.remove(name)
     _ensure_dot_block(doc)
     ds = doc.dimstyles.new(name)
 
-    visual_ratio = 3.5 / 1300.0
-    text_h = plan_width_dxf * visual_ratio
-    dot_sz = text_h
+    if t_scale > 0.001:
+        text_h = DIM_TEXT_HEIGHT_PX * t_scale
+        dot_sz = DIM_DOT_SIZE_PX * t_scale
+    else:
+        text_h = plan_width_dxf * (DIM_TEXT_HEIGHT_PX / 800.0)
+        dot_sz = text_h
     gap = text_h * 0.4
 
     ds.dxf.dimlfac = dimlfac

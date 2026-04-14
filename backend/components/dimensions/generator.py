@@ -44,7 +44,8 @@ def render_dimensions_to_dxf(
     plan_width_dxf = plan_width_hint if plan_width_hint is not None else 1490.0
     # Use dimlfac=1.0 so the DIMLINEAR text shows exactly what we pass
     # (the user-confirmed value_text). No automatic recomputation.
-    dimstyle = setup_dim_style(doc, 1.0, plan_width_dxf)
+    # Pass t_scale so text height mirrors the 2D editor pixel sizes.
+    dimstyle = setup_dim_style(doc, 1.0, plan_width_dxf, t_scale=ct.t_scale)
 
     count = 0
     for ann in dimension_annotations:
@@ -147,7 +148,7 @@ def generate_all_dimensions(
         )
         return counts
 
-    dimstyle = setup_dim_style(doc, ct.dimlfac, plan_width_dxf)
+    dimstyle = setup_dim_style(doc, ct.dimlfac, plan_width_dxf, t_scale=ct.t_scale)
     exterior_segments = _extract_exterior_segments_from_wall_mask(annotations, wall_mask, image_shape)
     if not exterior_segments:
         exterior_segments = _annotation_exterior_segments(classified["wall"])

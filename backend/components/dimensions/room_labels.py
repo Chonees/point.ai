@@ -6,7 +6,7 @@ import backend.components.dimensions as _dims_pkg
 
 from ezdxf.enums import TextEntityAlignment
 
-from .coord_transform import CoordTransform, ROOM_NAME_HEIGHT, ROOM_DIM_HEIGHT
+from .coord_transform import CoordTransform, ROOM_NAME_HEIGHT_PX, ROOM_DIM_HEIGHT_PX
 from .exterior import _plan_width_dxf
 from .room_metrics import _label_room_metrics
 
@@ -16,10 +16,21 @@ def _rotate_offset(ox: float, oy: float, cos_r: float, sin_r: float) -> tuple[fl
     return (ox * cos_r - oy * sin_r, ox * sin_r + oy * cos_r)
 
 
-def _label_sizes(plan_width_dxf: float) -> tuple[float, float, float]:
-    name_h = plan_width_dxf * (ROOM_NAME_HEIGHT / 1300.0)
-    dim_h = plan_width_dxf * (ROOM_DIM_HEIGHT / 1300.0)
-    spacing = plan_width_dxf * (5.0 / 1300.0)
+def _label_sizes(plan_width_dxf: float, t_scale: float = 0.0) -> tuple[float, float, float]:
+    """Text heights for room labels in DXF units.
+
+    When ``t_scale`` is provided, sizes are computed from the 2D-editor pixel
+    sizes × ``t_scale`` for a 1:1 proportional match. Falls back to a
+    plan-width ratio otherwise.
+    """
+    if t_scale > 0.001:
+        name_h = ROOM_NAME_HEIGHT_PX * t_scale
+        dim_h = ROOM_DIM_HEIGHT_PX * t_scale
+        spacing = 5.0 * t_scale
+    else:
+        name_h = plan_width_dxf * (ROOM_NAME_HEIGHT_PX / 800.0)
+        dim_h = plan_width_dxf * (ROOM_DIM_HEIGHT_PX / 800.0)
+        spacing = plan_width_dxf * (5.0 / 800.0)
     return name_h, dim_h, spacing
 
 
@@ -38,7 +49,7 @@ def _render_manual_room_labels(
     if not labels:
         return counts
 
-    name_h, dim_h, label_spacing = _label_sizes(plan_width_dxf)
+    name_h, dim_h, label_spacing = _label_sizes(plan_width_dxf, t_scale=ct.t_scale)
     room_map = {}
     calibration_mode = None
     if measurement_context:
