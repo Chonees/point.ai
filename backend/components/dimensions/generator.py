@@ -59,19 +59,38 @@ def render_dimensions_to_dxf(
         outward = int(ann.get("outward", 1)) or 1
         dim_text = str(ann.get("value_text") or ann.get("valueText") or "")
 
-        # Convert span endpoints from image pixels to DXF coordinates
-        dp1 = ct.to_dxf(x1, y1)
-        dp2 = ct.to_dxf(x2, y2)
-        # Signed perpendicular distance for the dim line placement.
-        # ezdxf's `distance` is positive = left side of p1→p2 vector.
-        # We compute the sign from the outward direction + orientation.
+        # Convert span endpoints from image pixels to DXF coordinates.
+        # CRITICAL: normalize so p1→p2 always goes in a canonical direction
+        # (left→right for H, bottom→top for V). ezdxf's add_aligned_dim
+        # interprets `distance` as "positive = left of p1→p2 vector", so
+        # if p1/p2 are swapped the dim line ends up on the wrong side.
+        raw_dp1 = ct.to_dxf(x1, y1)
+        raw_dp2 = ct.to_dxf(x2, y2)
         orientation = str(ann.get("orientation", "H")).upper()
+        if orientation == "H":
+            # Canonical: left to right (ascending X)
+            if raw_dp1[0] <= raw_dp2[0]:
+                dp1, dp2 = raw_dp1, raw_dp2
+            else:
+                dp1, dp2 = raw_dp2, raw_dp1
+        else:
+            # Canonical: bottom to top (ascending Y)
+            if raw_dp1[1] <= raw_dp2[1]:
+                dp1, dp2 = raw_dp1, raw_dp2
+            else:
+                dp1, dp2 = raw_dp2, raw_dp1
+
         offset_dxf = offset_px * ct.t_scale
-        # In image space, outward=-1 for H means "up" (lower y), which after
-        # the y-flip becomes "higher DXF y" = left side of a left→right segment.
-        # For V, outward=1 means "right in DXF" = left side of a bottom→top segment.
-        # ezdxf aligned_dim: positive distance = left of p1→p2.
-        signed_dist = outward * offset_dxf
+        # With canonical direction:
+        # H (left→right): left = UP in DXF. outward=1 (top wall) → UP → positive.
+        #                  outward=-1 (bottom wall) → DOWN → negative.
+        # V (bottom→top): left = LEFT in DXF (negative X).
+        #                  outward=-1 (left wall) → LEFT → positive.
+        #                  outward=1 (right wall) → RIGHT → negative.
+        if orientation == "H":
+            signed_dist = outward * offset_dxf
+        else:
+            signed_dist = -outward * offset_dxf
 
         try:
             dim = msp.add_aligned_dim(
