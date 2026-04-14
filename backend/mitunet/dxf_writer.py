@@ -311,17 +311,11 @@ def generate_mitunet_region_dxf(
     # --- Wall Legend ---
     from ..components.wall_legend import add_wall_legend
 
-    # Place legend to the right of the floor plan extents
-    try:
-        from ezdxf import bbox as ezdxf_bbox
-        extents = ezdxf_bbox.extents(msp)
-        if extents.has_data:
-            legend_x = extents.extmax.x + 20
-            legend_y = extents.extmax.y
-        else:
-            legend_x, legend_y = 0, 0
-    except Exception:
-        legend_x, legend_y = 0, 0
+    # Place legend inside the title-block frame (top-right corner, inset)
+    plan_x2 = float(meta.get("transform", {}).get("plan_x2", 1530))
+    plan_y2 = float(meta.get("transform", {}).get("plan_y2", 1080))
+    legend_x = plan_x2 - 180
+    legend_y = plan_y2 - 30
 
     add_wall_legend(msp, doc, legend_x, legend_y)
 

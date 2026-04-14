@@ -106,20 +106,34 @@ def _rect_stage_entry(
 
 
 def _resolve_mitunet_plan_transform(image_shape: tuple[int, int]) -> dict[str, float]:
+    """Compute a transform that fits the floor plan + dimension annotations
+    inside the static Pointe Homes title-block frame with margin to spare.
+
+    The ``DIM_MARGIN_PX`` reserves space for dimension lines, extension
+    lines, and text that sit outside the wall extents. Without this margin
+    the dims overflow the title block.
+    """
     h, w = image_shape
     plan_w = _PLAN_X2 - _PLAN_X1
     plan_h = _PLAN_Y2 - _PLAN_Y1
-    img_aspect = w / h
+
+    # Reserve margin in image-pixel space for dimension offsets + text.
+    # 100px ≈ the max dim offset (80px) + text overshoot (20px).
+    DIM_MARGIN_PX = 100
+    effective_w = w + 2 * DIM_MARGIN_PX
+    effective_h = h + 2 * DIM_MARGIN_PX
+    eff_aspect = effective_w / effective_h
     plan_aspect = plan_w / plan_h
 
-    if img_aspect > plan_aspect:
-        scale = plan_w / w
-        offset_x = _PLAN_X1
-        offset_y = _PLAN_Y1 + (plan_h - h * scale) / 2
+    if eff_aspect > plan_aspect:
+        scale = plan_w / effective_w
     else:
-        scale = plan_h / h
-        offset_x = _PLAN_X1 + (plan_w - w * scale) / 2
-        offset_y = _PLAN_Y1
+        scale = plan_h / effective_h
+
+    # Center the IMAGE (not the effective area) within the plan box.
+    # The margins distribute evenly on all sides.
+    offset_x = _PLAN_X1 + (plan_w - w * scale) / 2
+    offset_y = _PLAN_Y1 + (plan_h - h * scale) / 2
 
     return {
         "scale": float(scale),
