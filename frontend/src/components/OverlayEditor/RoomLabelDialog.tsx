@@ -1,5 +1,6 @@
 import type { Annotation } from '../../types'
 import type { PendingLabel } from './types'
+import { newAnnotationId } from '../../utils/annotationId'
 
 interface RoomLabelDialogProps {
   pendingLabel: PendingLabel
@@ -22,6 +23,7 @@ export function RoomLabelDialog({
   const commitLabel = () => {
     if (!labelName.trim()) return
     const ann: Annotation = {
+      id: newAnnotationId(),
       type: 'label',
       x1: pendingLabel.x, y1: pendingLabel.y,
       x2: pendingLabel.x, y2: pendingLabel.y,

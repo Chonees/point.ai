@@ -8,6 +8,9 @@ export const COLORS: Record<AnnotationType, string> = {
 
   label: '#1a1a1a',
   paint: '#ffffff',
+  separator: '#33ff66',
+  dimension: '#ff8800',
+  measure: '#ff8800',
 }
 
 // Wall rendering constants — single source of truth

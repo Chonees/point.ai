@@ -67,6 +67,11 @@ export function renderCanvas(
     if (ann.type === 'door' && !visibility.doors) continue
     if (ann.type === 'window' && !visibility.windows) continue
     if ((ann.type as string) === 'separator' && !visibility.separators) continue
+    if (ann.type === 'dimension' && !visibility.dimensions) continue
+    if (ann.type === 'dimension') {
+      _renderDimension(ctx, ann, hoveredIdx === anns.indexOf(ann), v.scale)
+      continue
+    }
     if (ann.type === 'label') {
       // Room label: name + sqft centered at point — world-space (scales with zoom)
       const lx = ann.x1, ly = ann.y1
@@ -198,24 +203,30 @@ export function renderCanvas(
         ctx.quadraticCurveTo(cpX, cpY, ann.x2, ann.y2)
         ctx.stroke()
       } else if (ann.type === 'window') {
-        // Draw window: 3 parallel lines centered on wall + end caps + sill
+        // Draw window: thin double-glass lines + center line + end caps + sill
         const adx = Math.abs(ann.x2 - ann.x1)
         const ady = Math.abs(ann.y2 - ann.y1)
-        const sp = 4
-        const sillDist = 16
+        const glassGap = 2.5   // half-width between the two glass panes
+        const sillDist = 8     // distance of the sill from center
         // swing indicates exterior direction
         const ext = ann.swing ?? 'up'
+        ctx.lineWidth = 1.5
         if (adx >= ady) {
           const xLo = Math.min(ann.x1, ann.x2), xHi = Math.max(ann.x1, ann.x2)
           const yM = (ann.y1 + ann.y2) / 2
-          // 3 lines centered
-          for (const off of [-sp, 0, sp]) {
-            ctx.beginPath(); ctx.moveTo(xLo, yM + off); ctx.lineTo(xHi, yM + off); ctx.stroke()
-          }
+          // Two glass panes (outer lines)
+          ctx.beginPath()
+          ctx.moveTo(xLo, yM - glassGap); ctx.lineTo(xHi, yM - glassGap)
+          ctx.moveTo(xLo, yM + glassGap); ctx.lineTo(xHi, yM + glassGap)
+          ctx.stroke()
+          // Center line (frame mullion) — thinner
+          ctx.lineWidth = 0.8
+          ctx.beginPath(); ctx.moveTo(xLo, yM); ctx.lineTo(xHi, yM); ctx.stroke()
+          ctx.lineWidth = 1.5
           // End caps
           ctx.beginPath()
-          ctx.moveTo(xLo, yM - sp); ctx.lineTo(xLo, yM + sp)
-          ctx.moveTo(xHi, yM - sp); ctx.lineTo(xHi, yM + sp)
+          ctx.moveTo(xLo, yM - glassGap); ctx.lineTo(xLo, yM + glassGap)
+          ctx.moveTo(xHi, yM - glassGap); ctx.lineTo(xHi, yM + glassGap)
           ctx.stroke()
           // Sill toward exterior
           const sillY = ext === 'up' ? yM + sillDist : yM - sillDist
@@ -223,14 +234,19 @@ export function renderCanvas(
         } else {
           const yLo = Math.min(ann.y1, ann.y2), yHi = Math.max(ann.y1, ann.y2)
           const xM = (ann.x1 + ann.x2) / 2
-          // 3 lines centered
-          for (const off of [-sp, 0, sp]) {
-            ctx.beginPath(); ctx.moveTo(xM + off, yLo); ctx.lineTo(xM + off, yHi); ctx.stroke()
-          }
+          // Two glass panes (outer lines)
+          ctx.beginPath()
+          ctx.moveTo(xM - glassGap, yLo); ctx.lineTo(xM - glassGap, yHi)
+          ctx.moveTo(xM + glassGap, yLo); ctx.lineTo(xM + glassGap, yHi)
+          ctx.stroke()
+          // Center line (frame mullion) — thinner
+          ctx.lineWidth = 0.8
+          ctx.beginPath(); ctx.moveTo(xM, yLo); ctx.lineTo(xM, yHi); ctx.stroke()
+          ctx.lineWidth = 1.5
           // End caps
           ctx.beginPath()
-          ctx.moveTo(xM - sp, yLo); ctx.lineTo(xM + sp, yLo)
-          ctx.moveTo(xM - sp, yHi); ctx.lineTo(xM + sp, yHi)
+          ctx.moveTo(xM - glassGap, yLo); ctx.lineTo(xM + glassGap, yLo)
+          ctx.moveTo(xM - glassGap, yHi); ctx.lineTo(xM + glassGap, yHi)
           ctx.stroke()
           // Sill toward exterior
           const sillX = ext === 'left' ? xM + sillDist : xM - sillDist
@@ -418,6 +434,111 @@ export function renderCanvas(
       ctx.fillText(`${lenPx}px`, (sp.x + cp.x) / 2 + 6 / v.scale, (sp.y + cp.y) / 2 - 6 / v.scale)
     }
   }
+}
+
+
+// ---------------------------------------------------------------------------
+// Dimension annotation renderer
+// ---------------------------------------------------------------------------
+
+/**
+ * Draw a single dimension annotation: extension lines from the measured
+ * span to the dim line, the dim line itself with ticks, and the value text.
+ *
+ * Coordinates in the annotation are the span endpoints on the wall (image
+ * pixels). The dim line sits offsetPx away in the outward direction.
+ */
+function _renderDimension(
+  ctx: CanvasRenderingContext2D,
+  ann: Annotation,
+  isHovered: boolean,
+  viewScale: number,
+): void {
+  const _DR = 4 / viewScale // endpoint handle radius
+  const offset = ann.offsetPx ?? 40
+  const outward = ann.outward ?? 1
+  const orientation = ann.orientation ?? 'H'
+  // outward in annotation is DXF-convention (y flipped). Convert to
+  // image-space (where y grows down) by negating for horizontal dims.
+  const offImgY = orientation === 'H' ? -outward * offset : 0
+  const offImgX = orientation === 'V' ? outward * offset : 0
+
+  const x1 = ann.x1, y1 = ann.y1, x2 = ann.x2, y2 = ann.y2
+  const dx1 = x1 + offImgX, dy1 = y1 + offImgY
+  const dx2 = x2 + offImgX, dy2 = y2 + offImgY
+
+  const color = isHovered ? '#3b82f6' : '#ff8800'
+  const lineWidth = (isHovered ? 2.5 : 1.5) / viewScale
+
+  ctx.save()
+  ctx.setLineDash([])
+  ctx.strokeStyle = color
+  ctx.lineWidth = lineWidth
+
+  // Extension lines (short perpendicular segments from wall to dim line)
+  ctx.beginPath()
+  ctx.moveTo(x1, y1)
+  ctx.lineTo(dx1, dy1)
+  ctx.moveTo(x2, y2)
+  ctx.lineTo(dx2, dy2)
+  ctx.stroke()
+
+  // Dim line
+  ctx.beginPath()
+  ctx.moveTo(dx1, dy1)
+  ctx.lineTo(dx2, dy2)
+  ctx.stroke()
+
+  // Ticks at each end — short diagonal marks (architectural style)
+  const tickSize = 6 / viewScale
+  const tickAngle = orientation === 'H' ? Math.PI / 4 : -Math.PI / 4
+  const ca = Math.cos(tickAngle), sa = Math.sin(tickAngle)
+  ctx.beginPath()
+  ctx.moveTo(dx1 - ca * tickSize, dy1 - sa * tickSize)
+  ctx.lineTo(dx1 + ca * tickSize, dy1 + sa * tickSize)
+  ctx.moveTo(dx2 - ca * tickSize, dy2 - sa * tickSize)
+  ctx.lineTo(dx2 + ca * tickSize, dy2 + sa * tickSize)
+  ctx.stroke()
+
+  // Value text centered on the dim line
+  const text = ann.valueText ?? ''
+  if (text) {
+    const cx = (dx1 + dx2) / 2
+    const cy = (dy1 + dy2) / 2
+    const fontSize = 14
+    ctx.font = `bold ${fontSize}px monospace`
+    ctx.textAlign = 'center'
+    ctx.textBaseline = 'middle'
+
+    // Text follows the dim line (rotated 90° for vertical dims)
+    ctx.save()
+    ctx.translate(cx, cy)
+    if (orientation === 'V') ctx.rotate(-Math.PI / 2)
+    // Gentle outline so the number reads against background
+    const textWidth = ctx.measureText(text).width
+    ctx.fillStyle = 'rgba(17, 17, 17, 0.8)'
+    ctx.fillRect(-textWidth / 2 - 4, -fontSize / 2 - 2, textWidth + 8, fontSize + 4)
+    ctx.fillStyle = ann.locked ? '#facc15' : color
+    ctx.fillText(text, 0, 0)
+    ctx.restore()
+    ctx.textAlign = 'start'
+    ctx.textBaseline = 'alphabetic'
+  }
+
+  // Endpoint handles (draggable) — drawn on the measured span, not the dim line.
+  if (isHovered) {
+    for (const [px, py] of [[x1, y1], [x2, y2]] as [number, number][]) {
+      ctx.fillStyle = '#ffffff'
+      ctx.strokeStyle = color
+      ctx.lineWidth = 1.5 / viewScale
+      ctx.beginPath()
+      ctx.arc(px, py, _DR, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.stroke()
+    }
+  }
+
+  ctx.restore()
 }
 
 

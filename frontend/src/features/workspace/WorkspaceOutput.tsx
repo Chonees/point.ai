@@ -100,6 +100,7 @@ export function WorkspaceOutput({
                 setAnnotations={setAnnotations}
                 initialVisibility={visibility}
                 onVisibilityChange={onVisibilityChange}
+                scaleIpp={result.scale_ipp}
               />
             )}
           </Suspense>

@@ -10,6 +10,7 @@ const TOOL_ICONS: Record<string, string> = {
   label: 'Aa',
   paint: '◉',
   select: '⇱',
+  measure: '⟷',
 }
 
 const toolGroups: ToolGroup[] = [
@@ -26,6 +27,7 @@ const toolGroups: ToolGroup[] = [
     items: [
       { type: 'label', label: 'Label', hint: 'Names' },
       { type: 'paint', label: 'Region', hint: 'Rooms' },
+      { type: 'measure', label: 'Measure', hint: 'Cotas' },
     ],
   },
   {
@@ -86,6 +88,7 @@ export function OverlayToolbar({
     { key: 'windows', label: 'Windows' },
     { key: 'labels', label: 'Room labels' },
     { key: 'separators', label: 'Separators' },
+    { key: 'dimensions', label: 'Dimensions' },
   ]
   const labelCount = annotations.filter(a => a.type === 'label').length
 

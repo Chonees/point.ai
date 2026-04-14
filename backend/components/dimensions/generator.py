@@ -19,6 +19,69 @@ from .formatting import _fmt_inches, _audit_dim_status
 from .room_labels import _render_manual_room_labels
 
 
+def render_dimensions_to_dxf(
+    doc,
+    msp,
+    dimension_annotations: list[dict],
+    image_shape: tuple[int, int],
+    transform: dict,
+    *,
+    plan_width_hint: float | None = None,
+) -> int:
+    """Draw DIMLINEAR entities for every ``type='dimension'`` annotation.
+
+    Reads the span endpoints, offset, orientation, and ``value_text`` from
+    the annotation — no recomputation from geometry. This means whatever
+    the user sees (or locked) in the 2D editor is exactly what the DXF
+    emits. This is the "dumb exporter" path that replaces computing from
+    ``_wall_mask`` at DXF time.
+    """
+    if not dimension_annotations:
+        return 0
+
+    _ensure_layers(doc)
+    ct = CoordTransform(image_shape, transform, scale_ipp=1.0)
+    plan_width_dxf = plan_width_hint if plan_width_hint is not None else 1490.0
+    dimstyle = setup_dim_style(doc, ct.dimlfac, plan_width_dxf)
+
+    count = 0
+    for ann in dimension_annotations:
+        if ann.get("type") != "dimension":
+            continue
+
+        orientation = str(ann.get("orientation", "H")).upper()
+        x1, y1 = float(ann.get("x1", 0.0)), float(ann.get("y1", 0.0))
+        x2, y2 = float(ann.get("x2", 0.0)), float(ann.get("y2", 0.0))
+        offset_px = float(ann.get("offset_px", 60.0))
+        outward = int(ann.get("outward", 1)) or 1
+        dim_text = str(ann.get("value_text", "") or "")
+
+        if orientation == "H":
+            wall_coord_px = (y1 + y2) / 2
+            p1_px, p2_px = x1, x2
+        else:
+            wall_coord_px = (x1 + x2) / 2
+            p1_px, p2_px = y1, y2
+
+        offset_dxf = offset_px * ct.t_scale
+
+        _add_dim_along_wall(
+            msp,
+            ct,
+            orientation,
+            wall_coord_px,
+            p1_px,
+            p2_px,
+            outward,
+            offset_dxf,
+            dimstyle,
+            dim_text,
+        )
+        count += 1
+
+    return count
+
+
 def generate_all_dimensions(
     doc,
     msp,

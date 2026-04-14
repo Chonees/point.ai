@@ -19,6 +19,7 @@ class ParseStructureResponse(BaseModel):
     needs_review: bool = False
     review_flags: list[str] = Field(default_factory=list)
     auto_annotations: Optional[list] = None
+    scale_ipp: Optional[float] = None
 
 
 class GenerateStructureRequest(BaseModel):
@@ -44,3 +45,4 @@ class GenerateStructureResponse(BaseModel):
     auto_annotations: Optional[list] = None
     computed_rooms: Optional[list] = None
     region_overlay: Optional[str] = None
+    scale_ipp: Optional[float] = None

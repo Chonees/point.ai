@@ -34,7 +34,9 @@ describe('rowToPlan', () => {
   })
 
   it('maps scene fields correctly', () => {
-    const annotations = [{ type: 'wall' as const, x1: 0, y1: 0, x2: 10, y2: 10 }]
+    const annotations = [
+      { id: 'w-1', type: 'wall' as const, x1: 0, y1: 0, x2: 10, y2: 10 },
+    ]
     const plan = rowToPlan(makeRow({
       annotations_2d: annotations,
       floor_material: 'marble',
@@ -45,6 +47,24 @@ describe('rowToPlan', () => {
     expect(plan.scene.placedItems3d).toEqual([])
     expect(plan.scene.floorMaterial).toBe('marble')
     expect(plan.scene.wallMaterial).toBe('brick')
+  })
+
+  it('backfills missing ids on legacy annotations', () => {
+    const legacy = [{ type: 'wall' as const, x1: 0, y1: 0, x2: 10, y2: 10 }] as any
+    const plan = rowToPlan(makeRow({ annotations_2d: legacy }))
+    expect(plan.scene.annotations2d).toHaveLength(1)
+    expect(plan.scene.annotations2d[0].id).toBeTruthy()
+    expect(typeof plan.scene.annotations2d[0].id).toBe('string')
+  })
+
+  it('merges legacy editor_visibility with defaults for newly added keys', () => {
+    // Legacy row has no `dimensions` key
+    const legacyVisibility = {
+      bg: true, regions: true, walls: true, doors: true,
+      windows: true, labels: true, separators: true,
+    } as any
+    const plan = rowToPlan(makeRow({ editor_visibility: legacyVisibility }))
+    expect(plan.scene.visibility.dimensions).toBe(true)
   })
 
   it('defaults annotations to empty array when null', () => {

@@ -1,8 +1,43 @@
 import { useState, useCallback } from 'react'
-import type { Annotation, AnnotationType, SwingDir, V2Result } from '../../types'
+import type { Annotation, AnnotationType, DimensionOrientation, DimensionSubtype, SwingDir, V2Result } from '../../types'
 import { fileToBase64 } from '../../utils/fileToBase64'
 import { apiUrl } from '../../lib/api'
 import { snapEndpointsToWallEdges } from '../../components/OverlayEditor/geometry'
+
+const _randomId = (): string =>
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `ann-${Math.random().toString(36).slice(2, 10)}-${Date.now().toString(36)}`
+
+/**
+ * Normalize a backend annotation payload into the frontend `Annotation` shape.
+ * - Guarantees an `id` (generates one if backend didn't ship it).
+ * - Converts snake_case dimension fields to camelCase.
+ */
+function _toAnnotation(payload: NonNullable<V2Result['auto_annotations']>[number]): Annotation {
+  const ann: Annotation = {
+    id: payload.id ?? _randomId(),
+    type: payload.type as AnnotationType,
+    x1: payload.x1,
+    y1: payload.y1,
+    x2: payload.x2,
+    y2: payload.y2,
+  }
+  if (payload.swing) ann.swing = payload.swing as SwingDir
+  if (payload.thickness) ann.thickness = payload.thickness
+  if (payload._source) ann._source = payload._source
+  if (payload.type === 'dimension') {
+    if (payload.subtype) ann.subtype = payload.subtype as DimensionSubtype
+    if (payload.offset_px != null) ann.offsetPx = payload.offset_px
+    if (payload.orientation) ann.orientation = payload.orientation as DimensionOrientation
+    if (payload.outward != null) ann.outward = payload.outward
+    if (payload.value_inches != null) ann.valueInches = payload.value_inches
+    if (payload.value_text) ann.valueText = payload.value_text
+    if (payload.wall_ids) ann.wallIds = payload.wall_ids
+    if (payload.window_ids) ann.windowIds = payload.window_ids
+  }
+  return ann
+}
 
 interface UseGenerateDxfOptions {
   file: File | null
@@ -79,20 +114,33 @@ export function useGenerateDxf({
 
       if (!autoLoaded && data.auto_annotations?.length) {
         onAnnotationsUpdate(() => {
-          const raw: Annotation[] = data.auto_annotations!.map((annotation) => ({
-            type: annotation.type as AnnotationType,
-            x1: annotation.x1,
-            y1: annotation.y1,
-            x2: annotation.x2,
-            y2: annotation.y2,
-            ...(annotation.swing ? { swing: annotation.swing as SwingDir } : {}),
-            ...(annotation.thickness ? { thickness: annotation.thickness } : {}),
-            _source: annotation._source ?? 'ensemble_cubicasa',
-          }))
-          // Adjust wall endpoints from centerline to edge where they meet other walls
-          return snapEndpointsToWallEdges(raw)
+          const raw: Annotation[] = data.auto_annotations!.map((annotation) => {
+            const ann = _toAnnotation(annotation)
+            if (!ann._source && ann.type !== 'dimension') ann._source = 'ensemble_cubicasa'
+            return ann
+          })
+          // Dimensions are not wall/opening geometry — they piggyback on walls
+          // whose endpoints already got junction-snapped by the backend. Keep
+          // them intact; only snap the rest.
+          const dims = raw.filter((a) => a.type === 'dimension')
+          const rest = snapEndpointsToWallEdges(raw.filter((a) => a.type !== 'dimension'))
+          return [...rest, ...dims]
         })
         onAutoLoaded()
+      } else if (autoLoaded && data.auto_annotations?.length) {
+        // On subsequent calls, merge backend-computed dimensions into the
+        // user's current annotations — but never overwrite user-edited
+        // dimensions (those carry locked=true or simply already exist and
+        // the backend respects them by NOT recomputing). See
+        // backend/services/generate_dxf_service.py::_enrich_with_dimensions.
+        const incomingDims = data.auto_annotations.filter((a) => a.type === 'dimension')
+        if (incomingDims.length) {
+          onAnnotationsUpdate((prev) => {
+            const hasUserDims = prev.some((a) => a.type === 'dimension')
+            if (hasUserDims) return prev
+            return [...prev, ...incomingDims.map((a) => _toAnnotation(a))]
+          })
+        }
       }
 
       // Always enrich wall annotations with thickness from backend response

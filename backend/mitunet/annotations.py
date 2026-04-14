@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import uuid
 from typing import Any
 
 from ..geometry_utils import is_diagonal as _is_diagonal, snap_endpoint_clusters
@@ -71,6 +72,7 @@ def regions_to_wall_annotations(
         )
 
         annotations.append({
+            "id": str(uuid.uuid4()),
             "type": "wall",
             "x1": round(ix1, 1),
             "y1": round(iy1, 1),

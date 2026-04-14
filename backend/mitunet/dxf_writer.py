@@ -43,64 +43,91 @@ def _load_mitunet_template_doc():
 
 
 def _add_dims_and_labels(doc, msp, annotations, wall_mask, image_shape, transform, img_h, *, total_area_sqft: float | None = None) -> dict | None:
-    """Generate simplified exterior dimensions + manual room labels.
+    """Render room labels + sqft + dimension annotations into the DXF.
 
-    Returns dict with 'computed_rooms' and 'region_overlay' when available.
+    Dimension rendering is driven by annotations with ``type='dimension'``.
+    The service layer (``generate_dxf_service``) computes those upstream from
+    walls + windows + scale_ipp and appends them to the annotations list
+    before calling us, so here we just export each one as a DIMLINEAR via
+    ``render_dimensions_to_dxf``. This is the "dumb exporter" path — what
+    you see in the 2D editor is what gets written to the DXF.
+
+    Returns a dict with ``computed_rooms``, ``region_overlay``, and
+    ``scale_ipp`` (when calibration succeeded).
     """
     try:
         from ..scale_calibrator import calibrate_scale, generate_region_overlay, encode_overlay_png
-        from ..components.dimensions import generate_all_dimensions
+        from ..components.dimensions import (
+            CoordTransform,
+            _classify_annotations,
+            _ensure_layers,
+            _plan_width_dxf,
+            _render_manual_room_labels,
+            render_dimensions_to_dxf,
+        )
         from ..observability import log_event
 
         has_labels = any(a.get("type") == "label" for a in annotations)
-        if not has_labels:
-            log_event("dims_pipeline_skipped", reason="no_labels")
+        has_dimensions = any(a.get("type") == "dimension" for a in annotations)
+        if not has_labels and not has_dimensions:
+            log_event("dims_pipeline_skipped", reason="no_labels_no_dimensions")
             return None
 
         has_sqft = any(a.get("type") == "label" and a.get("sqft") for a in annotations)
         has_total_area = total_area_sqft is not None and float(total_area_sqft) > 0
-        render_dimensions = bool((has_total_area or has_sqft) and wall_mask is not None)
+        want_calibration = bool(has_labels and (has_total_area or has_sqft) and wall_mask is not None)
+
         scale_ipp = 1.0
         measurement_context = None
-        if render_dimensions:
+        if want_calibration:
             measurement_context = calibrate_scale(
                 annotations,
                 wall_mask,
                 image_shape,
                 total_area_sqft=float(total_area_sqft) if has_total_area else None,
             )
-            if measurement_context is None:
-                scale_ipp = 1.0
-                render_dimensions = False
-            else:
+            if measurement_context is not None:
                 scale_ipp = float(measurement_context["scale_ipp"])
+
         log_event(
             "dims_pipeline_start",
             label_count=sum(1 for a in annotations if a.get("type") == "label"),
+            dimension_count=sum(1 for a in annotations if a.get("type") == "dimension"),
             has_sqft=has_sqft,
             has_total_area=has_total_area,
             total_area_sqft=round(float(total_area_sqft), 4) if has_total_area else None,
             wall_mask_present=wall_mask is not None,
-            render_dimensions=render_dimensions,
             scale_ipp=round(scale_ipp, 6),
             calibration_mode=measurement_context["calibration_mode"] if measurement_context else None,
         )
 
-        counts = generate_all_dimensions(
-            doc, msp, annotations,
-            scale_ipp=scale_ipp,
-            image_shape=image_shape,
-            transform=transform,
-            wall_mask=wall_mask,
-            render_dimensions=render_dimensions,
-            measurement_context=measurement_context,
+        _ensure_layers(doc)
+        ct = CoordTransform(image_shape, transform, scale_ipp)
+        classified = _classify_annotations(annotations)
+        plan_width_dxf = _plan_width_dxf(ct, classified["wall"])
+
+        counts: dict[str, int] = {}
+        if has_labels:
+            counts.update(_render_manual_room_labels(
+                msp, ct, annotations, classified["label"], wall_mask, image_shape,
+                plan_width_dxf, scale_ipp if want_calibration else 0.0,
+                measurement_context=measurement_context,
+            ))
+
+        dim_annotations = [a for a in annotations if a.get("type") == "dimension"]
+        counts["dimensions"] = render_dimensions_to_dxf(
+            doc, msp, dim_annotations, image_shape, transform,
+            plan_width_hint=plan_width_dxf,
         )
+
         total = sum(counts.values())
         log_event("dims_pipeline_done", total=total, counts=counts)
         print(f"[DIMS] Generated {total} elements: {counts}", flush=True)
 
         # Extract computed rooms + region overlay for the API response
         result: dict = {}
+        if measurement_context:
+            result["scale_ipp"] = scale_ipp
         if measurement_context and "room_analysis" in measurement_context:
             room_analysis = measurement_context["room_analysis"]
             rooms = room_analysis.get("rooms", [])

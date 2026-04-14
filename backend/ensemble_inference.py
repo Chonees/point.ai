@@ -9,6 +9,7 @@ mask_regions DXF pipeline.
 from __future__ import annotations
 
 import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
@@ -198,6 +199,7 @@ def _openings_to_annotations(
             x2, y2 = cx_img, cy_img + half
 
         ann: dict[str, Any] = {
+            "id": str(uuid.uuid4()),
             "type": kind,
             "x1": round(x1, 1),
             "y1": round(y1, 1),

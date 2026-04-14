@@ -82,6 +82,16 @@ export function hitTestAnnotation(wx: number, wy: number, annotations: Annotatio
       const lp = labelWorldToLocal(a, wx, wy)
       const bb = labelBoundingBox(a)
       if (lp.x >= bb.x && lp.x <= bb.x + bb.w && lp.y >= bb.y && lp.y <= bb.y + bb.h) return i
+    } else if (a.type === 'dimension') {
+      // Dimensions live at offset_px from the measured span. Hit-test the
+      // projected dim line (not the raw span), which is where the user sees
+      // the cota visually.
+      const offset = a.offsetPx ?? 40
+      const outward = a.outward ?? 1
+      const orientation = a.orientation ?? 'H'
+      const offY = orientation === 'H' ? -outward * offset : 0
+      const offX = orientation === 'V' ? outward * offset : 0
+      if (distToSeg(wx, wy, a.x1 + offX, a.y1 + offY, a.x2 + offX, a.y2 + offY) < threshold) return i
     } else {
       const dx = a.x2 - a.x1, dy = a.y2 - a.y1
       const lenSq = dx * dx + dy * dy
@@ -107,6 +117,15 @@ export function hitTestEndpoint(wx: number, wy: number, annotations: Annotation[
       if (Math.sqrt((wx - resize.x) ** 2 + (wy - resize.y) ** 2) < handleR) return { idx: i, endpoint: 'resize' }
       const rotate = labelLocalToWorld(a, a.x1, bb.y - 24 / scale)
       if (Math.sqrt((wx - rotate.x) ** 2 + (wy - rotate.y) ** 2) < handleR) return { idx: i, endpoint: 'rotate' }
+      continue
+    }
+    if (a.type === 'dimension') {
+      // Endpoints of a dimension sit on the MEASURED span (not the offset
+      // dim line). Dragging them repositions the span.
+      const d1 = Math.sqrt((wx - a.x1) ** 2 + (wy - a.y1) ** 2)
+      if (d1 < threshold) return { idx: i, endpoint: 'start' }
+      const d2 = Math.sqrt((wx - a.x2) ** 2 + (wy - a.y2) ** 2)
+      if (d2 < threshold) return { idx: i, endpoint: 'end' }
       continue
     }
     if (a.type === 'door' && a.swing) {

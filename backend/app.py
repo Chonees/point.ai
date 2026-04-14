@@ -171,6 +171,7 @@ async def api_generate_v2(req: GenerateStructureRequest):
         auto_annotations=dxf_result["auto_annotations"],
         computed_rooms=dxf_result["computed_rooms"],
         region_overlay=dxf_result["region_overlay"],
+        scale_ipp=dxf_result.get("scale_ipp"),
     )
 
 

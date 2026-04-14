@@ -21,7 +21,8 @@ from .formatting import _fmt_inches, _audit_dim_status, AUDIT_GEOMETRY_TOLERANCE
 from .room_labels import _label_sizes, _render_manual_room_labels
 from .room_metrics import _span_containing_seed, _best_local_seedline_span, _label_room_metrics
 from .audit import _make_audit_summary, _log_audit_summary
-from .generator import generate_all_dimensions
+from .compute import compute_dimension_annotations
+from .generator import generate_all_dimensions, render_dimensions_to_dxf
 
 __all__ = [
     "CoordTransform",
@@ -54,5 +55,7 @@ __all__ = [
     "_label_room_metrics",
     "_make_audit_summary",
     "_log_audit_summary",
+    "compute_dimension_annotations",
     "generate_all_dimensions",
+    "render_dimensions_to_dxf",
 ]

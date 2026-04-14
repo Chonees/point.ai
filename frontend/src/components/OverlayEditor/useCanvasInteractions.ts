@@ -4,8 +4,18 @@ import type { Annotation, SwingDir } from '../../types'
 import { hitTestAnnotation, hitTestEndpoint, snapToEndpoint } from './geometry'
 import type { PendingDoor, PendingLabel, EditingLabel } from './types'
 import type { useOverlayEditorState } from './useOverlayEditorState'
+import { newAnnotationId } from '../../utils/annotationId'
+import { inchesToFeetInches } from '../../utils/architecturalFormat'
 
 type EditorState = ReturnType<typeof useOverlayEditorState>
+
+export interface EditingDimensionRef {
+  idx: number
+  sx: number
+  sy: number
+  valueText: string
+  locked: boolean
+}
 
 export function useCanvasInteractions(
   state: EditorState,
@@ -17,6 +27,8 @@ export function useCanvasInteractions(
   setLabelName: (s: string) => void,
   setLabelSqft: (s: string) => void,
   setEditingLabel: (e: EditingLabel | null) => void,
+  scaleIpp: number,
+  setEditingDimension: (e: EditingDimensionRef | null) => void,
 ) {
   const {
     canvasRef,
@@ -53,6 +65,20 @@ export function useCanvasInteractions(
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const longPressStartRef = useRef<{ x: number; y: number } | null>(null)
   const labelDragStartRef = useRef<{ clientX: number; clientY: number; moved: boolean } | null>(null)
+  /**
+   * Start snapshot for a dimension body drag (offset change). We record
+   * the cursor position and the original offsetPx so the pointer-move
+   * delta translates 1:1 into offset adjustment, and so a pointerUp with
+   * no movement opens the edit dialog instead of committing an offset.
+   */
+  const dimDragStartRef = useRef<{
+    clientX: number
+    clientY: number
+    startOffset: number
+    startOutward: 1 | -1
+    orientation: 'H' | 'V'
+    moved: boolean
+  } | null>(null)
 
   const cancelLongPress = () => {
     if (longPressTimerRef.current) {
@@ -160,6 +186,20 @@ export function useCanvasInteractions(
           labelDragStartRef.current = { clientX: e.clientX, clientY: e.clientY, moved: false }
           return
         }
+        // Dimensions: start a body drag (changes offsetPx). If pointerUp
+        // arrives without movement, we open the edit dialog instead.
+        if (ha.type === 'dimension') {
+          draggingRef.current = { idx, endpoint: 'move' }
+          dimDragStartRef.current = {
+            clientX: e.clientX,
+            clientY: e.clientY,
+            startOffset: ha.offsetPx ?? 40,
+            startOutward: ha.outward ?? 1,
+            orientation: ha.orientation ?? 'H',
+            moved: false,
+          }
+          return
+        }
         const cx = (ha.x1 + ha.x2) / 2
         const cy = (ha.y1 + ha.y2) / 2
         const pt = screenToWorld(e.clientX, e.clientY)
@@ -241,8 +281,55 @@ export function useCanvasInteractions(
         const ddy = e.clientY - labelDragStartRef.current.clientY
         if (ddx * ddx + ddy * ddy > 9) labelDragStartRef.current.moved = true
       }
+      // Track dimension body drag movement (click-vs-drag for dialog).
+      if (dimDragStartRef.current) {
+        const ddx = e.clientX - dimDragStartRef.current.clientX
+        const ddy = e.clientY - dimDragStartRef.current.clientY
+        if (ddx * ddx + ddy * ddy > 9) dimDragStartRef.current.moved = true
+      }
       setAnnotations(annotations.map((a, i) => {
         if (i !== idx) return a
+        // Dimension body drag → adjust offsetPx (and flip outward when the
+        // user pulls past the wall axis). The cota line follows the cursor.
+        if (endpoint === 'move' && a.type === 'dimension') {
+          const orientation = a.orientation ?? 'H'
+          if (orientation === 'H') {
+            const wallY = (a.y1 + a.y2) / 2
+            const deltaY = ptRaw.y - wallY
+            // outward in image-space (image y grows down) flips: positive
+            // cursor delta means the cota goes BELOW the wall → outward=-1
+            // in DXF convention (which negates again at render time).
+            const newOutward: 1 | -1 = deltaY < 0 ? 1 : -1
+            const newOffset = Math.max(8, Math.abs(deltaY))
+            return { ...a, offsetPx: newOffset, outward: newOutward }
+          } else {
+            const wallX = (a.x1 + a.x2) / 2
+            const deltaX = ptRaw.x - wallX
+            // For V dims, outward=1 means cota goes to the right in DXF
+            // space (positive x). Image space doesn't flip X, so signs match.
+            const newOutward: 1 | -1 = deltaX > 0 ? 1 : -1
+            const newOffset = Math.max(8, Math.abs(deltaX))
+            return { ...a, offsetPx: newOffset, outward: newOutward }
+          }
+        }
+        // Dimension endpoint drag → reposition start/end of the span freely
+        // (walls support diagonals, dimensions must too). Detach from walls
+        // so the recompute pass leaves it where the user put it.
+        if ((endpoint === 'start' || endpoint === 'end') && a.type === 'dimension') {
+          const updated: Partial<typeof a> = { wallIds: [] }
+          if (endpoint === 'start') {
+            updated.x1 = ptRaw.x
+            updated.y1 = ptRaw.y
+          } else {
+            updated.x2 = ptRaw.x
+            updated.y2 = ptRaw.y
+          }
+          // Recompute orientation from new geometry (could have become diagonal)
+          const nx1 = updated.x1 ?? a.x1, ny1 = updated.y1 ?? a.y1
+          const nx2 = updated.x2 ?? a.x2, ny2 = updated.y2 ?? a.y2
+          updated.orientation = Math.abs(nx2 - nx1) >= Math.abs(ny2 - ny1) ? 'H' : 'V'
+          return { ...a, ...updated }
+        }
         // Label move: update all coords to cursor position (labels are points)
         if (endpoint === 'move' && a.type === 'label') {
           return { ...a, x1: ptRaw.x, y1: ptRaw.y, x2: ptRaw.x, y2: ptRaw.y }
@@ -328,7 +415,8 @@ export function useCanvasInteractions(
         const dy = Math.abs(pt.y - sp.y)
         if (dx > 3 || dy > 3) {
           const ann: Annotation = {
-            type: 'separator' as any,
+            id: newAnnotationId(),
+            type: 'separator',
             x1: sp.x, y1: sp.y,
             x2: pt.x, y2: pt.y,
           }
@@ -365,7 +453,24 @@ export function useCanvasInteractions(
           })
         }
       }
+      // Same click-vs-drag semantics for dimensions: a click without movement
+      // opens the edit dialog; a drag commits the new offset/outward.
+      if (dr.endpoint === 'move' && dimDragStartRef.current && !dimDragStartRef.current.moved) {
+        const ann = annotationsRef.current[dr.idx]
+        if (ann && ann.type === 'dimension') {
+          const rect = canvasRef.current!.getBoundingClientRect()
+          const sx = e.clientX - rect.left
+          const sy = e.clientY - rect.top
+          setEditingDimension({
+            idx: dr.idx,
+            sx, sy,
+            valueText: ann.valueText ?? '',
+            locked: !!ann.locked,
+          })
+        }
+      }
       labelDragStartRef.current = null
+      dimDragStartRef.current = null
       draggingRef.current = null
       return
     }
@@ -400,8 +505,58 @@ export function useCanvasInteractions(
       const sx = e.clientX - rect.left
       const sy = e.clientY - rect.top
       setPendingDoor({ x1: sp.x, y1: sp.y, x2: pt.x, y2: pt.y, sx, sy })
+    } else if (tool === 'measure') {
+      // Measure tool → create a dimension annotation. User can draw
+      // diagonals freely, just like walls. Orientation is inferred from
+      // the dominant axis for rendering decisions (ext line direction).
+      const isH = Math.abs(pt.x - sp.x) >= Math.abs(pt.y - sp.y)
+      const x1 = sp.x
+      const y1 = sp.y
+      const x2 = pt.x
+      const y2 = pt.y
+      const spanPx = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+
+      // Compute outward from plan centroid so the cota sits on the outside
+      // of the building (matches auto-generated exterior dims).
+      const walls = annotationsRef.current.filter((a) => a.type === 'wall')
+      let cx = 0, cy = 0
+      if (walls.length > 0) {
+        for (const w of walls) {
+          cx += (w.x1 + w.x2) / 2
+          cy += (w.y1 + w.y2) / 2
+        }
+        cx /= walls.length
+        cy /= walls.length
+      } else {
+        cx = (x1 + x2) / 2
+        cy = (y1 + y2) / 2
+      }
+      const wallCoord = isH ? (y1 + y2) / 2 : (x1 + x2) / 2
+      const outward: 1 | -1 = isH
+        ? (wallCoord > cy ? -1 : 1)
+        : (wallCoord > cx ? 1 : -1)
+
+      const valueInches = spanPx * (scaleIpp || 0)
+      const valueText = scaleIpp && scaleIpp > 0
+        ? inchesToFeetInches(valueInches)
+        : `${Math.round(spanPx)} px`
+
+      const dim: Annotation = {
+        id: newAnnotationId(),
+        type: 'dimension',
+        subtype: 'exterior',
+        orientation: isH ? 'H' : 'V',
+        outward,
+        offsetPx: 30,
+        x1, y1, x2, y2,
+        valueInches,
+        valueText,
+        wallIds: [],
+      }
+      setAnnotations([...annotations, dim])
     } else {
       setAnnotations([...annotations, {
+        id: newAnnotationId(),
         type: tool,
         x1: sp.x, y1: sp.y,
         x2: pt.x, y2: pt.y,
@@ -417,7 +572,7 @@ export function useCanvasInteractions(
     if (editIdx >= 0) {
       setAnnotations(annotations.map((a, i) => i === editIdx ? { ...a, swing: dir } : a))
     } else {
-      setAnnotations([...annotations, { type: 'door', ...pendingDoor, swing: dir }])
+      setAnnotations([...annotations, { id: newAnnotationId(), type: 'door', ...pendingDoor, swing: dir }])
     }
     editingDoorIdxRef.current = -1
     setPendingDoor(null)
