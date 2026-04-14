@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 
-# These are PIXEL sizes matching the frontend 2D editor (renderCanvas.ts).
-# They get multiplied by t_scale to produce DXF units, guaranteeing the
-# DXF looks proportionally identical to the 2D editor.
-DIM_TEXT_HEIGHT_PX = 14    # _renderDimension: fontSize = 14
-DIM_DOT_SIZE_PX = 8
-ROOM_NAME_HEIGHT_PX = 32   # renderCanvas label: nameSize = 32 * labelScale
-ROOM_DIM_HEIGHT_PX = 22    # renderCanvas label: sqftSize = 22 * labelScale
+# Pixel sizes tuned to match the 2D editor visually but scaled down slightly
+# so dense plans stay readable in AutoCAD. Multiplied by t_scale → DXF units.
+DIM_TEXT_HEIGHT_PX = 9     # cotas: slightly smaller than the 2D editor's 14px
+DIM_DOT_SIZE_PX = 5
+ROOM_NAME_HEIGHT_PX = 28   # room name: close to 2D editor's 32px
+ROOM_DIM_HEIGHT_PX = 14    # sqft line: smaller to avoid overlap with room name
 FIRST_CHAIN_OFFSET = 8.0
 
 # Legacy aliases kept for any external code that imports the old names

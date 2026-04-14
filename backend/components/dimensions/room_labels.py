@@ -84,8 +84,8 @@ def _render_manual_room_labels(
         scaled_dim_h = dim_h * label_scale
         scaled_spacing = label_spacing * label_scale
 
-        # Room name — offset (0, spacing) in local space (up), then rotated
-        name_ox, name_oy = _rotate_offset(0.0, scaled_spacing, cos_r, sin_r)
+        # Room name — offset upward by name_h so it sits above the anchor point
+        name_ox, name_oy = _rotate_offset(0.0, scaled_name_h * 0.8, cos_r, sin_r)
         name_text = msp.add_text(
             room_name,
             dxfattribs={"layer": "ROOM LBLS", "height": scaled_name_h, "rotation": rotation_deg},
@@ -105,7 +105,7 @@ def _render_manual_room_labels(
 
         dims_text = _label_room_metrics(annotations, wall_mask, image_shape, label, scale_ipp, room_context=room_context)
         if dims_text:
-            dims_ox, dims_oy = _rotate_offset(0.0, -scaled_spacing * 0.3, cos_r, sin_r)
+            dims_ox, dims_oy = _rotate_offset(0.0, -scaled_dim_h * 0.8, cos_r, sin_r)
             dims_label = msp.add_text(
                 dims_text,
                 dxfattribs={"layer": "ROOM LBLS", "height": scaled_dim_h, "rotation": rotation_deg},
@@ -115,7 +115,7 @@ def _render_manual_room_labels(
             _dims_pkg.log_event("room_size_label_added", room_name=room_name, dims_text=dims_text)
 
         if sqft_value is not None:
-            sqft_local_y = -(scaled_spacing * 1.2 if dims_text else scaled_spacing * 0.3)
+            sqft_local_y = -(scaled_dim_h * 2.0 if dims_text else scaled_dim_h * 0.8)
             sqft_ox, sqft_oy = _rotate_offset(0.0, sqft_local_y, cos_r, sin_r)
             sqft_text = msp.add_text(
                 f"{int(round(float(sqft_value)))} SQ FT",
