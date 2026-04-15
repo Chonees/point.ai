@@ -1,5 +1,4 @@
 export type Status = 'idle' | 'loading' | 'done' | 'error'
-export type ModelVariant = 'baseline' | 'mitunet' | 'ensemble'
 export type AnnotationType = 'select' | 'wall' | 'door' | 'window' | 'label' | 'paint' | 'separator' | 'dimension' | 'measure'
 export type SwingDir = 'up' | 'down' | 'left' | 'right'
 export type DimensionSubtype = 'exterior' | 'window_chain' | 'interior'

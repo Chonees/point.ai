@@ -4,7 +4,6 @@ FastAPI: image -> inference -> structure -> DXF
 
 Run: uvicorn backend.app:app --reload
 """
-import os
 import uuid
 import tempfile
 from contextlib import asynccontextmanager

@@ -29,17 +29,6 @@ def _wall_extent(wall: dict, orientation: str) -> tuple[float, float, float]:
     return min(y1, y2), max(y1, y2), (x1 + x2) / 2
 
 
-def _opening_on_wall(opening: dict, wall: dict, orientation: str, tolerance: float = 8.0) -> bool:
-    wall_start, wall_end, wall_coord = _wall_extent(wall, orientation)
-    ox1, oy1, ox2, oy2 = float(opening["x1"]), float(opening["y1"]), float(opening["x2"]), float(opening["y2"])
-    opening_mid_along = ((ox1 + ox2) / 2) if orientation == "H" else ((oy1 + oy2) / 2)
-    opening_coord = ((oy1 + oy2) / 2) if orientation == "H" else ((ox1 + ox2) / 2)
-    return (
-        wall_start - tolerance <= opening_mid_along <= wall_end + tolerance
-        and abs(opening_coord - wall_coord) < tolerance
-    )
-
-
 def _opening_centerline(opening: dict, orientation: str) -> float:
     if orientation == "H":
         return (float(opening["x1"]) + float(opening["x2"])) / 2

@@ -12,7 +12,6 @@ from .regions import (
 )
 from .annotations import regions_to_wall_annotations
 from .dxf_writer import (
-    generate_mitunet_dxf,
     generate_mitunet_region_dxf,
     build_mitunet_provenance,
 )
@@ -26,7 +25,6 @@ __all__ = [
     "infer_mitunet",
     "build_mitunet_region_plan",
     "regions_to_wall_annotations",
-    "generate_mitunet_dxf",
     "generate_mitunet_region_dxf",
     "build_mitunet_provenance",
     "_prepare_mitunet_wall_mask_for_regions",

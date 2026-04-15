@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-import math
-from pathlib import Path
 from typing import Any
-
-import cv2
-import numpy as np
 
 from ..provenance import build_code_provenance, build_file_provenance, utc_now_iso
 from .annotations import _draw_mitunet_annotations_from_region_plan
@@ -157,19 +152,6 @@ def _add_dims_and_labels(doc, msp, annotations, wall_mask, image_shape, transfor
         traceback.print_exc()
         return None
 
-
-def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
-                         annotations: list[dict] | None = None) -> int:
-    """Legacy entrypoint kept as a compatibility wrapper.
-
-    The real MitUNet DXF path is now:
-    raw mask -> region_plan -> generate_mitunet_region_dxf
-    """
-    from .regions import build_mitunet_region_plan
-
-    region_plan = build_mitunet_region_plan(infer_result, annotations=annotations)
-    rect_count, _ = generate_mitunet_region_dxf(region_plan, out_path, annotations=annotations)
-    return rect_count
 
 
 def generate_mitunet_region_dxf(
