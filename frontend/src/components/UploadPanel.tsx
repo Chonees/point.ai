@@ -47,8 +47,6 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onTotal
     onAutoLoaded: () => setAutoLoaded(true),
   })
 
-  const labelCount = annotations.filter((a) => a.type === 'label').length
-  const computedRoomCount = result?.computed_rooms?.length ?? 0
   const hasPlan = Boolean(file || preview)
 
   useEffect(() => {
@@ -121,8 +119,6 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onTotal
           <PlanMetadataCard
             totalSqft={totalSqft}
             onTotalSqftChange={handleTotalSqftChange}
-            labelCount={labelCount}
-            computedRoomCount={computedRoomCount}
             status={status}
             hasPlan={hasPlan}
             onGenerate={generate}
@@ -161,8 +157,6 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onTotal
               setVisibility(next)
               notifySceneChange(annotations, next)
             }}
-            initialScene={project?.scene}
-            onSceneChange={onSceneChange}
           />
         )}
       </AnimatePresence>

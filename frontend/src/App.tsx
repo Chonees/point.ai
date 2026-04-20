@@ -10,8 +10,11 @@ import type { PlanData, ProjectScene } from './hooks/useProject'
 const UploadPanel = lazy(() =>
   import('./components/UploadPanel').then((m) => ({ default: m.UploadPanel })),
 )
+const CadWorkspacePage = lazy(() =>
+  import('./features/cadWorkspace/CadWorkspacePage').then((m) => ({ default: m.CadWorkspacePage })),
+)
 
-type Page = 'login' | 'projects' | 'editor'
+type Page = 'login' | 'projects' | 'editor' | 'cad'
 
 export default function App() {
   const auth = useAuth()
@@ -106,7 +109,10 @@ export default function App() {
     )
   }
 
-  // Editor
+  const isCadPage = page === 'cad'
+  const workspaceTitle = isCadPage ? 'CAD workspace' : 'Floor plan workspace'
+
+  // Workspace
   const projectName = projectList.projects.find((p) => p.id === currentPlan?.projectId)?.name
   return (
     <div className="min-h-screen bg-[#090909] text-zinc-100 safe-area-inset">
@@ -133,22 +139,48 @@ export default function App() {
               <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
                 Pointe<span className="text-white/30">.ai</span>
               </h1>
-              <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Floor plan workspace</p>
+              <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">{workspaceTitle}</p>
             </div>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            {currentPlan && (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setPage('editor')}
+                className={`rounded-2xl border px-4 py-3 text-sm transition-colors ${
+                  !isCadPage
+                    ? 'border-white/12 bg-white/[0.08] text-zinc-100'
+                    : 'border-white/8 bg-white/[0.03] text-zinc-300 hover:bg-white/[0.05]'
+                }`}
+              >
+                Image workspace
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage('cad')}
+                className={`rounded-2xl border px-4 py-3 text-sm transition-colors ${
+                  isCadPage
+                    ? 'border-white/12 bg-white/[0.08] text-zinc-100'
+                    : 'border-white/8 bg-white/[0.03] text-zinc-300 hover:bg-white/[0.05]'
+                }`}
+              >
+                CAD workspace
+              </button>
+            </div>
+            {!isCadPage && currentPlan && (
               <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">
                 <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Current plan</p>
                 <p className="mt-1 text-sm text-zinc-200">{projectName} / {currentPlan.name}</p>
               </div>
             )}
-            <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Save status</p>
-              <p className="mt-1 text-sm text-zinc-200">{saveState}</p>
-            </div>
-            {currentPlan && auth.user && (
+            {!isCadPage && (
+              <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Save status</p>
+                <p className="mt-1 text-sm text-zinc-200">{saveState}</p>
+              </div>
+            )}
+            {!isCadPage && currentPlan && auth.user && (
               <button
                 onClick={handleSave}
                 disabled={saving}
@@ -174,27 +206,31 @@ export default function App() {
               </div>
             }
           >
-            <UploadPanel
-              project={currentPlan}
-              onSceneChange={(scene) => {
-                pendingSceneRef.current = scene
-                debouncedSave({ scene })
-              }}
-              onStructureChange={(structure) => {
-                pendingStructureRef.current = structure
-                debouncedSave({ structure })
-              }}
-              onTotalSqftChange={(value) => {
-                pendingTotalSqftRef.current = value
-                debouncedSave({ totalSqft: value })
-              }}
-              onSaveNow={(updates) => {
-                if (updates.imageData) saveNow({ imageData: updates.imageData })
-                if (updates.structure) pendingStructureRef.current = updates.structure
-                if (updates.scene) pendingSceneRef.current = updates.scene
-                if (updates.totalSqft !== undefined) pendingTotalSqftRef.current = updates.totalSqft
-              }}
-            />
+            {isCadPage ? (
+              <CadWorkspacePage />
+            ) : (
+              <UploadPanel
+                project={currentPlan}
+                onSceneChange={(scene) => {
+                  pendingSceneRef.current = scene
+                  debouncedSave({ scene })
+                }}
+                onStructureChange={(structure) => {
+                  pendingStructureRef.current = structure
+                  debouncedSave({ structure })
+                }}
+                onTotalSqftChange={(value) => {
+                  pendingTotalSqftRef.current = value
+                  debouncedSave({ totalSqft: value })
+                }}
+                onSaveNow={(updates) => {
+                  if (updates.imageData) saveNow({ imageData: updates.imageData })
+                  if (updates.structure) pendingStructureRef.current = updates.structure
+                  if (updates.scene) pendingSceneRef.current = updates.scene
+                  if (updates.totalSqft !== undefined) pendingTotalSqftRef.current = updates.totalSqft
+                }}
+              />
+            )}
           </Suspense>
         </motion.div>
       </div>
