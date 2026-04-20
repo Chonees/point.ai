@@ -13,11 +13,11 @@ describe('CadWorkspacePage', () => {
   it('renders the separate CAD workspace copy', () => {
     render(<CadWorkspacePage />)
 
-    expect(screen.getByText('DWG / DXF side-by-side extractor')).toBeInTheDocument()
+    expect(screen.getByText('DWG / DXF overlay extractor')).toBeInTheDocument()
     expect(screen.getByText(/separado del pipeline de imagen/i)).toBeInTheDocument()
   })
 
-  it('shows extracted metadata and comparative canvas after upload', async () => {
+  it('shows extracted metadata, overlay canvas, overflow legend, and overlay download after upload', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
@@ -66,12 +66,14 @@ describe('CadWorkspacePage', () => {
         side_by_side: { canonical_unit: 'inch', gap: 24, floor_width: 600, site_width: 480, max_height: 700 },
         fit_summary: {
           comparison_unit: 'inch',
-          basis: 'bbox',
+          basis: 'buildable_polygon',
           footprint_bbox: { x1: 0, y1: 0, x2: 600, y2: 300, width: 600, height: 300 },
           property_bbox: { x1: 0, y1: 0, x2: 480, y2: 700, width: 480, height: 700 },
           buildable_bbox: { x1: 20, y1: 20, x2: 440, y2: 640, width: 420, height: 620 },
+          buildable_polygon: [{ x: 20, y: 20 }, { x: 440, y: 20 }, { x: 440, y: 640 }, { x: 20, y: 640 }, { x: 20, y: 20 }],
           width_delta: -180,
           height_delta: 320,
+          fits_within_buildable_polygon: false,
           fits_within_buildable_bbox: false,
         },
         warnings: ['Only one spatial view cluster was detected; site extraction may be incomplete.'],
@@ -89,10 +91,15 @@ describe('CadWorkspacePage', () => {
       expect(screen.getByText('dawson.dxf')).toBeInTheDocument()
     })
 
-    expect(screen.getByRole('img', { name: 'CAD side by side comparison' })).toBeInTheDocument()
-    expect(screen.getByText(/floor plan \+ site plan a la misma escala/i)).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: 'CAD overlay comparison' })).toBeInTheDocument()
+    expect(screen.getByText(/overlay del footprint sobre el área construible/i)).toBeInTheDocument()
+    expect(screen.getByText(/rojo marca lo que sobresale/i)).toBeInTheDocument()
     expect(screen.getByText(/Only one spatial view cluster was detected/i)).toBeInTheDocument()
-    expect(screen.getByText(/footprint exterior vs zona construible/i)).toBeInTheDocument()
-    expect(screen.getByText(/el footprint excede el buildable por bbox/i)).toBeInTheDocument()
+    expect(screen.getByText(/resultado de encaje/i)).toBeInTheDocument()
+    expect(screen.getByText(/no entra en polígono construible/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/50'-0" · 600 in/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/35'-0" · 420 in/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/falta 15'-0" de ancho/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /descargar dxf overlay/i })).toHaveAttribute('href', '/api/cad-workspace/export-overlay/cad-123')
   })
 })

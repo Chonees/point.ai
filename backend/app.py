@@ -47,7 +47,7 @@ from .services.site_fit_service import (
     propose_site_fit,
     validate_site_fit_request,
 )
-from .services.cad_workspace_service import extract_cad_workspace
+from .services.cad_workspace_service import extract_cad_workspace, export_cad_workspace_overlay
 
 
 # ─── LIFESPAN ────────────────────────────────────────────────────────────────
@@ -234,6 +234,17 @@ async def api_cad_workspace_extract(file: UploadFile = File(...)):
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.get("/api/cad-workspace/export-overlay/{analysis_id}")
+async def api_cad_workspace_export_overlay(analysis_id: str):
+    try:
+        path, filename = export_cad_workspace_overlay(analysis_id=analysis_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="CAD analysis not found")
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    return FileResponse(str(path), media_type="application/dxf", filename=filename)
 
 
 @app.get("/downloads/{filename}")

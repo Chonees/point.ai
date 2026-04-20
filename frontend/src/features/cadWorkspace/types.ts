@@ -64,9 +64,11 @@ export interface CadWorkspaceExtractResult {
     footprint_bbox?: CadWorkspaceBBox | null
     property_bbox?: CadWorkspaceBBox | null
     buildable_bbox?: CadWorkspaceBBox | null
+    buildable_polygon?: CadWorkspacePoint[]
     width_delta?: number | null
     height_delta?: number | null
     fits_within_buildable_bbox?: boolean | null
+    fits_within_buildable_polygon?: boolean | null
   } | null
   warnings: string[]
 }

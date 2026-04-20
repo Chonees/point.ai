@@ -60,9 +60,11 @@ class CadWorkspaceFitSummaryResponse(BaseModel):
     footprint_bbox: Optional[CadWorkspaceBBoxResponse] = None
     property_bbox: Optional[CadWorkspaceBBoxResponse] = None
     buildable_bbox: Optional[CadWorkspaceBBoxResponse] = None
+    buildable_polygon: Optional[list[dict]] = None
     width_delta: Optional[float] = None
     height_delta: Optional[float] = None
     fits_within_buildable_bbox: Optional[bool] = None
+    fits_within_buildable_polygon: Optional[bool] = None
 
 
 class CadWorkspaceExtractResponse(BaseModel):

@@ -73,9 +73,11 @@ def extract_cad_file(path: Path, *, source_name: str | None = None) -> dict:
         site_view = _build_view("site_plan", site_entities["entities"], measurements=site_entities["measurements"])
         fit_summary = _build_fit_summary(
             canonical_unit=canonical_unit,
+            floor_entities=floor_view.get("entities", []),
             footprint_bbox=floor_view.get("bbox"),
             property_bbox=site_entities.get("property_bbox"),
             buildable_bbox=site_entities.get("buildable_bbox"),
+            buildable_polygon=site_entities.get("buildable_polygon"),
         )
         warnings: list[str] = []
         if len(ordered) == 1:
@@ -442,6 +444,7 @@ def _normalize_site_entities(cluster: list[ExtractedCadEntity]) -> dict:
         "measurements": measurements,
         "property_bbox": _entities_bbox(property_entities),
         "buildable_bbox": _entities_bbox(buildable_entities),
+        "buildable_polygon": _extract_buildable_polygon(buildable_entities),
     }
 
 
@@ -550,6 +553,206 @@ def _normalize_entities_to_origin(
             )
         )
     return normalized
+
+
+def _extract_buildable_polygon(entities: list[ExtractedCadEntity]) -> list[dict[str, float]] | None:
+    paths = []
+    for entity in entities:
+        points = _entity_points(entity)
+        if len(points) < 2:
+            continue
+        paths.append(points)
+    if not paths:
+        return None
+
+    tolerance = 1e-3
+    components = _group_paths_by_connectivity(paths, tolerance=tolerance)
+    candidates: list[list[dict[str, float]]] = []
+    for component in components:
+        polygon = _compose_closed_path(component, tolerance=tolerance)
+        if polygon is not None and len(polygon) >= 4:
+            candidates.append(polygon)
+    if not candidates:
+        return None
+    return max(candidates, key=lambda polygon: abs(_polygon_area(polygon)))
+
+
+def _entity_points(entity: ExtractedCadEntity) -> list[dict[str, float]]:
+    if entity.type == "line" and entity.start is not None and entity.end is not None:
+        return [entity.start, entity.end]
+    if entity.type == "polyline":
+        return list(entity.points)
+    return []
+
+
+def _group_paths_by_connectivity(paths: list[list[dict[str, float]]], *, tolerance: float) -> list[list[list[dict[str, float]]]]:
+    groups: list[list[list[dict[str, float]]]] = []
+    for path in paths:
+        matched_indexes: list[int] = []
+        for index, group in enumerate(groups):
+            if any(_paths_connected(path, candidate, tolerance=tolerance) for candidate in group):
+                matched_indexes.append(index)
+        if not matched_indexes:
+            groups.append([path])
+            continue
+        base_group = groups[matched_indexes[0]]
+        base_group.append(path)
+        for index in reversed(matched_indexes[1:]):
+            base_group.extend(groups.pop(index))
+    return groups
+
+
+def _paths_connected(left: list[dict[str, float]], right: list[dict[str, float]], *, tolerance: float) -> bool:
+    left_ends = (left[0], left[-1])
+    right_ends = (right[0], right[-1])
+    return any(_points_close(a, b, tolerance=tolerance) for a in left_ends for b in right_ends)
+
+
+def _compose_closed_path(paths: list[list[dict[str, float]]], *, tolerance: float) -> list[dict[str, float]] | None:
+    if not paths:
+        return None
+    if len(paths) == 1:
+        candidate = list(paths[0])
+        if _points_close(candidate[0], candidate[-1], tolerance=tolerance):
+            return candidate
+        return None
+
+    remaining = [list(path) for path in paths]
+    ordered = remaining.pop(0)
+    while remaining:
+        current_end = ordered[-1]
+        next_index = None
+        next_path = None
+        for index, candidate in enumerate(remaining):
+            if _points_close(candidate[0], current_end, tolerance=tolerance):
+                next_index = index
+                next_path = candidate
+                break
+            if _points_close(candidate[-1], current_end, tolerance=tolerance):
+                next_index = index
+                next_path = list(reversed(candidate))
+                break
+        if next_path is None or next_index is None:
+            return None
+        ordered.extend(next_path[1:])
+        remaining.pop(next_index)
+
+    if not _points_close(ordered[0], ordered[-1], tolerance=tolerance):
+        return None
+    return ordered
+
+
+def _points_close(left: dict[str, float], right: dict[str, float], *, tolerance: float) -> bool:
+    return abs(float(left["x"]) - float(right["x"])) <= tolerance and abs(float(left["y"]) - float(right["y"])) <= tolerance
+
+
+def _polygon_area(points: list[dict[str, float]]) -> float:
+    if len(points) < 3:
+        return 0.0
+    area = 0.0
+    for index in range(len(points) - 1):
+        x1 = float(points[index]["x"])
+        y1 = float(points[index]["y"])
+        x2 = float(points[index + 1]["x"])
+        y2 = float(points[index + 1]["y"])
+        area += (x1 * y2) - (x2 * y1)
+    return area / 2.0
+
+
+def _point_in_polygon(point: dict[str, float], polygon: list[dict[str, float]]) -> bool:
+    x = float(point["x"])
+    y = float(point["y"])
+    inside = False
+    for index in range(len(polygon) - 1):
+        x1 = float(polygon[index]["x"])
+        y1 = float(polygon[index]["y"])
+        x2 = float(polygon[index + 1]["x"])
+        y2 = float(polygon[index + 1]["y"])
+        intersects = ((y1 > y) != (y2 > y)) and (
+            x < ((x2 - x1) * (y - y1) / ((y2 - y1) or 1e-9)) + x1
+        )
+        if intersects:
+            inside = not inside
+    return inside or _point_on_polygon_boundary(point, polygon, tolerance=1e-3)
+
+
+def _point_on_polygon_boundary(point: dict[str, float], polygon: list[dict[str, float]], *, tolerance: float) -> bool:
+    px = float(point["x"])
+    py = float(point["y"])
+    for index in range(len(polygon) - 1):
+        ax = float(polygon[index]["x"])
+        ay = float(polygon[index]["y"])
+        bx = float(polygon[index + 1]["x"])
+        by = float(polygon[index + 1]["y"])
+        if _distance_point_to_segment(px, py, ax, ay, bx, by) <= tolerance:
+            return True
+    return False
+
+
+def _distance_point_to_segment(px: float, py: float, ax: float, ay: float, bx: float, by: float) -> float:
+    dx = bx - ax
+    dy = by - ay
+    if abs(dx) < 1e-9 and abs(dy) < 1e-9:
+        return math.hypot(px - ax, py - ay)
+    t = ((px - ax) * dx + (py - ay) * dy) / ((dx * dx) + (dy * dy))
+    t = max(0.0, min(1.0, t))
+    closest_x = ax + (t * dx)
+    closest_y = ay + (t * dy)
+    return math.hypot(px - closest_x, py - closest_y)
+
+
+def _center_floor_bbox_within_buildable(footprint_bbox: dict[str, float], buildable_bbox: dict[str, float]) -> tuple[float, float]:
+    x1 = float(buildable_bbox["x1"]) + ((float(buildable_bbox["width"]) - float(footprint_bbox["width"])) / 2.0)
+    y1 = float(buildable_bbox["y1"]) + ((float(buildable_bbox["height"]) - float(footprint_bbox["height"])) / 2.0)
+    return x1 - float(footprint_bbox["x1"]), y1 - float(footprint_bbox["y1"])
+
+
+def _sample_entity_points(entity: dict, *, step: float = 24.0) -> list[dict[str, float]]:
+    entity_type = str(entity.get("type") or "").lower()
+    if entity_type == "line":
+        start = entity.get("start")
+        end = entity.get("end")
+        if start is None or end is None:
+            return []
+        length = math.hypot(float(end["x"]) - float(start["x"]), float(end["y"]) - float(start["y"]))
+        samples = max(2, int(length / step) + 1)
+        points = []
+        for idx in range(samples + 1):
+            t = idx / samples
+            points.append({
+                "x": float(start["x"]) + ((float(end["x"]) - float(start["x"])) * t),
+                "y": float(start["y"]) + ((float(end["y"]) - float(start["y"])) * t),
+            })
+        return points
+    if entity_type == "polyline":
+        raw_points = entity.get("points") or []
+        if len(raw_points) < 2:
+            return []
+        samples: list[dict[str, float]] = []
+        for index in range(len(raw_points) - 1):
+            start = raw_points[index]
+            end = raw_points[index + 1]
+            segment_length = math.hypot(float(end["x"]) - float(start["x"]), float(end["y"]) - float(start["y"]))
+            segment_samples = max(1, int(segment_length / step))
+            for sample_index in range(segment_samples + 1):
+                t = sample_index / segment_samples if segment_samples else 0.0
+                point = {
+                    "x": float(start["x"]) + ((float(end["x"]) - float(start["x"])) * t),
+                    "y": float(start["y"]) + ((float(end["y"]) - float(start["y"])) * t),
+                }
+                if not samples or not _points_close(samples[-1], point, tolerance=1e-6):
+                    samples.append(point)
+        return samples
+    return []
+
+
+def _translated_entities_fit_polygon(entities: list[dict], *, dx: float, dy: float, polygon: list[dict[str, float]]) -> bool:
+    for entity in entities:
+        for point in _sample_entity_points(entity):
+            shifted = {"x": float(point["x"]) + dx, "y": float(point["y"]) + dy}
+            if not _point_in_polygon(shifted, polygon):
+                return False
+    return True
 
 
 def _transform_entity(
@@ -674,28 +877,41 @@ def _build_side_by_side(floor_view: dict, site_view: dict, *, canonical_unit: st
 def _build_fit_summary(
     *,
     canonical_unit: str,
+    floor_entities: list[dict],
     footprint_bbox: dict[str, float] | None,
     property_bbox: dict[str, float] | None,
     buildable_bbox: dict[str, float] | None,
+    buildable_polygon: list[dict[str, float]] | None,
 ) -> dict:
     summary = {
         "comparison_unit": canonical_unit,
-        "basis": "bbox",
+        "basis": "unavailable",
         "footprint_bbox": footprint_bbox,
         "property_bbox": property_bbox,
         "buildable_bbox": buildable_bbox,
+        "buildable_polygon": buildable_polygon,
         "width_delta": None,
         "height_delta": None,
         "fits_within_buildable_bbox": None,
+        "fits_within_buildable_polygon": None,
     }
-    if footprint_bbox is None or buildable_bbox is None:
-        return summary
+    if footprint_bbox is not None and buildable_bbox is not None:
+        width_delta = float(buildable_bbox["width"]) - float(footprint_bbox["width"])
+        height_delta = float(buildable_bbox["height"]) - float(footprint_bbox["height"])
+        summary["width_delta"] = width_delta
+        summary["height_delta"] = height_delta
+        summary["fits_within_buildable_bbox"] = width_delta >= -0.001 and height_delta >= -0.001
+        summary["basis"] = "bbox"
 
-    width_delta = float(buildable_bbox["width"]) - float(footprint_bbox["width"])
-    height_delta = float(buildable_bbox["height"]) - float(footprint_bbox["height"])
-    summary["width_delta"] = width_delta
-    summary["height_delta"] = height_delta
-    summary["fits_within_buildable_bbox"] = width_delta >= -0.001 and height_delta >= -0.001
+    if footprint_bbox is not None and buildable_bbox is not None and buildable_polygon:
+        dx, dy = _center_floor_bbox_within_buildable(footprint_bbox, buildable_bbox)
+        summary["fits_within_buildable_polygon"] = _translated_entities_fit_polygon(
+            floor_entities,
+            dx=dx,
+            dy=dy,
+            polygon=buildable_polygon,
+        )
+        summary["basis"] = "buildable_polygon"
     return summary
 
 
