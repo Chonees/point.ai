@@ -100,6 +100,7 @@ describe('CadWorkspacePage', () => {
     expect(screen.getAllByText(/50'-0" · 600 in/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/35'-0" · 420 in/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/falta 15'-0" de ancho/i)).toBeInTheDocument()
+    expect(screen.getByTestId('overflow-fragments').querySelector('line')).toHaveAttribute('stroke-width', '3')
     expect(screen.getByRole('link', { name: /descargar dxf overlay/i })).toHaveAttribute('href', '/api/cad-workspace/export-overlay/cad-123')
   })
 })

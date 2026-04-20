@@ -271,7 +271,7 @@ function renderOverflowFragments(view: CadWorkspaceView, dx: number, dy: number,
   }
 
   return (
-    <g className="text-red-400">
+    <g data-testid="overflow-fragments" className="text-red-400/90">
       {fragments.map((fragment, index) => (
         <line
           key={`overflow-${index}`}
@@ -280,7 +280,7 @@ function renderOverflowFragments(view: CadWorkspaceView, dx: number, dy: number,
           x2={fragment.end.x}
           y2={fragment.end.y}
           stroke="currentColor"
-          strokeWidth={7}
+          strokeWidth={3}
           strokeLinecap="round"
           vectorEffect="non-scaling-stroke"
         />
