@@ -20,7 +20,7 @@ export default function App() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const planList = usePlanList(selectedProjectId)
   const [currentPlan, setCurrentPlan] = useState<PlanData | null>(null)
-  const [page, setPage] = useState<Page>(isSupabaseConfigured ? 'login' : 'editor')
+  const [page, setPage] = useState<Page>(isSupabaseConfigured ? 'login' : 'projects')
   const { saving, lastSaved, saveNow, debouncedSave } = usePlanSave(currentPlan?.id ?? null)
   const pendingSceneRef = useRef<ProjectScene | null>(null)
   const pendingStructureRef = useRef<Record<string, unknown> | null>(null)
@@ -51,19 +51,19 @@ export default function App() {
   }
 
   // Login
-  if (page === 'login' && !auth.user) {
+  if (page === 'login' && !auth.user && isSupabaseConfigured) {
     return (
       <LoginPage
         onSignIn={async (e, p) => { await auth.signIn(e, p); setPage('projects') }}
         onSignUp={auth.signUp}
         onGoogleSignIn={async () => { await auth.signInWithGoogle(); setPage('projects') }}
-        onSkip={() => setPage('editor')}
+        onSkip={() => setPage('projects')}
       />
     )
   }
 
   // Project + Plan list
-  if (auth.user && (page === 'login' || page === 'projects')) {
+  if ((auth.user || !isSupabaseConfigured) && (page === 'login' || page === 'projects')) {
     return (
       <div className="min-h-screen bg-zinc-950">
         <ProjectList
@@ -101,13 +101,13 @@ export default function App() {
             setSelectedProjectId(null)
             setPage('login')
           }}
-          userEmail={auth.user.email}
+          userEmail={auth.user?.email}
         />
       </div>
     )
   }
 
-  const activePlan = currentPlan ?? planList.plans[0] ?? null
+  const activePlan = currentPlan ?? (selectedProjectId ? planList.plans[0] ?? null : null)
   const workspaceTitle = 'Chat workspace'
   const threadSummaries = useMemo(() => planList.plans.map(planToThreadSummary), [planList.plans])
   const threadMessages = useMemo(() => (

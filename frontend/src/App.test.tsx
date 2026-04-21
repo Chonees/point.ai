@@ -68,11 +68,12 @@ vi.mock('./features/cadWorkspace/CadWorkspacePage', () => ({
 import App from './App'
 
 describe('App chat shell', () => {
-  it('does not render workspace toggles and shows the chat-first composer shell', async () => {
+  it('lands on the project shell instead of an empty black thread workspace when no thread is active', async () => {
     render(<App />)
 
     expect(screen.queryByText('Image workspace')).not.toBeInTheDocument()
     expect(screen.queryByText('CAD workspace')).not.toBeInTheDocument()
-    expect(await screen.findByPlaceholderText(/pedile algo a point/i)).toBeInTheDocument()
+    expect(await screen.findByText(/your workspace/i)).toBeInTheDocument()
+    expect(screen.queryByPlaceholderText(/pedile algo a point/i)).not.toBeInTheDocument()
   })
 })

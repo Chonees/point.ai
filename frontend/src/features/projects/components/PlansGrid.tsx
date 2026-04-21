@@ -47,9 +47,9 @@ export function PlansGrid({
         <div className="flex min-h-[520px] items-center justify-center rounded-[24px] border border-dashed border-white/6 bg-white/[0.02]">
           <div className="max-w-sm text-center">
             <p className="text-xs uppercase tracking-[0.28em] text-zinc-600">No project selected</p>
-            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-100">Choose a workspace</h2>
+            <h2 className="mt-3 text-2xl font-semibold tracking-tight text-zinc-100">Choose a project</h2>
             <p className="mt-3 text-sm leading-6 text-zinc-500">
-              Pick a project on the left to open its plans, review thumbnails and keep the editor state visually organized.
+              Pick a project on the left to open its threads and continue the chat-based workflow.
             </p>
           </div>
         </div>
@@ -64,27 +64,28 @@ export function PlansGrid({
           <p className="text-xs uppercase tracking-[0.28em] text-zinc-600">Project detail</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-100">{project.name}</h2>
           <p className="mt-2 text-sm text-zinc-500">
-            {project.planCount} plan{project.planCount !== 1 ? 's' : ''} · Updated {formatDate(project.updatedAt)} at {formatTime(project.updatedAt)}
+            {project.planCount} thread{project.planCount !== 1 ? 's' : ''} · Updated {formatDate(project.updatedAt)} at {formatTime(project.updatedAt)}
           </p>
         </div>
 
         <form onSubmit={handleCreate} className="rounded-2xl border border-white/6 bg-white/[0.02] p-3">
           <label className="block">
-            <span className="mb-2 block text-[11px] uppercase tracking-[0.22em] text-zinc-600">New floor plan</span>
+            <span className="mb-2 block text-[11px] uppercase tracking-[0.22em] text-zinc-600">New thread</span>
             <div className="flex gap-2">
               <input
                 type="text"
                 value={newPlanName}
                 onChange={(e) => setNewPlanName(e.target.value)}
-                placeholder="Main floor"
+                placeholder="Fit Dawson"
                 className="min-w-[220px] rounded-2xl border border-white/8 bg-zinc-950 px-4 py-3 text-sm text-zinc-200 placeholder-zinc-600 outline-none focus:border-white/16"
               />
               <button
                 type="submit"
+                aria-label="Add thread"
                 disabled={creating || !newPlanName.trim()}
                 className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-zinc-200 transition-colors hover:bg-white/[0.1] disabled:opacity-40"
               >
-                Add plan
+                Add thread
               </button>
             </div>
           </label>
@@ -93,12 +94,12 @@ export function PlansGrid({
 
       {plansLoading ? (
         <div className="rounded-2xl border border-dashed border-white/6 bg-white/[0.02] px-4 py-12 text-center text-sm text-zinc-500">
-          Loading plans...
+          Loading threads...
         </div>
       ) : plans.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/6 bg-white/[0.02] px-4 py-16 text-center">
-          <p className="text-sm text-zinc-300">No plans in this project yet</p>
-          <p className="mt-2 text-xs text-zinc-600">Create a floor plan to start the 2D and 3D workflow.</p>
+          <p className="text-sm text-zinc-300">No threads in this project yet</p>
+          <p className="mt-2 text-xs text-zinc-600">Create a thread to start the AI workflow.</p>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2">

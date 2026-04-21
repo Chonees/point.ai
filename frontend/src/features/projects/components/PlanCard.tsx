@@ -35,7 +35,7 @@ export function PlanCard({ plan, onOpen, onDelete, onRename }: PlanCardProps) {
             <div className="flex h-full items-center justify-center">
               <div className="space-y-2 text-center">
                 <div className="mx-auto h-12 w-12 rounded-2xl border border-white/8 bg-white/[0.04]" />
-                <p className="text-xs uppercase tracking-[0.24em] text-zinc-600">No preview</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-zinc-600">No artifact preview</p>
               </div>
             </div>
           )}
@@ -44,11 +44,11 @@ export function PlanCard({ plan, onOpen, onDelete, onRename }: PlanCardProps) {
             <div className="min-w-0">
               <p className="truncate text-lg font-medium text-zinc-100">{plan.name}</p>
               <p className="mt-1 text-xs text-zinc-300/75">
-                {plan.scene.annotations2d.length} annotations · {plan.scene.placedItems3d.length} 3D items
+                {plan.structure ? 'Structured result available' : 'No generated artifacts yet'}
               </p>
             </div>
             <span className="rounded-full border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-300">
-              Open
+              Open thread
             </span>
           </div>
         </div>
@@ -56,7 +56,7 @@ export function PlanCard({ plan, onOpen, onDelete, onRename }: PlanCardProps) {
 
       <div className="flex items-center justify-between gap-3 px-4 py-3">
         <div>
-          <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Last saved</p>
+          <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Last activity</p>
           <p className="mt-1 text-sm text-zinc-300">{formatDate(plan.updatedAt)} at {formatTime(plan.updatedAt)}</p>
         </div>
         <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">

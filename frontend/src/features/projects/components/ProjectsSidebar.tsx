@@ -89,7 +89,7 @@ export function ProjectsSidebar({
       ) : projects.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-white/6 bg-white/[0.02] px-4 py-12 text-center">
           <p className="text-sm text-zinc-300">No projects yet</p>
-          <p className="mt-2 text-xs text-zinc-600">Create your first workspace to start saving plans visually.</p>
+          <p className="mt-2 text-xs text-zinc-600">Create your first project to start new AI threads.</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -129,7 +129,7 @@ export function ProjectsSidebar({
                         <>
                           <p className="truncate text-base font-medium text-zinc-100">{project.name}</p>
                           <p className="mt-1 text-xs text-zinc-500">
-                            {project.planCount} plan{project.planCount !== 1 ? 's' : ''} · Updated {formatDate(project.updatedAt)}
+                            {project.planCount} thread{project.planCount !== 1 ? 's' : ''} · Updated {formatDate(project.updatedAt)}
                           </p>
                         </>
                       )}
