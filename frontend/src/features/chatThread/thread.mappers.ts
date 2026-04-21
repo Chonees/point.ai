@@ -23,6 +23,15 @@ export function planToInitialMessages(plan: PlanData): ThreadMessage[] {
     })
   }
 
+  if (plan.structure) {
+    artifacts.push({
+      id: `${plan.id}-preview`,
+      kind: 'preview',
+      title: 'Latest parsed structure',
+      description: 'Persisted geometry is available for the agent to continue from.',
+    })
+  }
+
   return [
     {
       id: `${plan.id}-system`,

@@ -39,5 +39,6 @@ describe('thread.mappers', () => {
     expect(messages[0].role).toBe('system')
     expect(messages[1].role).toBe('assistant')
     expect(messages[1].artifacts[0].kind).toBe('image-source')
+    expect(messages[1].artifacts[1].kind).toBe('preview')
   })
 })

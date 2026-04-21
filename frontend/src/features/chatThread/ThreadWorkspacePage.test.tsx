@@ -60,4 +60,44 @@ describe('ThreadWorkspacePage', () => {
 
     expect(onSubmitMessage).toHaveBeenCalledWith('Generame un floor plan')
   })
+
+  it('renders tool quick actions and artifact open links inside the transcript', () => {
+    render(
+      <ThreadWorkspacePage
+        projectName="Pointe Homes"
+        threads={[
+          {
+            id: 'thread-1',
+            projectId: 'project-1',
+            title: 'Fit Dawson',
+            lastActivityIso: '2026-04-20T11:00:00.000Z',
+            preview: 'Floor plan disponible',
+          },
+        ]}
+        selectedThreadId="thread-1"
+        messages={[
+          {
+            id: 'm-1',
+            role: 'assistant',
+            content: 'Abramos el ultimo overlay.',
+            createdAtIso: '2026-04-20T11:00:00.000Z',
+            artifacts: [
+              {
+                id: 'a-1',
+                kind: 'preview',
+                title: 'Overlay',
+                href: '/api/cad-workspace/export-overlay/demo',
+              },
+            ],
+          },
+        ]}
+        onSelectThread={vi.fn()}
+        onSubmitMessage={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByText('Generate from image')).toBeInTheDocument()
+    expect(screen.getByText('Analyze DXF/DWG')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/api/cad-workspace/export-overlay/demo')
+  })
 })
