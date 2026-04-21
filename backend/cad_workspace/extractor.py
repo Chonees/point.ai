@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
 import math
 import tempfile
@@ -15,6 +14,18 @@ import numpy as np
 from shapely.geometry import LineString, Point, Polygon
 from shapely.ops import polygonize, unary_union
 
+from .classification import (
+    assign_floor_and_site_clusters as _assign_floor_and_site_clusters,
+    cluster_score as _cluster_score,
+    is_annotation_geometry_layer as _is_annotation_geometry_layer,
+    is_buildable_layer as _is_buildable_layer,
+    is_floor_candidate_geometry_entity as _is_floor_candidate_geometry_entity,
+    is_floor_wall_layer as _is_floor_wall_layer,
+    is_property_layer as _is_property_layer,
+    is_room_closure_layer as _is_room_closure_layer,
+    is_site_geometry_layer as _is_site_geometry_layer,
+)
+from .models import CadView, ExtractedCadEntity, ExtractedMeasurements, ExtractedRoom
 from ..site_fit.cad_units import canonical_internal_unit, convert_value
 
 
@@ -31,45 +42,6 @@ SUPPORTED_TYPES = {"LINE", "LWPOLYLINE", "POLYLINE", "ARC", "CIRCLE", "TEXT", "M
 COMPOSITE_TYPES = {"INSERT", "DIMENSION"}
 
 
-@dataclass(frozen=True)
-class ExtractedCadEntity:
-    type: str
-    layer: str
-    bbox: dict[str, float]
-    origin: str | None = None
-    start: dict[str, float] | None = None
-    end: dict[str, float] | None = None
-    points: tuple[dict[str, float], ...] = ()
-    text: str | None = None
-    position: dict[str, float] | None = None
-
-
-@dataclass(frozen=True)
-class CadView:
-    role: str
-    bbox: dict[str, float] | None
-    entities: tuple[ExtractedCadEntity, ...]
-
-
-@dataclass(frozen=True)
-class ExtractedMeasurements:
-    width: float
-    height: float
-    source: str
-
-
-@dataclass(frozen=True)
-class ExtractedRoom:
-    name: str
-    polygon: tuple[dict[str, float], ...]
-    bbox: dict[str, float]
-    centroid: dict[str, float]
-    width: float
-    height: float
-    area: float
-    measurement_source: str
-
-
 def extract_cad_file(path: Path, *, source_name: str | None = None) -> dict:
     normalized_path, conversion_status, conversion_note, cleanup_dir = _resolve_input_file(path)
     try:
@@ -82,7 +54,11 @@ def extract_cad_file(path: Path, *, source_name: str | None = None) -> dict:
 
         clusters = _cluster_entities(entities)
         ordered = sorted(clusters, key=_cluster_score, reverse=True)
-        floor_cluster, site_cluster, assignment_mode = _assign_floor_and_site_clusters(ordered)
+        floor_cluster, site_cluster, assignment_mode = _assign_floor_and_site_clusters(
+            ordered,
+            parse_dimension_text=_parse_dimension_text,
+            is_room_label_entity=_is_room_label_entity,
+        )
         floor_entities = _normalize_floor_entities(floor_cluster)
         site_entities = _normalize_site_entities(site_cluster)
 
@@ -400,155 +376,6 @@ def _bboxes_overlap(left: dict[str, float], right: dict[str, float]) -> bool:
     )
 
 
-def _cluster_score(entities: list[ExtractedCadEntity]) -> tuple[float, int]:
-    bbox = _bbox_from_points(
-        [{"x": entity.bbox["x1"], "y": entity.bbox["y1"]} for entity in entities]
-        + [{"x": entity.bbox["x2"], "y": entity.bbox["y2"]} for entity in entities]
-    )
-    area = bbox["width"] * bbox["height"]
-    return (area, len(entities))
-
-
-def _assign_floor_and_site_clusters(
-    clusters: list[list[ExtractedCadEntity]],
-) -> tuple[list[ExtractedCadEntity], list[ExtractedCadEntity], str]:
-    if not clusters:
-        return [], [], "unavailable"
-
-    floor_anchor_index = _find_cluster_by_anchor(clusters, "FLOOR PLAN")
-    site_anchor_index = _find_cluster_by_anchor(clusters, "SITE PLAN")
-
-    floor_index = _find_cluster_with_floor_geometry(clusters)
-    if floor_index is None:
-        floor_index = floor_anchor_index
-    if floor_index is None:
-        floor_index = 0
-
-    site_index = _find_cluster_with_site_geometry(clusters)
-    if site_index is None:
-        site_index = site_anchor_index
-    if site_index is None:
-        remaining = [idx for idx in range(len(clusters)) if idx != floor_index]
-        site_index = remaining[0] if remaining else None
-
-    floor_indexes = {floor_index}
-    if floor_anchor_index is not None:
-        floor_indexes.add(floor_anchor_index)
-    floor_indexes.update(_find_floor_support_clusters(clusters))
-
-    site_indexes: set[int] = set()
-    if site_index is not None:
-        site_indexes.add(site_index)
-    if site_anchor_index is not None:
-        site_indexes.add(site_anchor_index)
-
-    floor_cluster = _merge_cluster_indexes(clusters, floor_indexes)
-    site_cluster = _merge_cluster_indexes(clusters, site_indexes)
-
-    assignment_mode = "spatial_cluster_split"
-    if (
-        floor_index == site_index
-        or floor_anchor_index not in {None, floor_index}
-        or site_anchor_index not in {None, site_index}
-        or any(index not in {floor_index, floor_anchor_index} for index in floor_indexes)
-    ):
-        assignment_mode = "semantic_layer_split"
-
-    return floor_cluster, site_cluster, assignment_mode
-
-
-def _find_cluster_by_anchor(clusters: list[list[ExtractedCadEntity]], anchor: str) -> int | None:
-    upper_anchor = anchor.upper()
-    for index, cluster in enumerate(clusters):
-        for entity in cluster:
-            if entity.type == "text" and entity.text and upper_anchor in entity.text.upper():
-                return index
-    return None
-
-
-def _find_cluster_with_floor_geometry(clusters: list[list[ExtractedCadEntity]]) -> int | None:
-    exact = _find_cluster_with_geometry(clusters, _is_floor_geometry_entity)
-    if exact is not None:
-        return exact
-    return _find_cluster_with_geometry(clusters, _is_floor_candidate_geometry_entity)
-
-
-def _find_cluster_with_site_geometry(clusters: list[list[ExtractedCadEntity]]) -> int | None:
-    return _find_cluster_with_geometry(clusters, _is_site_geometry_entity)
-
-
-def _find_cluster_with_geometry(
-    clusters: list[list[ExtractedCadEntity]],
-    predicate,
-) -> int | None:
-    matches = [index for index, cluster in enumerate(clusters) if any(predicate(entity) for entity in cluster)]
-    if not matches:
-        return None
-    return max(matches, key=lambda index: _cluster_score(clusters[index]))
-
-
-def _is_floor_geometry_entity(entity: ExtractedCadEntity) -> bool:
-    return (
-        entity.type in {"line", "polyline"}
-        and entity.origin != "DIMENSION"
-        and _is_floor_wall_layer(entity.layer)
-    )
-
-
-def _is_floor_candidate_geometry_entity(entity: ExtractedCadEntity) -> bool:
-    return (
-        entity.type in {"line", "polyline"}
-        and entity.origin != "DIMENSION"
-        and not _is_site_geometry_layer(entity.layer)
-        and not _is_annotation_geometry_layer(entity.layer)
-    )
-
-
-def _is_site_geometry_entity(entity: ExtractedCadEntity) -> bool:
-    return entity.type in {"line", "polyline"} and entity.origin != "DIMENSION" and _is_site_geometry_layer(entity.layer)
-
-
-def _find_floor_support_clusters(clusters: list[list[ExtractedCadEntity]]) -> set[int]:
-    return {
-        index
-        for index, cluster in enumerate(clusters)
-        if _is_dimension_support_cluster(cluster) or _is_room_label_support_cluster(cluster)
-    }
-
-
-def _is_dimension_support_cluster(cluster: list[ExtractedCadEntity]) -> bool:
-    saw_dimension = False
-    for entity in cluster:
-        if entity.type == "text" and entity.text:
-            if "DIM" in (entity.layer or "").upper() or entity.origin == "DIMENSION":
-                if _parse_dimension_text(entity.text) is not None:
-                    saw_dimension = True
-    return saw_dimension
-
-
-def _is_room_label_support_cluster(cluster: list[ExtractedCadEntity]) -> bool:
-    saw_room_label = False
-    for entity in cluster:
-        if entity.type != "text":
-            return False
-        if not _is_room_label_entity(entity):
-            return False
-        saw_room_label = True
-    return saw_room_label
-
-
-def _merge_cluster_indexes(
-    clusters: list[list[ExtractedCadEntity]],
-    indexes: set[int],
-) -> list[ExtractedCadEntity]:
-    merged: list[ExtractedCadEntity] = []
-    for index in sorted(indexes):
-        if index < 0 or index >= len(clusters):
-            continue
-        merged.extend(clusters[index])
-    return merged
-
-
 def _normalize_floor_entities(cluster: list[ExtractedCadEntity]) -> dict:
     geometry = [
         entity
@@ -620,42 +447,6 @@ def _normalize_site_entities(cluster: list[ExtractedCadEntity]) -> dict:
         "buildable_bbox": _entities_bbox(buildable_entities),
         "buildable_polygon": _extract_buildable_polygon(buildable_entities),
     }
-
-
-def _is_floor_wall_layer(layer: str) -> bool:
-    upper = (layer or "").upper()
-    if "WALL" not in upper:
-        return False
-    blocked = ("ELECTRICAL", "WIRE", "DUCT", "HATCH")
-    return not any(token in upper for token in blocked)
-
-
-def _is_site_geometry_layer(layer: str) -> bool:
-    upper = (layer or "").upper()
-    keywords = ("SETBACK", "PROP", "SITE", "LOT", "BUILD", "EASE")
-    return any(keyword in upper for keyword in keywords)
-
-
-def _is_annotation_geometry_layer(layer: str) -> bool:
-    upper = (layer or "").upper()
-    keywords = ("TEXT", "DIM", "ROOM", "NOTE", "ANNO", "LABEL")
-    return any(keyword in upper for keyword in keywords)
-
-
-def _is_room_closure_layer(layer: str) -> bool:
-    upper = (layer or "").upper()
-    keywords = ("DOOR", "WIND", "OPEN", "SEPAR", "COL")
-    return any(keyword in upper for keyword in keywords)
-
-
-def _is_property_layer(layer: str) -> bool:
-    upper = (layer or "").upper()
-    return "PROP" in upper or "LOT" in upper
-
-
-def _is_buildable_layer(layer: str) -> bool:
-    upper = (layer or "").upper()
-    return "SETBACK" in upper or "BUILD" in upper
 
 
 def _is_room_label_entity(entity: ExtractedCadEntity) -> bool:

@@ -4,7 +4,8 @@ import ezdxf
 from fastapi.testclient import TestClient
 
 from backend.app import app
-from backend.cad_workspace.extractor import ExtractedCadEntity, _extract_rasterized_rooms
+from backend.cad_workspace.extractor import _extract_rasterized_rooms
+from backend.cad_workspace.models import ExtractedCadEntity
 
 
 client = TestClient(app)

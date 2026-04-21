@@ -12,12 +12,16 @@ __pycache__/
 *.pyo
 .venv/
 .pytest_cache/
+.pytest_tmp*/
 .test_artifacts/
 .tmp/
 .tmp_pytest/
 .chat_core_*/
 .cad_*/
 .bench_*/
+.dimprobe*/
+dimprobe*/
+cad_debug*/
 benchpytesttmp*/
 bench_audit_*/
 cad_overlay_dims_red_tmp/
