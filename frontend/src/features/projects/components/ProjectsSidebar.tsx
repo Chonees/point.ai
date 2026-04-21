@@ -96,18 +96,21 @@ export function ProjectsSidebar({
           {projects.map((project) => {
             const active = selectedProjectId === project.id
             return (
-              <button
+              <article
                 key={project.id}
-                type="button"
-                onClick={() => onSelectProject(project.id)}
-                className={`group w-full rounded-[24px] border px-4 py-4 text-left transition-all ${
+                className={`group rounded-[24px] border px-4 py-4 transition-all ${
                   active
                     ? 'border-white/14 bg-white/[0.06] shadow-[0_0_0_1px_rgba(255,255,255,0.04)]'
                     : 'border-white/6 bg-white/[0.02] hover:border-white/12 hover:bg-white/[0.04]'
                 }`}
               >
                 <div className="flex items-start justify-between gap-3">
-                  <div className="flex min-w-0 items-start gap-3">
+                  <button
+                    type="button"
+                    aria-label={`Open project ${project.name}`}
+                    onClick={() => onSelectProject(project.id)}
+                    className="flex min-w-0 flex-1 items-start gap-3 text-left"
+                  >
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/8 bg-zinc-950 text-xs font-semibold tracking-[0.2em] text-zinc-300">
                       {initials(project.name) || 'PR'}
                     </div>
@@ -134,12 +137,12 @@ export function ProjectsSidebar({
                         </>
                       )}
                     </div>
-                  </div>
+                  </button>
                   <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
+                      aria-label={`Rename project ${project.name}`}
+                      onClick={() => {
                         setEditingId(project.id)
                         setEditName(project.name)
                       }}
@@ -149,8 +152,8 @@ export function ProjectsSidebar({
                     </button>
                     <button
                       type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
+                      aria-label={`Delete project ${project.name}`}
+                      onClick={() => {
                         if (confirm(`Delete "${project.name}"?`)) onDeleteProject(project.id)
                       }}
                       className="rounded-xl border border-white/8 px-2.5 py-1.5 text-[11px] text-zinc-500 hover:border-red-500/20 hover:bg-red-500/8 hover:text-red-300"
@@ -159,7 +162,7 @@ export function ProjectsSidebar({
                     </button>
                   </div>
                 </div>
-              </button>
+              </article>
             )
           })}
         </div>

@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
 
 vi.mock('./hooks/useAuth', () => ({
@@ -75,5 +75,14 @@ describe('App chat shell', () => {
     expect(screen.queryByText('CAD workspace')).not.toBeInTheDocument()
     expect(await screen.findByText(/your workspace/i)).toBeInTheDocument()
     expect(screen.queryByPlaceholderText(/pedile algo a point/i)).not.toBeInTheDocument()
+  })
+
+  it('can transition from projects to an open thread without hook-order crashes', async () => {
+    render(<App />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /open project pointe homes/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /open thread fit dawson/i }))
+
+    expect(await screen.findByPlaceholderText(/pedile algo a point/i)).toBeInTheDocument()
   })
 })

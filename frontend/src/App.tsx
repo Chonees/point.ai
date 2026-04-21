@@ -25,6 +25,12 @@ export default function App() {
   const pendingSceneRef = useRef<ProjectScene | null>(null)
   const pendingStructureRef = useRef<Record<string, unknown> | null>(null)
   const pendingTotalSqftRef = useRef<number | null | undefined>(undefined)
+  const activePlan = currentPlan ?? (selectedProjectId ? planList.plans[0] ?? null : null)
+  const workspaceTitle = 'Chat workspace'
+  const threadSummaries = useMemo(() => planList.plans.map(planToThreadSummary), [planList.plans])
+  const threadMessages = useMemo(() => (
+    activePlan ? planToInitialMessages(activePlan) : []
+  ), [activePlan])
   const saveState = useMemo(() => {
     if (!currentPlan) return 'Not saved yet'
     if (saving) return 'Saving...'
@@ -106,13 +112,6 @@ export default function App() {
       </div>
     )
   }
-
-  const activePlan = currentPlan ?? (selectedProjectId ? planList.plans[0] ?? null : null)
-  const workspaceTitle = 'Chat workspace'
-  const threadSummaries = useMemo(() => planList.plans.map(planToThreadSummary), [planList.plans])
-  const threadMessages = useMemo(() => (
-    activePlan ? planToInitialMessages(activePlan) : []
-  ), [activePlan])
 
   // Workspace
   const projectName = projectList.projects.find((p) => p.id === activePlan?.projectId)?.name ?? 'Point.ai'

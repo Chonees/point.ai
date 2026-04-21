@@ -27,7 +27,12 @@ export function PlanCard({ plan, onOpen, onDelete, onRename }: PlanCardProps) {
 
   return (
     <div className="group overflow-hidden rounded-[24px] border border-white/6 bg-white/[0.02] transition-all hover:border-white/12 hover:bg-white/[0.04]">
-      <button type="button" onClick={onOpen} className="block w-full text-left">
+      <button
+        type="button"
+        aria-label={`Open thread ${plan.name}`}
+        onClick={onOpen}
+        className="block w-full text-left"
+      >
         <div className="relative h-40 border-b border-white/6 bg-zinc-950">
           {plan.imageData ? (
             <img src={plan.imageData} alt={plan.name} className="h-full w-full object-cover opacity-90" />
