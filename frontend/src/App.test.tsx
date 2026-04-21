@@ -57,6 +57,14 @@ vi.mock('./lib/supabase', () => ({
   isSupabaseConfigured: false,
 }))
 
+const { runChatAgentTool } = vi.hoisted(() => ({
+  runChatAgentTool: vi.fn(),
+}))
+
+vi.mock('./features/chatThread/chatAgent', () => ({
+  runChatAgentTool,
+}))
+
 vi.mock('./components/UploadPanel', () => ({
   UploadPanel: () => <div data-testid="legacy-upload-panel">legacy upload panel</div>,
 }))
@@ -84,5 +92,37 @@ describe('App chat shell', () => {
     fireEvent.click(await screen.findByRole('button', { name: /open thread fit dawson/i }))
 
     expect(await screen.findByPlaceholderText(/pedile algo a point/i)).toBeInTheDocument()
+  })
+
+  it('routes a chat prompt through the agent tool and appends the assistant response', async () => {
+    runChatAgentTool.mockResolvedValueOnce({
+      assistantMessage: {
+        id: 'assistant-1',
+        role: 'assistant',
+        content: 'Listo, analicé el site plan y ya dejé el overlay listo.',
+        createdAtIso: '2026-04-21T00:00:00.000Z',
+        artifacts: [
+          {
+            id: 'artifact-1',
+            kind: 'export',
+            title: 'Download CAD overlay DXF',
+            href: '/api/cad-workspace/export-overlay/cad-123',
+          },
+        ],
+      },
+    })
+
+    render(<App />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /open project pointe homes/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /open thread fit dawson/i }))
+    fireEvent.change(screen.getByPlaceholderText(/pedile algo a point/i), {
+      target: { value: 'Analyze DXF/DWG' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /enviar/i }))
+
+    expect((await screen.findAllByText('Analyze DXF/DWG')).length).toBeGreaterThan(0)
+    expect(await screen.findByText(/analicé el site plan/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/api/cad-workspace/export-overlay/cad-123')
   })
 })

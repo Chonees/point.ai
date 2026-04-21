@@ -23,3 +23,8 @@ export interface ThreadSummary {
   lastActivityIso: string
   preview: string
 }
+
+export interface ThreadComposerSubmission {
+  message: string
+  attachment: File | null
+}

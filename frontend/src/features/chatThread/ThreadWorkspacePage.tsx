@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import type { ThreadMessage, ThreadSummary } from './thread.types'
+import type { ThreadComposerSubmission, ThreadMessage, ThreadSummary } from './thread.types'
 import { ThreadComposer } from './components/ThreadComposer'
 import { ThreadMessageList } from './components/ThreadMessageList'
 import { ThreadSidebar } from './components/ThreadSidebar'
@@ -10,7 +10,8 @@ interface ThreadWorkspacePageProps {
   selectedThreadId: string | null
   messages: ThreadMessage[]
   onSelectThread: (threadId: string) => void
-  onSubmitMessage: (message: string) => void
+  onSubmitMessage: (submission: ThreadComposerSubmission) => void | Promise<void>
+  isSubmittingMessage?: boolean
 }
 
 export function ThreadWorkspacePage({
@@ -20,6 +21,7 @@ export function ThreadWorkspacePage({
   messages,
   onSelectThread,
   onSubmitMessage,
+  isSubmittingMessage = false,
 }: ThreadWorkspacePageProps) {
   const selectedThread = useMemo(
     () => threads.find((thread) => thread.id === selectedThreadId) ?? null,
@@ -42,7 +44,7 @@ export function ThreadWorkspacePage({
         </div>
 
         <ThreadMessageList messages={messages} />
-        <ThreadComposer onSubmitMessage={onSubmitMessage} />
+        <ThreadComposer onSubmitMessage={onSubmitMessage} isSubmitting={isSubmittingMessage} />
       </section>
     </div>
   )

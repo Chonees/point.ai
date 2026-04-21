@@ -7,6 +7,8 @@ import { LoginPage } from './components/Auth/LoginPage'
 import { ProjectList } from './components/ProjectList/ProjectList'
 import type { PlanData, ProjectScene } from './hooks/useProject'
 import { planToInitialMessages, planToThreadSummary } from './features/projects'
+import { runChatAgentTool } from './features/chatThread/chatAgent'
+import type { ThreadComposerSubmission, ThreadMessage } from './features/chatThread/thread.types'
 
 const ThreadWorkspacePage = lazy(() =>
   import('./features/chatThread/ThreadWorkspacePage').then((m) => ({ default: m.ThreadWorkspacePage })),
@@ -21,16 +23,22 @@ export default function App() {
   const planList = usePlanList(selectedProjectId)
   const [currentPlan, setCurrentPlan] = useState<PlanData | null>(null)
   const [page, setPage] = useState<Page>(isSupabaseConfigured ? 'login' : 'projects')
-  const { saving, lastSaved, saveNow, debouncedSave } = usePlanSave(currentPlan?.id ?? null)
+  const { saving, lastSaved, saveNow } = usePlanSave(currentPlan?.id ?? null)
   const pendingSceneRef = useRef<ProjectScene | null>(null)
   const pendingStructureRef = useRef<Record<string, unknown> | null>(null)
   const pendingTotalSqftRef = useRef<number | null | undefined>(undefined)
+  const [threadMessagesByPlanId, setThreadMessagesByPlanId] = useState<Record<string, ThreadMessage[]>>({})
+  const [submittingThreadId, setSubmittingThreadId] = useState<string | null>(null)
   const activePlan = currentPlan ?? (selectedProjectId ? planList.plans[0] ?? null : null)
   const workspaceTitle = 'Chat workspace'
   const threadSummaries = useMemo(() => planList.plans.map(planToThreadSummary), [planList.plans])
-  const threadMessages = useMemo(() => (
+  const seededThreadMessages = useMemo(() => (
     activePlan ? planToInitialMessages(activePlan) : []
   ), [activePlan])
+  const threadMessages = useMemo(() => {
+    if (!activePlan) return []
+    return threadMessagesByPlanId[activePlan.id] ?? seededThreadMessages
+  }, [activePlan, seededThreadMessages, threadMessagesByPlanId])
   const saveState = useMemo(() => {
     if (!currentPlan) return 'Not saved yet'
     if (saving) return 'Saving...'
@@ -45,6 +53,70 @@ export default function App() {
     if (pendingStructureRef.current) updates.structure = pendingStructureRef.current
     if (pendingTotalSqftRef.current !== undefined) updates.totalSqft = pendingTotalSqftRef.current
     await saveNow(updates)
+  }
+
+  const appendThreadMessages = (planId: string, messages: ThreadMessage[]) => {
+    setThreadMessagesByPlanId((prev) => {
+      const base = prev[planId] ?? (planList.plans.find((plan) => plan.id === planId)
+        ? planToInitialMessages(planList.plans.find((plan) => plan.id === planId)!)
+        : [])
+      return {
+        ...prev,
+        [planId]: [...base, ...messages],
+      }
+    })
+  }
+
+  const buildUserMessage = (submission: ThreadComposerSubmission): ThreadMessage => ({
+    id: `user-${Math.random().toString(36).slice(2, 10)}`,
+    role: 'user',
+    content: submission.message || submission.attachment?.name || 'Adjunto enviado',
+    createdAtIso: new Date().toISOString(),
+    artifacts: submission.attachment ? [{
+      id: `artifact-${Math.random().toString(36).slice(2, 10)}`,
+      kind: submission.attachment.type.startsWith('image/') ? 'image-source' : 'cad-source',
+      title: submission.attachment.name,
+      description: 'Adjunto enviado al agente desde el chat.',
+    }] : [],
+  })
+
+  const handleThreadSubmit = async (submission: ThreadComposerSubmission) => {
+    if (!activePlan) return
+    const planId = activePlan.id
+    appendThreadMessages(planId, [buildUserMessage(submission)])
+    setSubmittingThreadId(planId)
+
+    try {
+      const result = await runChatAgentTool({
+        prompt: submission.message,
+        attachment: submission.attachment,
+        planName: activePlan.name,
+      })
+
+      appendThreadMessages(planId, [result.assistantMessage])
+
+      if (result.planUpdates) {
+        setCurrentPlan((prev) => {
+          if (!prev || prev.id !== planId) return prev
+          return {
+            ...prev,
+            ...result.planUpdates,
+            updatedAt: new Date().toISOString(),
+          }
+        })
+        await saveNow(result.planUpdates)
+      }
+    } catch (error) {
+      appendThreadMessages(planId, [{
+        id: `assistant-${Math.random().toString(36).slice(2, 10)}`,
+        role: 'assistant',
+        content: error instanceof Error ? error.message : 'No pude ejecutar la herramienta del chat.',
+        createdAtIso: new Date().toISOString(),
+        artifacts: [],
+      }])
+    } finally {
+      setSubmittingThreadId((prev) => (prev === planId ? null : prev))
+    }
   }
 
   // Loading
@@ -193,9 +265,8 @@ export default function App() {
                 setCurrentPlan(nextPlan)
                 if (nextPlan?.projectId) setSelectedProjectId(nextPlan.projectId)
               }}
-              onSubmitMessage={(message) => {
-                console.info('[chat-shell] pending tool orchestration:', message)
-              }}
+              onSubmitMessage={handleThreadSubmit}
+              isSubmittingMessage={submittingThreadId === activePlan?.id}
             />
           </Suspense>
         </motion.div>

@@ -58,7 +58,39 @@ describe('ThreadWorkspacePage', () => {
     })
     fireEvent.click(screen.getByRole('button', { name: /enviar/i }))
 
-    expect(onSubmitMessage).toHaveBeenCalledWith('Generame un floor plan')
+    expect(onSubmitMessage).toHaveBeenCalledWith({
+      message: 'Generame un floor plan',
+      attachment: null,
+    })
+  })
+
+  it('submits the selected attachment together with the chat prompt', () => {
+    const onSubmitMessage = vi.fn()
+
+    render(
+      <ThreadWorkspacePage
+        projectName="Pointe Homes"
+        threads={[]}
+        selectedThreadId={null}
+        messages={[]}
+        onSelectThread={vi.fn()}
+        onSubmitMessage={onSubmitMessage}
+      />,
+    )
+
+    const input = screen.getByLabelText(/adjuntar archivo/i) as HTMLInputElement
+    const file = new File(['cad'], 'dawson.dxf', { type: 'application/dxf' })
+
+    fireEvent.change(input, { target: { files: [file] } })
+    fireEvent.change(screen.getByPlaceholderText(/pedile algo a point/i), {
+      target: { value: 'Analyze DXF/DWG' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /enviar/i }))
+
+    expect(onSubmitMessage).toHaveBeenCalledWith({
+      message: 'Analyze DXF/DWG',
+      attachment: file,
+    })
   })
 
   it('renders tool quick actions and artifact open links inside the transcript', () => {
