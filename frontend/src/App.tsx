@@ -6,15 +6,13 @@ import { isSupabaseConfigured } from './lib/supabase'
 import { LoginPage } from './components/Auth/LoginPage'
 import { ProjectList } from './components/ProjectList/ProjectList'
 import type { PlanData, ProjectScene } from './hooks/useProject'
+import { planToInitialMessages, planToThreadSummary } from './features/projects'
 
-const UploadPanel = lazy(() =>
-  import('./components/UploadPanel').then((m) => ({ default: m.UploadPanel })),
-)
-const CadWorkspacePage = lazy(() =>
-  import('./features/cadWorkspace/CadWorkspacePage').then((m) => ({ default: m.CadWorkspacePage })),
+const ThreadWorkspacePage = lazy(() =>
+  import('./features/chatThread/ThreadWorkspacePage').then((m) => ({ default: m.ThreadWorkspacePage })),
 )
 
-type Page = 'login' | 'projects' | 'editor' | 'cad'
+type Page = 'login' | 'projects' | 'editor'
 
 export default function App() {
   const auth = useAuth()
@@ -109,11 +107,15 @@ export default function App() {
     )
   }
 
-  const isCadPage = page === 'cad'
-  const workspaceTitle = isCadPage ? 'CAD workspace' : 'Floor plan workspace'
+  const activePlan = currentPlan ?? planList.plans[0] ?? null
+  const workspaceTitle = 'Chat workspace'
+  const threadSummaries = useMemo(() => planList.plans.map(planToThreadSummary), [planList.plans])
+  const threadMessages = useMemo(() => (
+    activePlan ? planToInitialMessages(activePlan) : []
+  ), [activePlan])
 
   // Workspace
-  const projectName = projectList.projects.find((p) => p.id === currentPlan?.projectId)?.name
+  const projectName = projectList.projects.find((p) => p.id === activePlan?.projectId)?.name ?? 'Point.ai'
   return (
     <div className="min-h-screen bg-[#090909] text-zinc-100 safe-area-inset">
       <div className="border-b border-white/6 bg-zinc-950/85 backdrop-blur">
@@ -144,43 +146,19 @@ export default function App() {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setPage('editor')}
-                className={`rounded-2xl border px-4 py-3 text-sm transition-colors ${
-                  !isCadPage
-                    ? 'border-white/12 bg-white/[0.08] text-zinc-100'
-                    : 'border-white/8 bg-white/[0.03] text-zinc-300 hover:bg-white/[0.05]'
-                }`}
-              >
-                Image workspace
-              </button>
-              <button
-                type="button"
-                onClick={() => setPage('cad')}
-                className={`rounded-2xl border px-4 py-3 text-sm transition-colors ${
-                  isCadPage
-                    ? 'border-white/12 bg-white/[0.08] text-zinc-100'
-                    : 'border-white/8 bg-white/[0.03] text-zinc-300 hover:bg-white/[0.05]'
-                }`}
-              >
-                CAD workspace
-              </button>
-            </div>
-            {!isCadPage && currentPlan && (
+            {activePlan && (
               <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Current plan</p>
-                <p className="mt-1 text-sm text-zinc-200">{projectName} / {currentPlan.name}</p>
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Current thread</p>
+                <p className="mt-1 text-sm text-zinc-200">{projectName} / {activePlan.name}</p>
               </div>
             )}
-            {!isCadPage && (
+            {activePlan && (
               <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">
                 <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Save status</p>
                 <p className="mt-1 text-sm text-zinc-200">{saveState}</p>
               </div>
             )}
-            {!isCadPage && currentPlan && auth.user && (
+            {activePlan && auth.user && (
               <button
                 onClick={handleSave}
                 disabled={saving}
@@ -206,31 +184,20 @@ export default function App() {
               </div>
             }
           >
-            {isCadPage ? (
-              <CadWorkspacePage />
-            ) : (
-              <UploadPanel
-                project={currentPlan}
-                onSceneChange={(scene) => {
-                  pendingSceneRef.current = scene
-                  debouncedSave({ scene })
-                }}
-                onStructureChange={(structure) => {
-                  pendingStructureRef.current = structure
-                  debouncedSave({ structure })
-                }}
-                onTotalSqftChange={(value) => {
-                  pendingTotalSqftRef.current = value
-                  debouncedSave({ totalSqft: value })
-                }}
-                onSaveNow={(updates) => {
-                  if (updates.imageData) saveNow({ imageData: updates.imageData })
-                  if (updates.structure) pendingStructureRef.current = updates.structure
-                  if (updates.scene) pendingSceneRef.current = updates.scene
-                  if (updates.totalSqft !== undefined) pendingTotalSqftRef.current = updates.totalSqft
-                }}
-              />
-            )}
+            <ThreadWorkspacePage
+              projectName={projectName}
+              threads={threadSummaries}
+              selectedThreadId={activePlan?.id ?? null}
+              messages={threadMessages}
+              onSelectThread={(threadId) => {
+                const nextPlan = planList.plans.find((plan) => plan.id === threadId) ?? null
+                setCurrentPlan(nextPlan)
+                if (nextPlan?.projectId) setSelectedProjectId(nextPlan.projectId)
+              }}
+              onSubmitMessage={(message) => {
+                console.info('[chat-shell] pending tool orchestration:', message)
+              }}
+            />
           </Suspense>
         </motion.div>
       </div>

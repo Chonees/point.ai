@@ -47,7 +47,7 @@ export function usePlanList(projectId: string | null) {
 
     if (error || !data) return null
     const plan = rowToPlan(data)
-    setPlans((prev) => [...prev, plan])
+    setPlans((prev) => [plan, ...prev])
     return plan
   }, [projectId])
 
@@ -63,5 +63,9 @@ export function usePlanList(projectId: string | null) {
     setPlans((prev) => prev.map((p) => p.id === id ? { ...p, name } : p))
   }, [])
 
-  return { plans, loading, refresh, createPlan, deletePlan, renamePlan }
+  const orderedPlans = [...plans].sort(
+    (left, right) => new Date(right.updatedAt).getTime() - new Date(left.updatedAt).getTime(),
+  )
+
+  return { plans: orderedPlans, loading, refresh, createPlan, deletePlan, renamePlan }
 }
