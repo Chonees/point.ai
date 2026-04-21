@@ -1,7 +1,8 @@
 import { apiUrl } from '../../lib/api'
 import type { V2Result } from '../../types'
 import { fileToBase64 } from '../../utils/fileToBase64'
-import type { CadWorkspaceExtractResult } from '../cadWorkspace/types'
+import { buildCadReviewArtifactData } from '../cad/review'
+import type { CadWorkspaceExtractResult } from '../cad/contracts'
 import type { ThreadArtifact, ThreadMessage } from './thread.types'
 
 interface RunChatAgentToolArgs {
@@ -87,11 +88,11 @@ async function runGenerateFromImageTool(file: File, prompt: string): Promise<Run
     })
   }
 
-  const reviewText = payload.needs_review ? 'Quedó marcado para revisión.' : 'Quedó listo para seguir trabajando.'
+  const reviewText = payload.needs_review ? 'Quedo marcado para revision.' : 'Quedo listo para seguir trabajando.'
 
   return {
     assistantMessage: buildAssistantMessage(
-      `Listo, generé el floor plan desde ${file.name}. ${reviewText}${prompt ? ` Pedido: ${prompt}.` : ''}`,
+      `Listo, genere el floor plan desde ${file.name}. ${reviewText}${prompt ? ` Pedido: ${prompt}.` : ''}`,
       artifacts,
     ),
     planUpdates: {
@@ -103,15 +104,15 @@ async function runGenerateFromImageTool(file: File, prompt: string): Promise<Run
 
 function buildCadFitText(result: CadWorkspaceExtractResult) {
   const fit = result.fit_summary
-  if (!fit) return 'No encontré un resumen de encaje todavía.'
+  if (!fit) return 'No encontre un resumen de encaje todavia.'
   if (fit.basis === 'buildable_polygon') {
     return fit.fits_within_buildable_polygon
-      ? 'El footprint entra dentro del polígono construible.'
-      : 'El footprint NO entra dentro del polígono construible.'
+      ? 'El footprint entra dentro del poligono construible.'
+      : 'El footprint NO entra dentro del poligono construible.'
   }
   if (fit.fits_within_buildable_bbox === true) return 'El footprint entra por bbox.'
   if (fit.fits_within_buildable_bbox === false) return 'El footprint NO entra por bbox.'
-  return 'El encaje quedó sin veredicto fuerte.'
+  return 'El encaje quedo sin veredicto fuerte.'
 }
 
 async function runCadAnalyzeTool(file: File, prompt: string): Promise<RunChatAgentToolResult> {
@@ -123,19 +124,23 @@ async function runCadAnalyzeTool(file: File, prompt: string): Promise<RunChatAge
     body: formData,
   })
   const payload = await parseJsonOrThrow(response) as CadWorkspaceExtractResult
-  const artifacts: ThreadArtifact[] = [
-    {
-      id: newMessageId('artifact'),
-      kind: 'export',
-      title: 'Download CAD overlay DXF',
-      description: 'Overlay 1:1 del floor plan sobre el site/buildable para revisión CAD.',
-      href: apiUrl(`/api/cad-workspace/export-overlay/${payload.analysis_id}`),
+  const cadReview = buildCadReviewArtifactData(payload)
+  const artifacts: ThreadArtifact[] = [{
+    id: newMessageId('artifact'),
+    kind: 'cad-review',
+    title: 'CAD fit review',
+    description: 'Review human-in-the-loop del floor plan sobre el site/buildable dentro del chat.',
+    review: {
+      ...cadReview,
+      export: cadReview.export.ready && cadReview.export.href
+        ? { ...cadReview.export, href: apiUrl(cadReview.export.href) }
+        : cadReview.export,
     },
-  ]
+  }]
 
   return {
     assistantMessage: buildAssistantMessage(
-      `Listo, analicé el CAD ${file.name}. ${buildCadFitText(payload)} Unidad común: ${payload.canonical_unit}.${prompt ? ` Pedido: ${prompt}.` : ''}`,
+      `Listo, analice el CAD ${file.name}. ${buildCadFitText(payload)} Unidad comun: ${payload.canonical_unit}. Te dejo el review inline en este chat.${prompt ? ` Pedido: ${prompt}.` : ''}`,
       artifacts,
     ),
   }
@@ -158,7 +163,7 @@ export async function runChatAgentTool({
   if (attachment) {
     return {
       assistantMessage: buildAssistantMessage(
-        `Todavía no sé usar ${attachment.name}. Subime una imagen del floor plan o un .dxf/.dwg para que ejecute una de las dos herramientas reales.`,
+        `Todavia no se usar ${attachment.name}. Subime una imagen del floor plan o un .dxf/.dwg para que ejecute una de las dos herramientas reales.`,
       ),
     }
   }

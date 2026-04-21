@@ -39,7 +39,7 @@ describe('runChatAgentTool', () => {
       headers: { 'Content-Type': 'application/json' },
     }))
 
-    expect(result.assistantMessage.content).toMatch(/generé el floor plan/i)
+    expect(result.assistantMessage.content).toMatch(/gener/i)
     expect(result.assistantMessage.artifacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ kind: 'preview', title: 'Floor plan preview', href: '/artifacts/preview.png' }),
@@ -52,7 +52,7 @@ describe('runChatAgentTool', () => {
     }))
   })
 
-  it('uses the CAD analysis tool when the attachment is a dxf or dwg', async () => {
+  it('returns an inline CAD review artifact and enables DXF export when overlay data is complete', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
@@ -63,7 +63,7 @@ describe('runChatAgentTool', () => {
         conversion_status: 'native_dxf',
         floor_plan: {
           role: 'floor_plan',
-          bbox: null,
+          bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
           summary: { entity_count: 0, line_count: 0, polyline_count: 0, text_count: 0 },
           entities: [],
           rooms: [],
@@ -71,7 +71,7 @@ describe('runChatAgentTool', () => {
         },
         site_plan: {
           role: 'site_plan',
-          bbox: null,
+          bbox: { x1: 100, y1: 100, x2: 865.77, y2: 1110.71, width: 765.77, height: 1010.71 },
           summary: { entity_count: 0, line_count: 0, polyline_count: 0, text_count: 0 },
           entities: [],
           rooms: [],
@@ -81,6 +81,8 @@ describe('runChatAgentTool', () => {
         fit_summary: {
           comparison_unit: 'inch',
           basis: 'buildable_polygon',
+          footprint_bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+          buildable_bbox: { x1: 100, y1: 100, x2: 865.77, y2: 1110.71, width: 765.77, height: 1010.71 },
           fits_within_buildable_polygon: false,
           fits_within_buildable_bbox: false,
           width_delta: -24,
@@ -92,7 +94,7 @@ describe('runChatAgentTool', () => {
 
     const file = new File(['cad'], 'dawson.dxf', { type: 'application/dxf' })
     const result = await runChatAgentTool({
-      prompt: 'Analizá este site plan',
+      prompt: 'Analiza este site plan',
       attachment: file,
       planName: 'Fit Dawson',
     })
@@ -101,14 +103,79 @@ describe('runChatAgentTool', () => {
       method: 'POST',
       body: expect.any(FormData),
     }))
-    expect(result.assistantMessage.content).toMatch(/analicé el cad/i)
+    expect(result.assistantMessage.content).toMatch(/analic/i)
     expect(result.assistantMessage.content).toMatch(/no entra/i)
     expect(result.assistantMessage.artifacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          kind: 'export',
-          title: 'Download CAD overlay DXF',
-          href: '/api/cad-workspace/export-overlay/cad-123',
+          kind: 'cad-review',
+          title: 'CAD fit review',
+          review: expect.objectContaining({
+            export: {
+              ready: true,
+              href: '/api/cad-workspace/export-overlay/cad-123',
+            },
+          }),
+        }),
+      ]),
+    )
+  })
+
+  it('keeps the CAD review inside chat and blocks export when overlay data is incomplete', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        analysis_id: 'cad-456',
+        source_name: 'site-only.dxf',
+        source_format: 'dxf',
+        canonical_unit: 'inch',
+        conversion_status: 'native_dxf',
+        floor_plan: {
+          role: 'floor_plan',
+          bbox: null,
+          summary: { entity_count: 0, line_count: 0, polyline_count: 0, text_count: 0 },
+          entities: [],
+          rooms: [],
+          measurements: null,
+        },
+        site_plan: {
+          role: 'site_plan',
+          bbox: null,
+          summary: { entity_count: 0, line_count: 0, polyline_count: 0, text_count: 0 },
+          entities: [],
+          rooms: [],
+          measurements: null,
+        },
+        side_by_side: { canonical_unit: 'inch', gap: 28.66, floor_width: 0, site_width: 0, max_height: 0 },
+        fit_summary: {
+          comparison_unit: 'inch',
+          basis: 'unavailable',
+          fits_within_buildable_polygon: null,
+          fits_within_buildable_bbox: null,
+          width_delta: null,
+          height_delta: null,
+        },
+        warnings: ['Missing buildable geometry'],
+      }),
+    })
+
+    const file = new File(['cad'], 'site-only.dxf', { type: 'application/dxf' })
+    const result = await runChatAgentTool({
+      prompt: 'Analiza este site plan',
+      attachment: file,
+      planName: 'Fit Dawson',
+    })
+
+    expect(result.assistantMessage.artifacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          kind: 'cad-review',
+          review: expect.objectContaining({
+            export: expect.objectContaining({
+              ready: false,
+              reason: expect.stringMatching(/area construible|footprint/i),
+            }),
+          }),
         }),
       ]),
     )

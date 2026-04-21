@@ -1,3 +1,4 @@
+import { CadReviewArtifactCard } from './CadReviewArtifactCard'
 import type { ThreadArtifact } from '../thread.types'
 
 interface ArtifactCardProps {
@@ -5,6 +6,10 @@ interface ArtifactCardProps {
 }
 
 export function ArtifactCard({ artifact }: ArtifactCardProps) {
+  if (artifact.kind === 'cad-review') {
+    return <CadReviewArtifactCard artifact={artifact} />
+  }
+
   return (
     <article className="rounded-2xl border border-white/8 bg-white/[0.03] p-3">
       <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">{artifact.kind}</p>
