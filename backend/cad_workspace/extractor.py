@@ -9,7 +9,11 @@ import subprocess
 import uuid
 import re
 
+import cv2
 import ezdxf
+import numpy as np
+from shapely.geometry import LineString, Point, Polygon
+from shapely.ops import polygonize, unary_union
 
 from ..site_fit.cad_units import canonical_internal_unit, convert_value
 
@@ -32,6 +36,7 @@ class ExtractedCadEntity:
     type: str
     layer: str
     bbox: dict[str, float]
+    origin: str | None = None
     start: dict[str, float] | None = None
     end: dict[str, float] | None = None
     points: tuple[dict[str, float], ...] = ()
@@ -53,6 +58,18 @@ class ExtractedMeasurements:
     source: str
 
 
+@dataclass(frozen=True)
+class ExtractedRoom:
+    name: str
+    polygon: tuple[dict[str, float], ...]
+    bbox: dict[str, float]
+    centroid: dict[str, float]
+    width: float
+    height: float
+    area: float
+    measurement_source: str
+
+
 def extract_cad_file(path: Path, *, source_name: str | None = None) -> dict:
     normalized_path, conversion_status, conversion_note, cleanup_dir = _resolve_input_file(path)
     try:
@@ -65,11 +82,16 @@ def extract_cad_file(path: Path, *, source_name: str | None = None) -> dict:
 
         clusters = _cluster_entities(entities)
         ordered = sorted(clusters, key=_cluster_score, reverse=True)
-        floor_cluster, site_cluster = _assign_floor_and_site_clusters(ordered)
+        floor_cluster, site_cluster, assignment_mode = _assign_floor_and_site_clusters(ordered)
         floor_entities = _normalize_floor_entities(floor_cluster)
         site_entities = _normalize_site_entities(site_cluster)
 
-        floor_view = _build_view("floor_plan", floor_entities["entities"], measurements=floor_entities["measurements"])
+        floor_view = _build_view(
+            "floor_plan",
+            floor_entities["entities"],
+            measurements=floor_entities["measurements"],
+            rooms=floor_entities["rooms"],
+        )
         site_view = _build_view("site_plan", site_entities["entities"], measurements=site_entities["measurements"])
         fit_summary = _build_fit_summary(
             canonical_unit=canonical_unit,
@@ -80,7 +102,9 @@ def extract_cad_file(path: Path, *, source_name: str | None = None) -> dict:
             buildable_polygon=site_entities.get("buildable_polygon"),
         )
         warnings: list[str] = []
-        if len(ordered) == 1:
+        if assignment_mode == "semantic_layer_split":
+            warnings.append("Floor and site views were separated by CAD layers and semantic role hints because spatial clustering was ambiguous.")
+        elif len(ordered) == 1:
             warnings.append("Only one spatial view cluster was detected; site extraction may be incomplete.")
         if site_view["bbox"] is None:
             warnings.append("No separate site-plan cluster was detected.")
@@ -185,24 +209,34 @@ def _iter_entities(doc, *, source_unit: str, canonical_unit: str):
         yield from _flatten_entity(entity, source_unit=source_unit, canonical_unit=canonical_unit)
 
 
-def _flatten_entity(entity, *, source_unit: str, canonical_unit: str):
+def _flatten_entity(entity, *, source_unit: str, canonical_unit: str, composite_origin: str | None = None):
     dxftype = entity.dxftype()
     if dxftype in COMPOSITE_TYPES:
         try:
             for virtual in entity.virtual_entities():
-                yield from _flatten_entity(virtual, source_unit=source_unit, canonical_unit=canonical_unit)
+                yield from _flatten_entity(
+                    virtual,
+                    source_unit=source_unit,
+                    canonical_unit=canonical_unit,
+                    composite_origin=dxftype,
+                )
         except Exception:
             return
         return
     if dxftype not in SUPPORTED_TYPES:
         return
 
-    extracted = _extract_entity(entity, source_unit=source_unit, canonical_unit=canonical_unit)
+    extracted = _extract_entity(
+        entity,
+        source_unit=source_unit,
+        canonical_unit=canonical_unit,
+        composite_origin=composite_origin,
+    )
     if extracted is not None:
         yield extracted
 
 
-def _extract_entity(entity, *, source_unit: str, canonical_unit: str) -> ExtractedCadEntity | None:
+def _extract_entity(entity, *, source_unit: str, canonical_unit: str, composite_origin: str | None = None) -> ExtractedCadEntity | None:
     layer = str(getattr(entity.dxf, "layer", "0") or "0")
     dxftype = entity.dxftype()
 
@@ -210,14 +244,14 @@ def _extract_entity(entity, *, source_unit: str, canonical_unit: str) -> Extract
         start = _point(entity.dxf.start.x, entity.dxf.start.y, source_unit, canonical_unit)
         end = _point(entity.dxf.end.x, entity.dxf.end.y, source_unit, canonical_unit)
         bbox = _bbox_from_points((start, end))
-        return ExtractedCadEntity(type="line", layer=layer, start=start, end=end, bbox=bbox)
+        return ExtractedCadEntity(type="line", layer=layer, start=start, end=end, bbox=bbox, origin=composite_origin)
 
     if dxftype in {"LWPOLYLINE", "POLYLINE"}:
         points = _polyline_points(entity, source_unit=source_unit, canonical_unit=canonical_unit)
         if len(points) < 2:
             return None
         bbox = _bbox_from_points(points)
-        return ExtractedCadEntity(type="polyline", layer=layer, points=tuple(points), bbox=bbox)
+        return ExtractedCadEntity(type="polyline", layer=layer, points=tuple(points), bbox=bbox, origin=composite_origin)
 
     if dxftype == "ARC":
         points = _sample_arc(
@@ -229,7 +263,7 @@ def _extract_entity(entity, *, source_unit: str, canonical_unit: str) -> Extract
             canonical_unit=canonical_unit,
         )
         bbox = _bbox_from_points(points)
-        return ExtractedCadEntity(type="polyline", layer=layer, points=tuple(points), bbox=bbox)
+        return ExtractedCadEntity(type="polyline", layer=layer, points=tuple(points), bbox=bbox, origin=composite_origin)
 
     if dxftype == "CIRCLE":
         points = _sample_arc(
@@ -241,7 +275,7 @@ def _extract_entity(entity, *, source_unit: str, canonical_unit: str) -> Extract
             canonical_unit=canonical_unit,
         )
         bbox = _bbox_from_points(points)
-        return ExtractedCadEntity(type="polyline", layer=layer, points=tuple(points), bbox=bbox)
+        return ExtractedCadEntity(type="polyline", layer=layer, points=tuple(points), bbox=bbox, origin=composite_origin)
 
     if dxftype == "TEXT":
         text = str(getattr(entity.dxf, "text", "") or "").strip()
@@ -250,7 +284,7 @@ def _extract_entity(entity, *, source_unit: str, canonical_unit: str) -> Extract
             return None
         position = _point(insert.x, insert.y, source_unit, canonical_unit)
         bbox = _bbox_from_points((position,))
-        return ExtractedCadEntity(type="text", layer=layer, text=text, position=position, bbox=bbox)
+        return ExtractedCadEntity(type="text", layer=layer, text=text, position=position, bbox=bbox, origin=composite_origin)
 
     if dxftype == "MTEXT":
         text = str(entity.text or "").strip()
@@ -259,7 +293,7 @@ def _extract_entity(entity, *, source_unit: str, canonical_unit: str) -> Extract
             return None
         position = _point(insert.x, insert.y, source_unit, canonical_unit)
         bbox = _bbox_from_points((position,))
-        return ExtractedCadEntity(type="text", layer=layer, text=text, position=position, bbox=bbox)
+        return ExtractedCadEntity(type="text", layer=layer, text=text, position=position, bbox=bbox, origin=composite_origin)
 
     return None
 
@@ -375,27 +409,52 @@ def _cluster_score(entities: list[ExtractedCadEntity]) -> tuple[float, int]:
     return (area, len(entities))
 
 
-def _assign_floor_and_site_clusters(clusters: list[list[ExtractedCadEntity]]) -> tuple[list[ExtractedCadEntity], list[ExtractedCadEntity]]:
+def _assign_floor_and_site_clusters(
+    clusters: list[list[ExtractedCadEntity]],
+) -> tuple[list[ExtractedCadEntity], list[ExtractedCadEntity], str]:
     if not clusters:
-        return [], []
+        return [], [], "unavailable"
 
-    floor_index = _find_cluster_by_anchor(clusters, "FLOOR PLAN")
-    site_index = _find_cluster_by_anchor(clusters, "SITE PLAN")
+    floor_anchor_index = _find_cluster_by_anchor(clusters, "FLOOR PLAN")
+    site_anchor_index = _find_cluster_by_anchor(clusters, "SITE PLAN")
 
+    floor_index = _find_cluster_with_floor_geometry(clusters)
+    if floor_index is None:
+        floor_index = floor_anchor_index
     if floor_index is None:
         floor_index = 0
+
+    site_index = _find_cluster_with_site_geometry(clusters)
+    if site_index is None:
+        site_index = site_anchor_index
     if site_index is None:
         remaining = [idx for idx in range(len(clusters)) if idx != floor_index]
         site_index = remaining[0] if remaining else None
 
-    floor_cluster = list(clusters[floor_index])
-    site_cluster: list[ExtractedCadEntity] = []
-    for index, cluster in enumerate(clusters):
-        if index == floor_index:
-            continue
-        if site_index is None or index == site_index or len(clusters) > 2:
-            site_cluster.extend(cluster)
-    return floor_cluster, site_cluster
+    floor_indexes = {floor_index}
+    if floor_anchor_index is not None:
+        floor_indexes.add(floor_anchor_index)
+    floor_indexes.update(_find_floor_support_clusters(clusters))
+
+    site_indexes: set[int] = set()
+    if site_index is not None:
+        site_indexes.add(site_index)
+    if site_anchor_index is not None:
+        site_indexes.add(site_anchor_index)
+
+    floor_cluster = _merge_cluster_indexes(clusters, floor_indexes)
+    site_cluster = _merge_cluster_indexes(clusters, site_indexes)
+
+    assignment_mode = "spatial_cluster_split"
+    if (
+        floor_index == site_index
+        or floor_anchor_index not in {None, floor_index}
+        or site_anchor_index not in {None, site_index}
+        or any(index not in {floor_index, floor_anchor_index} for index in floor_indexes)
+    ):
+        assignment_mode = "semantic_layer_split"
+
+    return floor_cluster, site_cluster, assignment_mode
 
 
 def _find_cluster_by_anchor(clusters: list[list[ExtractedCadEntity]], anchor: str) -> int | None:
@@ -407,6 +466,89 @@ def _find_cluster_by_anchor(clusters: list[list[ExtractedCadEntity]], anchor: st
     return None
 
 
+def _find_cluster_with_floor_geometry(clusters: list[list[ExtractedCadEntity]]) -> int | None:
+    exact = _find_cluster_with_geometry(clusters, _is_floor_geometry_entity)
+    if exact is not None:
+        return exact
+    return _find_cluster_with_geometry(clusters, _is_floor_candidate_geometry_entity)
+
+
+def _find_cluster_with_site_geometry(clusters: list[list[ExtractedCadEntity]]) -> int | None:
+    return _find_cluster_with_geometry(clusters, _is_site_geometry_entity)
+
+
+def _find_cluster_with_geometry(
+    clusters: list[list[ExtractedCadEntity]],
+    predicate,
+) -> int | None:
+    matches = [index for index, cluster in enumerate(clusters) if any(predicate(entity) for entity in cluster)]
+    if not matches:
+        return None
+    return max(matches, key=lambda index: _cluster_score(clusters[index]))
+
+
+def _is_floor_geometry_entity(entity: ExtractedCadEntity) -> bool:
+    return (
+        entity.type in {"line", "polyline"}
+        and entity.origin != "DIMENSION"
+        and _is_floor_wall_layer(entity.layer)
+    )
+
+
+def _is_floor_candidate_geometry_entity(entity: ExtractedCadEntity) -> bool:
+    return (
+        entity.type in {"line", "polyline"}
+        and entity.origin != "DIMENSION"
+        and not _is_site_geometry_layer(entity.layer)
+        and not _is_annotation_geometry_layer(entity.layer)
+    )
+
+
+def _is_site_geometry_entity(entity: ExtractedCadEntity) -> bool:
+    return entity.type in {"line", "polyline"} and entity.origin != "DIMENSION" and _is_site_geometry_layer(entity.layer)
+
+
+def _find_floor_support_clusters(clusters: list[list[ExtractedCadEntity]]) -> set[int]:
+    return {
+        index
+        for index, cluster in enumerate(clusters)
+        if _is_dimension_support_cluster(cluster) or _is_room_label_support_cluster(cluster)
+    }
+
+
+def _is_dimension_support_cluster(cluster: list[ExtractedCadEntity]) -> bool:
+    saw_dimension = False
+    for entity in cluster:
+        if entity.type == "text" and entity.text:
+            if "DIM" in (entity.layer or "").upper() or entity.origin == "DIMENSION":
+                if _parse_dimension_text(entity.text) is not None:
+                    saw_dimension = True
+    return saw_dimension
+
+
+def _is_room_label_support_cluster(cluster: list[ExtractedCadEntity]) -> bool:
+    saw_room_label = False
+    for entity in cluster:
+        if entity.type != "text":
+            return False
+        if not _is_room_label_entity(entity):
+            return False
+        saw_room_label = True
+    return saw_room_label
+
+
+def _merge_cluster_indexes(
+    clusters: list[list[ExtractedCadEntity]],
+    indexes: set[int],
+) -> list[ExtractedCadEntity]:
+    merged: list[ExtractedCadEntity] = []
+    for index in sorted(indexes):
+        if index < 0 or index >= len(clusters):
+            continue
+        merged.extend(clusters[index])
+    return merged
+
+
 def _normalize_floor_entities(cluster: list[ExtractedCadEntity]) -> dict:
     geometry = [
         entity
@@ -414,14 +556,46 @@ def _normalize_floor_entities(cluster: list[ExtractedCadEntity]) -> dict:
         if entity.type in {"line", "polyline"} and _is_floor_wall_layer(entity.layer)
     ]
     if not geometry:
-        geometry = [entity for entity in cluster if entity.type in {"line", "polyline"}]
+        geometry = [
+            entity
+            for entity in cluster
+            if _is_floor_candidate_geometry_entity(entity)
+        ]
+    if not geometry:
+        geometry = [
+            entity
+            for entity in cluster
+            if entity.type in {"line", "polyline"} and not _is_annotation_geometry_layer(entity.layer)
+        ]
+    room_geometry = [
+        entity
+        for entity in cluster
+        if entity.type in {"line", "polyline"} and (_is_floor_wall_layer(entity.layer) or _is_room_closure_layer(entity.layer))
+    ]
+    if not room_geometry:
+        room_geometry = geometry
     measurements = _derive_floor_measurements(cluster, geometry)
-    normalized_entities = _normalize_entities_to_origin(
+    transform = _resolve_normalization_transform(
         geometry,
         target_width=measurements.width if measurements else None,
         target_height=measurements.height if measurements else None,
     )
-    return {"entities": normalized_entities, "measurements": measurements}
+    normalized_entities = _apply_normalization_transform(geometry, transform)
+    normalized_room_geometry = _apply_normalization_transform(room_geometry, transform)
+    room_label_candidates = [
+        entity
+        for entity in cluster
+        if entity.type == "text" and entity.position is not None and _is_room_label_entity(entity)
+    ]
+    preferred_room_layers = [
+        entity
+        for entity in room_label_candidates
+        if "ROOM" in (entity.layer or "").upper()
+    ]
+    room_labels = preferred_room_layers or room_label_candidates
+    normalized_room_labels = _coalesce_room_labels(_apply_normalization_transform(room_labels, transform))
+    rooms = _extract_rooms_from_labels(normalized_room_geometry, normalized_room_labels)
+    return {"entities": normalized_entities, "measurements": measurements, "rooms": rooms}
 
 
 def _normalize_site_entities(cluster: list[ExtractedCadEntity]) -> dict:
@@ -462,6 +636,18 @@ def _is_site_geometry_layer(layer: str) -> bool:
     return any(keyword in upper for keyword in keywords)
 
 
+def _is_annotation_geometry_layer(layer: str) -> bool:
+    upper = (layer or "").upper()
+    keywords = ("TEXT", "DIM", "ROOM", "NOTE", "ANNO", "LABEL")
+    return any(keyword in upper for keyword in keywords)
+
+
+def _is_room_closure_layer(layer: str) -> bool:
+    upper = (layer or "").upper()
+    keywords = ("DOOR", "WIND", "OPEN", "SEPAR", "COL")
+    return any(keyword in upper for keyword in keywords)
+
+
 def _is_property_layer(layer: str) -> bool:
     upper = (layer or "").upper()
     return "PROP" in upper or "LOT" in upper
@@ -470,6 +656,140 @@ def _is_property_layer(layer: str) -> bool:
 def _is_buildable_layer(layer: str) -> bool:
     upper = (layer or "").upper()
     return "SETBACK" in upper or "BUILD" in upper
+
+
+def _is_room_label_entity(entity: ExtractedCadEntity) -> bool:
+    text = _clean_cad_text(entity.text or "")
+    if not text or entity.position is None:
+        return False
+    if _parse_dimension_text(text) is not None:
+        return False
+    if len(text) > 28 or len(text.split()) > 3:
+        return False
+    blocked_text = (
+        "FLOOR PLAN",
+        "SITE PLAN",
+        "BUILDABLE",
+        "LOT",
+        "SETBACK",
+        "EASEMENT",
+    )
+    if any(token in text for token in blocked_text):
+        return False
+    return _contains_room_keyword(text)
+
+
+def _contains_room_keyword(text: str) -> bool:
+    room_keywords = (
+        "BED",
+        "BATH",
+        "LIVING",
+        "DINING",
+        "KITCHEN",
+        "GARAGE",
+        "CLOSET",
+        "CLST",
+        "UTILITY",
+        "PATIO",
+        "PORCH",
+        "ENTRY",
+        "FOYER",
+        "PANTRY",
+        "LAUNDRY",
+        "MSTR",
+        "MASTER",
+        "PWDR",
+        "FAMILY",
+        "BREAKFAST",
+        "GAME",
+        "MEDIA",
+        "FLEX",
+        "OFFICE",
+        "STUDY",
+        "WIC",
+        "HALL",
+        "ROOM",
+        "STAIR",
+    )
+    return any(keyword in text for keyword in room_keywords)
+
+
+def _coalesce_room_labels(labels: list[ExtractedCadEntity]) -> list[ExtractedCadEntity]:
+    if not labels:
+        return []
+
+    parents = list(range(len(labels)))
+
+    def find(index: int) -> int:
+        while parents[index] != index:
+            parents[index] = parents[parents[index]]
+            index = parents[index]
+        return index
+
+    def union(left: int, right: int) -> None:
+        left_root = find(left)
+        right_root = find(right)
+        if left_root != right_root:
+            parents[right_root] = left_root
+
+    for left in range(len(labels)):
+        for right in range(left + 1, len(labels)):
+            if _room_labels_should_merge(labels[left], labels[right]):
+                union(left, right)
+
+    grouped: dict[int, list[ExtractedCadEntity]] = {}
+    for index, label in enumerate(labels):
+        grouped.setdefault(find(index), []).append(label)
+
+    coalesced: list[ExtractedCadEntity] = []
+    for group in grouped.values():
+        ordered = sorted(
+            group,
+            key=lambda label: (
+                float(label.position["x"]) if label.position else 0.0,
+                float(label.position["y"]) if label.position else 0.0,
+                _clean_cad_text(label.text or ""),
+            ),
+        )
+        name = _compose_room_name(ordered)
+        xs = [float(label.position["x"]) for label in ordered if label.position is not None]
+        ys = [float(label.position["y"]) for label in ordered if label.position is not None]
+        position = {
+            "x": float(sum(xs) / max(1, len(xs))),
+            "y": float(sum(ys) / max(1, len(ys))),
+        }
+        coalesced.append(
+            ExtractedCadEntity(
+                type="text",
+                layer=ordered[0].layer,
+                text=name,
+                position=position,
+                bbox={
+                    "x1": position["x"],
+                    "y1": position["y"],
+                    "x2": position["x"],
+                    "y2": position["y"],
+                    "width": 0.0,
+                    "height": 0.0,
+                },
+            )
+        )
+    return coalesced
+
+
+def _room_labels_should_merge(left: ExtractedCadEntity, right: ExtractedCadEntity) -> bool:
+    if left.position is None or right.position is None:
+        return False
+    left_text = _clean_cad_text(left.text or "")
+    right_text = _clean_cad_text(right.text or "")
+    if not left_text or not right_text:
+        return False
+    dx = float(left.position["x"]) - float(right.position["x"])
+    dy = float(left.position["y"]) - float(right.position["y"])
+    distance = math.hypot(dx, dy)
+    if left_text == right_text and distance <= 1.0:
+        return True
+    return distance <= 24.0
 
 
 def _derive_floor_measurements(cluster: list[ExtractedCadEntity], geometry: list[ExtractedCadEntity]) -> ExtractedMeasurements | None:
@@ -505,17 +825,7 @@ def _derive_floor_measurements(cluster: list[ExtractedCadEntity], geometry: list
 
 
 def _parse_dimension_text(text: str) -> float | None:
-    cleaned = str(text or "").upper()
-    cleaned = cleaned.replace("\\P", " ")
-    cleaned = re.sub(r"\\A\d+;", "", cleaned)
-    cleaned = re.sub(r"\\H[^;]*;", "", cleaned)
-    cleaned = re.sub(r"\\C\d+;", "", cleaned)
-    cleaned = re.sub(r"\\T[^;]*;", "", cleaned)
-    cleaned = re.sub(r"\\[A-Z]", "", cleaned)
-    cleaned = re.sub(r"\{\\H[^;]*;\\S(\d+)\/(\d+);?\}", lambda match: f" {match.group(1)}/{match.group(2)}", cleaned)
-    cleaned = re.sub(r"\{[^}]*\}", " ", cleaned)
-    cleaned = cleaned.replace("\\", " ")
-    cleaned = " ".join(cleaned.split())
+    cleaned = _clean_cad_text(text)
 
     match = re.match(r"^(?:(\d+)\')?\s*(?:(\d+)(?:\s+(\d+)/(\d+))?\")?", cleaned)
     if not match:
@@ -529,30 +839,715 @@ def _parse_dimension_text(text: str) -> float | None:
     return total_inches if total_inches > 0 else None
 
 
+def _clean_cad_text(text: str) -> str:
+    cleaned = str(text or "").upper()
+    cleaned = cleaned.replace("\\P", " ")
+    cleaned = re.sub(r"\\A\d+;", "", cleaned)
+    cleaned = re.sub(r"\\H[^;]*;", "", cleaned)
+    cleaned = re.sub(r"\\C\d+;", "", cleaned)
+    cleaned = re.sub(r"\\T[^;]*;", "", cleaned)
+    cleaned = re.sub(r"\\[A-Z]", "", cleaned)
+    cleaned = re.sub(r"\{\\H[^;]*;\\S(\d+)\/(\d+);?\}", lambda match: f" {match.group(1)}/{match.group(2)}", cleaned)
+    cleaned = re.sub(r"\{[^}]*\}", " ", cleaned)
+    cleaned = cleaned.replace("\\", " ")
+    return " ".join(cleaned.split())
+
+
 def _normalize_entities_to_origin(
     entities: list[ExtractedCadEntity],
     *,
     target_width: float | None = None,
     target_height: float | None = None,
 ) -> list[ExtractedCadEntity]:
+    transform = _resolve_normalization_transform(
+        entities,
+        target_width=target_width,
+        target_height=target_height,
+    )
+    return _apply_normalization_transform(entities, transform)
+
+
+def _resolve_normalization_transform(
+    entities: list[ExtractedCadEntity],
+    *,
+    target_width: float | None = None,
+    target_height: float | None = None,
+) -> dict[str, float] | None:
     bbox = _entities_bbox(entities)
     if bbox is None:
-        return []
+        return None
 
     scale_x = (target_width / bbox["width"]) if target_width is not None and bbox["width"] > 0 else 1.0
     scale_y = (target_height / bbox["height"]) if target_height is not None and bbox["height"] > 0 else 1.0
+    return {
+        "translate_x": -bbox["x1"],
+        "translate_y": -bbox["y1"],
+        "scale_x": scale_x,
+        "scale_y": scale_y,
+    }
+
+
+def _apply_normalization_transform(
+    entities: list[ExtractedCadEntity],
+    transform: dict[str, float] | None,
+) -> list[ExtractedCadEntity]:
+    if transform is None:
+        return []
+
     normalized: list[ExtractedCadEntity] = []
     for entity in entities:
         normalized.append(
             _transform_entity(
                 entity,
-                translate_x=-bbox["x1"],
-                translate_y=-bbox["y1"],
-                scale_x=scale_x,
-                scale_y=scale_y,
+                translate_x=float(transform["translate_x"]),
+                translate_y=float(transform["translate_y"]),
+                scale_x=float(transform["scale_x"]),
+                scale_y=float(transform["scale_y"]),
             )
         )
     return normalized
+
+
+def _extract_rooms_from_labels(
+    geometry: list[ExtractedCadEntity],
+    labels: list[ExtractedCadEntity],
+) -> list[ExtractedRoom]:
+    if not geometry or not labels:
+        return []
+
+    exact_rooms, matched_label_indexes = _extract_polygonized_rooms(geometry, labels)
+    remaining_labels = [label for index, label in enumerate(labels) if index not in matched_label_indexes]
+    if not remaining_labels:
+        return sorted(exact_rooms, key=lambda room: (float(room.centroid["x"]), float(room.centroid["y"]), room.name))
+
+    fallback_rooms = _extract_rasterized_rooms(geometry, remaining_labels)
+    merged_rooms = _merge_rooms(exact_rooms, fallback_rooms)
+    return sorted(merged_rooms, key=lambda room: (float(room.centroid["x"]), float(room.centroid["y"]), room.name))
+
+
+def _extract_polygonized_rooms(
+    geometry: list[ExtractedCadEntity],
+    labels: list[ExtractedCadEntity],
+) -> tuple[list[ExtractedRoom], set[int]]:
+    room_polygons = _polygonize_floor_regions(geometry)
+    if not room_polygons:
+        return [], set()
+
+    labels_by_region: dict[int, list[tuple[int, ExtractedCadEntity]]] = {}
+    for label_index, label in enumerate(labels):
+        if label.position is None:
+            continue
+        point = Point(float(label.position["x"]), float(label.position["y"]))
+        matched_index = None
+        for index, polygon in enumerate(room_polygons):
+            if polygon.buffer(1e-3).covers(point):
+                matched_index = index
+                break
+        if matched_index is not None:
+            labels_by_region.setdefault(matched_index, []).append((label_index, label))
+
+    extracted: list[ExtractedRoom] = []
+    matched_label_indexes: set[int] = set()
+    for region_index, region_labels in labels_by_region.items():
+        polygon = room_polygons[region_index]
+        matched_label_indexes.update(index for index, _ in region_labels)
+        extracted.append(_build_room_from_polygon(polygon, [label for _, label in region_labels]))
+    return extracted, matched_label_indexes
+
+
+def _polygonize_floor_regions(geometry: list[ExtractedCadEntity]):
+    lines = []
+    for entity in geometry:
+        raw_points = _entity_points(entity)
+        if len(raw_points) < 2:
+            continue
+        coords = [(float(point["x"]), float(point["y"])) for point in raw_points]
+        if len(coords) == 2:
+            lines.append(LineString(coords))
+            continue
+        for index in range(len(coords) - 1):
+            start = coords[index]
+            end = coords[index + 1]
+            if start != end:
+                lines.append(LineString([start, end]))
+    if not lines:
+        return []
+
+    merged = unary_union(lines)
+    polygons = [
+        polygon
+        for polygon in polygonize(merged)
+        if float(polygon.area) > 36.0
+    ]
+    return polygons
+
+
+def _compose_room_name(labels: list[ExtractedCadEntity]) -> str:
+    ordered = sorted(
+        labels,
+        key=lambda label: (
+            -float(label.position["y"]) if label.position else 0.0,
+            float(label.position["x"]) if label.position else 0.0,
+            _clean_cad_text(label.text or ""),
+        ),
+    )
+    parts: list[str] = []
+    for label in ordered:
+        cleaned = _clean_cad_text(label.text or "")
+        if cleaned and cleaned not in parts:
+            parts.append(cleaned)
+    return " ".join(parts)
+
+
+def _build_room_from_polygon(polygon, labels: list[ExtractedCadEntity]) -> ExtractedRoom:
+    min_x, min_y, max_x, max_y = polygon.bounds
+    polygon_points = tuple(
+        {"x": float(x), "y": float(y)}
+        for x, y in polygon.exterior.coords
+    )
+    return ExtractedRoom(
+        name=_compose_room_name(labels),
+        polygon=polygon_points,
+        bbox={
+            "x1": float(min_x),
+            "y1": float(min_y),
+            "x2": float(max_x),
+            "y2": float(max_y),
+            "width": float(max_x - min_x),
+            "height": float(max_y - min_y),
+        },
+        centroid={"x": float(polygon.centroid.x), "y": float(polygon.centroid.y)},
+        width=float(max_x - min_x),
+        height=float(max_y - min_y),
+        area=float(polygon.area),
+        measurement_source="room_region",
+    )
+
+
+def _extract_rasterized_rooms(
+    geometry: list[ExtractedCadEntity],
+    labels: list[ExtractedCadEntity],
+) -> list[ExtractedRoom]:
+    if not geometry or not labels:
+        return []
+
+    bbox = _entities_bbox(geometry)
+    if bbox is None:
+        return []
+
+    scale = max(2.0, min(4.0, 1600.0 / max(float(bbox["width"]), float(bbox["height"]), 1.0)))
+    padding = max(24, int(round(scale * 18)))
+    width_px = int(math.ceil(float(bbox["width"]) * scale)) + (padding * 2) + 1
+    height_px = int(math.ceil(float(bbox["height"]) * scale)) + (padding * 2) + 1
+    mask = np.zeros((height_px, width_px), dtype=np.uint8)
+    wall_thickness = max(3, int(round(scale * 4)))
+    closure_thickness = max(wall_thickness * 3, int(round(scale * 10)))
+
+    for entity in geometry:
+        points = _entity_points(entity)
+        if len(points) < 2:
+            continue
+        pixel_points = np.array(
+            [
+                [
+                    int(round(float(point["x"]) * scale)) + padding,
+                    int(round(float(point["y"]) * scale)) + padding,
+                ]
+                for point in points
+            ],
+            dtype=np.int32,
+        )
+        stroke_thickness = closure_thickness if _is_room_closure_layer(entity.layer) else wall_thickness
+        if len(pixel_points) == 2:
+            cv2.line(mask, tuple(pixel_points[0]), tuple(pixel_points[1]), 255, thickness=stroke_thickness)
+        else:
+            cv2.polylines(mask, [pixel_points], False, 255, thickness=stroke_thickness)
+
+    kernel_size = max(3, int(round(scale * 4)))
+    if kernel_size % 2 == 0:
+        kernel_size += 1
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (kernel_size, kernel_size))
+    closed_mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel, iterations=1)
+
+    rooms: list[ExtractedRoom] = []
+    component_map, components = _extract_open_space_components(closed_mask)
+    component_groups: dict[int, dict[str, object]] = {}
+    unresolved_indexes: set[int] = set()
+    for index, label in enumerate(labels):
+        seed = _resolve_room_seed(closed_mask, label=label, scale=scale, padding=padding)
+        if seed is None:
+            unresolved_indexes.add(index)
+            continue
+        seed_x, seed_y = seed
+        component_id = int(component_map[seed_y, seed_x])
+        component = components.get(component_id)
+        if component is None or component["touches_border"]:
+            unresolved_indexes.add(index)
+            continue
+        component_groups.setdefault(component_id, {"labels": [], "indexes": [], "seeds": []})
+        component_groups[component_id]["labels"].append(label)
+        component_groups[component_id]["indexes"].append(index)
+        component_groups[component_id]["seeds"].append(seed)
+
+    for component_id, payload in component_groups.items():
+        if len(payload["labels"]) > 1:
+            partitioned_rooms = _build_partitioned_rooms_from_component(
+                component_map=component_map,
+                component_id=component_id,
+                labels=payload["labels"],
+                seeds=payload["seeds"],
+                scale=scale,
+                padding=padding,
+            )
+            if partitioned_rooms:
+                rooms.extend(partitioned_rooms)
+                continue
+        room = _build_room_from_component(
+            component_map=component_map,
+            component_id=component_id,
+            labels=payload["labels"],
+            scale=scale,
+            padding=padding,
+        )
+        if room is not None:
+            rooms.append(room)
+            continue
+        unresolved_indexes.update(payload["indexes"])
+
+    unresolved_labels = [label for index, label in enumerate(labels) if index in unresolved_indexes]
+    if unresolved_labels:
+        locally_resolved_rooms, still_unresolved = _extract_local_clustered_rooms(
+            closed_mask,
+            unresolved_labels,
+            scale=scale,
+            padding=padding,
+        )
+        rooms.extend(locally_resolved_rooms)
+        if still_unresolved:
+            rooms.extend(_extract_raycast_rooms(closed_mask, still_unresolved, scale=scale, padding=padding))
+    return rooms
+
+
+def _extract_open_space_components(mask: np.ndarray) -> tuple[np.ndarray, dict[int, dict[str, float | bool]]]:
+    open_mask = np.where(mask == 0, 255, 0).astype(np.uint8)
+    count, component_map, stats, _ = cv2.connectedComponentsWithStats(open_mask, connectivity=4)
+    height, width = mask.shape[:2]
+    components: dict[int, dict[str, float | bool]] = {}
+    for component_id in range(1, count):
+        x = int(stats[component_id, cv2.CC_STAT_LEFT])
+        y = int(stats[component_id, cv2.CC_STAT_TOP])
+        component_width = int(stats[component_id, cv2.CC_STAT_WIDTH])
+        component_height = int(stats[component_id, cv2.CC_STAT_HEIGHT])
+        area = int(stats[component_id, cv2.CC_STAT_AREA])
+        if area < 64:
+            continue
+        touches_border = (
+            x <= 0
+            or y <= 0
+            or (x + component_width) >= width
+            or (y + component_height) >= height
+        )
+        components[component_id] = {
+            "touches_border": touches_border,
+            "area_px": area,
+        }
+    return component_map, components
+
+
+def _resolve_room_seed(
+    mask: np.ndarray,
+    *,
+    label: ExtractedCadEntity,
+    scale: float,
+    padding: int,
+) -> tuple[int, int] | None:
+    if label.position is None:
+        return None
+    seed_x = int(round(float(label.position["x"]) * scale)) + padding
+    seed_y = int(round(float(label.position["y"]) * scale)) + padding
+    height, width = mask.shape[:2]
+    seed_x = max(0, min(seed_x, width - 1))
+    seed_y = max(0, min(seed_y, height - 1))
+    if mask[seed_y, seed_x] == 0:
+        return seed_x, seed_y
+    return _find_nearest_open(mask, seed_x=seed_x, seed_y=seed_y, radius=max(12, int(width * 0.02)))
+
+
+def _build_room_from_component(
+    *,
+    component_map: np.ndarray,
+    component_id: int,
+    labels: list[ExtractedCadEntity],
+    scale: float,
+    padding: int,
+    pixel_offset: tuple[int, int] = (0, 0),
+) -> ExtractedRoom | None:
+    component_mask = np.where(component_map == component_id, 255, 0).astype(np.uint8)
+    return _build_room_from_binary_mask(
+        binary_mask=component_mask,
+        labels=labels,
+        scale=scale,
+        padding=padding,
+        measurement_source="label_region_fill",
+        pixel_offset=pixel_offset,
+    )
+
+
+def _build_partitioned_rooms_from_component(
+    *,
+    component_map: np.ndarray,
+    component_id: int,
+    labels: list[ExtractedCadEntity],
+    seeds: list[tuple[int, int]],
+    scale: float,
+    padding: int,
+    pixel_offset: tuple[int, int] = (0, 0),
+) -> list[ExtractedRoom]:
+    component_mask = component_map == component_id
+    ys, xs = np.nonzero(component_mask)
+    if len(xs) == 0 or len(labels) != len(seeds):
+        return []
+
+    best_index = np.full(len(xs), -1, dtype=np.int32)
+    best_distance = np.full(len(xs), np.inf, dtype=np.float32)
+    for label_index, (seed_x, seed_y) in enumerate(seeds):
+        distances = ((xs - seed_x) ** 2) + ((ys - seed_y) ** 2)
+        better = distances < best_distance
+        best_distance[better] = distances[better]
+        best_index[better] = label_index
+
+    rooms: list[ExtractedRoom] = []
+    for label_index, label in enumerate(labels):
+        assigned = best_index == label_index
+        if int(np.count_nonzero(assigned)) < 64:
+            continue
+        label_mask = np.zeros(component_map.shape, dtype=np.uint8)
+        label_mask[ys[assigned], xs[assigned]] = 255
+        room = _build_room_from_binary_mask(
+            binary_mask=label_mask,
+            labels=[label],
+            scale=scale,
+            padding=padding,
+            measurement_source="label_region_partition",
+            pixel_offset=pixel_offset,
+        )
+        if room is not None:
+            rooms.append(room)
+    return rooms
+
+
+def _build_room_from_binary_mask(
+    *,
+    binary_mask: np.ndarray,
+    labels: list[ExtractedCadEntity],
+    scale: float,
+    padding: int,
+    measurement_source: str,
+    pixel_offset: tuple[int, int] = (0, 0),
+) -> ExtractedRoom | None:
+    contours, _ = cv2.findContours(binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not contours:
+        return None
+    contour = max(contours, key=cv2.contourArea)
+    if cv2.contourArea(contour) < 64:
+        return None
+
+    perimeter = cv2.arcLength(contour, True)
+    epsilon = max(2.0, perimeter * 0.0025)
+    simplified = cv2.approxPolyDP(contour, epsilon, True)
+    world_points = [
+        (
+            (float(point[0][0] + pixel_offset[0]) - padding) / scale,
+            (float(point[0][1] + pixel_offset[1]) - padding) / scale,
+        )
+        for point in simplified
+    ]
+    if len(world_points) < 3:
+        return None
+    if world_points[0] != world_points[-1]:
+        world_points.append(world_points[0])
+
+    polygon = Polygon(world_points)
+    if not polygon.is_valid:
+        polygon = polygon.buffer(0)
+    if polygon.is_empty:
+        return None
+    if polygon.geom_type == "MultiPolygon":
+        polygon = max(polygon.geoms, key=lambda candidate: float(candidate.area))
+    polygon = polygon.simplify(max(0.5, 1.0 / scale), preserve_topology=True)
+    if polygon.is_empty or polygon.area <= 1.0:
+        return None
+
+    room = _build_room_from_polygon(polygon, labels)
+    return ExtractedRoom(
+        name=room.name,
+        polygon=room.polygon,
+        bbox=room.bbox,
+        centroid=room.centroid,
+        width=room.width,
+        height=room.height,
+        area=room.area,
+        measurement_source=measurement_source,
+    )
+
+
+def _extract_local_clustered_rooms(
+    mask: np.ndarray,
+    labels: list[ExtractedCadEntity],
+    *,
+    scale: float,
+    padding: int,
+) -> tuple[list[ExtractedRoom], list[ExtractedCadEntity]]:
+    candidates = _collect_raycast_candidates(mask, labels, scale=scale, padding=padding)
+    if not candidates:
+        return [], labels
+
+    clusters = _cluster_raycast_candidates(candidates, margin=max(18, int(round(scale * 12))))
+    rooms: list[ExtractedRoom] = []
+    resolved_indexes: set[int] = set()
+
+    for cluster in clusters:
+        crop_margin = max(18, int(round(scale * 10)))
+        crop_x1 = max(0, min(candidate["bbox_px"][0] for candidate in cluster) - crop_margin)
+        crop_y1 = max(0, min(candidate["bbox_px"][1] for candidate in cluster) - crop_margin)
+        crop_x2 = min(mask.shape[1] - 1, max(candidate["bbox_px"][2] for candidate in cluster) + crop_margin)
+        crop_y2 = min(mask.shape[0] - 1, max(candidate["bbox_px"][3] for candidate in cluster) + crop_margin)
+        crop_mask = mask[crop_y1:crop_y2 + 1, crop_x1:crop_x2 + 1].copy()
+        crop_mask[0, :] = 255
+        crop_mask[-1, :] = 255
+        crop_mask[:, 0] = 255
+        crop_mask[:, -1] = 255
+
+        crop_component_map, crop_components = _extract_open_space_components(crop_mask)
+        crop_groups: dict[int, dict[str, object]] = {}
+        unresolved_cluster_indexes: set[int] = set()
+        for candidate in cluster:
+            local_seed = (candidate["seed"][0] - crop_x1, candidate["seed"][1] - crop_y1)
+            local_x = max(0, min(local_seed[0], crop_mask.shape[1] - 1))
+            local_y = max(0, min(local_seed[1], crop_mask.shape[0] - 1))
+            component_id = int(crop_component_map[local_y, local_x])
+            component = crop_components.get(component_id)
+            if component is None:
+                unresolved_cluster_indexes.add(candidate["index"])
+                continue
+            crop_groups.setdefault(component_id, {"labels": [], "indexes": [], "seeds": []})
+            crop_groups[component_id]["labels"].append(candidate["label"])
+            crop_groups[component_id]["indexes"].append(candidate["index"])
+            crop_groups[component_id]["seeds"].append((local_x, local_y))
+
+        for component_id, payload in crop_groups.items():
+            resolved: list[ExtractedRoom] = []
+            if len(payload["labels"]) > 1:
+                resolved = _build_partitioned_rooms_from_component(
+                    component_map=crop_component_map,
+                    component_id=component_id,
+                    labels=payload["labels"],
+                    seeds=payload["seeds"],
+                    scale=scale,
+                    padding=padding,
+                    pixel_offset=(crop_x1, crop_y1),
+                )
+            if not resolved:
+                single_room = _build_room_from_component(
+                    component_map=crop_component_map,
+                    component_id=component_id,
+                    labels=payload["labels"],
+                    scale=scale,
+                    padding=padding,
+                    pixel_offset=(crop_x1, crop_y1),
+                )
+                if single_room is not None:
+                    resolved = [single_room]
+            if resolved:
+                rooms.extend(resolved)
+                resolved_indexes.update(payload["indexes"])
+                continue
+            unresolved_cluster_indexes.update(payload["indexes"])
+
+    unresolved = [label for index, label in enumerate(labels) if index not in resolved_indexes]
+    return rooms, unresolved
+
+
+def _collect_raycast_candidates(
+    mask: np.ndarray,
+    labels: list[ExtractedCadEntity],
+    *,
+    scale: float,
+    padding: int,
+) -> list[dict[str, object]]:
+    candidates: list[dict[str, object]] = []
+    for index, label in enumerate(labels):
+        seed = _resolve_room_seed(mask, label=label, scale=scale, padding=padding)
+        if seed is None:
+            continue
+        bbox_px = _raycast_room_bbox(mask, seed_x=seed[0], seed_y=seed[1])
+        if bbox_px is None:
+            continue
+        candidates.append({"index": index, "label": label, "seed": seed, "bbox_px": bbox_px})
+    return candidates
+
+
+def _cluster_raycast_candidates(candidates: list[dict[str, object]], *, margin: int) -> list[list[dict[str, object]]]:
+    if not candidates:
+        return []
+
+    parents = list(range(len(candidates)))
+
+    def find(index: int) -> int:
+        while parents[index] != index:
+            parents[index] = parents[parents[index]]
+            index = parents[index]
+        return index
+
+    def union(left: int, right: int) -> None:
+        left_root = find(left)
+        right_root = find(right)
+        if left_root != right_root:
+            parents[right_root] = left_root
+
+    for left in range(len(candidates)):
+        for right in range(left + 1, len(candidates)):
+            if _bbox_tuple_overlap(candidates[left]["bbox_px"], candidates[right]["bbox_px"], margin=margin):
+                union(left, right)
+
+    grouped: dict[int, list[dict[str, object]]] = {}
+    for index, candidate in enumerate(candidates):
+        grouped.setdefault(find(index), []).append(candidate)
+    return list(grouped.values())
+
+
+def _bbox_tuple_overlap(left: tuple[int, int, int, int], right: tuple[int, int, int, int], *, margin: int) -> bool:
+    return not (
+        (left[2] + margin) < right[0]
+        or (right[2] + margin) < left[0]
+        or (left[3] + margin) < right[1]
+        or (right[3] + margin) < left[1]
+    )
+
+
+def _extract_raycast_rooms(
+    mask: np.ndarray,
+    labels: list[ExtractedCadEntity],
+    *,
+    scale: float,
+    padding: int,
+) -> list[ExtractedRoom]:
+    grouped_by_signature: dict[tuple[int, int, int, int], dict[str, object]] = {}
+    for label in labels:
+        seed = _resolve_room_seed(mask, label=label, scale=scale, padding=padding)
+        if seed is None:
+            continue
+        seed_x, seed_y = seed
+        bbox_px = _raycast_room_bbox(mask, seed_x=seed_x, seed_y=seed_y)
+        if bbox_px is None:
+            continue
+        signature = tuple(int(round(value / max(1.0, scale * 2.0))) for value in bbox_px)
+        grouped_by_signature.setdefault(signature, {"labels": [], "bbox_px": bbox_px})
+        grouped_by_signature[signature]["labels"].append(label)
+
+    rooms: list[ExtractedRoom] = []
+    for payload in grouped_by_signature.values():
+        room = _build_room_from_raycast_bbox(
+            bbox_px=payload["bbox_px"],
+            labels=payload["labels"],
+            scale=scale,
+            padding=padding,
+        )
+        if room is not None:
+            rooms.append(room)
+    return rooms
+
+
+def _raycast_room_bbox(mask: np.ndarray, *, seed_x: int, seed_y: int) -> tuple[int, int, int, int] | None:
+    height, width = mask.shape[:2]
+    seed_x = max(0, min(seed_x, width - 1))
+    seed_y = max(0, min(seed_y, height - 1))
+    if mask[seed_y, seed_x] != 0:
+        seed = _find_nearest_open(mask, seed_x=seed_x, seed_y=seed_y, radius=max(12, int(width * 0.02)))
+        if seed is None:
+            return None
+        seed_x, seed_y = seed
+
+    left = _scan_until_block(mask, start_x=seed_x, start_y=seed_y, step_x=-1, step_y=0)
+    right = _scan_until_block(mask, start_x=seed_x, start_y=seed_y, step_x=1, step_y=0)
+    top = _scan_until_block(mask, start_x=seed_x, start_y=seed_y, step_x=0, step_y=-1)
+    bottom = _scan_until_block(mask, start_x=seed_x, start_y=seed_y, step_x=0, step_y=1)
+    if None in {left, right, top, bottom}:
+        return None
+    if (right - left) < 8 or (bottom - top) < 8:
+        return None
+    return int(left), int(top), int(right), int(bottom)
+
+
+def _scan_until_block(mask: np.ndarray, *, start_x: int, start_y: int, step_x: int, step_y: int) -> int | None:
+    height, width = mask.shape[:2]
+    x = start_x
+    y = start_y
+    last_open = x if step_y == 0 else y
+    while 0 <= x < width and 0 <= y < height:
+        if mask[y, x] != 0:
+            return last_open
+        last_open = x if step_y == 0 else y
+        x += step_x
+        y += step_y
+    return None
+
+
+def _find_nearest_open(mask: np.ndarray, *, seed_x: int, seed_y: int, radius: int) -> tuple[int, int] | None:
+    height, width = mask.shape[:2]
+    for current_radius in range(1, radius + 1):
+        for dx in range(-current_radius, current_radius + 1):
+            for dy in range(-current_radius, current_radius + 1):
+                x = seed_x + dx
+                y = seed_y + dy
+                if 0 <= x < width and 0 <= y < height and mask[y, x] == 0:
+                    return x, y
+    return None
+
+
+def _build_room_from_raycast_bbox(
+    *,
+    bbox_px: tuple[int, int, int, int],
+    labels: list[ExtractedCadEntity],
+    scale: float,
+    padding: int,
+) -> ExtractedRoom | None:
+    x1_px, y1_px, x2_px, y2_px = bbox_px
+    x1 = (float(x1_px) - padding) / scale
+    y1 = (float(y1_px) - padding) / scale
+    x2 = (float(x2_px) - padding) / scale
+    y2 = (float(y2_px) - padding) / scale
+    if x2 <= x1 or y2 <= y1:
+        return None
+    polygon = Polygon([(x1, y1), (x2, y1), (x2, y2), (x1, y2), (x1, y1)])
+    room = _build_room_from_polygon(polygon, labels)
+    return ExtractedRoom(
+        name=room.name,
+        polygon=room.polygon,
+        bbox=room.bbox,
+        centroid=room.centroid,
+        width=room.width,
+        height=room.height,
+        area=room.area,
+        measurement_source="label_raycast",
+    )
+
+
+def _merge_rooms(primary: list[ExtractedRoom], secondary: list[ExtractedRoom]) -> list[ExtractedRoom]:
+    merged = list(primary)
+    for candidate in secondary:
+        duplicate = next(
+            (
+                existing
+                for existing in merged
+                if abs(existing.centroid["x"] - candidate.centroid["x"]) <= 6.0
+                and abs(existing.centroid["y"] - candidate.centroid["y"]) <= 6.0
+            ),
+            None,
+        )
+        if duplicate is None:
+            merged.append(candidate)
+    return merged
 
 
 def _extract_buildable_polygon(entities: list[ExtractedCadEntity]) -> list[dict[str, float]] | None:
@@ -795,6 +1790,7 @@ def _transform_entity(
         type=entity.type,
         layer=entity.layer,
         bbox=bbox,
+        origin=entity.origin,
         start=start,
         end=end,
         points=tuple(point for point in points if point is not None),
@@ -812,7 +1808,13 @@ def _entities_bbox(entities: list[ExtractedCadEntity]) -> dict[str, float] | Non
     )
 
 
-def _build_view(role: str, entities: list[ExtractedCadEntity], *, measurements: ExtractedMeasurements | None = None) -> dict:
+def _build_view(
+    role: str,
+    entities: list[ExtractedCadEntity],
+    *,
+    measurements: ExtractedMeasurements | None = None,
+    rooms: list[ExtractedRoom] | None = None,
+) -> dict:
     if not entities:
         return {
             "role": role,
@@ -820,6 +1822,7 @@ def _build_view(role: str, entities: list[ExtractedCadEntity], *, measurements: 
             "summary": {"entity_count": 0, "line_count": 0, "polyline_count": 0, "text_count": 0},
             "entities": [],
             "measurements": None,
+            "rooms": [],
         }
 
     bbox = _entities_bbox(entities)
@@ -835,6 +1838,7 @@ def _build_view(role: str, entities: list[ExtractedCadEntity], *, measurements: 
             {
                 "type": entity.type,
                 "layer": entity.layer,
+                "origin": entity.origin,
                 "start": entity.start,
                 "end": entity.end,
                 "points": list(entity.points),
@@ -856,7 +1860,28 @@ def _build_view(role: str, entities: list[ExtractedCadEntity], *, measurements: 
             "height": bbox["height"],
             "source": "geometry",
         }
-    return {"role": role, "bbox": bbox, "summary": summary, "entities": serialized, "measurements": measurements_payload}
+    rooms_payload = []
+    for room in rooms or []:
+        rooms_payload.append(
+            {
+                "name": room.name,
+                "polygon": list(room.polygon),
+                "bbox": room.bbox,
+                "centroid": room.centroid,
+                "width": room.width,
+                "height": room.height,
+                "area": room.area,
+                "measurement_source": room.measurement_source,
+            }
+        )
+    return {
+        "role": role,
+        "bbox": bbox,
+        "summary": summary,
+        "entities": serialized,
+        "measurements": measurements_payload,
+        "rooms": rooms_payload,
+    }
 
 
 def _build_side_by_side(floor_view: dict, site_view: dict, *, canonical_unit: str) -> dict:

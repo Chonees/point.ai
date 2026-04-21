@@ -4,6 +4,7 @@ import ezdxf
 from fastapi.testclient import TestClient
 
 from backend.app import app
+from backend.cad_workspace.extractor import ExtractedCadEntity, _extract_rasterized_rooms
 
 
 client = TestClient(app)
@@ -108,6 +109,16 @@ def test_cad_workspace_export_overlay_returns_downloadable_dxf(tmp_path: Path):
     assert min(ys) == 324.0
     assert max(ys) == 1116.0
 
+    dimensions = [entity for entity in msp if entity.dxftype() == "DIMENSION"]
+    assert len(dimensions) == 4
+    dimension_texts = sorted(str(entity.dxf.text) for entity in dimensions)
+    assert dimension_texts == [
+        'Buildable 60\'-0" | 720 in',
+        'Buildable 90\'-0" | 1080 in',
+        'Footprint 39\'-0" | 468 in',
+        'Footprint 66\'-0" | 792 in',
+    ]
+
 
 def test_cad_workspace_polygon_fit_rejects_tapered_buildable_even_if_bbox_is_large_enough(tmp_path: Path):
     dxf_path = tmp_path / "cad-sheet-tapered.dxf"
@@ -124,6 +135,133 @@ def test_cad_workspace_polygon_fit_rejects_tapered_buildable_even_if_bbox_is_lar
     assert payload["fit_summary"]["basis"] == "buildable_polygon"
     assert payload["fit_summary"]["fits_within_buildable_bbox"] is True
     assert payload["fit_summary"]["fits_within_buildable_polygon"] is False
+
+
+def test_cad_workspace_extracts_floor_rooms_and_measurements(tmp_path: Path):
+    dxf_path = tmp_path / "cad-sheet-rooms.dxf"
+    _write_room_labeled_sheet_dxf(dxf_path)
+
+    with dxf_path.open("rb") as handle:
+        response = client.post(
+            "/api/cad-workspace/extract",
+            files={"file": (dxf_path.name, handle, "application/dxf")},
+        )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    rooms = payload["floor_plan"]["rooms"]
+    assert len(rooms) == 2
+    assert [room["name"] for room in rooms] == ["BEDROOM 2", "LIVING ROOM"]
+    assert rooms[0]["width"] == 120.0
+    assert rooms[0]["height"] == 144.0
+    assert rooms[1]["width"] == 240.0
+    assert rooms[1]["height"] == 144.0
+    assert rooms[0]["measurement_source"] == "room_region"
+    assert rooms[1]["measurement_source"] == "room_region"
+
+
+def test_cad_workspace_extracts_site_from_single_spatial_cluster_when_layers_are_clear(tmp_path: Path):
+    dxf_path = tmp_path / "cad-single-cluster.dxf"
+    _write_single_cluster_mixed_sheet_dxf(dxf_path)
+
+    with dxf_path.open("rb") as handle:
+        response = client.post(
+            "/api/cad-workspace/extract",
+            files={"file": (dxf_path.name, handle, "application/dxf")},
+        )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+
+    assert payload["floor_plan"]["bbox"]["width"] == 468.0
+    assert payload["floor_plan"]["bbox"]["height"] == 792.0
+    assert {entity["layer"] for entity in payload["site_plan"]["entities"]} == {"PROP", "SETBACKS"}
+    assert payload["site_plan"]["bbox"]["width"] == 1080.0
+    assert payload["site_plan"]["bbox"]["height"] == 1620.0
+    assert payload["fit_summary"]["buildable_bbox"]["width"] == 900.0
+    assert payload["fit_summary"]["buildable_bbox"]["height"] == 1440.0
+    assert payload["fit_summary"]["basis"] == "buildable_polygon"
+    assert any("separated by cad layers" in warning.lower() for warning in payload["warnings"])
+    assert not any("site extraction may be incomplete" in warning.lower() for warning in payload["warnings"])
+
+
+def test_cad_workspace_floor_fallback_excludes_site_layers_when_floor_layer_is_generic(tmp_path: Path):
+    dxf_path = tmp_path / "cad-single-cluster-generic-floor.dxf"
+    _write_single_cluster_generic_floor_layer_dxf(dxf_path)
+
+    with dxf_path.open("rb") as handle:
+        response = client.post(
+            "/api/cad-workspace/extract",
+            files={"file": (dxf_path.name, handle, "application/dxf")},
+        )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+
+    assert {entity["layer"] for entity in payload["floor_plan"]["entities"]} == {"PLAN"}
+    assert payload["floor_plan"]["bbox"]["width"] == 468.0
+    assert payload["floor_plan"]["bbox"]["height"] == 792.0
+    assert {entity["layer"] for entity in payload["site_plan"]["entities"]} == {"PROP", "SETBACKS"}
+    assert payload["fit_summary"]["footprint_bbox"]["width"] == 468.0
+    assert payload["fit_summary"]["footprint_bbox"]["height"] == 792.0
+
+
+def test_cad_workspace_floor_fallback_ignores_dimension_entities_when_floor_layer_is_generic(tmp_path: Path):
+    dxf_path = tmp_path / "cad-generic-floor-with-dimension-entities.dxf"
+    _write_generic_floor_with_dimension_entities_dxf(dxf_path)
+
+    with dxf_path.open("rb") as handle:
+        response = client.post(
+            "/api/cad-workspace/extract",
+            files={"file": (dxf_path.name, handle, "application/dxf")},
+        )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+
+    assert {entity["layer"] for entity in payload["floor_plan"]["entities"]} == {"PLAN"}
+    assert payload["floor_plan"]["bbox"]["width"] == 1200.0
+    assert payload["floor_plan"]["bbox"]["height"] == 2400.0
+
+
+def test_rasterized_room_fallback_builds_region_polygon_instead_of_raw_bbox():
+    geometry = [
+        _line_entity("WALLS", (0, 0), (240, 0)),
+        _line_entity("WALLS", (240, 0), (240, 240)),
+        _line_entity("WALLS", (240, 240), (0, 240)),
+        _line_entity("WALLS", (0, 240), (0, 0)),
+        _line_entity("WALLS", (144, 168), (144, 240)),
+        _line_entity("WALLS", (168, 144), (240, 144)),
+        _line_entity("DOORS", (144, 144), (144, 168)),
+        _line_entity("DOORS", (144, 144), (168, 144)),
+    ]
+    labels = [_text_entity("ROOM LBLS", "LIVING ROOM", (96, 96))]
+
+    rooms = _extract_rasterized_rooms(geometry, labels)
+
+    assert len(rooms) == 1
+    room = rooms[0]
+    assert room.measurement_source == "label_region_fill"
+    assert room.area < 54000.0
+    assert len(room.polygon) > 5
+
+
+def test_rasterized_room_fallback_splits_open_component_by_multiple_room_labels():
+    geometry = [
+        _line_entity("WALLS", (0, 0), (240, 0)),
+        _line_entity("WALLS", (240, 0), (240, 144)),
+        _line_entity("WALLS", (240, 144), (0, 144)),
+        _line_entity("WALLS", (0, 144), (0, 0)),
+    ]
+    labels = [
+        _text_entity("ROOM LBLS", "KITCHEN", (60, 72)),
+        _text_entity("ROOM LBLS", "LIVING ROOM", (180, 72)),
+    ]
+
+    rooms = _extract_rasterized_rooms(geometry, labels)
+
+    assert len(rooms) == 2
+    assert [room.name for room in rooms] == ["KITCHEN", "LIVING ROOM"]
 
 
 def _write_sheet_dxf(path: Path) -> None:
@@ -147,6 +285,43 @@ def _write_sheet_dxf(path: Path) -> None:
     msp.add_text("BUILDABLE", dxfattribs={"layer": "TEXT", "insert": (202, 63), "height": 1})
 
     doc.saveas(path)
+
+
+def _line_entity(layer: str, start: tuple[float, float], end: tuple[float, float]) -> ExtractedCadEntity:
+    x1, y1 = start
+    x2, y2 = end
+    return ExtractedCadEntity(
+        type="line",
+        layer=layer,
+        start={"x": float(x1), "y": float(y1)},
+        end={"x": float(x2), "y": float(y2)},
+        bbox={
+            "x1": float(min(x1, x2)),
+            "y1": float(min(y1, y2)),
+            "x2": float(max(x1, x2)),
+            "y2": float(max(y1, y2)),
+            "width": float(abs(x2 - x1)),
+            "height": float(abs(y2 - y1)),
+        },
+    )
+
+
+def _text_entity(layer: str, text: str, position: tuple[float, float]) -> ExtractedCadEntity:
+    x, y = position
+    return ExtractedCadEntity(
+        type="text",
+        layer=layer,
+        text=text,
+        position={"x": float(x), "y": float(y)},
+        bbox={
+            "x1": float(x),
+            "y1": float(y),
+            "x2": float(x),
+            "y2": float(y),
+            "width": 0.0,
+            "height": 0.0,
+        },
+    )
 
 
 def _write_dimensioned_sheet_dxf(path: Path) -> None:
@@ -188,5 +363,95 @@ def _write_tapered_sheet_dxf(path: Path) -> None:
     msp.add_text("SITE PLAN", dxfattribs={"layer": "TEXT", "insert": (270, 132), "height": 3})
     msp.add_lwpolyline([(250, 0), (360, 0), (340, 140), (230, 140)], close=True, dxfattribs={"layer": "PROP"})
     msp.add_lwpolyline([(290, 15), (300, 15), (340, 120), (250, 120)], close=True, dxfattribs={"layer": "SETBACKS"})
+
+    doc.saveas(path)
+
+
+def _write_room_labeled_sheet_dxf(path: Path) -> None:
+    doc = ezdxf.new("R2018")
+    doc.units = 2  # feet
+    msp = doc.modelspace()
+
+    # 30' x 12' floor split into 10' bedroom + 20' living room
+    msp.add_line((0, 0), (30, 0), dxfattribs={"layer": "WALLS"})
+    msp.add_line((30, 0), (30, 12), dxfattribs={"layer": "WALLS"})
+    msp.add_line((30, 12), (0, 12), dxfattribs={"layer": "WALLS"})
+    msp.add_line((0, 12), (0, 0), dxfattribs={"layer": "WALLS"})
+    msp.add_line((10, 0), (10, 12), dxfattribs={"layer": "WALLS"})
+    msp.add_text("FLOOR PLAN", dxfattribs={"layer": "TEXT", "insert": (4, 15), "height": 1})
+    msp.add_text("BEDROOM 2", dxfattribs={"layer": "ROOM LBLS", "insert": (5, 6), "height": 1})
+    msp.add_text("LIVING ROOM", dxfattribs={"layer": "ROOM LBLS", "insert": (20, 6), "height": 1})
+    msp.add_text('\\A1;30\'-0"', dxfattribs={"layer": "DIMS", "insert": (15, 16), "height": 1})
+    msp.add_text('\\A1;12\'-0"', dxfattribs={"layer": "DIMS", "insert": (-2, 6), "height": 1})
+
+    msp.add_text("SITE PLAN", dxfattribs={"layer": "TEXT", "insert": (60, 14), "height": 1})
+    msp.add_lwpolyline([(60, 0), (100, 0), (100, 30), (60, 30)], close=True, dxfattribs={"layer": "PROP"})
+    msp.add_lwpolyline([(65, 5), (95, 5), (95, 25), (65, 25)], close=True, dxfattribs={"layer": "SETBACKS"})
+
+    doc.saveas(path)
+
+
+def _write_single_cluster_mixed_sheet_dxf(path: Path) -> None:
+    doc = ezdxf.new("R2018")
+    doc.units = 2  # feet
+    msp = doc.modelspace()
+
+    msp.add_line((0, 0), (100, 0), dxfattribs={"layer": "WALLS"})
+    msp.add_line((100, 0), (100, 200), dxfattribs={"layer": "WALLS"})
+    msp.add_line((100, 200), (0, 200), dxfattribs={"layer": "WALLS"})
+    msp.add_line((0, 200), (0, 0), dxfattribs={"layer": "WALLS"})
+    msp.add_text("FLOOR PLAN", dxfattribs={"layer": "TEXT", "insert": (20, 220), "height": 3})
+    msp.add_text('\\A1;39\'-0"', dxfattribs={"layer": "DIMS", "insert": (35, 230), "height": 3})
+    msp.add_text('\\A1;66\'-0"', dxfattribs={"layer": "DIMS", "insert": (-15, 110), "height": 3})
+
+    msp.add_lwpolyline([(140, 10), (230, 10), (230, 145), (140, 145)], close=True, dxfattribs={"layer": "PROP"})
+    msp.add_lwpolyline([(150, 20), (225, 20), (225, 140), (150, 140)], close=True, dxfattribs={"layer": "SETBACKS"})
+    msp.add_text("SITE PLAN", dxfattribs={"layer": "TEXT", "insert": (155, 154), "height": 3})
+    msp.add_line((100, 72), (140, 72), dxfattribs={"layer": "TEXT"})
+
+    doc.saveas(path)
+
+
+def _write_single_cluster_generic_floor_layer_dxf(path: Path) -> None:
+    doc = ezdxf.new("R2018")
+    doc.units = 2  # feet
+    msp = doc.modelspace()
+
+    msp.add_line((0, 0), (100, 0), dxfattribs={"layer": "PLAN"})
+    msp.add_line((100, 0), (100, 200), dxfattribs={"layer": "PLAN"})
+    msp.add_line((100, 200), (0, 200), dxfattribs={"layer": "PLAN"})
+    msp.add_line((0, 200), (0, 0), dxfattribs={"layer": "PLAN"})
+    msp.add_text("FLOOR PLAN", dxfattribs={"layer": "TEXT", "insert": (20, 220), "height": 3})
+    msp.add_text('\\A1;39\'-0"', dxfattribs={"layer": "DIMS", "insert": (35, 230), "height": 3})
+    msp.add_text('\\A1;66\'-0"', dxfattribs={"layer": "DIMS", "insert": (-15, 110), "height": 3})
+    msp.add_text("BEDROOM 2", dxfattribs={"layer": "ROOM LBLS", "insert": (50, 100), "height": 3})
+
+    msp.add_lwpolyline([(140, 10), (230, 10), (230, 145), (140, 145)], close=True, dxfattribs={"layer": "PROP"})
+    msp.add_lwpolyline([(150, 20), (225, 20), (225, 140), (150, 140)], close=True, dxfattribs={"layer": "SETBACKS"})
+    msp.add_text("SITE PLAN", dxfattribs={"layer": "TEXT", "insert": (155, 154), "height": 3})
+    msp.add_line((100, 72), (140, 72), dxfattribs={"layer": "TEXT"})
+
+    doc.saveas(path)
+
+
+def _write_generic_floor_with_dimension_entities_dxf(path: Path) -> None:
+    doc = ezdxf.new("R2018")
+    doc.units = 2  # feet
+    msp = doc.modelspace()
+
+    msp.add_line((0, 0), (100, 0), dxfattribs={"layer": "PLAN"})
+    msp.add_line((100, 0), (100, 200), dxfattribs={"layer": "PLAN"})
+    msp.add_line((100, 200), (0, 200), dxfattribs={"layer": "PLAN"})
+    msp.add_line((0, 200), (0, 0), dxfattribs={"layer": "PLAN"})
+    msp.add_text("FLOOR PLAN", dxfattribs={"layer": "TEXT", "insert": (20, 220), "height": 3})
+
+    horizontal = msp.add_linear_dim(base=(0, 220), p1=(0, 200), p2=(100, 200), angle=0, dxfattribs={"layer": "DIMS"})
+    horizontal.render()
+    vertical = msp.add_linear_dim(base=(-20, 0), p1=(0, 0), p2=(0, 200), angle=90, dxfattribs={"layer": "DIMS"})
+    vertical.render()
+
+    msp.add_lwpolyline([(140, 10), (230, 10), (230, 145), (140, 145)], close=True, dxfattribs={"layer": "PROP"})
+    msp.add_lwpolyline([(150, 20), (225, 20), (225, 140), (150, 140)], close=True, dxfattribs={"layer": "SETBACKS"})
+    msp.add_text("SITE PLAN", dxfattribs={"layer": "TEXT", "insert": (155, 154), "height": 3})
 
     doc.saveas(path)
