@@ -11,6 +11,20 @@ __pycache__/
 *.pyc
 *.pyo
 .venv/
+.pytest_cache/
+.test_artifacts/
+.tmp/
+.tmp_pytest/
+.chat_core_*/
+.cad_*/
+.bench_*/
+benchpytesttmp*/
+bench_audit_*/
+cad_overlay_dims_red_tmp/
+cad_rooms_pytest_*/
+cad_rooms_precision_*/
+pytest-cache-files-*/
+tmp*/
 
 # Environment variables
 .env
@@ -29,3 +43,7 @@ scraper/
 
 # Claude local settings
 .claude/settings.local.json
+
+# AutoCAD/local crash logs
+acadlt.err
+acad*.err

@@ -65,14 +65,6 @@ vi.mock('./features/chatThread/chatAgent', () => ({
   runChatAgentTool,
 }))
 
-vi.mock('./components/UploadPanel', () => ({
-  UploadPanel: () => <div data-testid="legacy-upload-panel">legacy upload panel</div>,
-}))
-
-vi.mock('./features/cadWorkspace/CadWorkspacePage', () => ({
-  CadWorkspacePage: () => <div data-testid="legacy-cad-page">legacy cad workspace</div>,
-}))
-
 import App from './App'
 
 describe('App chat shell', () => {
