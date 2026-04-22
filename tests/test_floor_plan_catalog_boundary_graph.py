@@ -26,6 +26,21 @@ def test_derive_boundary_graph_creates_nodes_and_boundaries_for_l_shape_seed():
     assert all(boundary.source_trace_ids for boundary in graph.boundaries)
 
 
+def test_boundary_graph_reprojects_internal_l_shape_edge_to_room_ownership():
+    seed = build_l_shape_seed()
+
+    graph = derive_floor_plan_boundary_graph(seed)
+    boundary = next(
+        boundary
+        for boundary in graph.boundaries
+        if boundary.start == CatalogPoint(x=40, y=40) and boundary.end == CatalogPoint(x=40, y=120)
+    )
+
+    assert boundary.boundary_kind == "exterior"
+    assert len(boundary.owner_room_ids) == 1
+    assert boundary.confidence in {"trace_projected", "trace_exact"}
+
+
 def test_boundary_graph_splits_segments_at_tee_intersection():
     seed = build_tee_seed()
 
@@ -51,9 +66,21 @@ def test_seminole_boundary_graph_produces_shared_boundaries_without_bbox_inferen
     shared = [boundary for boundary in graph.boundaries if boundary.boundary_kind == "shared"]
 
     assert shared
-    assert all(boundary.confidence in {"trace_exact", "trace_merged", "trace_partitioned"} for boundary in shared)
+    assert all(
+        boundary.confidence in {"trace_exact", "trace_merged", "trace_partitioned", "trace_projected"}
+        for boundary in shared
+    )
     assert all("bbox_inferred" not in boundary.issues for boundary in shared)
     assert all(len(boundary.owner_room_ids) == 2 for boundary in shared)
+
+
+def test_seminole_boundary_graph_reduces_unknown_boundary_count():
+    seed = load_seminole_seed()
+
+    graph = derive_floor_plan_boundary_graph(seed)
+    unknown = [boundary for boundary in graph.boundaries if boundary.boundary_kind == "unknown"]
+
+    assert len(unknown) < 500
 
 
 def build_l_shape_seed() -> FloorPlanCatalogSeed:

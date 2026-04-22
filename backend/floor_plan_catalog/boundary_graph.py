@@ -267,26 +267,106 @@ def _classify_boundary(
     axis_tolerance: float = 8.0,
     minimum_overlap: float = 8.0,
 ) -> tuple[str, list[str], str]:
+    projected_owner_ids = _project_owner_room_ids_to_polygon_edges(
+        start=start,
+        end=end,
+        rooms=rooms,
+        axis_tolerance=max(6.0, axis_tolerance * 0.75),
+        minimum_overlap=max(2.0, minimum_overlap * 0.25),
+    )
+    if len(projected_owner_ids) == 2:
+        return "shared", projected_owner_ids, "trace_projected"
+    if len(projected_owner_ids) == 1:
+        return "exterior", projected_owner_ids, "trace_projected"
+
+    owner_room_ids = _classify_boundary_from_bbox(
+        start=start,
+        end=end,
+        rooms=rooms,
+        axis_tolerance=axis_tolerance,
+        minimum_overlap=minimum_overlap,
+    )
+    if len(owner_room_ids) == 2:
+        return "shared", owner_room_ids, "trace_partitioned"
+    if len(owner_room_ids) == 1:
+        return "exterior", owner_room_ids, "trace_exact"
+    return "unknown", sorted(owner_room_ids), "unverified"
+
+
+def _project_owner_room_ids_to_polygon_edges(
+    *,
+    start: CatalogPoint,
+    end: CatalogPoint,
+    rooms,
+    axis_tolerance: float,
+    minimum_overlap: float,
+) -> list[str]:
+    orientation = _orientation(start, end)
+    if orientation not in {"horizontal", "vertical"}:
+        return []
+
+    room_scores: dict[str, float] = {}
+    for room in rooms:
+        room_id = _room_id_for(room)
+        best_score = 0.0
+        points = room.polygon
+        for index in range(len(points)):
+            edge_start = points[index]
+            edge_end = points[(index + 1) % len(points)]
+            if _orientation(edge_start, edge_end) != orientation:
+                continue
+            if orientation == "horizontal":
+                axis_gap = abs(start.y - edge_start.y)
+                overlap = _overlap_1d(start.x, end.x, edge_start.x, edge_end.x)
+            else:
+                axis_gap = abs(start.x - edge_start.x)
+                overlap = _overlap_1d(start.y, end.y, edge_start.y, edge_end.y)
+            if axis_gap > axis_tolerance:
+                continue
+            dynamic_overlap_threshold = max(2.0, min(minimum_overlap, _distance(start, end) * 0.35))
+            if overlap < dynamic_overlap_threshold:
+                continue
+            score = overlap - (axis_gap * 1.5)
+            if score > best_score:
+                best_score = score
+        if best_score > 0:
+            room_scores[room_id] = best_score
+
+    if not room_scores:
+        return []
+
+    ranked = sorted(room_scores.items(), key=lambda item: (-item[1], item[0]))
+    top_score = ranked[0][1]
+    selected = [room_id for room_id, score in ranked if score >= max(4.0, top_score * 0.65)]
+    if len(selected) > 2:
+        return []
+    return sorted(selected)
+
+
+def _classify_boundary_from_bbox(
+    *,
+    start: CatalogPoint,
+    end: CatalogPoint,
+    rooms,
+    axis_tolerance: float,
+    minimum_overlap: float,
+) -> list[str]:
     orientation = _orientation(start, end)
     owner_room_ids: list[str] = []
     for room in rooms:
         bbox = room.bbox
+        dynamic_overlap_threshold = max(2.0, min(minimum_overlap, _distance(start, end) * 0.35))
         if orientation == "horizontal":
             overlap = _overlap_1d(start.x, end.x, bbox.x1, bbox.x2)
             touches_bbox_edge = abs(start.y - bbox.y1) <= axis_tolerance or abs(start.y - bbox.y2) <= axis_tolerance
         else:
             overlap = _overlap_1d(start.y, end.y, bbox.y1, bbox.y2)
             touches_bbox_edge = abs(start.x - bbox.x1) <= axis_tolerance or abs(start.x - bbox.x2) <= axis_tolerance
-        if overlap >= minimum_overlap and touches_bbox_edge:
+        if overlap >= dynamic_overlap_threshold and touches_bbox_edge:
             room_id = _room_id_for(room)
             if room_id not in owner_room_ids:
                 owner_room_ids.append(room_id)
-
-    if len(owner_room_ids) == 2:
-        return "shared", sorted(owner_room_ids), "trace_partitioned"
-    if len(owner_room_ids) == 1:
-        return "exterior", owner_room_ids, "trace_exact"
-    return "unknown", sorted(owner_room_ids), "unverified"
+    return sorted(owner_room_ids)
 
 
 def _room_id_for(room) -> str:

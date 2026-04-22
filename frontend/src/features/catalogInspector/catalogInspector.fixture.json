@@ -40736,10 +40736,12 @@
       "source_trace_ids": [
         "trace-bbc52296a447"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -40782,10 +40784,12 @@
       "source_trace_ids": [
         "trace-d843a7ea5e69"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -40805,10 +40809,12 @@
       "source_trace_ids": [
         "trace-4ea7f56b6c85"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -40897,10 +40903,12 @@
       "source_trace_ids": [
         "trace-6b5a1897f31b"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -40920,10 +40928,12 @@
       "source_trace_ids": [
         "trace-b4e7bb7bd887"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -40943,10 +40953,12 @@
       "source_trace_ids": [
         "trace-3ee963a59c13"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -41012,10 +41024,12 @@
       "source_trace_ids": [
         "trace-972390cf63a5"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -41035,10 +41049,12 @@
       "source_trace_ids": [
         "trace-1b0be0c580f6"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41083,10 +41099,12 @@
       "source_trace_ids": [
         "trace-ef5c44c7fca2"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41106,10 +41124,12 @@
       "source_trace_ids": [
         "trace-2373970ae734"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41134,7 +41154,7 @@
         "room-garage-bd6ecee651da"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41246,10 +41266,12 @@
       "source_trace_ids": [
         "trace-66ffb23c280d"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41294,10 +41316,12 @@
       "source_trace_ids": [
         "trace-bb13c9da55e1"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -41317,10 +41341,12 @@
       "source_trace_ids": [
         "trace-34b7ab229387"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -41391,7 +41417,7 @@
         "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41576,10 +41602,12 @@
       "source_trace_ids": [
         "trace-8e26a8a8b2d4"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41599,13 +41627,12 @@
       "source_trace_ids": [
         "trace-7ed59731724f"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53",
-        "room-bedroom-2-cf9dbc0716ff"
+        "room-bath-3-dc0b2895fe53"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41653,7 +41680,7 @@
         "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41675,10 +41702,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-porch-4997efb61d6a"
+        "room-entry-782df4e2a9f2"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41698,10 +41725,12 @@
       "source_trace_ids": [
         "trace-2bcafa79fccc"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -41795,7 +41824,7 @@
         "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41815,10 +41844,12 @@
       "source_trace_ids": [
         "trace-a6a97fd1c41c"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -41838,13 +41869,12 @@
       "source_trace_ids": [
         "trace-b75e847482be"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-pwdr-f2cbb3be1766",
         "room-utility-d426eaa238c3"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41864,10 +41894,12 @@
       "source_trace_ids": [
         "trace-8472e4c736cb"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -41887,10 +41919,12 @@
       "source_trace_ids": [
         "trace-cbb0b6ee1420"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -41979,13 +42013,12 @@
       "source_trace_ids": [
         "trace-b56e7cc7a3fa"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-closet-c59e39a3c606",
-        "room-utility-d426eaa238c3"
+        "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42033,7 +42066,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42076,10 +42109,12 @@
       "source_trace_ids": [
         "trace-50c9a24dc347"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42124,13 +42159,12 @@
       "source_trace_ids": [
         "trace-f2d8a371a1ed"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff",
-        "room-kitchen-30c3548c559f"
+        "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42198,13 +42232,12 @@
       "source_trace_ids": [
         "trace-2e26ed9661d7"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-pwdr-f2cbb3be1766",
         "room-utility-d426eaa238c3"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42247,10 +42280,12 @@
       "source_trace_ids": [
         "trace-3d982f701859"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42270,10 +42305,12 @@
       "source_trace_ids": [
         "trace-f166cd261b62"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42366,10 +42403,12 @@
       "source_trace_ids": [
         "trace-41b8e3e81cc6"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42414,10 +42453,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-pwdr-f2cbb3be1766"
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42483,10 +42522,12 @@
       "source_trace_ids": [
         "trace-94d99c4096f8"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -42529,10 +42570,12 @@
       "source_trace_ids": [
         "trace-76dc8a8b89c9"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42598,12 +42641,13 @@
       "source_trace_ids": [
         "trace-7eee4545613b"
       ],
-      "boundary_kind": "exterior",
+      "boundary_kind": "shared",
       "owner_room_ids": [
+        "room-living-room-f08c7113b7e9",
         "room-pwdr-f2cbb3be1766"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42646,10 +42690,12 @@
       "source_trace_ids": [
         "trace-70794696fd8a"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42715,13 +42761,12 @@
       "source_trace_ids": [
         "trace-e85f5c800061"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53",
-        "room-bedroom-2-cf9dbc0716ff"
+        "room-bath-3-dc0b2895fe53"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42764,10 +42809,12 @@
       "source_trace_ids": [
         "trace-6f15e2c912d0"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42787,12 +42834,13 @@
       "source_trace_ids": [
         "trace-1a3f5a775c08"
       ],
-      "boundary_kind": "exterior",
+      "boundary_kind": "shared",
       "owner_room_ids": [
+        "room-living-room-f08c7113b7e9",
         "room-pwdr-f2cbb3be1766"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42860,13 +42908,12 @@
       "source_trace_ids": [
         "trace-9bcfd96d06c4"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-entry-782df4e2a9f2",
         "room-utility-d426eaa238c3"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -42914,7 +42961,7 @@
         "room-garage-bd6ecee651da"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43051,13 +43098,12 @@
       "source_trace_ids": [
         "trace-2b5345a0949c"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff",
-        "room-kitchen-30c3548c559f"
+        "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43077,10 +43123,12 @@
       "source_trace_ids": [
         "trace-d44b3c4cb257"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -43123,10 +43171,12 @@
       "source_trace_ids": [
         "trace-45c0db8a0ec3"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43194,10 +43244,12 @@
       "source_trace_ids": [
         "trace-33549380d0b2"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43217,10 +43269,12 @@
       "source_trace_ids": [
         "trace-b941aac07901"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-mstr--bedroom-f807fea0d33b"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -43240,10 +43294,12 @@
       "source_trace_ids": [
         "trace-e386ce497d03"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43263,10 +43319,12 @@
       "source_trace_ids": [
         "trace-6f548b4925a9"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -43286,10 +43344,12 @@
       "source_trace_ids": [
         "trace-9b911f9891dd"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43357,13 +43417,12 @@
       "source_trace_ids": [
         "trace-7cc72f0648cb"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff",
-        "room-kitchen-30c3548c559f"
+        "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43452,10 +43511,12 @@
       "source_trace_ids": [
         "trace-2718eca2bf20"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43549,7 +43610,7 @@
         "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43569,14 +43630,12 @@
       "source_trace_ids": [
         "trace-5fdfab28fdf5"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
-        "room-living-room-f08c7113b7e9",
-        "room-patio-baedb76676bf"
+        "room-dining-4a09d8e5e599"
       ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43667,10 +43726,12 @@
       "source_trace_ids": [
         "trace-c077d1e9e597"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -43690,10 +43751,12 @@
       "source_trace_ids": [
         "trace-2863f35528a0"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43713,10 +43776,12 @@
       "source_trace_ids": [
         "trace-778dada9d326"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -43764,7 +43829,7 @@
         "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -43784,10 +43849,12 @@
       "source_trace_ids": [
         "trace-2b0ceba18e2f"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -43899,10 +43966,12 @@
       "source_trace_ids": [
         "trace-1f34696835de"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -43922,10 +43991,12 @@
       "source_trace_ids": [
         "trace-c85674b0139d"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -43945,10 +44016,12 @@
       "source_trace_ids": [
         "trace-ef4731c948da"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -43968,10 +44041,12 @@
       "source_trace_ids": [
         "trace-e5b7f307cccf"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44021,7 +44096,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44041,13 +44116,12 @@
       "source_trace_ids": [
         "trace-ece9e0738d4c"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-master-bath-8c1d12c9d850",
         "room-pwdr-f2cbb3be1766"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44067,10 +44141,12 @@
       "source_trace_ids": [
         "trace-9f1c6313e9b2"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44211,13 +44287,12 @@
       "source_trace_ids": [
         "trace-70c5a4d146a8"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53",
-        "room-bedroom-2-cf9dbc0716ff"
+        "room-bath-3-dc0b2895fe53"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44260,10 +44335,12 @@
       "source_trace_ids": [
         "trace-d61b92d1d0ac"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44306,10 +44383,12 @@
       "source_trace_ids": [
         "trace-33e0755b7b81"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -44352,13 +44431,12 @@
       "source_trace_ids": [
         "trace-ca36d64eaf6b"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff",
-        "room-kitchen-30c3548c559f"
+        "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44378,12 +44456,13 @@
       "source_trace_ids": [
         "trace-ef3470c56f66"
       ],
-      "boundary_kind": "exterior",
+      "boundary_kind": "shared",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53"
+        "room-bath-3-dc0b2895fe53",
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44409,7 +44488,7 @@
         "room-bedroom-4-04b61e6be876"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44526,7 +44605,7 @@
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44546,10 +44625,12 @@
       "source_trace_ids": [
         "trace-2eebb3faf391"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -44571,10 +44652,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-3-b8f109d99d59"
+        "room-entry-782df4e2a9f2"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44594,12 +44675,13 @@
       "source_trace_ids": [
         "trace-96859c23adf4"
       ],
-      "boundary_kind": "exterior",
+      "boundary_kind": "shared",
       "owner_room_ids": [
+        "room-dining-4a09d8e5e599",
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_partitioned",
       "issues": []
     },
     {
@@ -44642,10 +44724,12 @@
       "source_trace_ids": [
         "trace-d192de4c7dff"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44736,10 +44820,12 @@
       "source_trace_ids": [
         "trace-99eb41509f50"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44759,10 +44845,12 @@
       "source_trace_ids": [
         "trace-776fa618942c"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44830,13 +44918,12 @@
       "source_trace_ids": [
         "trace-20e2e3357e97"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-master-bath-8c1d12c9d850",
         "room-pwdr-f2cbb3be1766"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44861,7 +44948,7 @@
         "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44936,7 +45023,7 @@
         "room-entry-782df4e2a9f2"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -44979,10 +45066,12 @@
       "source_trace_ids": [
         "trace-91a0e2673d77"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -45048,10 +45137,12 @@
       "source_trace_ids": [
         "trace-ac18dd4cffab"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -45165,10 +45256,12 @@
       "source_trace_ids": [
         "trace-e6bff4fc4002"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -45264,7 +45357,7 @@
         "room-garage-bd6ecee651da"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -45330,10 +45423,12 @@
       "source_trace_ids": [
         "trace-b97f2f0a1e23"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -45376,10 +45471,12 @@
       "source_trace_ids": [
         "trace-239caa52f598"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -45422,10 +45519,12 @@
       "source_trace_ids": [
         "trace-2eebb3faf391"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -45493,14 +45592,12 @@
       "source_trace_ids": [
         "trace-313186230d46"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
-        "room-living-room-f08c7113b7e9",
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -45663,7 +45760,7 @@
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -45731,10 +45828,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-pwdr-f2cbb3be1766"
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -45823,13 +45920,12 @@
       "source_trace_ids": [
         "trace-d91b7eb8d51f"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-closet-c59e39a3c606",
         "room-utility-d426eaa238c3"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -45945,10 +46041,12 @@
       "source_trace_ids": [
         "trace-b149b4392e3d"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46117,7 +46215,7 @@
         "room-bedroom-3-b8f109d99d59"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46137,10 +46235,12 @@
       "source_trace_ids": [
         "trace-850e5f3fc8cb"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -46160,10 +46260,12 @@
       "source_trace_ids": [
         "trace-22be27e276bf"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46185,10 +46287,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53"
+        "room-entry-782df4e2a9f2"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46355,7 +46457,7 @@
         "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46398,10 +46500,12 @@
       "source_trace_ids": [
         "trace-02d179a4f0a5"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46421,10 +46525,12 @@
       "source_trace_ids": [
         "trace-c8836baf8a19"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -46570,7 +46676,7 @@
         "room-mstr--bedroom-f807fea0d33b"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46590,10 +46696,12 @@
       "source_trace_ids": [
         "trace-e412f66fe9e8"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46613,10 +46721,12 @@
       "source_trace_ids": [
         "trace-752958f88e63"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46712,7 +46822,7 @@
         "room-bedroom-3-b8f109d99d59"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46732,10 +46842,12 @@
       "source_trace_ids": [
         "trace-4144f28eefc6"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46872,10 +46984,12 @@
       "source_trace_ids": [
         "trace-5e25faf41b39"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -46895,10 +47009,12 @@
       "source_trace_ids": [
         "trace-1af02712e371"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -47012,13 +47128,12 @@
       "source_trace_ids": [
         "trace-c2b59ea14abf"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-living-room-f08c7113b7e9",
-        "room-utility-d426eaa238c3"
+        "room-master-bath-8c1d12c9d850"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -47038,13 +47153,12 @@
       "source_trace_ids": [
         "trace-3d708ea3e67c"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-master-bath-8c1d12c9d850",
-        "room-pwdr-f2cbb3be1766"
+        "room-master-bath-8c1d12c9d850"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -47110,12 +47224,13 @@
       "source_trace_ids": [
         "trace-e499b7410761"
       ],
-      "boundary_kind": "exterior",
+      "boundary_kind": "shared",
       "owner_room_ids": [
+        "room-dining-4a09d8e5e599",
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_partitioned",
       "issues": []
     },
     {
@@ -47234,7 +47349,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -47254,10 +47369,12 @@
       "source_trace_ids": [
         "trace-25fde081597d"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -47300,10 +47417,12 @@
       "source_trace_ids": [
         "trace-8cbc19b12d09"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -47417,13 +47536,12 @@
       "source_trace_ids": [
         "trace-88362afdc63c"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff",
-        "room-kitchen-30c3548c559f"
+        "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -47443,10 +47561,12 @@
       "source_trace_ids": [
         "trace-2dd4d6bb0282"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -47652,10 +47772,12 @@
       "source_trace_ids": [
         "trace-94d99c4096f8"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -47675,10 +47797,12 @@
       "source_trace_ids": [
         "trace-0b0ecbabe133"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -47698,13 +47822,12 @@
       "source_trace_ids": [
         "trace-7eae55bba7f0"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-master-bath-8c1d12c9d850",
         "room-mstr--bedroom-f807fea0d33b"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -47793,10 +47916,12 @@
       "source_trace_ids": [
         "trace-0d62fd2154e3"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -47816,10 +47941,12 @@
       "source_trace_ids": [
         "trace-41b2d870a0dc"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-mstr--bedroom-f807fea0d33b"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -47887,10 +48014,12 @@
       "source_trace_ids": [
         "trace-471d069b8d8b"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -47958,10 +48087,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-living-room-f08c7113b7e9"
+        "room-master-bath-8c1d12c9d850"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -47981,10 +48110,12 @@
       "source_trace_ids": [
         "trace-7f64695e1dc6"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -48075,13 +48206,12 @@
       "source_trace_ids": [
         "trace-ef4731c948da"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
         "room-kitchen-30c3548c559f"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -48101,10 +48231,12 @@
       "source_trace_ids": [
         "trace-636d3ef8254f"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -48147,10 +48279,12 @@
       "source_trace_ids": [
         "trace-40d2edf84d07"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -48170,10 +48304,12 @@
       "source_trace_ids": [
         "trace-99db7a6fe045"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -48266,10 +48402,12 @@
       "source_trace_ids": [
         "trace-9bc2757897d4"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -48337,10 +48475,12 @@
       "source_trace_ids": [
         "trace-213b356b2c4b"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -48360,10 +48500,12 @@
       "source_trace_ids": [
         "trace-5d2db27f89cd"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -48454,10 +48596,12 @@
       "source_trace_ids": [
         "trace-d6f97cce0507"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -48477,10 +48621,12 @@
       "source_trace_ids": [
         "trace-d45fb9d7d659"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -48667,10 +48813,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-living-room-f08c7113b7e9"
+        "room-master-bath-8c1d12c9d850"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -48718,7 +48864,7 @@
         "room-mstr--bedroom-f807fea0d33b"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -48784,10 +48930,12 @@
       "source_trace_ids": [
         "trace-9c90d9a3bb12"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -48878,13 +49026,12 @@
       "source_trace_ids": [
         "trace-7fd77752c668"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -48904,10 +49051,12 @@
       "source_trace_ids": [
         "trace-afbdc0f1b030"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -48950,10 +49099,12 @@
       "source_trace_ids": [
         "trace-369c37935122"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -48996,10 +49147,12 @@
       "source_trace_ids": [
         "trace-831bf84d73a1"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49019,10 +49172,12 @@
       "source_trace_ids": [
         "trace-77f3c3b94a7f"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -49047,7 +49202,7 @@
         "room-garage-bd6ecee651da"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49166,7 +49321,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49191,7 +49346,7 @@
         "room-bedroom-3-b8f109d99d59"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49282,10 +49437,12 @@
       "source_trace_ids": [
         "trace-32a423db8b70"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49305,10 +49462,12 @@
       "source_trace_ids": [
         "trace-feb083a1e69f"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49351,10 +49510,12 @@
       "source_trace_ids": [
         "trace-0eeaf2e4dda6"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49376,10 +49537,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-3-b8f109d99d59"
+        "room-entry-782df4e2a9f2"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49452,7 +49613,7 @@
         "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49495,10 +49656,12 @@
       "source_trace_ids": [
         "trace-c20df3f5fe31"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -49523,7 +49686,7 @@
         "room-mstr--bedroom-f807fea0d33b"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49568,13 +49731,12 @@
       "source_trace_ids": [
         "trace-82af2b543909"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-master-bath-8c1d12c9d850",
         "room-mstr--bedroom-f807fea0d33b"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49663,10 +49825,12 @@
       "source_trace_ids": [
         "trace-50b1e6e8b173"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49778,10 +49942,12 @@
       "source_trace_ids": [
         "trace-370dad2f8d24"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49847,10 +50013,12 @@
       "source_trace_ids": [
         "trace-99db7a6fe045"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -49893,10 +50061,12 @@
       "source_trace_ids": [
         "trace-ced31a739ff8"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -49916,10 +50086,12 @@
       "source_trace_ids": [
         "trace-9fcfa03edee1"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -49939,10 +50111,12 @@
       "source_trace_ids": [
         "trace-2978a81de157"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50100,10 +50274,12 @@
       "source_trace_ids": [
         "trace-6f5496ba09b4"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -50146,12 +50322,13 @@
       "source_trace_ids": [
         "trace-14b9db55a9f3"
       ],
-      "boundary_kind": "exterior",
+      "boundary_kind": "shared",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53"
+        "room-bath-3-dc0b2895fe53",
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50265,10 +50442,12 @@
       "source_trace_ids": [
         "trace-672e6c0920e6"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50288,10 +50467,12 @@
       "source_trace_ids": [
         "trace-0937be1bf452"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -50334,10 +50515,12 @@
       "source_trace_ids": [
         "trace-39e648f48b93"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -50380,10 +50563,12 @@
       "source_trace_ids": [
         "trace-f358638178e5"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50428,13 +50613,12 @@
       "source_trace_ids": [
         "trace-44f14ba995f3"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-living-room-f08c7113b7e9",
-        "room-utility-d426eaa238c3"
+        "room-master-bath-8c1d12c9d850"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50477,10 +50661,12 @@
       "source_trace_ids": [
         "trace-3f57bbf4b212"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -50500,12 +50686,13 @@
       "source_trace_ids": [
         "trace-5f8bff836186"
       ],
-      "boundary_kind": "exterior",
+      "boundary_kind": "shared",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53"
+        "room-bath-3-dc0b2895fe53",
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50576,7 +50763,7 @@
         "room-dining-4a09d8e5e599"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50596,10 +50783,12 @@
       "source_trace_ids": [
         "trace-a7ecf62a2545"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50619,13 +50808,12 @@
       "source_trace_ids": [
         "trace-3bd7a9c49fdd"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff",
-        "room-kitchen-30c3548c559f"
+        "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50668,10 +50856,12 @@
       "source_trace_ids": [
         "trace-cc0ecabbb81f"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50714,10 +50904,12 @@
       "source_trace_ids": [
         "trace-1f34696835de"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -50742,7 +50934,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50762,10 +50954,12 @@
       "source_trace_ids": [
         "trace-5520bc34fd2b"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50785,10 +50979,12 @@
       "source_trace_ids": [
         "trace-b6b0e6e8b460"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50813,7 +51009,7 @@
         "room-entry-782df4e2a9f2"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50833,10 +51029,12 @@
       "source_trace_ids": [
         "trace-c712bc3874c3"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50881,10 +51079,12 @@
       "source_trace_ids": [
         "trace-03c67fbbf1c8"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -50927,13 +51127,12 @@
       "source_trace_ids": [
         "trace-a801378582e1"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53",
-        "room-bedroom-2-cf9dbc0716ff"
+        "room-bath-3-dc0b2895fe53"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -50953,13 +51152,12 @@
       "source_trace_ids": [
         "trace-078eb0d89f6b"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-master-bath-8c1d12c9d850",
-        "room-pwdr-f2cbb3be1766"
+        "room-master-bath-8c1d12c9d850"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51027,10 +51225,13 @@
       "source_trace_ids": [
         "trace-7b5db26b00a0"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850",
+        "room-pwdr-f2cbb3be1766"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_partitioned",
       "issues": []
     },
     {
@@ -51050,10 +51251,12 @@
       "source_trace_ids": [
         "trace-5a8a2999774c"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51147,10 +51350,12 @@
       "source_trace_ids": [
         "trace-6bc2805c8f45"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51170,10 +51375,12 @@
       "source_trace_ids": [
         "trace-bbf21f5ac978"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51195,10 +51402,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-porch-4997efb61d6a"
+        "room-entry-782df4e2a9f2"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51223,7 +51430,7 @@
         "room-mstr--bedroom-f807fea0d33b"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51243,10 +51450,12 @@
       "source_trace_ids": [
         "trace-417ac64d2059"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51319,7 +51528,7 @@
         "room-dining-4a09d8e5e599"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51339,10 +51548,12 @@
       "source_trace_ids": [
         "trace-91b8b3b22755"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -51387,10 +51598,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-living-room-f08c7113b7e9"
+        "room-master-bath-8c1d12c9d850"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51481,10 +51692,12 @@
       "source_trace_ids": [
         "trace-9580e3313147"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51504,10 +51717,12 @@
       "source_trace_ids": [
         "trace-94f14dcc3c19"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -51527,10 +51742,12 @@
       "source_trace_ids": [
         "trace-a7a756762e70"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -51575,10 +51792,12 @@
       "source_trace_ids": [
         "trace-195a3d850f23"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51718,10 +51937,12 @@
       "source_trace_ids": [
         "trace-0192905e9702"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51812,10 +52033,12 @@
       "source_trace_ids": [
         "trace-10f62ba95851"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51835,12 +52058,13 @@
       "source_trace_ids": [
         "trace-254dcf418940"
       ],
-      "boundary_kind": "exterior",
+      "boundary_kind": "shared",
       "owner_room_ids": [
+        "room-dining-4a09d8e5e599",
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_partitioned",
       "issues": []
     },
     {
@@ -51860,10 +52084,12 @@
       "source_trace_ids": [
         "trace-419d3ec52702"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51931,10 +52157,12 @@
       "source_trace_ids": [
         "trace-cf4d794f01a8"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -51977,10 +52205,12 @@
       "source_trace_ids": [
         "trace-9433b4aa871c"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52002,10 +52232,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-mstr--bedroom-f807fea0d33b"
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52030,7 +52260,7 @@
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52121,12 +52351,13 @@
       "source_trace_ids": [
         "trace-901af952bb9d"
       ],
-      "boundary_kind": "exterior",
+      "boundary_kind": "shared",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53"
+        "room-bath-3-dc0b2895fe53",
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52171,10 +52402,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53"
+        "room-entry-782df4e2a9f2"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52320,7 +52551,7 @@
         "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52432,10 +52663,13 @@
       "source_trace_ids": [
         "trace-a30e20efc46e"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9",
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_partitioned",
       "issues": []
     },
     {
@@ -52455,10 +52689,12 @@
       "source_trace_ids": [
         "trace-ba7d00dfaeec"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52501,10 +52737,12 @@
       "source_trace_ids": [
         "trace-20de15947074"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -52547,10 +52785,12 @@
       "source_trace_ids": [
         "trace-a04452a70852"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52595,10 +52835,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-pwdr-f2cbb3be1766"
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52666,10 +52906,12 @@
       "source_trace_ids": [
         "trace-4f19fe4d81c8"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52689,10 +52931,12 @@
       "source_trace_ids": [
         "trace-b676c9e5fc24"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52712,10 +52956,12 @@
       "source_trace_ids": [
         "trace-3f57bbf4b212"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -52758,10 +53004,12 @@
       "source_trace_ids": [
         "trace-a6a97fd1c41c"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -52781,10 +53029,12 @@
       "source_trace_ids": [
         "trace-0ac11e7a5da3"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -52809,7 +53059,7 @@
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52854,13 +53104,12 @@
       "source_trace_ids": [
         "trace-3a7b372a2bb0"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff",
-        "room-kitchen-30c3548c559f"
+        "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52880,13 +53129,12 @@
       "source_trace_ids": [
         "trace-8f418275d275"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53",
         "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52906,10 +53154,12 @@
       "source_trace_ids": [
         "trace-51cbb477e691"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -52929,10 +53179,12 @@
       "source_trace_ids": [
         "trace-07608172d2ce"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -52998,10 +53250,12 @@
       "source_trace_ids": [
         "trace-c092c57280d5"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -53026,7 +53280,7 @@
         "room-bedroom-3-b8f109d99d59"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -53117,14 +53371,12 @@
       "source_trace_ids": [
         "trace-d0822710f66f"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
-        "room-living-room-f08c7113b7e9",
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -53220,7 +53472,7 @@
         "room-bedroom-3-b8f109d99d59"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -53263,10 +53515,12 @@
       "source_trace_ids": [
         "trace-4a721ef1b288"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -53497,10 +53751,12 @@
       "source_trace_ids": [
         "trace-82fab61bae39"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -53612,13 +53868,12 @@
       "source_trace_ids": [
         "trace-adf3057928d4"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-closet-c59e39a3c606",
-        "room-utility-d426eaa238c3"
+        "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -53684,14 +53939,12 @@
       "source_trace_ids": [
         "trace-e893b2802581"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-living-room-f08c7113b7e9",
-        "room-pwdr-f2cbb3be1766",
-        "room-utility-d426eaa238c3"
+        "room-pwdr-f2cbb3be1766"
       ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -53739,7 +53992,7 @@
         "room-bath-3-dc0b2895fe53"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -53810,7 +54063,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -53858,7 +54111,7 @@
         "room-bedroom-3-b8f109d99d59"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -53878,14 +54131,12 @@
       "source_trace_ids": [
         "trace-9b5f03c8c7fe"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-living-room-f08c7113b7e9",
-        "room-pwdr-f2cbb3be1766",
-        "room-utility-d426eaa238c3"
+        "room-pwdr-f2cbb3be1766"
       ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -53910,7 +54161,7 @@
         "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -53983,7 +54234,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54049,10 +54300,12 @@
       "source_trace_ids": [
         "trace-9c1fd5fec4e9"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -54097,10 +54350,12 @@
       "source_trace_ids": [
         "trace-471d069b8d8b"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -54166,10 +54421,12 @@
       "source_trace_ids": [
         "trace-8e1269a83bfa"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54189,10 +54446,12 @@
       "source_trace_ids": [
         "trace-339eea975fd1"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54212,13 +54471,12 @@
       "source_trace_ids": [
         "trace-69047d104820"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-closet-c59e39a3c606",
-        "room-master-bath-8c1d12c9d850"
+        "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54240,10 +54498,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-3-b8f109d99d59"
+        "room-entry-782df4e2a9f2"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54268,7 +54526,7 @@
         "room-garage-bd6ecee651da"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54382,10 +54640,12 @@
       "source_trace_ids": [
         "trace-2a2e2b92db1f"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54497,10 +54757,12 @@
       "source_trace_ids": [
         "trace-e2f91ae6e436"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54520,13 +54782,12 @@
       "source_trace_ids": [
         "trace-1d4fa171f737"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff",
-        "room-kitchen-30c3548c559f"
+        "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54546,10 +54807,12 @@
       "source_trace_ids": [
         "trace-d7f411d634d1"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54764,7 +55027,7 @@
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54784,10 +55047,12 @@
       "source_trace_ids": [
         "trace-6d2ab88e3f15"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -54830,10 +55095,12 @@
       "source_trace_ids": [
         "trace-c20df3f5fe31"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54899,13 +55166,12 @@
       "source_trace_ids": [
         "trace-e86cc176a989"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -54994,10 +55260,12 @@
       "source_trace_ids": [
         "trace-a430582e91de"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55045,7 +55313,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55065,14 +55333,12 @@
       "source_trace_ids": [
         "trace-527e08f7e01b"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
-        "room-living-room-f08c7113b7e9",
-        "room-patio-baedb76676bf"
+        "room-dining-4a09d8e5e599"
       ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55115,10 +55381,12 @@
       "source_trace_ids": [
         "trace-fb5ffd38054e"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55138,13 +55406,12 @@
       "source_trace_ids": [
         "trace-1af02712e371"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
         "room-kitchen-30c3548c559f"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55164,10 +55431,12 @@
       "source_trace_ids": [
         "trace-3979c24267a8"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -55192,7 +55461,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55283,10 +55552,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-pwdr-f2cbb3be1766"
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55306,10 +55575,12 @@
       "source_trace_ids": [
         "trace-3ff3efde7cf2"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55352,13 +55623,12 @@
       "source_trace_ids": [
         "trace-26e38dfae5e7"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-closet-c59e39a3c606",
         "room-utility-d426eaa238c3"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55378,10 +55648,12 @@
       "source_trace_ids": [
         "trace-91b46b17f1f9"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55424,10 +55696,12 @@
       "source_trace_ids": [
         "trace-e83421a6327d"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55472,10 +55746,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-mstr--bedroom-f807fea0d33b"
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55546,7 +55820,7 @@
         "room-mstr--bedroom-f807fea0d33b"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55589,10 +55863,12 @@
       "source_trace_ids": [
         "trace-373771795ad8"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -55612,10 +55888,12 @@
       "source_trace_ids": [
         "trace-ff34d22c9ffd"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55660,10 +55938,12 @@
       "source_trace_ids": [
         "trace-d0159e410986"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55683,10 +55963,12 @@
       "source_trace_ids": [
         "trace-b4e7bb7bd887"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -55729,10 +56011,12 @@
       "source_trace_ids": [
         "trace-cd0a13dfc9b6"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55757,7 +56041,7 @@
         "room-bedroom-3-b8f109d99d59"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55779,10 +56063,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bedroom-3-b8f109d99d59"
+        "room-entry-782df4e2a9f2"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55804,10 +56088,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-living-room-f08c7113b7e9"
+        "room-master-bath-8c1d12c9d850"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55827,10 +56111,12 @@
       "source_trace_ids": [
         "trace-20de15947074"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -55850,10 +56136,12 @@
       "source_trace_ids": [
         "trace-a279dc192000"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55873,10 +56161,12 @@
       "source_trace_ids": [
         "trace-b53a218f60a7"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55944,14 +56234,12 @@
       "source_trace_ids": [
         "trace-2745e1e7360d"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
-        "room-living-room-f08c7113b7e9",
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -55971,10 +56259,12 @@
       "source_trace_ids": [
         "trace-79f39cea4c37"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -55999,7 +56289,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56088,10 +56378,12 @@
       "source_trace_ids": [
         "trace-e31fd725503a"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56190,7 +56482,7 @@
         "room-bedroom-4-04b61e6be876"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56210,10 +56502,13 @@
       "source_trace_ids": [
         "trace-a956c2b12c54"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9",
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_partitioned",
       "issues": []
     },
     {
@@ -56308,7 +56603,7 @@
         "room-bedroom-4-04b61e6be876"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56351,14 +56646,12 @@
       "source_trace_ids": [
         "trace-57f0ef9c4427"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
-        "room-living-room-f08c7113b7e9",
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56472,10 +56765,12 @@
       "source_trace_ids": [
         "trace-59938d8c7876"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56549,7 +56844,7 @@
         "room-bedroom-4-04b61e6be876"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56574,7 +56869,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56686,13 +56981,12 @@
       "source_trace_ids": [
         "trace-9ff2fe9f8746"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-entry-782df4e2a9f2",
         "room-utility-d426eaa238c3"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56712,10 +57006,13 @@
       "source_trace_ids": [
         "trace-c8836baf8a19"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9",
+        "room-mstr--bedroom-f807fea0d33b"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_partitioned",
       "issues": []
     },
     {
@@ -56740,7 +57037,7 @@
         "room-bedroom-4-04b61e6be876"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56836,7 +57133,7 @@
         "room-mstr--bedroom-f807fea0d33b"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56856,10 +57153,12 @@
       "source_trace_ids": [
         "trace-37b39fca47fe"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -56902,13 +57201,12 @@
       "source_trace_ids": [
         "trace-4c04f9c9f694"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
-        "room-patio-baedb76676bf"
+        "room-dining-4a09d8e5e599"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57043,10 +57341,12 @@
       "source_trace_ids": [
         "trace-3979c24267a8"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -57071,7 +57371,7 @@
         "room-bath-3-dc0b2895fe53"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57096,7 +57396,7 @@
         "room-bedroom-4-04b61e6be876"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57121,7 +57421,7 @@
         "room-garage-bd6ecee651da"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57279,10 +57579,12 @@
       "source_trace_ids": [
         "trace-5901803d02b8"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57421,10 +57723,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-pwdr-f2cbb3be1766"
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57472,7 +57774,7 @@
         "room-porch-4997efb61d6a"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57492,13 +57794,12 @@
       "source_trace_ids": [
         "trace-065643f351f0"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53",
         "room-bedroom-2-cf9dbc0716ff"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57518,10 +57819,12 @@
       "source_trace_ids": [
         "trace-171678503331"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57541,10 +57844,12 @@
       "source_trace_ids": [
         "trace-254dcf418940"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -57564,10 +57869,12 @@
       "source_trace_ids": [
         "trace-7e69dd977a3f"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57658,10 +57965,12 @@
       "source_trace_ids": [
         "trace-50869405a1aa"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -57732,7 +58041,7 @@
         "room-bedroom-3-b8f109d99d59"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57798,10 +58107,12 @@
       "source_trace_ids": [
         "trace-7d7c71718d5f"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_exact",
       "issues": []
     },
     {
@@ -57823,10 +58134,10 @@
       ],
       "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-pwdr-f2cbb3be1766"
+        "room-living-room-f08c7113b7e9"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57899,7 +58210,7 @@
         "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -57942,10 +58253,12 @@
       "source_trace_ids": [
         "trace-98c4fd5a647b"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -58038,10 +58351,12 @@
       "source_trace_ids": [
         "trace-542ca5480453"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -58112,7 +58427,7 @@
         "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -58137,7 +58452,7 @@
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -58157,10 +58472,12 @@
       "source_trace_ids": [
         "trace-bd838448e103"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -58228,12 +58545,13 @@
       "source_trace_ids": [
         "trace-39e648f48b93"
       ],
-      "boundary_kind": "exterior",
+      "boundary_kind": "shared",
       "owner_room_ids": [
+        "room-dining-4a09d8e5e599",
         "room-patio-baedb76676bf"
       ],
       "opening_ids": [],
-      "confidence": "trace_exact",
+      "confidence": "trace_partitioned",
       "issues": []
     },
     {
@@ -58322,13 +58640,12 @@
       "source_trace_ids": [
         "trace-cb0b382b0fca"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-dining-4a09d8e5e599",
-        "room-patio-baedb76676bf"
+        "room-dining-4a09d8e5e599"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -58348,13 +58665,12 @@
       "source_trace_ids": [
         "trace-7a440b8664f5"
       ],
-      "boundary_kind": "shared",
+      "boundary_kind": "exterior",
       "owner_room_ids": [
-        "room-closet-c59e39a3c606",
-        "room-master-bath-8c1d12c9d850"
+        "room-closet-c59e39a3c606"
       ],
       "opening_ids": [],
-      "confidence": "trace_partitioned",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -58397,10 +58713,13 @@
       "source_trace_ids": [
         "trace-0937be1bf452"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9",
+        "room-mstr--bedroom-f807fea0d33b"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_partitioned",
       "issues": []
     },
     {
@@ -58420,10 +58739,12 @@
       "source_trace_ids": [
         "trace-fdde0d7a7b29"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     },
     {
@@ -58489,10 +58810,13 @@
       "source_trace_ids": [
         "trace-e9dcd6184e5b"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850",
+        "room-pwdr-f2cbb3be1766"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_partitioned",
       "issues": []
     },
     {
@@ -58558,10 +58882,12 @@
       "source_trace_ids": [
         "trace-bbc52296a447"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "opening_ids": [],
-      "confidence": "unverified",
+      "confidence": "trace_projected",
       "issues": []
     }
   ],

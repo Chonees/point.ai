@@ -153,6 +153,7 @@ describe('CatalogInspectorPage', () => {
   it('renders exact boundaries and shows selected boundary details', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 
+    expect(screen.getByText(/^Unknown boundaries$/i)).toBeInTheDocument()
     const exactBoundariesToggle = screen.getByRole('checkbox', { name: /exact boundaries/i })
     fireEvent.click(exactBoundariesToggle)
 
