@@ -1,7 +1,8 @@
-import type { KeyboardEvent } from 'react'
+Ôªøimport type { KeyboardEvent } from 'react'
 
 import type {
   CatalogInspectorCadTrace,
+  CatalogInspectorOpening,
   CatalogInspectorRoom,
   CatalogInspectorTopology,
   CatalogInspectorWall,
@@ -12,14 +13,17 @@ interface CatalogInspectorCanvasProps {
   visibleWalls: CatalogInspectorWall[]
   selectedRoomId: string | null
   selectedWallId: string | null
+  selectedOpeningId: string | null
   onSelectRoom: (roomId: string) => void
   onSelectWall: (wallId: string) => void
+  onSelectOpening: (openingId: string, hostWallId?: string | null) => void
   showIds: boolean
   showAdjacency: boolean
   showWalls: boolean
   showRawWallTraces: boolean
   showDoorTraces: boolean
   showWindowTraces: boolean
+  showHostedOpenings: boolean
 }
 
 function getViewBox(topology: CatalogInspectorTopology) {
@@ -70,25 +74,37 @@ function tracePoints(trace: CatalogInspectorCadTrace) {
   return trace.points.map((point) => `${point.x},${point.y}`).join(' ')
 }
 
+function openingStroke(opening: CatalogInspectorOpening, isSelected: boolean) {
+  if (opening.opening_kind === 'window') {
+    return isSelected ? '#c4b5fd' : 'rgba(129,140,248,0.85)'
+  }
+  return isSelected ? '#f9a8d4' : 'rgba(232,121,249,0.85)'
+}
+
 export function CatalogInspectorCanvas({
   topology,
   visibleWalls,
   selectedRoomId,
   selectedWallId,
+  selectedOpeningId,
   onSelectRoom,
   onSelectWall,
+  onSelectOpening,
   showIds,
   showAdjacency,
   showWalls,
   showRawWallTraces,
   showDoorTraces,
   showWindowTraces,
+  showHostedOpenings,
 }: CatalogInspectorCanvasProps) {
   const roomById = new Map(topology.rooms.map((room) => [room.room_id, room]))
   const roomPairs = new Set<string>()
   const cadTraces = topology.cad_traces ?? []
+  const visibleOpenings = topology.openings ?? []
   const selectedWall = visibleWalls.find((wall) => wall.wall_id === selectedWallId) ?? null
-  const selectedTraceIds = new Set(selectedWall?.trace_support_ids ?? [])
+  const selectedOpening = visibleOpenings.find((opening) => opening.opening_id === selectedOpeningId) ?? null
+  const selectedTraceIds = new Set([...(selectedWall?.trace_support_ids ?? []), ...(selectedOpening?.trace_ids ?? [])])
   const visibleTraces = cadTraces.filter((trace) => {
     if (trace.trace_kind === 'wall') return showRawWallTraces
     if (trace.trace_kind === 'door') return showDoorTraces
@@ -114,10 +130,10 @@ export function CatalogInspectorCanvas({
         <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Canvas</p>
         <h2 className="mt-2 text-lg font-semibold text-zinc-100">Plano real de topology + wall graph</h2>
         <p className="mt-1 text-sm text-zinc-400">
-          Se renderiza la geometrÌa real del seed curado, con rooms, IDs opcionales, relaciones, boundaries y trazas CAD separadas por walls, doors y windows para comparar fidelidad.
+          Se renderiza la geometr√≠a real del seed curado, con rooms, IDs opcionales, relaciones, boundaries y trazas CAD separadas por walls, doors y windows para comparar fidelidad.
         </p>
         <p className="mt-2 text-xs text-zinc-500">
-          Verde/cian = exactas. ¡mbar = snapped a traza real. Rojo = sin soporte real. Gris = walls crudas. Fucsia = doors. Õndigo = windows.
+          Verde/cian = exactas. √Åmbar = snapped a traza real. Rojo = sin soporte real. Gris = walls crudas. Fucsia = doors. √çndigo = windows.
         </p>
       </div>
 
@@ -201,6 +217,33 @@ export function CatalogInspectorCanvas({
                 vectorEffect="non-scaling-stroke"
                 onClick={() => onSelectWall(wall.wall_id)}
                 onKeyDown={(event) => handleWallKeyDown(event, wall.wall_id)}
+              />
+            )
+          })}
+
+          {showHostedOpenings && visibleOpenings.map((opening) => {
+            const isSelected = opening.opening_id === selectedOpeningId
+            return (
+              <line
+                key={opening.opening_id}
+                data-testid={`opening-${opening.opening_id}`}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select opening ${opening.opening_id}`}
+                x1={opening.start.x}
+                y1={opening.start.y}
+                x2={opening.end.x}
+                y2={opening.end.y}
+                stroke={openingStroke(opening, isSelected)}
+                strokeWidth={isSelected ? 7 : 4}
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+                onClick={() => onSelectOpening(opening.opening_id, opening.host_wall_id)}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter' && event.key !== ' ') return
+                  event.preventDefault()
+                  onSelectOpening(opening.opening_id, opening.host_wall_id)
+                }}
               />
             )
           })}
@@ -305,3 +348,4 @@ export function CatalogInspectorCanvas({
     </section>
   )
 }
+

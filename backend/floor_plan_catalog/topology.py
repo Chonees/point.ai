@@ -13,6 +13,7 @@ from backend.floor_plan_catalog.contracts import (
     FloorPlanTopologyV1,
     FloorPlanWallGraphV1,
     TopologyReadiness,
+    FloorPlanOpeningGraphV1,
 )
 
 
@@ -69,6 +70,7 @@ def strengthen_floor_plan_topology(
     topology: FloorPlanTopologyV1,
     wall_graph: FloorPlanWallGraphV1,
     cad_traces: list[CatalogCadTrace] | None = None,
+    opening_graph: FloorPlanOpeningGraphV1 | None = None,
 ) -> FloorPlanTopologyV1:
     supported_adjacency: dict[str, set[str]] = {room.room_id: set() for room in topology.rooms}
     opening_adjacency = _derive_opening_adjacency(topology.rooms, cad_traces or [])
@@ -97,7 +99,11 @@ def strengthen_floor_plan_topology(
     for room in topology.rooms:
         supported_ids = sorted(supported_adjacency.get(room.room_id, set()))
         opening_ids = sorted(set(opening_adjacency.get(room.room_id, set())) - set(supported_ids))
-        heuristic_ids = sorted(set(room.adjacent_room_ids) - set(supported_ids) - set(opening_ids))
+        heuristic_ids = (
+            []
+            if opening_graph is not None
+            else sorted(set(room.adjacent_room_ids) - set(supported_ids) - set(opening_ids))
+        )
         issues = [issue for issue in room.issues if issue not in {"inferred_adjacency", "isolated_room"}]
 
         if supported_ids or opening_ids:

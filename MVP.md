@@ -290,9 +290,22 @@ La screen temporal hoy permite validar:
 
 Con ownership de walls ya expuesto, lo siguiente senior es:
 
-1. bajar la heurística remanente `ENTRY ↔ LIVING ROOM`
-2. pasar a `Opening Ownership v1`
+1. pasar a `Opening Ownership v1`
+2. bajar la heurística remanente `ENTRY ↔ LIVING ROOM`
 3. recién después habilitar planning/ejecución geométrica sobre walls hosteadas
+
+### Estado actual después de Opening Ownership v1
+
+- `openings_total = 167`
+- `hosted_openings = 28`
+- `unhosted_openings = 139`
+- `opening_graph_issues = ['unhosted_opening']`
+- `ENTRY ↔ LIVING ROOM` ya no vive en `heuristic_adjacent_room_ids`
+
+La conectividad canónica hoy quedó así:
+- `LIVING ROOM ↔ MSTR. BEDROOM` por opening real
+- `DINING ↔ PATIO` por opening real
+- sin heurísticas residuales exportadas en el topology inspector
    - Point ejecuta
    - devuelve preview final
    - exporta DXF

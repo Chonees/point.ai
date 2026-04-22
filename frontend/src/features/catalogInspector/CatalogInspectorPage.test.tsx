@@ -9,6 +9,7 @@ const bedroom2Room = fixture.rooms.find((room) => room.name === 'BEDROOM 2')!
 const rawWallTraceCount = fixture.cad_traces.filter((trace) => trace.trace_kind === 'wall').length
 const rawDoorTraceCount = fixture.cad_traces.filter((trace) => trace.trace_kind === 'door').length
 const rawWindowTraceCount = fixture.cad_traces.filter((trace) => trace.trace_kind === 'window').length
+const hostedOpeningCount = fixture.openings?.length ?? 0
 const snappedSharedWallCount = fixture.walls.filter(
   (wall) => !wall.is_exterior && wall.trace_support_status === 'snapped_to_trace',
 ).length
@@ -134,6 +135,19 @@ describe('CatalogInspectorPage', () => {
     expect(screen.queryAllByTestId(/raw-door-trace-/)).toHaveLength(0)
     expect(screen.getAllByTestId(/raw-window-trace-/).length).toBe(rawWindowTraceCount)
     expect(screen.getAllByTestId(/raw-wall-trace-/).length).toBe(rawWallTraceCount)
+  })
+
+  it('renders hosted openings and shows selected opening ownership', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(screen.getByRole('checkbox', { name: /hosted openings/i })).toBeChecked()
+    expect(screen.getAllByTestId(/^opening-/).length).toBe(hostedOpeningCount)
+
+    fireEvent.click(screen.getAllByTestId(/^opening-/)[0])
+
+    expect(screen.getByTestId('selected-opening-panel')).toBeInTheDocument()
+    expect(screen.getByText(/host wall/i)).toBeInTheDocument()
+    expect(screen.getByText(/connected rooms/i)).toBeInTheDocument()
   })
 
   it('filters snapped walls and lets you navigate the focused issue list', () => {

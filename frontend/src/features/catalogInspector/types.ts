@@ -63,6 +63,22 @@ export interface CatalogInspectorCadTrace {
   bbox: CatalogInspectorBBox
 }
 
+export interface CatalogInspectorOpening {
+  opening_id: string
+  opening_kind: 'door' | 'window' | string
+  host_wall_id?: string | null
+  owner_room_ids: string[]
+  connected_room_ids: string[]
+  trace_ids: string[]
+  orientation: 'horizontal' | 'vertical' | 'point' | string
+  start: CatalogInspectorPoint
+  end: CatalogInspectorPoint
+  offset: number
+  span: number
+  confidence: string
+  issues: string[]
+}
+
 export interface CatalogInspectorTopology {
   floor_plan_id: string
   name: string
@@ -70,6 +86,7 @@ export interface CatalogInspectorTopology {
   footprint_bbox: CatalogInspectorBBox
   rooms: CatalogInspectorRoom[]
   cad_traces?: CatalogInspectorCadTrace[]
+  openings?: CatalogInspectorOpening[]
   topology_readiness: {
     status: string
     issues: string[]
@@ -81,4 +98,9 @@ export interface CatalogInspectorTopology {
     issues: string[]
   }
   wall_graph_issues: string[]
+  opening_graph_readiness?: {
+    status: string
+    issues: string[]
+  }
+  opening_graph_issues?: string[]
 }

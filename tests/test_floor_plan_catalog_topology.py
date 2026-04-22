@@ -11,6 +11,7 @@ from backend.floor_plan_catalog.contracts import (
     CatalogRoom,
     FloorPlanCatalogSeed,
 )
+from backend.floor_plan_catalog.opening_graph import derive_floor_plan_opening_graph
 from backend.floor_plan_catalog.topology import derive_floor_plan_topology, strengthen_floor_plan_topology
 from backend.floor_plan_catalog.wall_graph import derive_floor_plan_wall_graph
 from scripts.export_seminole_topology_fixture import export_topology_fixture
@@ -222,6 +223,8 @@ def test_export_topology_fixture_writes_expected_topology_json(tmp_path: Path):
     assert "cad_traces" in payload
     assert isinstance(payload["cad_traces"], list)
     assert payload["walls"]
+    assert "openings" in payload
+    assert isinstance(payload["openings"], list)
     assert all("boundary_kind" in wall and "owner_room_ids" in wall for wall in payload["walls"])
     assert json.loads(output_path.read_text(encoding="utf-8")) == payload
 
@@ -421,7 +424,8 @@ def test_strengthen_floor_plan_topology_uses_door_traces_to_resolve_isolated_roo
 
     topology = derive_floor_plan_topology(seed)
     wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
-    strengthened = strengthen_floor_plan_topology(topology, wall_graph, seed.cad_traces)
+    opening_graph = derive_floor_plan_opening_graph(topology, wall_graph, seed.cad_traces)
+    strengthened = strengthen_floor_plan_topology(topology, wall_graph, seed.cad_traces, opening_graph)
     room_by_name = {room.name: room for room in strengthened.rooms}
 
     assert room_by_name["KITCHEN"].adjacent_room_ids == []
@@ -438,7 +442,8 @@ def test_strengthen_real_seminole_topology_replaces_false_adjacency_and_expected
 
     topology = derive_floor_plan_topology(seed)
     wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
-    strengthened = strengthen_floor_plan_topology(topology, wall_graph, seed.cad_traces)
+    opening_graph = derive_floor_plan_opening_graph(topology, wall_graph, seed.cad_traces)
+    strengthened = strengthen_floor_plan_topology(topology, wall_graph, seed.cad_traces, opening_graph)
     rooms_by_name = {room.name: room for room in strengthened.rooms}
     names_by_room_id = {room.room_id: room.name for room in strengthened.rooms}
 
@@ -461,5 +466,7 @@ def test_strengthen_real_seminole_topology_replaces_false_adjacency_and_expected
     assert rooms_by_name["KITCHEN"].heuristic_adjacent_room_ids == []
     assert rooms_by_name["DINING"].heuristic_adjacent_room_ids == []
     assert rooms_by_name["MSTR. BEDROOM"].heuristic_adjacent_room_ids == []
+    assert rooms_by_name["ENTRY"].heuristic_adjacent_room_ids == []
+    assert rooms_by_name["LIVING ROOM"].heuristic_adjacent_room_ids == []
     assert "inferred_adjacency" not in strengthened.topology_issues
     assert strengthened.topology_issues == []

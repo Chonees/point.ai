@@ -1,9 +1,10 @@
-﻿import type { CatalogInspectorRoom, CatalogInspectorTopology, CatalogInspectorWall } from './types'
+﻿import type { CatalogInspectorOpening, CatalogInspectorRoom, CatalogInspectorTopology, CatalogInspectorWall } from './types'
 
 interface CatalogInspectorSidebarProps {
   topology: CatalogInspectorTopology
   selectedRoom: CatalogInspectorRoom | null
   selectedWall: CatalogInspectorWall | null
+  selectedOpening: CatalogInspectorOpening | null
   focusMode: string
   focusWalls: CatalogInspectorWall[]
   onSelectWall: (wallId: string) => void
@@ -54,6 +55,10 @@ function formatConfidence(confidence: string) {
       return 'Heuristic'
     case 'unsupported':
       return 'Unsupported'
+    case 'hosted':
+      return 'Hosted'
+    case 'unhosted':
+      return 'Unhosted'
     default:
       return confidence
   }
@@ -98,6 +103,7 @@ export function CatalogInspectorSidebar({
   topology,
   selectedRoom,
   selectedWall,
+  selectedOpening,
   focusMode,
   focusWalls,
   onSelectWall,
@@ -173,6 +179,34 @@ export function CatalogInspectorSidebar({
               <p className="mt-3 text-xs text-zinc-500">{selectedWall.trace_support_ids.join(', ')}</p>
             ) : null}
             <p className="mt-2 text-xs text-amber-300">{formatIssueList(selectedWall.issues)}</p>
+          </div>
+        ) : null}
+
+        {selectedOpening ? (
+          <div data-testid="selected-opening-panel" className="rounded-2xl border border-white/6 bg-white/[0.03] p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-zinc-400">Selected opening</h3>
+            <p className="mt-2 text-sm font-medium text-zinc-100">{selectedOpening.opening_id}</p>
+            <p className="mt-1 text-sm text-zinc-300">{selectedOpening.opening_kind}</p>
+            <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Host wall</p>
+                <p className="mt-1 text-zinc-100">{selectedOpening.host_wall_id ?? 'Unhosted'}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Confidence</p>
+                <p className="mt-1 text-zinc-100">{formatConfidence(selectedOpening.confidence)}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Owner rooms</p>
+                <p className="mt-1 text-zinc-100">{roomNames(topology, selectedOpening.owner_room_ids)}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Connected rooms</p>
+                <p className="mt-1 text-zinc-100">{roomNames(topology, selectedOpening.connected_room_ids)}</p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-zinc-500">span {selectedOpening.span.toFixed(2)} · offset {selectedOpening.offset.toFixed(2)}</p>
+            <p className="mt-2 text-xs text-amber-300">{formatIssueList(selectedOpening.issues)}</p>
           </div>
         ) : null}
 
@@ -320,4 +354,3 @@ export function CatalogInspectorSidebar({
     </aside>
   )
 }
-

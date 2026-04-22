@@ -143,3 +143,33 @@ class FloorPlanWallGraphV1(BaseModel):
     walls: list[CatalogWallBoundary] = Field(default_factory=list)
     wall_graph_readiness: WallGraphReadiness
     wall_graph_issues: list[str] = Field(default_factory=list)
+
+
+class CatalogOpening(BaseModel):
+    opening_id: str
+    opening_kind: str
+    host_wall_id: str | None = None
+    owner_room_ids: list[str] = Field(default_factory=list)
+    connected_room_ids: list[str] = Field(default_factory=list)
+    trace_ids: list[str] = Field(default_factory=list)
+    orientation: str
+    start: CatalogPoint
+    end: CatalogPoint
+    offset: float
+    span: float
+    confidence: str = "unverified"
+    issues: list[str] = Field(default_factory=list)
+
+
+class OpeningGraphReadiness(BaseModel):
+    status: str
+    issues: list[str] = Field(default_factory=list)
+
+
+class FloorPlanOpeningGraphV1(BaseModel):
+    floor_plan_id: str
+    name: str
+    canonical_unit: str
+    openings: list[CatalogOpening] = Field(default_factory=list)
+    opening_graph_readiness: OpeningGraphReadiness
+    opening_graph_issues: list[str] = Field(default_factory=list)
