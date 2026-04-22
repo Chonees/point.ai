@@ -7,6 +7,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from ..coordinate_space import DXF_COORDINATE_SPACE
 from .model import MITUNET_BACKEND
 from .preprocess import _predict_wall_mask
 from .wall_mask import _extract_walls_from_mask
@@ -57,6 +58,12 @@ def infer_mitunet(image_b64: str, **kwargs) -> dict[str, Any]:
         "openings": [],
         "rooms": [],
         "source": MITUNET_BACKEND,
+        "structure_meta": {
+            "image_size": {"width": w, "height": h},
+            "scale_status": "unverified",
+            "unit": "pixel",
+            "coordinate_space": DXF_COORDINATE_SPACE,
+        },
         "inference_debug": {
             "backend": MITUNET_BACKEND,
             "debug_overlay_b64": f"data:image/png;base64,{overlay_b64}",

@@ -17,6 +17,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from .coordinate_space import IMAGE_COORDINATE_SPACE
 from .image_utils import decode_image, preprocess_for_cubicasa
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -211,6 +212,7 @@ def infer_cubicasa(image_b64: str, *, model_variant: str | None = None, preproce
             "image_size": {"width": orig_w, "height": orig_h},
             "scale_status": "unverified",
             "unit": "pixel",
+            "coordinate_space": IMAGE_COORDINATE_SPACE,
         },
         "inference_debug": {
             "backend": CUBICASA_BACKEND,

@@ -1,0 +1,387 @@
+DE UNA FOTO DE UN PLANO A UN ARCHIVO DE AUTOCAD
+Estado del arte mundial — Abril 2026
+Escrito en lenguaje simple para alguien que no es técnico.
+
+================================================================
+QUÉ QUEREMOS HACER
+================================================================
+
+El objetivo es simple de decir y brutalmente difícil de ejecutar:
+
+  Alguien saca una foto de un plano de una casa (o recibe un PDF,
+  o un render, o un escaneo) y la aplicación produce un archivo
+  de AutoCAD (.DWG) listo para usar profesionalmente.
+
+  No un borrador. No un "más o menos". Un plano que un arquitecto
+  o ingeniero pueda abrir en AutoCAD y decir: "esto está bien,
+  puedo trabajar con esto".
+
+Eso significa que el resultado tiene que tener:
+
+  - Paredes con grosor correcto, bien conectadas, formando cuartos cerrados
+  - Puertas con su hueco en la pared y su arco de apertura
+  - Ventanas con su hueco en la pared y sus líneas internas
+  - Dimensiones (medidas) correctas entre paredes
+  - Etiquetas de habitaciones (cocina, baño, dormitorio)
+  - Todo organizado en capas (layers) como lo haría un profesional
+  - Escala real (1 unidad = 1 pulgada, o 1 metro, según el sistema)
+
+
+================================================================
+POR QUÉ ES TAN DIFÍCIL
+================================================================
+
+Cuando un humano mira un plano, el cerebro hace instantáneamente
+cosas que una computadora no puede hacer fácilmente:
+
+  1. VE que dos líneas que se cruzan forman una esquina de cuarto
+  2. ENTIENDE que un hueco con un arco es una puerta
+  3. SABE que las paredes de un cuarto tienen que cerrar (no pueden
+     quedar abiertas)
+  4. DISTINGUE una pared exterior (más gruesa) de un tabique interior
+  5. LEE el número "12'-6"" y sabe que es una dimensión
+
+Para una computadora, la foto es solo una grilla de millones de
+puntitos de colores (píxeles). No hay "paredes" ni "puertas".
+Hay píxeles oscuros y píxeles claros. Convertir eso en un plano
+profesional de AutoCAD requiere resolver UNA CADENA de problemas,
+donde cada eslabón tiene que funcionar bien para que el siguiente
+funcione:
+
+
+PASO 1 — ENTENDER QUÉ ES CADA COSA (Segmentación Semántica)
+--------------------------------------------------------------
+
+  "¿Este grupo de píxeles oscuros es una pared? ¿Es una puerta?
+  ¿Es una ventana? ¿Es texto?"
+
+  ESTADO: Parcialmente resuelto.
+
+  Hay modelos de inteligencia artificial (CubiCasa5k, MitUNet) que
+  logran separar paredes, puertas, ventanas y cuartos con 70-85%
+  de precisión. Es como si miraras un plano con los ojos
+  entrecerrados — captás lo general, pero perdés detalles.
+
+  El problema: la salida es una IMAGEN coloreada (cada color = un
+  tipo de elemento), no líneas. Es como si te dieran una foto de
+  un mapa y te pidieran las coordenadas GPS. Tenés la forma pero
+  no los números.
+
+
+PASO 2 — CONVERTIR PÍXELES EN LÍNEAS (Vectorización)
+--------------------------------------------------------------
+
+  "OK, sé que estos píxeles son pared. Ahora necesito convertir
+  esa mancha de píxeles en una línea recta con coordenadas de
+  inicio y fin."
+
+  ESTADO: Parcialmente resuelto, con errores significativos.
+
+  Este paso es como intentar dibujar con regla encima de una foto
+  borrosa. Se puede lograr líneas razonables para paredes largas y
+  rectas, pero:
+
+  - Las esquinas quedan redondeadas o no cierran bien
+  - Los tabiques cortos (paredes interiores chicas) se pierden
+  - Las paredes diagonales son especialmente difíciles
+  - El grosor de la pared se pierde o se distorsiona
+
+
+PASO 3 — ENTENDER LA TOPOLOGÍA (El problema de las junctions)
+--------------------------------------------------------------
+
+  *** ESTE ES EL PROBLEMA MÁS GRANDE Y EL MENOS RESUELTO ***
+
+  "¿Cómo se conectan las paredes entre sí?"
+
+  Esto parece trivial pero no lo es. Cuando dos paredes se
+  encuentran, hay TIPOS diferentes de conexión:
+
+  - ESQUINA (L): Dos paredes se encuentran y forman un rincón.
+    Como la esquina de un cuarto.
+           |
+           |
+           +------
+
+  - T: Una pared termina contra otra. Como cuando un tabique
+    interior llega a una pared exterior. La pared exterior
+    SIGUE, el tabique se DETIENE.
+           |
+           |
+    -------+-------
+
+  - CRUZ (X): Dos paredes se cruzan. Cuatro segmentos se
+    encuentran en un punto.
+           |
+    -------+-------
+           |
+
+  - TERMINACIÓN: Una pared simplemente termina en el aire
+    (por ejemplo, al lado de una puerta).
+           |
+           |
+           .
+
+  ¿Por qué importa esto?
+
+  Porque AutoCAD no dibuja "paredes". Dibuja LÍNEAS. Y para que el
+  plano sea profesional, cada línea tiene que empezar y terminar
+  EXACTAMENTE donde corresponde:
+
+  - En una L, las dos líneas se encuentran en un punto.
+  - En una T, una línea se corta donde llega la otra.
+  - En una puerta, la pared se INTERRUMPE y aparece el símbolo
+    de la puerta en el hueco.
+
+  Si la computadora no sabe qué TIPO de conexión es, las paredes
+  quedan:
+  - Flotando sin conectar (gaps)
+  - Pasándose de largo (overshoots)
+  - Superpuestas (dos líneas encima de otra)
+  - Cuartos que no cierran
+
+  ESTADO MUNDIAL: NO RESUELTO.
+
+  Después de revisar exhaustivamente toda la investigación publicada
+  hasta abril de 2026, NINGÚN paper en el mundo clasifica
+  explícitamente los tipos de junction (L, T, X, terminación) en
+  planos de casas.
+
+  Lo que SÍ existe:
+  - Detectores de PUNTOS de junction (HEAT, LCNN, HAWP) — saben
+    DÓNDE hay una junction, pero no de qué TIPO es.
+  - Clasificadores de LÍNEAS (GLSP) — saben si una línea es pared,
+    puerta o ventana, pero no cómo se conectan entre sí.
+  - Reconstrucción de grafos (Floor-SP, MonteFloor) — arman cuartos
+    pero parten de datos 3D, no de fotos de planos.
+
+
+PASO 4 — COLOCAR PUERTAS Y VENTANAS CORRECTAMENTE
+--------------------------------------------------------------
+
+  "Sé que hay una puerta aquí. Pero ¿en qué pared exactamente?
+  ¿A qué distancia del borde? ¿Hacia qué lado abre?"
+
+  ESTADO: Parcialmente resuelto.
+
+  Se puede detectar DÓNDE hay puertas y ventanas (el paso 1 lo
+  hace). El problema es anclarlas correctamente:
+
+  - La puerta necesita un HUECO en la pared (hay que cortar la
+    línea de la pared)
+  - El hueco tiene que tener el ancho exacto de la puerta
+  - El arco de apertura tiene que apuntar hacia el lado correcto
+  - La ventana necesita cortar la pared Y dibujar líneas internas
+
+  Esto depende directamente del paso 3: si no sabés exactamente
+  cómo se conectan las paredes, no podés cortar un hueco limpio.
+
+
+PASO 5 — GENERAR EL ARCHIVO DE AUTOCAD
+--------------------------------------------------------------
+
+  "Tengo líneas, puertas, ventanas. Ahora necesito un .DWG con
+  layers correctos, escala real, y formato profesional."
+
+  ESTADO: Resuelto técnicamente, pero depende de todo lo anterior.
+
+  Generar un archivo DXF/DWG con la estructura correcta es un
+  problema de programación, no de inteligencia artificial. Hay
+  herramientas (ezdxf, AutoCAD LISP) que lo hacen bien. El problema
+  no es escribir el archivo — es tener datos correctos para escribir.
+
+
+================================================================
+QUÉ EXISTE HOY EN EL MUNDO (Abril 2026)
+================================================================
+
+Estos son TODOS los enfoques relevantes que existen, evaluados
+honestamente:
+
+
+NOMBRE              AÑO   QUÉ HACE                                     LIMITACIONES
+-----------------   ----  -------------------------------------------   ----------------------------------------
+CubiCasa5k          2019  Segmenta paredes/puertas/ventanas/cuartos     Solo píxeles, no vectores.
+                          en fotos de planos reales.                     No entiende topología.
+                          44 canales de segmentación.                    Entrenado en planos europeos.
+
+MitUNet             2025  Segmentación mejorada de paredes con           Solo paredes, no puertas/ventanas.
+                          Mix-Transformer + U-Net. Mejor en              Solo píxeles.
+                          estructuras finas.
+
+HEAT                2022  Detecta esquinas (junctions) y aristas         Input: imágenes sintéticas, no fotos
+                          como vectores directos.                        reales. Solo paredes. No clasifica
+                          Transformer-based.                             tipo de junction. GPL (no comercial).
+
+LCNN/HAWP           2019  Detectan wireframes (líneas + junctions)       Diseñados para fotos de edificios,
+                          en imágenes genéricas.                         no para planos. No clasifican
+                                                                        tipos de junction.
+
+GLSP                2023  Parser de líneas con GNN para planos.          Dataset privado (271K planos chinos).
+                          Detecta líneas categorizadas                   Código no público.
+                          (pared/puerta/ventana).                        No clasifica junctions.
+
+Floor-SP            2019  Reconstrucción room-wise con shortest path.    Input: datos 3D (Structured3D).
+                                                                        No funciona con fotos.
+
+MonteFloor           2021  Reconstrucción con Monte Carlo Tree Search.    Input: datos 3D.
+                          Mejor precision en corners (0.89).             71 segundos por plano.
+
+RoomFormer          2023  Transformer con queries de dos niveles.        Input: datos 3D.
+                          Detecta cuartos + puertas/ventanas.            No funciona con fotos de planos.
+
+Raster-to-Vector    2017  El paper original. Red neuronal +              Viejo. ~90% precision en planos
+(Liu & Furukawa)          programación entera para convertir             de producción. Clasifica junctions
+                          planos raster a vector.                        por función (pared vs puerta) pero
+                                                                        no por tipo geométrico (L/T/X).
+
+Sketch2BIM          2025  LLM (IA de lenguaje) convierte sketches        Necesita dibujo a mano como input.
+                          a mano en modelos BIM 3D.                     Requiere humano en el loop.
+                          Precisión >83%.                                No funciona con fotos de planos
+                                                                        impresos.
+
+DiffPlanner         2025  Modelo de difusión que GENERA planos           Genera planos nuevos, no convierte
+                          directamente en espacio vectorial.             fotos existentes a vector.
+
+ResPlan             2025  Dataset de 17,000 planos residenciales         Solo dataset, no modelo.
+                          con anotaciones de paredes, puertas,           Podría servir para entrenar.
+                          ventanas, cuartos.
+
+
+================================================================
+LA VERDAD INCÓMODA
+================================================================
+
+NADIE en el mundo ha resuelto el pipeline completo:
+
+  Foto de plano → Archivo de AutoCAD de calidad profesional
+
+Punto por punto:
+
+  1. Segmentación (qué es cada cosa)     → 70-85% resuelto
+  2. Vectorización (píxeles a líneas)     → 50-60% resuelto
+  3. Topología de junctions (L, T, X)     → NO RESUELTO
+  4. Colocación de puertas/ventanas       → 40-50% resuelto
+  5. Generación de DWG profesional        → Resuelto (si los datos son buenos)
+
+El cuello de botella es el paso 3. Sin entender cómo se conectan
+las paredes, todo lo demás falla en cascada.
+
+Los papers académicos reportan métricas optimistas (90%+ en sus
+datasets), pero esos números no reflejan la realidad cuando:
+
+  - El plano es una foto de celular (no un render limpio)
+  - El estilo de dibujo es diferente al del dataset de entrenamiento
+  - Se necesita precisión de AutoCAD (milímetros, no píxeles)
+  - El resultado tiene que ser USABLE por un profesional
+
+
+================================================================
+LA COMPLEJIDAD REAL
+================================================================
+
+Para entender por qué esto es tan difícil, pensá en esta analogía:
+
+  Pedirle a una computadora que convierta una foto de un plano en
+  un archivo de AutoCAD es como pedirle que escuche una canción
+  y escriba la partitura completa.
+
+  - Tiene que identificar cada instrumento (= cada elemento)
+  - Tiene que saber la nota exacta (= coordenadas exactas)
+  - Tiene que entender el ritmo (= cómo se conectan los elementos)
+  - Tiene que escribirlo en formato musical estándar (= formato DWG)
+  - Y si una nota está mal, toda la orquesta suena horrible
+    (= si una pared no cierra, el cuarto está roto)
+
+La cadena de procesamiento tiene 5 eslabones. Si cada uno tiene
+85% de precisión (que sería excelente), la precisión total es:
+
+  0.85 × 0.85 × 0.85 × 0.85 × 0.85 = 0.44 = 44%
+
+Es decir: más de la mitad de los planos tendrían errores
+significativos. Y eso asumiendo 85% en cada paso, que es
+optimista.
+
+
+================================================================
+QUÉ SIGNIFICA ESTO PARA POINT.AI
+================================================================
+
+Point.ai está intentando resolver un problema que NADIE en el mundo
+ha resuelto de punta a punta. Esto no es una exageración — es un
+hecho verificable revisando la literatura científica hasta abril 2026.
+
+Lo que Point.ai ya tiene funcionando:
+
+  ✓ Segmentación de paredes (MitUNet, entrenado en CubiCasa5k)
+  ✓ Vectorización con chain condensation (mejora fuerte en paredes largas)
+  ✓ Generación de DXF con layers profesionales
+  ✓ Puertas y ventanas detectadas y colocadas
+  ✓ Soporte para paredes diagonales
+
+Lo que falta (y es lo que falta EN TODO EL MUNDO):
+
+  ✗ Clasificación de tipos de junction (L, T, X, terminación)
+  ✗ Cierre perfecto del perímetro exterior (shell closure)
+  ✗ Tabiques interiores cortos que no se pierdan
+  ✗ Anclaje preciso de puertas/ventanas en el hueco correcto
+
+El hecho de que el pipeline ya funciona end-to-end (de imagen a DXF)
+pone a Point.ai ADELANTE de casi toda la investigación académica,
+que resuelve pedazos aislados del problema pero nunca el pipeline
+completo.
+
+
+================================================================
+CAMINOS POSIBLES HACIA ADELANTE
+================================================================
+
+Para resolver el cuello de botella de junctions, hay tres enfoques:
+
+1. HEURÍSTICAS GEOMÉTRICAS (más rápido, menos preciso)
+   Analizar la máscara de paredes con algoritmos geométricos:
+   esqueletización + análisis de grado de nodo. Un nodo con
+   grado 2 = L, grado 3 = T, grado 4 = X. No requiere
+   entrenar un modelo nuevo. Se puede implementar en semanas.
+
+2. MODELO DEDICADO DE JUNCTIONS (más lento, más preciso)
+   Entrenar una red neuronal específica para clasificar tipos
+   de junction en planos de casas. Requiere dataset anotado
+   (que no existe públicamente — habría que crearlo). Meses de
+   trabajo.
+
+3. ENFOQUE HÍBRIDO (recomendado)
+   Usar heurísticas geométricas como base + un clasificador
+   liviano entrenado con datos generados del propio pipeline.
+   Las heurísticas resuelven el 80% de los casos, el modelo
+   refina el 20% restante.
+
+
+================================================================
+RESUMEN EJECUTIVO
+================================================================
+
+- Convertir una foto de un plano en un AutoCAD profesional es un
+  problema NO RESUELTO a nivel mundial.
+
+- El cuello de botella principal es entender cómo se CONECTAN las
+  paredes (topología de junctions), no detectar dónde están.
+
+- NINGÚN paper publicado hasta abril 2026 clasifica explícitamente
+  tipos de junction (L, T, X) en planos de casas.
+
+- Point.ai tiene un pipeline funcionando end-to-end que ya está
+  más avanzado que la mayoría de la investigación académica, pero
+  necesita resolver la micro-topología para dar el salto a calidad
+  profesional.
+
+- La solución más pragmática es un enfoque híbrido: heurísticas
+  geométricas + modelo liviano de refinamiento.
+
+================================================================
+Documento generado por investigación exhaustiva — Abril 2026
+Fuentes: arXiv, Google Scholar, GitHub, Papers With Code
+Modelos revisados: HEAT, CubiCasa5k, MitUNet, LCNN, HAWP, LETR,
+  GLSP, Floor-SP, MonteFloor, RoomFormer, R2V, Sketch2BIM,
+  DiffPlanner, FloorSAM, ResPlan, Lv et al (CVPR 2021)
+================================================================

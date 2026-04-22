@@ -38,12 +38,24 @@ class CadWorkspaceMeasurementsResponse(BaseModel):
     source: str
 
 
+class CadWorkspaceRoomResponse(BaseModel):
+    name: str
+    polygon: list[dict] = Field(default_factory=list)
+    bbox: CadWorkspaceBBoxResponse
+    centroid: dict
+    width: float
+    height: float
+    area: float
+    measurement_source: str
+
+
 class CadWorkspaceViewResponse(BaseModel):
     role: str
     bbox: Optional[CadWorkspaceBBoxResponse] = None
     summary: CadWorkspaceViewSummaryResponse
     entities: list[CadWorkspaceLineEntityResponse] = Field(default_factory=list)
     measurements: Optional[CadWorkspaceMeasurementsResponse] = None
+    rooms: list[CadWorkspaceRoomResponse] = Field(default_factory=list)
 
 
 class CadWorkspaceSideBySideResponse(BaseModel):

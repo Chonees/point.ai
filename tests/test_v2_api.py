@@ -152,6 +152,9 @@ def test_generate_dxf_endpoint_uses_mask_regions_mode_for_mitunet(monkeypatch):
     payload = response.json()
     assert payload["quality_metrics"]["dxf_mode"] == "mask_regions"
     assert payload["structure"]["structure_meta"]["dxf_mode"] == "mask_regions"
+    assert payload["computed_rooms"] is None
+    assert payload["region_overlay"] is None
+    assert payload["scale_ipp"] is None
     assert payload["structure"]["structure_meta"]["dxf_region_plan"]["meta"]["region_count"] > 0
     assert payload["structure"]["structure_meta"]["dxf_region_plan"]["meta"]["max_wall_thickness"] == 6.0
     assert payload["structure"]["structure_meta"]["mitunet_region_debug"]["stage_order"] == [
@@ -159,6 +162,7 @@ def test_generate_dxf_endpoint_uses_mask_regions_mode_for_mitunet(monkeypatch):
         "cleaned_wall_mask",
         "horizontal_extraction",
         "vertical_extraction",
+        "short_branch_extraction",
         "trimmed_rectangles",
         "clamped_regions",
     ]
@@ -198,3 +202,62 @@ def test_generate_dxf_endpoint_ignores_legacy_dxf_mode_override_for_mitunet(monk
     assert payload["structure"]["structure_meta"]["dxf_mode"] == "mask_regions"
     assert "dxf_region_plan" in payload["structure"]["structure_meta"]
     assert "mitunet_region_debug" in payload["structure"]["structure_meta"]
+
+
+def test_generate_dxf_endpoint_returns_wall_only_auto_annotations_for_mitunet(monkeypatch):
+    def fake_infer(image: str, *, backend=None, options=None):
+        result = build_mitunet_infer_result()
+        result["_auto_annotations"] = [
+            {
+                "id": "legacy-window",
+                "type": "window",
+                "x1": 40.0,
+                "y1": 24.0,
+                "x2": 70.0,
+                "y2": 24.0,
+                "wall_id": "legacy-top",
+            },
+            {
+                "id": "legacy-door",
+                "type": "door",
+                "x1": 154.0,
+                "y1": 50.0,
+                "x2": 154.0,
+                "y2": 80.0,
+                "wall_id": "legacy-vertical",
+            },
+        ]
+        return result
+
+    monkeypatch.setattr("backend.services.parse_service.infer_structure", fake_infer)
+
+    response = client.post(
+        "/api/v2/generate-dxf",
+        json={"image": build_synthetic_structure_image(), "model_variant": "mitunet"},
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    auto_annotations = payload["auto_annotations"]
+    assert auto_annotations
+    assert {annotation["type"] for annotation in auto_annotations} == {"wall"}
+
+
+def test_generate_dxf_endpoint_returns_unique_mask_native_walls_for_ui(monkeypatch):
+    def fake_infer(image: str, *, backend=None, options=None):
+        return build_mitunet_infer_result()
+
+    monkeypatch.setattr("backend.services.parse_service.infer_structure", fake_infer)
+
+    response = client.post(
+        "/api/v2/generate-dxf",
+        json={"image": build_synthetic_structure_image(), "model_variant": "mitunet"},
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    walls = [annotation for annotation in payload["auto_annotations"] if annotation["type"] == "wall"]
+
+    assert walls
+    assert len({wall["id"] for wall in walls}) == len(walls)
+    assert any(len(wall.get("polygon") or []) >= 4 for wall in walls)

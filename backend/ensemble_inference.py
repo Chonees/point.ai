@@ -13,9 +13,11 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
+from .coordinate_space import DXF_COORDINATE_SPACE
 from .mitunet_inference import infer_mitunet, mitunet_available
 from .cubicasa_inference import cubicasa_available, infer_cubicasa
 from .observability import log_event
+from .structure_postprocess import anchor_openings_to_walls
 
 ENSEMBLE_BACKEND = "ensemble_local"
 
@@ -62,7 +64,14 @@ def infer_ensemble(
     }
 
     # --- Step 3: Re-anchor CubiCasa openings to MitUNet walls ---
-    reanchored = _reanchor_openings(cubicasa_openings, mitunet_walls, image_height=h)
+    reanchored, reanchor_metrics = _reanchor_openings(
+        cubicasa_openings,
+        mitunet_walls,
+        image_height=h,
+        image_width=w,
+    )
+    cubicasa_debug["reanchor_filtered_opening_count"] = reanchor_metrics["filtered_opening_count"]
+    cubicasa_debug["reanchor_review_flags"] = reanchor_metrics["review_flags"]
 
     # --- Step 4: Convert to annotation format ---
     auto_annotations = _openings_to_annotations(reanchored, image_height=h)
@@ -82,6 +91,12 @@ def infer_ensemble(
         "openings": [],
         "rooms": [],
         "source": ENSEMBLE_BACKEND,
+        "structure_meta": {
+            "image_size": {"width": w, "height": h},
+            "scale_status": "unverified",
+            "unit": "pixel",
+            "coordinate_space": DXF_COORDINATE_SPACE,
+        },
         "_wall_mask": mitunet_result["_wall_mask"],
         "_image_shape": mitunet_result["_image_shape"],
         "_auto_annotations": auto_annotations,
@@ -113,7 +128,8 @@ def _reanchor_openings(
     mitunet_walls: list[dict[str, Any]],
     *,
     image_height: int,
-) -> list[dict[str, Any]]:
+    image_width: int,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
     """Re-anchor each CubiCasa opening to the nearest MitUNet wall.
 
     Both coordinate systems are Y-flipped image pixels (Y goes up).
@@ -121,42 +137,55 @@ def _reanchor_openings(
     CubiCasa opening positions: ``{"x": cx, "y": cy}`` (dict).
     """
     if not mitunet_walls or not cubicasa_openings:
-        return []
+        return [], {
+            "filtered_opening_count": 0,
+            "inferred_opening_side_count": 0,
+            "review_flags": [],
+        }
 
-    reanchored: list[dict[str, Any]] = []
+    anchored, metrics = anchor_openings_to_walls(
+        cubicasa_openings,
+        mitunet_walls,
+        structure_meta={
+            "image_size": {"width": image_width, "height": image_height},
+            "unit": "pixel",
+            "scale_status": "unverified",
+        },
+    )
 
-    for opening in cubicasa_openings:
-        pos = opening.get("position") or {}
-        cx = float(pos.get("x", 0))
-        cy = float(pos.get("y", 0))
+    max_axis_distance = max(float(_MAX_OPENING_WALL_DISTANCE), 1.0)
+    wall_map = {wall["id"]: wall for wall in mitunet_walls}
+    filtered: list[dict[str, Any]] = []
+    extra_filtered = 0
+    for opening in anchored:
+        wall = wall_map.get(opening.get("wall_id"))
+        if wall is None:
+            extra_filtered += 1
+            continue
 
-        best_wall = None
-        best_dist = float("inf")
+        position = opening.get("position") or {}
+        wall_start = wall["polyline"][0]
+        wall_axis_x = float(wall_start["x"]) if isinstance(wall_start, dict) else float(wall_start[0])
+        wall_axis_y = float(wall_start["y"]) if isinstance(wall_start, dict) else float(wall_start[1])
+        if opening["orientation"] == "horizontal":
+            axis_distance = abs(float(position.get("y", 0.0)) - wall_axis_y)
+        else:
+            axis_distance = abs(float(position.get("x", 0.0)) - wall_axis_x)
 
-        for wall in mitunet_walls:
-            poly = wall.get("polyline", [])
-            if len(poly) < 2:
-                continue
-            p0, p1 = poly[0], poly[1]
-            # MitUNet uses [[x,y],[x,y]]
-            wx0, wy0 = float(p0[0]), float(p0[1])
-            wx1, wy1 = float(p1[0]), float(p1[1])
+        if axis_distance > max_axis_distance:
+            extra_filtered += 1
+            continue
+        filtered.append(opening)
 
-            wall_cx = (wx0 + wx1) / 2
-            wall_cy = (wy0 + wy1) / 2
-            dist = abs(cx - wall_cx) + abs(cy - wall_cy)
+    if extra_filtered:
+        metrics = {
+            **metrics,
+            "filtered_opening_count": int(metrics.get("filtered_opening_count", 0)) + extra_filtered,
+            "review_flags": list(metrics.get("review_flags", []))
+            + [f"Filtered {extra_filtered} opening(s): axis distance exceeded {_MAX_OPENING_WALL_DISTANCE}px."],
+        }
 
-            if dist < best_dist:
-                best_dist = dist
-                best_wall = wall
-
-        if best_wall is not None and best_dist <= _MAX_OPENING_WALL_DISTANCE:
-            anchored = dict(opening)
-            anchored["wall_id"] = best_wall["id"]
-            anchored["_anchor_distance"] = round(best_dist, 1)
-            reanchored.append(anchored)
-
-    return reanchored
+    return filtered, metrics
 
 
 def _openings_to_annotations(
@@ -207,7 +236,15 @@ def _openings_to_annotations(
             "y2": round(y2, 1),
             "_source": "ensemble_cubicasa",
         }
-        # No swing from CubiCasa — unreliable. User sets it manually.
+        if opening.get("wall_id"):
+            ann["wall_id"] = opening["wall_id"]
+        if opening.get("side"):
+            ann["side"] = opening["side"]
+        if kind == "door":
+            if opening.get("swing"):
+                ann["swing"] = opening["swing"]
+            if opening.get("door_type"):
+                ann["door_type"] = opening["door_type"]
 
         annotations.append(ann)
 

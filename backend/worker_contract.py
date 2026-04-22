@@ -13,6 +13,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+from .coordinate_space import IMAGE_COORDINATE_SPACE
+
 
 # ---------------------------------------------------------------------------
 # Error types
@@ -185,6 +187,7 @@ class WorkerResponse:
                 "image_size": self.image_size,
                 "scale_status": "unverified",
                 "unit": "pixel",
+                "coordinate_space": IMAGE_COORDINATE_SPACE,
             },
             "inference_debug": {
                 "model_name": self.model_name,

@@ -139,4 +139,9 @@ def resolve_wall_junctions(
                             result[hi]["span_lo"] = vw["mid"] - vw_hlw
                 break
 
+    for index, (original, adjusted) in enumerate(zip(walls, result)):
+        if float(adjusted["span_hi"]) <= float(adjusted["span_lo"]):
+            result[index]["span_lo"] = float(original["span_lo"])
+            result[index]["span_hi"] = float(original["span_hi"])
+
     return result

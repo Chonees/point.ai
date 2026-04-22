@@ -16,6 +16,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from .coordinate_space import IMAGE_COORDINATE_SPACE
 from .image_utils import decode_image
 
 HEURISTIC_BACKEND = "heuristic_local"
@@ -69,6 +70,7 @@ def infer_heuristic_structure(image_b64: str) -> dict[str, Any]:
             "image_size": {"width": width, "height": height},
             "scale_status": "unverified",
             "unit": "pixel",
+            "coordinate_space": IMAGE_COORDINATE_SPACE,
         },
         "inference_debug": {
             "raw_wall_fragments": len(walls),

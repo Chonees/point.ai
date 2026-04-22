@@ -14,7 +14,15 @@ export function ThreadMessageList({ messages }: ThreadMessageListProps) {
           <p className="mt-2 text-sm leading-6 text-zinc-200">{message.content}</p>
           {message.artifacts.length > 0 && (
             <div className="mt-3 grid gap-3 md:grid-cols-2">
-              {message.artifacts.map((artifact) => <ArtifactCard key={artifact.id} artifact={artifact} />)}
+              {message.artifacts.map((artifact) => (
+                <div
+                  key={artifact.id}
+                  data-artifact-kind={artifact.kind}
+                  className={artifact.kind === 'cad-review' ? 'md:col-span-2' : undefined}
+                >
+                  <ArtifactCard artifact={artifact} />
+                </div>
+              ))}
             </div>
           )}
         </article>

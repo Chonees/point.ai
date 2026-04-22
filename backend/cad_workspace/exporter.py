@@ -6,6 +6,8 @@ import ezdxf
 
 
 FLOOR_OVERLAY_LAYER = "FLOOR_OVERLAY"
+BUILDABLE_DIM_LAYER = "CAD_DIM_BUILDABLE"
+FOOTPRINT_DIM_LAYER = "CAD_DIM_FOOTPRINT"
 
 
 def resolve_overlay_bbox(result: dict) -> dict | None:
@@ -41,6 +43,8 @@ def export_overlay_dxf(result: dict, out_path: Path) -> Path:
     msp = doc.modelspace()
 
     _ensure_layer(doc, FLOOR_OVERLAY_LAYER, color=4)
+    _ensure_layer(doc, BUILDABLE_DIM_LAYER, color=3)
+    _ensure_layer(doc, FOOTPRINT_DIM_LAYER, color=4)
 
     for entity in (result.get("site_plan") or {}).get("entities", []):
         _ensure_layer(doc, str(entity.get("layer") or "0"), color=3)
@@ -48,6 +52,14 @@ def export_overlay_dxf(result: dict, out_path: Path) -> Path:
 
     for entity in (result.get("floor_plan") or {}).get("entities", []):
         _write_entity(msp, entity, dx=floor_translate_x, dy=floor_translate_y, layer=FLOOR_OVERLAY_LAYER)
+
+    buildable_bbox = (result.get("fit_summary") or {}).get("buildable_bbox")
+    if buildable_bbox is not None:
+        _add_overlay_dimensions(
+            msp,
+            buildable_bbox=buildable_bbox,
+            overlay_bbox=overlay_bbox,
+        )
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
     doc.saveas(out_path)
@@ -83,3 +95,114 @@ def _write_entity(msp, entity: dict, *, dx: float, dy: float, layer: str) -> Non
         if closed:
             vertices = vertices[:-1]
         msp.add_lwpolyline(vertices, close=closed, dxfattribs={"layer": layer})
+
+
+def _add_overlay_dimensions(msp, *, buildable_bbox: dict, overlay_bbox: dict) -> None:
+    buildable_x1 = float(buildable_bbox["x1"])
+    buildable_y1 = float(buildable_bbox["y1"])
+    buildable_x2 = float(buildable_bbox["x2"])
+    buildable_y2 = float(buildable_bbox["y2"])
+    overlay_x1 = float(overlay_bbox["x1"])
+    overlay_y1 = float(overlay_bbox["y1"])
+    overlay_x2 = float(overlay_bbox["x2"])
+    overlay_y2 = float(overlay_bbox["y2"])
+
+    _add_linear_dimension(
+        msp,
+        layer=BUILDABLE_DIM_LAYER,
+        base=(buildable_x1, buildable_y1 - 44.0),
+        p1=(buildable_x1, buildable_y1),
+        p2=(buildable_x2, buildable_y1),
+        angle=0,
+        text=f'Buildable {_format_architectural_measure(float(buildable_bbox["width"]))}',
+    )
+    _add_linear_dimension(
+        msp,
+        layer=BUILDABLE_DIM_LAYER,
+        base=(buildable_x2 + 28.0, buildable_y1),
+        p1=(buildable_x2, buildable_y1),
+        p2=(buildable_x2, buildable_y2),
+        angle=90,
+        text=f'Buildable {_format_architectural_measure(float(buildable_bbox["height"]))}',
+    )
+    _add_linear_dimension(
+        msp,
+        layer=FOOTPRINT_DIM_LAYER,
+        base=(overlay_x1, overlay_y2 + 28.0),
+        p1=(overlay_x1, overlay_y2),
+        p2=(overlay_x2, overlay_y2),
+        angle=0,
+        text=f'Footprint {_format_architectural_measure(float(overlay_bbox["width"]))}',
+    )
+    _add_linear_dimension(
+        msp,
+        layer=FOOTPRINT_DIM_LAYER,
+        base=(overlay_x1 - 28.0, overlay_y1),
+        p1=(overlay_x1, overlay_y1),
+        p2=(overlay_x1, overlay_y2),
+        angle=90,
+        text=f'Footprint {_format_architectural_measure(float(overlay_bbox["height"]))}',
+    )
+
+
+def _add_linear_dimension(msp, *, layer: str, base: tuple[float, float], p1: tuple[float, float], p2: tuple[float, float], angle: float, text: str) -> None:
+    dimension = msp.add_linear_dim(
+        base=base,
+        p1=p1,
+        p2=p2,
+        angle=angle,
+        text=text,
+        dxfattribs={"layer": layer},
+        override={
+            "dimtxt": 14.0,
+            "dimasz": 8.0,
+            "dimexo": 4.0,
+            "dimexe": 4.0,
+            "dimclrd": 256,
+            "dimclre": 256,
+            "dimclrt": 256,
+        },
+    )
+    dimension.render()
+
+
+def _format_architectural_measure(value: float) -> str:
+    return f'{_format_feet_inches(value)} | {_format_inches_value(value)} in'
+
+
+def _format_inches_value(value: float) -> str:
+    rounded = round(float(value), 2)
+    if abs(rounded - round(rounded)) < 1e-9:
+        return str(int(round(rounded)))
+    return f"{rounded:.2f}"
+
+
+def _format_feet_inches(value: float) -> str:
+    sign = "-" if value < 0 else ""
+    absolute = abs(float(value))
+    feet = int(absolute // 12)
+    remainder = absolute - (feet * 12)
+    whole_inches = int(remainder // 1)
+    fraction = remainder - whole_inches
+    eighths = int(round(fraction * 8))
+
+    if eighths == 8:
+        whole_inches += 1
+        eighths = 0
+    if whole_inches == 12:
+        feet += 1
+        whole_inches = 0
+
+    fractions = {
+        1: "1/8",
+        2: "1/4",
+        3: "3/8",
+        4: "1/2",
+        5: "5/8",
+        6: "3/4",
+        7: "7/8",
+    }
+    fraction_text = fractions.get(eighths)
+    if fraction_text:
+        return f"{sign}{feet}'-{whole_inches} {fraction_text}\""
+    return f"{sign}{feet}'-{whole_inches}\""

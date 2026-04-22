@@ -9,7 +9,7 @@ export function CadReviewArtifactCard({ artifact }: CadReviewArtifactCardProps) 
   const { review } = artifact
 
   return (
-    <article className="rounded-2xl border border-cyan-500/20 bg-cyan-500/[0.04] p-3">
+    <article className="rounded-2xl border border-cyan-500/20 bg-[#0b1115] p-3 shadow-[0_0_0_1px_rgba(34,211,238,0.04)]">
       <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-200/70">cad-review</p>
       <h4 className="mt-2 text-sm font-medium text-zinc-100">{artifact.title}</h4>
       <p className="mt-2 text-xs text-zinc-400">Unidad comun: {review.canonicalUnit}</p>

@@ -20,6 +20,10 @@ export interface Annotation {
   roomName?: string
   sqft?: number
   thickness?: number
+  wall_id?: string
+  side?: 'bottom' | 'top' | 'left' | 'right'
+  door_type?: string
+  polygon?: Array<{ x: number; y: number }>
   labelScale?: number
   labelRotation?: number
   // Dimension-specific fields
@@ -77,6 +81,10 @@ export interface V2Result {
     swing?: string
     _source?: string
     thickness?: number
+    wall_id?: string
+    side?: 'bottom' | 'top' | 'left' | 'right'
+    door_type?: string
+    polygon?: Array<{ x: number; y: number }>
     // Dimension fields arriving from backend use snake_case
     subtype?: DimensionSubtype
     offset_px?: number

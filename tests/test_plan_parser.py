@@ -3,6 +3,61 @@ from backend.plan_parser import parse_structure_payload
 from tests.helpers import build_low_quality_structure, build_manual_structure
 
 
+def _dxf_space_opening_fixture() -> dict:
+    return {
+        "model": "DXF Space Fixture",
+        "source": "ensemble_local",
+        "walls": [
+            {
+                "id": "wall-top",
+                "orientation": "horizontal",
+                "polyline": [{"x": 20.0, "y": 140.0}, {"x": 200.0, "y": 140.0}],
+                "thickness": 8.0,
+                "is_exterior": True,
+                "confidence": 0.95,
+            },
+            {
+                "id": "wall-interior",
+                "orientation": "vertical",
+                "polyline": [{"x": 110.0, "y": 20.0}, {"x": 110.0, "y": 140.0}],
+                "thickness": 8.0,
+                "is_exterior": False,
+                "confidence": 0.9,
+            },
+        ],
+        "openings": [],
+        "_auto_annotations": [
+            {
+                "id": "ann-door",
+                "type": "door",
+                "x1": 110.0,
+                "y1": 60.0,
+                "x2": 110.0,
+                "y2": 88.0,
+                "wall_id": "wall-interior",
+            },
+            {
+                "id": "ann-window",
+                "type": "window",
+                "x1": 136.0,
+                "y1": 20.0,
+                "x2": 166.0,
+                "y2": 20.0,
+                "wall_id": "wall-top",
+            },
+        ],
+        "structure_meta": {
+            "image_size": {"width": 220, "height": 160},
+            "scale_status": "unverified",
+            "unit": "pixel",
+            "coordinate_space": "dxf_y_up",
+        },
+        "inference_debug": {
+            "backend": "ensemble_local",
+        },
+    }
+
+
 def _pixel_box_structure() -> dict:
     return {
         "model": "Pixel Box",
@@ -49,6 +104,46 @@ def _pixel_box_structure() -> dict:
         },
         "inference_debug": {
             "backend": "fixture/pixel_box",
+        },
+    }
+
+
+def _single_exterior_wall_with_windows(*, spans: list[float]) -> dict:
+    positions = [40.0, 120.0, 200.0, 280.0, 360.0]
+    openings = []
+    for index, (cx, span) in enumerate(zip(positions, spans), start=1):
+        openings.append(
+            {
+                "id": f"window-{index:02d}",
+                "kind": "window",
+                "wall_id": "wall-top",
+                "position": {"x": cx, "y": 20.0},
+                "span": span,
+                "orientation": "horizontal",
+                "confidence": 0.9,
+            }
+        )
+    return {
+        "model": "Exterior Window Density",
+        "source": "fixture/window_density",
+        "walls": [
+            {
+                "id": "wall-top",
+                "orientation": "horizontal",
+                "polyline": [{"x": 0.0, "y": 20.0}, {"x": 400.0, "y": 20.0}],
+                "thickness": 8.0,
+                "is_exterior": True,
+                "confidence": 0.95,
+            },
+        ],
+        "openings": openings,
+        "structure_meta": {
+            "image_size": {"width": 420, "height": 120},
+            "scale_status": "unverified",
+            "unit": "pixel",
+        },
+        "inference_debug": {
+            "backend": "fixture/window_density",
         },
     }
 
@@ -114,6 +209,33 @@ def test_parse_structure_from_manual_inference_passes_quality_gate():
     assert parsed["needs_review"] is False
 
 
+def test_parse_structure_preserves_coordinate_space_metadata():
+    structure = build_manual_structure(source="mitunet_local", with_openings=False)
+    structure["structure_meta"]["coordinate_space"] = "dxf_y_up"
+
+    parsed = parse_structure_payload(structure=structure)
+
+    assert parsed["structure"]["structure_meta"]["coordinate_space"] == "dxf_y_up"
+
+
+def test_parse_structure_materializes_auto_annotations_as_openings_in_dxf_space():
+    parsed = parse_structure_payload(structure=_dxf_space_opening_fixture())
+
+    openings = parsed["structure"]["openings"]
+    wall_ids = {wall["id"] for wall in parsed["structure"]["walls"]}
+
+    assert len(openings) == 2
+    assert parsed["quality_metrics"]["raw_opening_count"] == 2
+    door = next(opening for opening in openings if opening["kind"] == "door")
+    window = next(opening for opening in openings if opening["kind"] == "window")
+    assert door["wall_id"] in wall_ids
+    assert round(door["position"]["x"], 1) == 110.0
+    assert round(door["position"]["y"], 1) == 86.0
+    assert window["wall_id"] in wall_ids
+    assert round(window["position"]["x"], 1) == 151.0
+    assert round(window["position"]["y"], 1) == 140.0
+
+
 def test_parse_structure_marks_low_quality_cases_for_review():
     parsed = parse_structure_payload(structure=build_low_quality_structure())
 
@@ -168,3 +290,19 @@ def test_parse_structure_keeps_short_wall_with_near_junction_support():
         and abs(wall["polyline"][1]["y"] - wall["polyline"][0]["y"]) >= 18.0
         for wall in parsed["structure"]["walls"]
     )
+
+
+def test_parse_structure_keeps_multiple_legitimate_windows_on_long_exterior_wall():
+    parsed = parse_structure_payload(structure=_single_exterior_wall_with_windows(spans=[40.0, 40.0, 40.0, 40.0, 40.0]))
+
+    windows = [opening for opening in parsed["structure"]["openings"] if opening["kind"] == "window"]
+
+    assert len(windows) == 5
+
+
+def test_parse_structure_prunes_only_overdense_exterior_window_runs():
+    parsed = parse_structure_payload(structure=_single_exterior_wall_with_windows(spans=[90.0, 90.0, 90.0, 90.0, 90.0]))
+
+    windows = [opening for opening in parsed["structure"]["openings"] if opening["kind"] == "window"]
+
+    assert len(windows) == 3
