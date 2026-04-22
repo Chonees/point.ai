@@ -1405,5 +1405,4314 @@
   "topology_issues": [
     "isolated_room",
     "missing_category"
+  ],
+  "walls": [
+    {
+      "wall_id": "wall-00301de80b7d",
+      "start": {
+        "x": 149.98499999999999,
+        "y": 371.74499999999995
+      },
+      "end": {
+        "x": 148.995,
+        "y": 384.61499999999995
+      },
+      "orientation": "vertical",
+      "length": 12.908020762301247,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-00449534c6c2",
+      "start": {
+        "x": 108.89999999999999,
+        "y": 359.86499999999995
+      },
+      "end": {
+        "x": 100.485,
+        "y": 350.955
+      },
+      "orientation": "diagonal",
+      "length": 12.255624219108519,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-008a3fb4dd2f",
+      "start": {
+        "x": 12.87,
+        "y": 330.65999999999997
+      },
+      "end": {
+        "x": 8.415,
+        "y": 330.65999999999997
+      },
+      "orientation": "horizontal",
+      "length": 4.455,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-0219bcfe5027",
+      "start": {
+        "x": 212.355,
+        "y": 267.79499999999996
+      },
+      "end": {
+        "x": 212.85,
+        "y": 260.865
+      },
+      "orientation": "vertical",
+      "length": 6.947656079570959,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-023ffbf1b3ef",
+      "start": {
+        "x": 21.285,
+        "y": 249.48
+      },
+      "end": {
+        "x": 14.354999999999999,
+        "y": 248.98499999999999
+      },
+      "orientation": "horizontal",
+      "length": 6.9476560795710105,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-0311d1b6ffaf",
+      "start": {
+        "x": 91.08,
+        "y": 338.085
+      },
+      "end": {
+        "x": 85.63499999999999,
+        "y": 342.04499999999996
+      },
+      "orientation": "diagonal",
+      "length": 6.732727901824038,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-05e6d781b494",
+      "start": {
+        "x": 383.625,
+        "y": 402.92999999999995
+      },
+      "end": {
+        "x": 381.15,
+        "y": 409.36499999999995
+      },
+      "orientation": "vertical",
+      "length": 6.894552197206149,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-075c773a0043",
+      "start": {
+        "x": 415.30499999999995,
+        "y": 431.145
+      },
+      "end": {
+        "x": 415.30499999999995,
+        "y": 402.92999999999995
+      },
+      "orientation": "vertical",
+      "length": 28.215000000000032,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-09d15a6cedd4",
+      "start": {
+        "x": 290.565,
+        "y": 404.41499999999996
+      },
+      "end": {
+        "x": 320.265,
+        "y": 404.41499999999996
+      },
+      "orientation": "horizontal",
+      "length": 29.69999999999999,
+      "is_exterior": false,
+      "room_ids": [
+        "room-pwdr-f2cbb3be1766",
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": [
+        "inferred_from_bbox"
+      ]
+    },
+    {
+      "wall_id": "wall-0a3e2e39c152",
+      "start": {
+        "x": 146.51999999999998,
+        "y": 164.34
+      },
+      "end": {
+        "x": 23.75999999999999,
+        "y": 164.34
+      },
+      "orientation": "horizontal",
+      "length": 122.75999999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-0c310fdeb90b",
+      "start": {
+        "x": 381.645,
+        "y": 372.23999999999995
+      },
+      "end": {
+        "x": 387.09,
+        "y": 368.775
+      },
+      "orientation": "diagonal",
+      "length": 6.454010381150603,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-0c64228765f1",
+      "start": {
+        "x": 356.4,
+        "y": 302.445
+      },
+      "end": {
+        "x": 356.4,
+        "y": 394.515
+      },
+      "orientation": "vertical",
+      "length": 92.07,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-0d09baa9e53a",
+      "start": {
+        "x": 17.82,
+        "y": 712.8
+      },
+      "end": {
+        "x": 17.82,
+        "y": 775.665
+      },
+      "orientation": "vertical",
+      "length": 62.86500000000001,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-0d9eaab021a4",
+      "start": {
+        "x": 179.685,
+        "y": 289.08
+      },
+      "end": {
+        "x": 224.73,
+        "y": 289.08
+      },
+      "orientation": "horizontal",
+      "length": 45.04499999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-0fbe0b560461",
+      "start": {
+        "x": 154.935,
+        "y": 164.83499999999998
+      },
+      "end": {
+        "x": 154.935,
+        "y": 275.21999999999997
+      },
+      "orientation": "vertical",
+      "length": 110.38499999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-10a32bc5a291",
+      "start": {
+        "x": 222.255,
+        "y": 230.67
+      },
+      "end": {
+        "x": 210.86999999999998,
+        "y": 224.23499999999999
+      },
+      "orientation": "diagonal",
+      "length": 13.077746365486695,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-11099c4c8624",
+      "start": {
+        "x": 162.35999999999999,
+        "y": 161.36999999999998
+      },
+      "end": {
+        "x": 158.89499999999998,
+        "y": 164.34
+      },
+      "orientation": "horizontal",
+      "length": 4.56367450636,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-11ed3e6db815",
+      "start": {
+        "x": 31.68,
+        "y": 703.395
+      },
+      "end": {
+        "x": 33.165,
+        "y": 710.3249999999999
+      },
+      "orientation": "vertical",
+      "length": 7.087321426321746,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1219c56b3b13",
+      "start": {
+        "x": 395.01,
+        "y": 385.60499999999996
+      },
+      "end": {
+        "x": 394.02,
+        "y": 399.465
+      },
+      "orientation": "vertical",
+      "length": 13.895312159142032,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-147055b4fb93",
+      "start": {
+        "x": 59.894999999999996,
+        "y": 499.455
+      },
+      "end": {
+        "x": 49.995,
+        "y": 494.01
+      },
+      "orientation": "diagonal",
+      "length": 11.29858508840819,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-14fd971a7e9d",
+      "start": {
+        "x": 263.34,
+        "y": 432.63
+      },
+      "end": {
+        "x": 271.755,
+        "y": 434.11499999999995
+      },
+      "orientation": "horizontal",
+      "length": 8.545024868307888,
+      "is_exterior": true,
+      "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-16edd3b7f53f",
+      "start": {
+        "x": 111.37499999999999,
+        "y": 665.775
+      },
+      "end": {
+        "x": 21.78,
+        "y": 675.18
+      },
+      "orientation": "diagonal",
+      "length": 90.08728017872444,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-18448b69d811",
+      "start": {
+        "x": 109.88999999999999,
+        "y": 282.15
+      },
+      "end": {
+        "x": 112.86,
+        "y": 271.26
+      },
+      "orientation": "vertical",
+      "length": 11.287736708481455,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-19de7964a83a",
+      "start": {
+        "x": 290.565,
+        "y": 399.465
+      },
+      "end": {
+        "x": 347.48999999999995,
+        "y": 399.465
+      },
+      "orientation": "horizontal",
+      "length": 56.924999999999955,
+      "is_exterior": true,
+      "room_ids": [
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1abe5fd42b73",
+      "start": {
+        "x": 339.57,
+        "y": 539.055
+      },
+      "end": {
+        "x": 459.85499999999996,
+        "y": 551.925
+      },
+      "orientation": "diagonal",
+      "length": 120.97155915751435,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1add3499b591",
+      "start": {
+        "x": 324.71999999999997,
+        "y": 554.4
+      },
+      "end": {
+        "x": 303.93,
+        "y": 558.855
+      },
+      "orientation": "diagonal",
+      "length": 21.26196427896536,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1ade1c1569c4",
+      "start": {
+        "x": 459.85499999999996,
+        "y": 302.445
+      },
+      "end": {
+        "x": 356.4,
+        "y": 302.445
+      },
+      "orientation": "horizontal",
+      "length": 103.45499999999998,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1ae90f0bc7b7",
+      "start": {
+        "x": 23.759999999999998,
+        "y": 677.16
+      },
+      "end": {
+        "x": 23.759999999999998,
+        "y": 702.9
+      },
+      "orientation": "vertical",
+      "length": 25.74000000000001,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1c72a3e7353a",
+      "start": {
+        "x": 197.505,
+        "y": 35.64
+      },
+      "end": {
+        "x": 197.505,
+        "y": 188.09999999999997
+      },
+      "orientation": "vertical",
+      "length": 152.45999999999998,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1d0bfea6fa41",
+      "start": {
+        "x": 135.63,
+        "y": 674.685
+      },
+      "end": {
+        "x": 139.59,
+        "y": 689.535
+      },
+      "orientation": "diagonal",
+      "length": 15.368932949297447,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1da33ebfbc2d",
+      "start": {
+        "x": 239.08499999999998,
+        "y": 257.4
+      },
+      "end": {
+        "x": 239.08499999999998,
+        "y": 233.14499999999998
+      },
+      "orientation": "vertical",
+      "length": 24.254999999999995,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1da6ac7ad340",
+      "start": {
+        "x": 263.34,
+        "y": 409.36499999999995
+      },
+      "end": {
+        "x": 263.34,
+        "y": 432.63
+      },
+      "orientation": "vertical",
+      "length": 23.265000000000043,
+      "is_exterior": true,
+      "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1fb2b00c234c",
+      "start": {
+        "x": 178.2,
+        "y": 142.56
+      },
+      "end": {
+        "x": 174.23999999999998,
+        "y": 142.56
+      },
+      "orientation": "horizontal",
+      "length": 3.960000000000008,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1ff2c56db19e",
+      "start": {
+        "x": 372.23999999999995,
+        "y": 435.59999999999997
+      },
+      "end": {
+        "x": 375.705,
+        "y": 429.65999999999997
+      },
+      "orientation": "diagonal",
+      "length": 6.876759774777668,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-1ff588d186df",
+      "start": {
+        "x": 263.34,
+        "y": 22.77
+      },
+      "end": {
+        "x": 247.49999999999997,
+        "y": 21.285
+      },
+      "orientation": "horizontal",
+      "length": 15.909457093188319,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-206f66cd8051",
+      "start": {
+        "x": 132.66,
+        "y": 438.57
+      },
+      "end": {
+        "x": 132.66,
+        "y": 366.79499999999996
+      },
+      "orientation": "vertical",
+      "length": 71.77500000000003,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-23967a3a7dc3",
+      "start": {
+        "x": 278.685,
+        "y": 437.58
+      },
+      "end": {
+        "x": 284.625,
+        "y": 443.025
+      },
+      "orientation": "diagonal",
+      "length": 8.058016195069348,
+      "is_exterior": true,
+      "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-239c73c924f0",
+      "start": {
+        "x": 459.85499999999996,
+        "y": 552.42
+      },
+      "end": {
+        "x": 339.57,
+        "y": 539.55
+      },
+      "orientation": "diagonal",
+      "length": 120.97155915751435,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-24f8715a156c",
+      "start": {
+        "x": 31.68,
+        "y": 776.16
+      },
+      "end": {
+        "x": 33.165,
+        "y": 789.525
+      },
+      "orientation": "vertical",
+      "length": 13.447246930134073,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-272f91122480",
+      "start": {
+        "x": 181.17,
+        "y": 33.165
+      },
+      "end": {
+        "x": 195.03,
+        "y": 33.165
+      },
+      "orientation": "horizontal",
+      "length": 13.860000000000014,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-273ab6a3a8ff",
+      "start": {
+        "x": 333.135,
+        "y": 359.86499999999995
+      },
+      "end": {
+        "x": 321.255,
+        "y": 353.92499999999995
+      },
+      "orientation": "diagonal",
+      "length": 13.282243786348745,
+      "is_exterior": true,
+      "room_ids": [
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-28a49ee03aaf",
+      "start": {
+        "x": 15.344999999999999,
+        "y": 370.755
+      },
+      "end": {
+        "x": 23.759999999999998,
+        "y": 373.22999999999996
+      },
+      "orientation": "horizontal",
+      "length": 8.771422347601318,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-29dd258fc838",
+      "start": {
+        "x": 303.435,
+        "y": 369.765
+      },
+      "end": {
+        "x": 290.565,
+        "y": 372.73499999999996
+      },
+      "orientation": "horizontal",
+      "length": 13.208247423485068,
+      "is_exterior": true,
+      "room_ids": [
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-2aeaca2d36c7",
+      "start": {
+        "x": 303.93,
+        "y": 702.9
+      },
+      "end": {
+        "x": 309.375,
+        "y": 704.385
+      },
+      "orientation": "horizontal",
+      "length": 5.64386835424073,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-2b7944cd23e8",
+      "start": {
+        "x": 462.33,
+        "y": 479.655
+      },
+      "end": {
+        "x": 469.26,
+        "y": 486.585
+      },
+      "orientation": "diagonal",
+      "length": 9.800499987245558,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-2c0e2d34d006",
+      "start": {
+        "x": 460.84499999999997,
+        "y": 496.48499999999996
+      },
+      "end": {
+        "x": 453.41999999999996,
+        "y": 486.09
+      },
+      "orientation": "diagonal",
+      "length": 12.774453021558292,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-2c1e320a775c",
+      "start": {
+        "x": 71.28,
+        "y": 500.445
+      },
+      "end": {
+        "x": 59.894999999999996,
+        "y": 499.455
+      },
+      "orientation": "horizontal",
+      "length": 11.42796241680905,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-2ca290880ece",
+      "start": {
+        "x": 247.005,
+        "y": 188.1
+      },
+      "end": {
+        "x": 247.005,
+        "y": 69.795
+      },
+      "orientation": "vertical",
+      "length": 118.30499999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-312dfc956189",
+      "start": {
+        "x": 122.26499999999999,
+        "y": 674.685
+      },
+      "end": {
+        "x": 135.63,
+        "y": 674.685
+      },
+      "orientation": "horizontal",
+      "length": 13.365000000000009,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-327bfb56e339",
+      "start": {
+        "x": 375.705,
+        "y": 429.65999999999997
+      },
+      "end": {
+        "x": 415.30499999999995,
+        "y": 431.145
+      },
+      "orientation": "horizontal",
+      "length": 39.627833968058326,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-32f03c91f92c",
+      "start": {
+        "x": 339.57,
+        "y": 539.55
+      },
+      "end": {
+        "x": 324.71999999999997,
+        "y": 554.4
+      },
+      "orientation": "diagonal",
+      "length": 21.001071401240495,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-34b2d4fd853e",
+      "start": {
+        "x": 111.37499999999999,
+        "y": 665.28
+      },
+      "end": {
+        "x": 122.26499999999999,
+        "y": 674.685
+      },
+      "orientation": "diagonal",
+      "length": 14.389097435211129,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-3599367fe026",
+      "start": {
+        "x": 12.87,
+        "y": 487.08
+      },
+      "end": {
+        "x": 8.415,
+        "y": 487.08
+      },
+      "orientation": "horizontal",
+      "length": 4.455,
+      "is_exterior": false,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959",
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-36b4aff02cc7",
+      "start": {
+        "x": 157.41,
+        "y": 375.21
+      },
+      "end": {
+        "x": 153.945,
+        "y": 371.74499999999995
+      },
+      "orientation": "diagonal",
+      "length": 4.9002499936228,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-38319378b22d",
+      "start": {
+        "x": 459.85499999999996,
+        "y": 261.35999999999996
+      },
+      "end": {
+        "x": 459.85499999999996,
+        "y": 89.595
+      },
+      "orientation": "vertical",
+      "length": 171.76499999999996,
+      "is_exterior": true,
+      "room_ids": [
+        "room-garage-bd6ecee651da"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-38b28dd5bb4e",
+      "start": {
+        "x": 415.30499999999995,
+        "y": 454.40999999999997
+      },
+      "end": {
+        "x": 418.77,
+        "y": 448.965
+      },
+      "orientation": "diagonal",
+      "length": 6.454010381150634,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-3a8650f30449",
+      "start": {
+        "x": 347.48999999999995,
+        "y": 399.465
+      },
+      "end": {
+        "x": 347.48999999999995,
+        "y": 360.35999999999996
+      },
+      "orientation": "vertical",
+      "length": 39.10500000000002,
+      "is_exterior": true,
+      "room_ids": [
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-3b1695f3f787",
+      "start": {
+        "x": 412.83,
+        "y": 437.58
+      },
+      "end": {
+        "x": 408.375,
+        "y": 448.965
+      },
+      "orientation": "diagonal",
+      "length": 12.22559814487617,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-3be231b1fa74",
+      "start": {
+        "x": 432.63,
+        "y": 447.97499999999997
+      },
+      "end": {
+        "x": 430.65,
+        "y": 442.53
+      },
+      "orientation": "vertical",
+      "length": 5.793826455806214,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-3c73f93bdefd",
+      "start": {
+        "x": 329.17499999999995,
+        "y": 409.36499999999995
+      },
+      "end": {
+        "x": 329.17499999999995,
+        "y": 453.91499999999996
+      },
+      "orientation": "vertical",
+      "length": 44.55000000000001,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-3e29fa0a1320",
+      "start": {
+        "x": 303.93,
+        "y": 558.855
+      },
+      "end": {
+        "x": 303.93,
+        "y": 702.9
+      },
+      "orientation": "vertical",
+      "length": 144.04499999999996,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-3e2f87e613cc",
+      "start": {
+        "x": 375.705,
+        "y": 441.04499999999996
+      },
+      "end": {
+        "x": 372.23999999999995,
+        "y": 435.59999999999997
+      },
+      "orientation": "diagonal",
+      "length": 6.454010381150634,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-3e92bd9391e2",
+      "start": {
+        "x": 324.71999999999997,
+        "y": 409.36499999999995
+      },
+      "end": {
+        "x": 324.71999999999997,
+        "y": 462.33
+      },
+      "orientation": "vertical",
+      "length": 52.96500000000003,
+      "is_exterior": false,
+      "room_ids": [
+        "room-master-bath-119010f86e69",
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "issues": [
+        "inferred_from_bbox"
+      ]
+    },
+    {
+      "wall_id": "wall-3ed6d8f0c41f",
+      "start": {
+        "x": 12.87,
+        "y": 342.53999999999996
+      },
+      "end": {
+        "x": 12.87,
+        "y": 330.65999999999997
+      },
+      "orientation": "vertical",
+      "length": 11.879999999999995,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-3f60f945b4cb",
+      "start": {
+        "x": 469.26,
+        "y": 510.34499999999997
+      },
+      "end": {
+        "x": 469.26,
+        "y": 489.55499999999995
+      },
+      "orientation": "vertical",
+      "length": 20.79000000000002,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-3f9c7fb05aac",
+      "start": {
+        "x": 459.85499999999996,
+        "y": 551.925
+      },
+      "end": {
+        "x": 459.85499999999996,
+        "y": 528.66
+      },
+      "orientation": "vertical",
+      "length": 23.264999999999986,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-3fe1252fa428",
+      "start": {
+        "x": 380.655,
+        "y": 375.21
+      },
+      "end": {
+        "x": 381.645,
+        "y": 372.23999999999995
+      },
+      "orientation": "vertical",
+      "length": 3.1306548835667245,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-401063433668",
+      "start": {
+        "x": 415.30499999999995,
+        "y": 402.92999999999995
+      },
+      "end": {
+        "x": 405.405,
+        "y": 399.465
+      },
+      "orientation": "diagonal",
+      "length": 10.48886194970643,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-419078385984",
+      "start": {
+        "x": 356.4,
+        "y": 390.05999999999995
+      },
+      "end": {
+        "x": 459.85499999999996,
+        "y": 390.05999999999995
+      },
+      "orientation": "horizontal",
+      "length": 103.45499999999998,
+      "is_exterior": false,
+      "room_ids": [
+        "room-closet-c59e39a3c606",
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": [
+        "inferred_from_bbox"
+      ]
+    },
+    {
+      "wall_id": "wall-45a1674cf94d",
+      "start": {
+        "x": 202.45499999999998,
+        "y": 214.33499999999998
+      },
+      "end": {
+        "x": 197.505,
+        "y": 198.49499999999998
+      },
+      "orientation": "diagonal",
+      "length": 16.59542406809781,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-46273a6dcd59",
+      "start": {
+        "x": 267.29999999999995,
+        "y": 797.9399999999999
+      },
+      "end": {
+        "x": 277.2,
+        "y": 798.93
+      },
+      "orientation": "horizontal",
+      "length": 9.949376864909716,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-4815d73853bf",
+      "start": {
+        "x": 23.759999999999998,
+        "y": 340.065
+      },
+      "end": {
+        "x": 22.275,
+        "y": 344.52
+      },
+      "orientation": "vertical",
+      "length": 4.695982325350028,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-486454ab1c84",
+      "start": {
+        "x": 194.535,
+        "y": 438.57
+      },
+      "end": {
+        "x": 194.535,
+        "y": 387.585
+      },
+      "orientation": "vertical",
+      "length": 50.985000000000014,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-48fc4a0c82d7",
+      "start": {
+        "x": 132.66,
+        "y": 366.79499999999996
+      },
+      "end": {
+        "x": 119.29499999999999,
+        "y": 365.31
+      },
+      "orientation": "horizontal",
+      "length": 13.447246930134067,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-49007d286275",
+      "start": {
+        "x": 317.29499999999996,
+        "y": 353.92499999999995
+      },
+      "end": {
+        "x": 316.79999999999995,
+        "y": 359.37
+      },
+      "orientation": "vertical",
+      "length": 5.467453703507744,
+      "is_exterior": true,
+      "room_ids": [
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-4a649131cb12",
+      "start": {
+        "x": 194.535,
+        "y": 446.98499999999996
+      },
+      "end": {
+        "x": 186.11999999999998,
+        "y": 446.98499999999996
+      },
+      "orientation": "horizontal",
+      "length": 8.41500000000002,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-4b89009e02bb",
+      "start": {
+        "x": 210.86999999999998,
+        "y": 224.23499999999999
+      },
+      "end": {
+        "x": 202.45499999999998,
+        "y": 214.33499999999998
+      },
+      "orientation": "diagonal",
+      "length": 12.993160700922619,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-4bafe3f89c7b",
+      "start": {
+        "x": 273.73499999999996,
+        "y": 531.63
+      },
+      "end": {
+        "x": 205.92,
+        "y": 433.125
+      },
+      "orientation": "diagonal",
+      "length": 119.59142632312734,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-4bbd9378ad54",
+      "start": {
+        "x": 22.275,
+        "y": 344.52
+      },
+      "end": {
+        "x": 15.344999999999999,
+        "y": 345.015
+      },
+      "orientation": "horizontal",
+      "length": 6.947656079571009,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-4dbf91b98b02",
+      "start": {
+        "x": 164.34,
+        "y": 387.585
+      },
+      "end": {
+        "x": 159.885,
+        "y": 383.13
+      },
+      "orientation": "diagonal",
+      "length": 6.300321420372136,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-508b7bbbd5b0",
+      "start": {
+        "x": 65.33999999999999,
+        "y": 712.8
+      },
+      "end": {
+        "x": 62.864999999999995,
+        "y": 710.3249999999999
+      },
+      "orientation": "vertical",
+      "length": 3.5001785668734224,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-5345768b7730",
+      "start": {
+        "x": 276.705,
+        "y": 712.305
+      },
+      "end": {
+        "x": 277.695,
+        "y": 798.93
+      },
+      "orientation": "vertical",
+      "length": 86.63065695814618,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-535227797dc3",
+      "start": {
+        "x": 174.23999999999998,
+        "y": 142.56
+      },
+      "end": {
+        "x": 165.825,
+        "y": 149.48999999999998
+      },
+      "orientation": "diagonal",
+      "length": 10.901244195044875,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-53e1a7b9d136",
+      "start": {
+        "x": 395.505,
+        "y": 369.765
+      },
+      "end": {
+        "x": 408.375,
+        "y": 376.695
+      },
+      "orientation": "diagonal",
+      "length": 14.617174829631074,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-5505788149cf",
+      "start": {
+        "x": 203.94,
+        "y": 470.24999999999994
+      },
+      "end": {
+        "x": 194.535,
+        "y": 468.27
+      },
+      "orientation": "horizontal",
+      "length": 9.611161480279055,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-55defc6043c1",
+      "start": {
+        "x": 224.73,
+        "y": 289.08
+      },
+      "end": {
+        "x": 219.77999999999997,
+        "y": 284.625
+      },
+      "orientation": "diagonal",
+      "length": 6.659543903301489,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-58595e9568a3",
+      "start": {
+        "x": 186.11999999999998,
+        "y": 446.98499999999996
+      },
+      "end": {
+        "x": 131.17499999999998,
+        "y": 485.59499999999997
+      },
+      "orientation": "diagonal",
+      "length": 67.15418918429438,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-58c320f05115",
+      "start": {
+        "x": 150.7275,
+        "y": 164.34
+      },
+      "end": {
+        "x": 150.7275,
+        "y": 282.15
+      },
+      "orientation": "vertical",
+      "length": 117.80999999999997,
+      "is_exterior": false,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226",
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": [
+        "inferred_from_bbox"
+      ]
+    },
+    {
+      "wall_id": "wall-598d2bbcf099",
+      "start": {
+        "x": 348.47999999999996,
+        "y": 518.76
+      },
+      "end": {
+        "x": 377.685,
+        "y": 521.235
+      },
+      "orientation": "horizontal",
+      "length": 29.309685259313216,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-5b13193e9e89",
+      "start": {
+        "x": 260.61749999999995,
+        "y": 89.595
+      },
+      "end": {
+        "x": 260.61749999999995,
+        "y": 188.1
+      },
+      "orientation": "vertical",
+      "length": 98.505,
+      "is_exterior": false,
+      "room_ids": [
+        "room-garage-bd6ecee651da",
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": [
+        "inferred_from_bbox"
+      ]
+    },
+    {
+      "wall_id": "wall-5b489e787201",
+      "start": {
+        "x": 91.08,
+        "y": 282.15
+      },
+      "end": {
+        "x": 109.88999999999999,
+        "y": 282.15
+      },
+      "orientation": "horizontal",
+      "length": 18.809999999999988,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-5d92f3d254e6",
+      "start": {
+        "x": 453.91499999999996,
+        "y": 710.3249999999999
+      },
+      "end": {
+        "x": 454.40999999999997,
+        "y": 704.385
+      },
+      "orientation": "vertical",
+      "length": 5.960589316502127,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-5dda30a82631",
+      "start": {
+        "x": 107.91,
+        "y": 681.12
+      },
+      "end": {
+        "x": 121.77,
+        "y": 675.18
+      },
+      "orientation": "diagonal",
+      "length": 15.07923074961056,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-61ebcdcf4c0f",
+      "start": {
+        "x": 197.505,
+        "y": 188.1
+      },
+      "end": {
+        "x": 247.005,
+        "y": 188.1
+      },
+      "orientation": "horizontal",
+      "length": 49.5,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-625be784a1af",
+      "start": {
+        "x": 218.79,
+        "y": 256.40999999999997
+      },
+      "end": {
+        "x": 239.08499999999998,
+        "y": 257.4
+      },
+      "orientation": "horizontal",
+      "length": 20.319131994256043,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-6428329f2019",
+      "start": {
+        "x": 62.864999999999995,
+        "y": 710.3249999999999
+      },
+      "end": {
+        "x": 62.864999999999995,
+        "y": 705.375
+      },
+      "orientation": "vertical",
+      "length": 4.949999999999932,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-6437961d1551",
+      "start": {
+        "x": 459.85499999999996,
+        "y": 394.515
+      },
+      "end": {
+        "x": 459.85499999999996,
+        "y": 302.445
+      },
+      "orientation": "vertical",
+      "length": 92.07,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-64c8274538e1",
+      "start": {
+        "x": 257.895,
+        "y": 89.595
+      },
+      "end": {
+        "x": 257.895,
+        "y": 261.35999999999996
+      },
+      "orientation": "vertical",
+      "length": 171.76499999999996,
+      "is_exterior": true,
+      "room_ids": [
+        "room-garage-bd6ecee651da"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-65c54b7f1723",
+      "start": {
+        "x": 14.354999999999999,
+        "y": 275.715
+      },
+      "end": {
+        "x": 21.285,
+        "y": 275.21999999999997
+      },
+      "orientation": "horizontal",
+      "length": 6.9476560795710105,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-6685b6512908",
+      "start": {
+        "x": 141.57,
+        "y": 438.57
+      },
+      "end": {
+        "x": 194.535,
+        "y": 438.57
+      },
+      "orientation": "horizontal",
+      "length": 52.965,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-6706a95b5ad5",
+      "start": {
+        "x": 146.51999999999998,
+        "y": 775.665
+      },
+      "end": {
+        "x": 146.51999999999998,
+        "y": 712.8
+      },
+      "orientation": "vertical",
+      "length": 62.86500000000001,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-67514860449b",
+      "start": {
+        "x": 85.63499999999999,
+        "y": 342.04499999999996
+      },
+      "end": {
+        "x": 23.759999999999998,
+        "y": 340.065
+      },
+      "orientation": "horizontal",
+      "length": 61.906671894069696,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-679498084a1d",
+      "start": {
+        "x": 276.9525,
+        "y": 539.55
+      },
+      "end": {
+        "x": 276.9525,
+        "y": 798.93
+      },
+      "orientation": "vertical",
+      "length": 259.38,
+      "is_exterior": false,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c",
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": [
+        "inferred_from_bbox"
+      ]
+    },
+    {
+      "wall_id": "wall-6c7a4a9d67f6",
+      "start": {
+        "x": 381.15,
+        "y": 394.515
+      },
+      "end": {
+        "x": 380.655,
+        "y": 375.21
+      },
+      "orientation": "vertical",
+      "length": 19.311345111099854,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-6d3b83d77be4",
+      "start": {
+        "x": 159.885,
+        "y": 383.13
+      },
+      "end": {
+        "x": 157.41,
+        "y": 375.21
+      },
+      "orientation": "vertical",
+      "length": 8.297712034048917,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-6faab3f9d201",
+      "start": {
+        "x": 399.96,
+        "y": 386.09999999999997
+      },
+      "end": {
+        "x": 395.01,
+        "y": 385.60499999999996
+      },
+      "orientation": "horizontal",
+      "length": 4.97468843245483,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-6fafbb6384a8",
+      "start": {
+        "x": 348.47999999999996,
+        "y": 456.39
+      },
+      "end": {
+        "x": 348.47999999999996,
+        "y": 518.76
+      },
+      "orientation": "vertical",
+      "length": 62.370000000000005,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-7049bb33d37b",
+      "start": {
+        "x": 469.26,
+        "y": 486.585
+      },
+      "end": {
+        "x": 469.26,
+        "y": 472.22999999999996
+      },
+      "orientation": "vertical",
+      "length": 14.355000000000018,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-716aa5dcdcaf",
+      "start": {
+        "x": 212.85,
+        "y": 260.865
+      },
+      "end": {
+        "x": 218.79,
+        "y": 256.40999999999997
+      },
+      "orientation": "diagonal",
+      "length": 7.425000000000023,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-71ab7868c395",
+      "start": {
+        "x": 130.67999999999998,
+        "y": 485.59499999999997
+      },
+      "end": {
+        "x": 89.595,
+        "y": 486.09
+      },
+      "orientation": "horizontal",
+      "length": 41.0879818195053,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-7218f3c47aae",
+      "start": {
+        "x": 290.565,
+        "y": 372.73499999999996
+      },
+      "end": {
+        "x": 290.565,
+        "y": 399.465
+      },
+      "orientation": "vertical",
+      "length": 26.730000000000018,
+      "is_exterior": true,
+      "room_ids": [
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-731a54b61421",
+      "start": {
+        "x": 415.30499999999995,
+        "y": 521.235
+      },
+      "end": {
+        "x": 459.85499999999996,
+        "y": 518.76
+      },
+      "orientation": "horizontal",
+      "length": 44.61869703386688,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-74c52902199a",
+      "start": {
+        "x": 277.2,
+        "y": 798.93
+      },
+      "end": {
+        "x": 273.73499999999996,
+        "y": 531.63
+      },
+      "orientation": "diagonal",
+      "length": 267.3224573899469,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-75736f4c1355",
+      "start": {
+        "x": 99.99,
+        "y": 689.04
+      },
+      "end": {
+        "x": 107.91,
+        "y": 681.12
+      },
+      "orientation": "diagonal",
+      "length": 11.200571413994885,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-771e24a7ff9a",
+      "start": {
+        "x": 49.995,
+        "y": 494.01
+      },
+      "end": {
+        "x": 23.759999999999998,
+        "y": 494.01
+      },
+      "orientation": "horizontal",
+      "length": 26.235,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-774358785342",
+      "start": {
+        "x": 347.48999999999995,
+        "y": 360.35999999999996
+      },
+      "end": {
+        "x": 333.135,
+        "y": 359.86499999999995
+      },
+      "orientation": "horizontal",
+      "length": 14.363531947261402,
+      "is_exterior": true,
+      "room_ids": [
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-784862aef839",
+      "start": {
+        "x": 86.13,
+        "y": 494.01
+      },
+      "end": {
+        "x": 71.28,
+        "y": 500.445
+      },
+      "orientation": "diagonal",
+      "length": 16.184304897029094,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-7881030ba515",
+      "start": {
+        "x": 96.02999999999999,
+        "y": 338.085
+      },
+      "end": {
+        "x": 91.08,
+        "y": 338.085
+      },
+      "orientation": "horizontal",
+      "length": 4.949999999999989,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-7a044a8c7acb",
+      "start": {
+        "x": 413.82,
+        "y": 383.13
+      },
+      "end": {
+        "x": 417.28499999999997,
+        "y": 394.515
+      },
+      "orientation": "diagonal",
+      "length": 11.900607127369579,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-7bd1b0705cea",
+      "start": {
+        "x": 307.395,
+        "y": 712.8
+      },
+      "end": {
+        "x": 276.705,
+        "y": 712.305
+      },
+      "orientation": "horizontal",
+      "length": 30.693991675896438,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-7c22dd333acc",
+      "start": {
+        "x": 12.87,
+        "y": 373.22999999999996
+      },
+      "end": {
+        "x": 15.344999999999999,
+        "y": 370.755
+      },
+      "orientation": "vertical",
+      "length": 3.500178566873386,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-7cf27f95881e",
+      "start": {
+        "x": 408.375,
+        "y": 376.695
+      },
+      "end": {
+        "x": 413.82,
+        "y": 383.13
+      },
+      "orientation": "diagonal",
+      "length": 8.429546251133566,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-7d18b5c5e232",
+      "start": {
+        "x": 154.935,
+        "y": 275.21999999999997
+      },
+      "end": {
+        "x": 178.695,
+        "y": 275.715
+      },
+      "orientation": "horizontal",
+      "length": 23.765155690632444,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-7f05c5b05bf9",
+      "start": {
+        "x": 408.375,
+        "y": 448.965
+      },
+      "end": {
+        "x": 396.98999999999995,
+        "y": 459.85499999999996
+      },
+      "orientation": "diagonal",
+      "length": 15.754692158211178,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-7fbe84e1873a",
+      "start": {
+        "x": 153.945,
+        "y": 371.74499999999995
+      },
+      "end": {
+        "x": 149.98499999999999,
+        "y": 371.74499999999995
+      },
+      "orientation": "horizontal",
+      "length": 3.960000000000008,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-7fee60124936",
+      "start": {
+        "x": 469.26,
+        "y": 711.81
+      },
+      "end": {
+        "x": 453.91499999999996,
+        "y": 710.3249999999999
+      },
+      "orientation": "horizontal",
+      "length": 15.416687387373491,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-808629a3cbdb",
+      "start": {
+        "x": 30.689999999999998,
+        "y": 712.8
+      },
+      "end": {
+        "x": 17.82,
+        "y": 712.8
+      },
+      "orientation": "horizontal",
+      "length": 12.869999999999997,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-83358d79a4ad",
+      "start": {
+        "x": 374.715,
+        "y": 460.34999999999997
+      },
+      "end": {
+        "x": 377.685,
+        "y": 452.92499999999995
+      },
+      "orientation": "vertical",
+      "length": 7.99696973859476,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-833dca5bac55",
+      "start": {
+        "x": 417.28499999999997,
+        "y": 394.515
+      },
+      "end": {
+        "x": 459.85499999999996,
+        "y": 394.515
+      },
+      "orientation": "horizontal",
+      "length": 42.56999999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-83e8c6f4e526",
+      "start": {
+        "x": 179.19,
+        "y": 161.36999999999998
+      },
+      "end": {
+        "x": 178.2,
+        "y": 142.56
+      },
+      "orientation": "vertical",
+      "length": 18.83603461453602,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-89e7aef88c11",
+      "start": {
+        "x": 132.165,
+        "y": 776.16
+      },
+      "end": {
+        "x": 146.51999999999998,
+        "y": 775.665
+      },
+      "orientation": "horizontal",
+      "length": 14.36353194726143,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-8ade3ac47028",
+      "start": {
+        "x": 321.255,
+        "y": 353.92499999999995
+      },
+      "end": {
+        "x": 317.29499999999996,
+        "y": 353.92499999999995
+      },
+      "orientation": "horizontal",
+      "length": 3.9600000000000364,
+      "is_exterior": true,
+      "room_ids": [
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-8adea62d220b",
+      "start": {
+        "x": 387.09,
+        "y": 368.775
+      },
+      "end": {
+        "x": 395.505,
+        "y": 369.765
+      },
+      "orientation": "horizontal",
+      "length": 8.473035170468748,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-8beeaa85e97e",
+      "start": {
+        "x": 187.605,
+        "y": 197.01
+      },
+      "end": {
+        "x": 187.10999999999999,
+        "y": 164.83499999999998
+      },
+      "orientation": "vertical",
+      "length": 32.17880746702713,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-8c77ea196f68",
+      "start": {
+        "x": 289.08,
+        "y": 450.45
+      },
+      "end": {
+        "x": 290.565,
+        "y": 462.33
+      },
+      "orientation": "vertical",
+      "length": 11.972452756223344,
+      "is_exterior": true,
+      "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-8c8e760731da",
+      "start": {
+        "x": 351.94499999999994,
+        "y": 353.92499999999995
+      },
+      "end": {
+        "x": 351.94499999999994,
+        "y": 394.515
+      },
+      "orientation": "vertical",
+      "length": 40.59000000000003,
+      "is_exterior": false,
+      "room_ids": [
+        "room-closet-c59e39a3c606",
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": [
+        "inferred_from_bbox"
+      ]
+    },
+    {
+      "wall_id": "wall-8e8b92b80c37",
+      "start": {
+        "x": 417.78,
+        "y": 528.66
+      },
+      "end": {
+        "x": 415.30499999999995,
+        "y": 521.235
+      },
+      "orientation": "vertical",
+      "length": 7.826637208916703,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-9018baab44fd",
+      "start": {
+        "x": 393.525,
+        "y": 442.53
+      },
+      "end": {
+        "x": 375.705,
+        "y": 441.04499999999996
+      },
+      "orientation": "horizontal",
+      "length": 17.881767949506553,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-911e1d7be80f",
+      "start": {
+        "x": 17.82,
+        "y": 775.665
+      },
+      "end": {
+        "x": 31.68,
+        "y": 776.16
+      },
+      "orientation": "horizontal",
+      "length": 13.86883646886068,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-944dfbac04ed",
+      "start": {
+        "x": 393.525,
+        "y": 446.48999999999995
+      },
+      "end": {
+        "x": 393.525,
+        "y": 442.53
+      },
+      "orientation": "vertical",
+      "length": 3.9599999999999795,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-94fa845e6d95",
+      "start": {
+        "x": 461.34,
+        "y": 509.84999999999997
+      },
+      "end": {
+        "x": 469.26,
+        "y": 510.34499999999997
+      },
+      "orientation": "horizontal",
+      "length": 7.935453673231308,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-9759b2941834",
+      "start": {
+        "x": 205.92,
+        "y": 433.125
+      },
+      "end": {
+        "x": 203.94,
+        "y": 470.24999999999994
+      },
+      "orientation": "vertical",
+      "length": 37.17776250663824,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-982260bc21df",
+      "start": {
+        "x": 131.17499999999998,
+        "y": 485.59499999999997
+      },
+      "end": {
+        "x": 111.37499999999999,
+        "y": 665.28
+      },
+      "orientation": "diagonal",
+      "length": 180.7726174645928,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-98f79f30aa0a",
+      "start": {
+        "x": 23.759999999999998,
+        "y": 702.9
+      },
+      "end": {
+        "x": 31.68,
+        "y": 703.395
+      },
+      "orientation": "horizontal",
+      "length": 7.935453673231294,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-997fa034b737",
+      "start": {
+        "x": 23.759999999999998,
+        "y": 164.34
+      },
+      "end": {
+        "x": 23.759999999999998,
+        "y": 247.005
+      },
+      "orientation": "vertical",
+      "length": 82.66499999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-9985aec7b463",
+      "start": {
+        "x": 195.03,
+        "y": 33.165
+      },
+      "end": {
+        "x": 197.505,
+        "y": 35.64
+      },
+      "orientation": "vertical",
+      "length": 3.5001785668734073,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-9ad9ac451fd0",
+      "start": {
+        "x": 320.265,
+        "y": 409.36499999999995
+      },
+      "end": {
+        "x": 263.34,
+        "y": 409.36499999999995
+      },
+      "orientation": "horizontal",
+      "length": 56.92500000000001,
+      "is_exterior": true,
+      "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-9b547ce9f6f0",
+      "start": {
+        "x": 459.85499999999996,
+        "y": 518.76
+      },
+      "end": {
+        "x": 461.34,
+        "y": 509.84999999999997
+      },
+      "orientation": "vertical",
+      "length": 9.032902357492883,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-9c11a9afcb5a",
+      "start": {
+        "x": 375.21,
+        "y": 528.66
+      },
+      "end": {
+        "x": 342.53999999999996,
+        "y": 528.66
+      },
+      "orientation": "horizontal",
+      "length": 32.670000000000016,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-9c3164d83203",
+      "start": {
+        "x": 14.354999999999999,
+        "y": 248.98499999999999
+      },
+      "end": {
+        "x": 14.354999999999999,
+        "y": 275.715
+      },
+      "orientation": "vertical",
+      "length": 26.72999999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-9d4effadaaa7",
+      "start": {
+        "x": 141.57,
+        "y": 435.84749999999997
+      },
+      "end": {
+        "x": 194.535,
+        "y": 435.84749999999997
+      },
+      "orientation": "horizontal",
+      "length": 52.965,
+      "is_exterior": false,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53",
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": [
+        "inferred_from_bbox"
+      ]
+    },
+    {
+      "wall_id": "wall-9ec24aba0ac6",
+      "start": {
+        "x": 469.26,
+        "y": 798.93
+      },
+      "end": {
+        "x": 469.26,
+        "y": 711.81
+      },
+      "orientation": "vertical",
+      "length": 87.12,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-9f2da470cda8",
+      "start": {
+        "x": 119.29499999999999,
+        "y": 365.31
+      },
+      "end": {
+        "x": 108.89999999999999,
+        "y": 359.86499999999995
+      },
+      "orientation": "diagonal",
+      "length": 11.73473689521842,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-9fb91795b278",
+      "start": {
+        "x": 15.344999999999999,
+        "y": 345.015
+      },
+      "end": {
+        "x": 12.87,
+        "y": 342.53999999999996
+      },
+      "orientation": "vertical",
+      "length": 3.500178566873426,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-9fc057c4ec27",
+      "start": {
+        "x": 21.285,
+        "y": 275.21999999999997
+      },
+      "end": {
+        "x": 23.759999999999998,
+        "y": 279.67499999999995
+      },
+      "orientation": "vertical",
+      "length": 5.09633691978855,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-a26e61be6789",
+      "start": {
+        "x": 416.78999999999996,
+        "y": 463.32
+      },
+      "end": {
+        "x": 415.30499999999995,
+        "y": 454.40999999999997
+      },
+      "orientation": "vertical",
+      "length": 9.032902357492883,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-a2c9e67a5586",
+      "start": {
+        "x": 12.87,
+        "y": 486.585
+      },
+      "end": {
+        "x": 12.87,
+        "y": 373.22999999999996
+      },
+      "orientation": "vertical",
+      "length": 113.35500000000002,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-a2ff48f2718d",
+      "start": {
+        "x": 62.864999999999995,
+        "y": 705.375
+      },
+      "end": {
+        "x": 65.33999999999999,
+        "y": 702.9
+      },
+      "orientation": "vertical",
+      "length": 3.5001785668734224,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-a3d8d61a5b19",
+      "start": {
+        "x": 459.85499999999996,
+        "y": 528.66
+      },
+      "end": {
+        "x": 417.78,
+        "y": 528.66
+      },
+      "orientation": "horizontal",
+      "length": 42.07499999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-a55866701ef8",
+      "start": {
+        "x": 33.165,
+        "y": 710.3249999999999
+      },
+      "end": {
+        "x": 30.689999999999998,
+        "y": 712.8
+      },
+      "orientation": "vertical",
+      "length": 3.5001785668734273,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-a6e70957b61a",
+      "start": {
+        "x": 430.65,
+        "y": 442.53
+      },
+      "end": {
+        "x": 412.83,
+        "y": 437.58
+      },
+      "orientation": "diagonal",
+      "length": 18.4947262753467,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-a7055a65f25e",
+      "start": {
+        "x": 469.26,
+        "y": 489.55499999999995
+      },
+      "end": {
+        "x": 460.84499999999997,
+        "y": 496.48499999999996
+      },
+      "orientation": "diagonal",
+      "length": 10.901244195044914,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-a73275c5b93c",
+      "start": {
+        "x": 396.98999999999995,
+        "y": 459.85499999999996
+      },
+      "end": {
+        "x": 382.14,
+        "y": 464.80499999999995
+      },
+      "orientation": "diagonal",
+      "length": 15.653274417833442,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-a809112ebd38",
+      "start": {
+        "x": 187.10999999999999,
+        "y": 164.83499999999998
+      },
+      "end": {
+        "x": 182.655,
+        "y": 164.34
+      },
+      "orientation": "horizontal",
+      "length": 4.482415643378003,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-a899594c3caa",
+      "start": {
+        "x": 320.265,
+        "y": 462.33
+      },
+      "end": {
+        "x": 320.265,
+        "y": 409.36499999999995
+      },
+      "orientation": "vertical",
+      "length": 52.96500000000003,
+      "is_exterior": true,
+      "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-aaa4e092aaab",
+      "start": {
+        "x": 418.77,
+        "y": 448.965
+      },
+      "end": {
+        "x": 432.63,
+        "y": 447.97499999999997
+      },
+      "orientation": "horizontal",
+      "length": 13.895312159142032,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-abf55b74a396",
+      "start": {
+        "x": 469.26,
+        "y": 472.22999999999996
+      },
+      "end": {
+        "x": 461.34,
+        "y": 472.72499999999997
+      },
+      "orientation": "horizontal",
+      "length": 7.935453673231308,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-ad74d7bbcf42",
+      "start": {
+        "x": 94.05,
+        "y": 702.9
+      },
+      "end": {
+        "x": 99.99,
+        "y": 689.04
+      },
+      "orientation": "diagonal",
+      "length": 15.07923074961055,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-ae7d99b7f5fe",
+      "start": {
+        "x": 146.51999999999998,
+        "y": 712.8
+      },
+      "end": {
+        "x": 65.33999999999999,
+        "y": 712.8
+      },
+      "orientation": "horizontal",
+      "length": 81.17999999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b049e7f38e14",
+      "start": {
+        "x": 454.40999999999997,
+        "y": 704.385
+      },
+      "end": {
+        "x": 459.85499999999996,
+        "y": 702.9
+      },
+      "orientation": "horizontal",
+      "length": 5.64386835424073,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b0d09d85e3cc",
+      "start": {
+        "x": 33.165,
+        "y": 789.525
+      },
+      "end": {
+        "x": 130.67999999999998,
+        "y": 789.525
+      },
+      "orientation": "horizontal",
+      "length": 97.51499999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b25731c2e8b5",
+      "start": {
+        "x": 130.67999999999998,
+        "y": 789.525
+      },
+      "end": {
+        "x": 132.165,
+        "y": 776.16
+      },
+      "orientation": "vertical",
+      "length": 13.447246930134074,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b48e24b33bc9",
+      "start": {
+        "x": 194.535,
+        "y": 468.27
+      },
+      "end": {
+        "x": 194.535,
+        "y": 446.98499999999996
+      },
+      "orientation": "vertical",
+      "length": 21.285000000000025,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b4bf83670db7",
+      "start": {
+        "x": 100.485,
+        "y": 350.955
+      },
+      "end": {
+        "x": 96.02999999999999,
+        "y": 338.085
+      },
+      "orientation": "diagonal",
+      "length": 13.619248327275637,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b518a9852bcb",
+      "start": {
+        "x": 284.625,
+        "y": 443.025
+      },
+      "end": {
+        "x": 289.08,
+        "y": 450.45
+      },
+      "orientation": "diagonal",
+      "length": 8.658963563845273,
+      "is_exterior": true,
+      "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b52b9b6677bf",
+      "start": {
+        "x": 141.57,
+        "y": 388.08
+      },
+      "end": {
+        "x": 141.57,
+        "y": 438.57
+      },
+      "orientation": "vertical",
+      "length": 50.49000000000001,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b6ab99c6d93d",
+      "start": {
+        "x": 271.755,
+        "y": 434.11499999999995
+      },
+      "end": {
+        "x": 278.685,
+        "y": 437.58
+      },
+      "orientation": "diagonal",
+      "length": 7.747975542036792,
+      "is_exterior": true,
+      "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b8aedec5297e",
+      "start": {
+        "x": 89.595,
+        "y": 486.09
+      },
+      "end": {
+        "x": 86.13,
+        "y": 494.01
+      },
+      "orientation": "diagonal",
+      "length": 8.644803352303642,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b8c1d7b47cdc",
+      "start": {
+        "x": 290.565,
+        "y": 462.33
+      },
+      "end": {
+        "x": 320.265,
+        "y": 462.33
+      },
+      "orientation": "horizontal",
+      "length": 29.69999999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b8c9ed7ee590",
+      "start": {
+        "x": 377.685,
+        "y": 452.92499999999995
+      },
+      "end": {
+        "x": 393.525,
+        "y": 446.48999999999995
+      },
+      "orientation": "diagonal",
+      "length": 17.097216878778816,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-b92ff62a3134",
+      "start": {
+        "x": 247.005,
+        "y": 2.4749999999999996
+      },
+      "end": {
+        "x": 181.17,
+        "y": 2.4749999999999996
+      },
+      "orientation": "horizontal",
+      "length": 65.83500000000001,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-bc9f9d29bfbc",
+      "start": {
+        "x": 309.87,
+        "y": 710.3249999999999
+      },
+      "end": {
+        "x": 307.395,
+        "y": 712.8
+      },
+      "orientation": "vertical",
+      "length": 3.5001785668734424,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-bf79d0e63ade",
+      "start": {
+        "x": 110.88,
+        "y": 665.28
+      },
+      "end": {
+        "x": 130.67999999999998,
+        "y": 485.59499999999997
+      },
+      "orientation": "diagonal",
+      "length": 180.7726174645928,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-bfc3c9fee278",
+      "start": {
+        "x": 8.415,
+        "y": 330.65999999999997
+      },
+      "end": {
+        "x": 8.415,
+        "y": 486.585
+      },
+      "orientation": "vertical",
+      "length": 155.925,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c14ec90e0333",
+      "start": {
+        "x": 23.759999999999998,
+        "y": 626.175
+      },
+      "end": {
+        "x": 21.285,
+        "y": 628.65
+      },
+      "orientation": "vertical",
+      "length": 3.5001785668734247,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c2108d5f39e3",
+      "start": {
+        "x": 247.49999999999997,
+        "y": 21.285
+      },
+      "end": {
+        "x": 247.005,
+        "y": 2.474999999999998
+      },
+      "orientation": "vertical",
+      "length": 18.816512030660732,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c25eb57c9084",
+      "start": {
+        "x": 8.415,
+        "y": 676.17
+      },
+      "end": {
+        "x": 110.88,
+        "y": 665.28
+      },
+      "orientation": "diagonal",
+      "length": 103.04207065563075,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c3c3a0a346c2",
+      "start": {
+        "x": 12.87,
+        "y": 626.175
+      },
+      "end": {
+        "x": 12.87,
+        "y": 487.08
+      },
+      "orientation": "vertical",
+      "length": 139.09499999999997,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c50e5e995315",
+      "start": {
+        "x": 356.4,
+        "y": 394.515
+      },
+      "end": {
+        "x": 381.15,
+        "y": 394.515
+      },
+      "orientation": "horizontal",
+      "length": 24.75,
+      "is_exterior": true,
+      "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c6245a637ed6",
+      "start": {
+        "x": 165.825,
+        "y": 149.48999999999998
+      },
+      "end": {
+        "x": 162.35999999999999,
+        "y": 161.36999999999998
+      },
+      "orientation": "diagonal",
+      "length": 12.374999999999996,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c665075d383c",
+      "start": {
+        "x": 180.17999999999998,
+        "y": 277.695
+      },
+      "end": {
+        "x": 179.685,
+        "y": 289.08
+      },
+      "orientation": "vertical",
+      "length": 11.395755788889115,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c70fe9280642",
+      "start": {
+        "x": 257.895,
+        "y": 261.35999999999996
+      },
+      "end": {
+        "x": 459.85499999999996,
+        "y": 261.35999999999996
+      },
+      "orientation": "horizontal",
+      "length": 201.95999999999998,
+      "is_exterior": true,
+      "room_ids": [
+        "room-garage-bd6ecee651da"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c743e891c31a",
+      "start": {
+        "x": 381.15,
+        "y": 409.36499999999995
+      },
+      "end": {
+        "x": 329.17499999999995,
+        "y": 409.36499999999995
+      },
+      "orientation": "horizontal",
+      "length": 51.97500000000002,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c89927cefa09",
+      "start": {
+        "x": 23.759999999999998,
+        "y": 494.01
+      },
+      "end": {
+        "x": 23.759999999999998,
+        "y": 626.175
+      },
+      "orientation": "vertical",
+      "length": 132.16499999999996,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c89cbdb16cda",
+      "start": {
+        "x": 382.14,
+        "y": 464.80499999999995
+      },
+      "end": {
+        "x": 374.715,
+        "y": 460.34999999999997
+      },
+      "orientation": "diagonal",
+      "length": 8.658963563845273,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c8cc5132f065",
+      "start": {
+        "x": 316.79999999999995,
+        "y": 359.37
+      },
+      "end": {
+        "x": 312.34499999999997,
+        "y": 364.32
+      },
+      "orientation": "diagonal",
+      "length": 6.659543903301468,
+      "is_exterior": true,
+      "room_ids": [
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-c903fc85a69c",
+      "start": {
+        "x": 342.53999999999996,
+        "y": 528.66
+      },
+      "end": {
+        "x": 339.57,
+        "y": 539.055
+      },
+      "orientation": "vertical",
+      "length": 10.810963185581544,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-cb3e80889e08",
+      "start": {
+        "x": 8.415,
+        "y": 487.08
+      },
+      "end": {
+        "x": 8.415,
+        "y": 676.17
+      },
+      "orientation": "vertical",
+      "length": 189.08999999999997,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-ce7baa9cbc79",
+      "start": {
+        "x": 329.17499999999995,
+        "y": 453.91499999999996
+      },
+      "end": {
+        "x": 348.47999999999996,
+        "y": 456.39
+      },
+      "orientation": "horizontal",
+      "length": 19.463007218824135,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-d34e80785c23",
+      "start": {
+        "x": 158.89499999999998,
+        "y": 164.34
+      },
+      "end": {
+        "x": 154.935,
+        "y": 164.83499999999998
+      },
+      "orientation": "horizontal",
+      "length": 3.990817585407759,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-d5a3cae5e033",
+      "start": {
+        "x": 145.53,
+        "y": 387.585
+      },
+      "end": {
+        "x": 141.57,
+        "y": 388.08
+      },
+      "orientation": "horizontal",
+      "length": 3.9908175854077905,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-d7184dd8005e",
+      "start": {
+        "x": 182.655,
+        "y": 164.34
+      },
+      "end": {
+        "x": 179.19,
+        "y": 161.36999999999998
+      },
+      "orientation": "horizontal",
+      "length": 4.56367450636,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-d7bdd01a916b",
+      "start": {
+        "x": 135.63,
+        "y": 253.93499999999997
+      },
+      "end": {
+        "x": 146.51999999999998,
+        "y": 252.945
+      },
+      "orientation": "horizontal",
+      "length": 10.934907407015373,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-d8f541f6373c",
+      "start": {
+        "x": 249.48,
+        "y": 67.32
+      },
+      "end": {
+        "x": 263.34,
+        "y": 67.32
+      },
+      "orientation": "horizontal",
+      "length": 13.859999999999985,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-d9b4e8cff82b",
+      "start": {
+        "x": 122.26499999999999,
+        "y": 260.37
+      },
+      "end": {
+        "x": 135.63,
+        "y": 253.93499999999997
+      },
+      "orientation": "diagonal",
+      "length": 14.833490823134001,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-daa07a5d648e",
+      "start": {
+        "x": 459.85499999999996,
+        "y": 89.595
+      },
+      "end": {
+        "x": 257.895,
+        "y": 89.595
+      },
+      "orientation": "horizontal",
+      "length": 201.95999999999998,
+      "is_exterior": true,
+      "room_ids": [
+        "room-garage-bd6ecee651da"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-daedac3367fe",
+      "start": {
+        "x": 459.85499999999996,
+        "y": 702.9
+      },
+      "end": {
+        "x": 459.85499999999996,
+        "y": 552.42
+      },
+      "orientation": "vertical",
+      "length": 150.48000000000002,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-db4ecf84e7c9",
+      "start": {
+        "x": 405.405,
+        "y": 399.465
+      },
+      "end": {
+        "x": 399.96,
+        "y": 386.09999999999997
+      },
+      "orientation": "diagonal",
+      "length": 14.431605939742125,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-dca5f3d0e07c",
+      "start": {
+        "x": 461.34,
+        "y": 472.72499999999997
+      },
+      "end": {
+        "x": 459.85499999999996,
+        "y": 463.815
+      },
+      "orientation": "vertical",
+      "length": 9.032902357492826,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-de588982a080",
+      "start": {
+        "x": 23.759999999999998,
+        "y": 438.57
+      },
+      "end": {
+        "x": 132.66,
+        "y": 438.57
+      },
+      "orientation": "horizontal",
+      "length": 108.9,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-defe7eb085a3",
+      "start": {
+        "x": 137.115,
+        "y": 371.74499999999995
+      },
+      "end": {
+        "x": 137.115,
+        "y": 438.57
+      },
+      "orientation": "vertical",
+      "length": 66.82500000000005,
+      "is_exterior": false,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53",
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": [
+        "inferred_from_bbox"
+      ]
+    },
+    {
+      "wall_id": "wall-e20ddf10eddd",
+      "start": {
+        "x": 453.41999999999996,
+        "y": 486.09
+      },
+      "end": {
+        "x": 462.33,
+        "y": 479.655
+      },
+      "orientation": "diagonal",
+      "length": 10.990783639031408,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-e254a761dd0e",
+      "start": {
+        "x": 146.51999999999998,
+        "y": 252.945
+      },
+      "end": {
+        "x": 146.51999999999998,
+        "y": 164.34
+      },
+      "orientation": "vertical",
+      "length": 88.60499999999999,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-e385c957871a",
+      "start": {
+        "x": 459.85499999999996,
+        "y": 463.815
+      },
+      "end": {
+        "x": 416.78999999999996,
+        "y": 463.32
+      },
+      "orientation": "horizontal",
+      "length": 43.067844733629286,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-e3d02035fe70",
+      "start": {
+        "x": 219.77999999999997,
+        "y": 284.625
+      },
+      "end": {
+        "x": 214.33499999999998,
+        "y": 275.715
+      },
+      "orientation": "diagonal",
+      "length": 10.442036439315865,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-e4d8eb44080e",
+      "start": {
+        "x": 65.33999999999999,
+        "y": 702.9
+      },
+      "end": {
+        "x": 94.05,
+        "y": 702.9
+      },
+      "orientation": "horizontal",
+      "length": 28.710000000000008,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-e557be9fc4f7",
+      "start": {
+        "x": 312.34499999999997,
+        "y": 364.32
+      },
+      "end": {
+        "x": 303.435,
+        "y": 369.765
+      },
+      "orientation": "diagonal",
+      "length": 10.442036439315817,
+      "is_exterior": true,
+      "room_ids": [
+        "room-utility-c5e0ad04c7ad"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-e58b47322bdd",
+      "start": {
+        "x": 194.535,
+        "y": 387.585
+      },
+      "end": {
+        "x": 164.34,
+        "y": 387.585
+      },
+      "orientation": "horizontal",
+      "length": 30.194999999999993,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-ea9b36e2a6cc",
+      "start": {
+        "x": 23.759999999999998,
+        "y": 247.005
+      },
+      "end": {
+        "x": 21.285,
+        "y": 249.48
+      },
+      "orientation": "vertical",
+      "length": 3.5001785668734047,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-eba98420cfd2",
+      "start": {
+        "x": 21.285,
+        "y": 628.65
+      },
+      "end": {
+        "x": 12.87,
+        "y": 626.175
+      },
+      "orientation": "horizontal",
+      "length": 8.771422347601336,
+      "is_exterior": true,
+      "room_ids": [
+        "room-kitchen-c5e1fe755eb1"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-ebab09e94eed",
+      "start": {
+        "x": 181.17,
+        "y": 2.4749999999999996
+      },
+      "end": {
+        "x": 181.17,
+        "y": 33.165
+      },
+      "orientation": "vertical",
+      "length": 30.689999999999998,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-eeca4f4d806e",
+      "start": {
+        "x": 85.63499999999999,
+        "y": 278.19
+      },
+      "end": {
+        "x": 91.08,
+        "y": 282.15
+      },
+      "orientation": "diagonal",
+      "length": 6.732727901824038,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-ef467677e1e6",
+      "start": {
+        "x": 197.505,
+        "y": 198.49499999999998
+      },
+      "end": {
+        "x": 189.58499999999998,
+        "y": 198.49499999999998
+      },
+      "orientation": "horizontal",
+      "length": 7.920000000000016,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-ef6b17e5b43c",
+      "start": {
+        "x": 23.759999999999998,
+        "y": 279.67499999999995
+      },
+      "end": {
+        "x": 85.63499999999999,
+        "y": 278.19
+      },
+      "orientation": "horizontal",
+      "length": 61.89281743465876,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-ef92229fca72",
+      "start": {
+        "x": 23.759999999999998,
+        "y": 373.22999999999996
+      },
+      "end": {
+        "x": 23.759999999999998,
+        "y": 438.57
+      },
+      "orientation": "vertical",
+      "length": 65.34000000000003,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-2-f167749e3959"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-f09cd7444612",
+      "start": {
+        "x": 148.995,
+        "y": 384.61499999999995
+      },
+      "end": {
+        "x": 145.53,
+        "y": 387.585
+      },
+      "orientation": "horizontal",
+      "length": 4.56367450636,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-f0a60bd1ee29",
+      "start": {
+        "x": 263.34,
+        "y": 67.32
+      },
+      "end": {
+        "x": 263.34,
+        "y": 22.769999999999996
+      },
+      "orientation": "vertical",
+      "length": 44.55,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-f3e8e3022422",
+      "start": {
+        "x": 377.685,
+        "y": 521.235
+      },
+      "end": {
+        "x": 375.21,
+        "y": 528.66
+      },
+      "orientation": "vertical",
+      "length": 7.826637208916703,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-f65a688984ab",
+      "start": {
+        "x": 247.005,
+        "y": 69.795
+      },
+      "end": {
+        "x": 249.48,
+        "y": 67.32
+      },
+      "orientation": "vertical",
+      "length": 3.5001785668734122,
+      "is_exterior": true,
+      "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-f763bec3e087",
+      "start": {
+        "x": 394.02,
+        "y": 399.465
+      },
+      "end": {
+        "x": 383.625,
+        "y": 402.92999999999995
+      },
+      "orientation": "diagonal",
+      "length": 10.95729209248341,
+      "is_exterior": true,
+      "room_ids": [
+        "room-master-bath-119010f86e69"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-f9cdd9e7b507",
+      "start": {
+        "x": 139.59,
+        "y": 689.535
+      },
+      "end": {
+        "x": 267.29999999999995,
+        "y": 797.9399999999999
+      },
+      "orientation": "diagonal",
+      "length": 167.51563546427533,
+      "is_exterior": true,
+      "room_ids": [
+        "room-living-room-e2e5f9a1038c"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-fad442f66c26",
+      "start": {
+        "x": 309.375,
+        "y": 704.385
+      },
+      "end": {
+        "x": 309.87,
+        "y": 710.3249999999999
+      },
+      "orientation": "vertical",
+      "length": 5.960589316502127,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-fb43bb6b185f",
+      "start": {
+        "x": 239.08499999999998,
+        "y": 233.14499999999998
+      },
+      "end": {
+        "x": 222.255,
+        "y": 230.67
+      },
+      "orientation": "horizontal",
+      "length": 17.011011874665172,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-fc4681c956d5",
+      "start": {
+        "x": 214.33499999999998,
+        "y": 275.715
+      },
+      "end": {
+        "x": 212.355,
+        "y": 267.79499999999996
+      },
+      "orientation": "vertical",
+      "length": 8.16374913872298,
+      "is_exterior": true,
+      "room_ids": [
+        "room-entry-c529fc99f31f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-fd0a7e7c9ed7",
+      "start": {
+        "x": 112.86,
+        "y": 271.26
+      },
+      "end": {
+        "x": 122.26499999999999,
+        "y": 260.37
+      },
+      "orientation": "diagonal",
+      "length": 14.389097435211127,
+      "is_exterior": true,
+      "room_ids": [
+        "room-bedroom-3-ffb6e52d0226"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-ff33546d686d",
+      "start": {
+        "x": 277.695,
+        "y": 798.93
+      },
+      "end": {
+        "x": 469.26,
+        "y": 798.93
+      },
+      "orientation": "horizontal",
+      "length": 191.565,
+      "is_exterior": true,
+      "room_ids": [
+        "room-mstr-bedroom-6f97dd25826f"
+      ],
+      "issues": []
+    },
+    {
+      "wall_id": "wall-ff353ecfc375",
+      "start": {
+        "x": 121.77,
+        "y": 675.18
+      },
+      "end": {
+        "x": 111.37499999999999,
+        "y": 665.775
+      },
+      "orientation": "diagonal",
+      "length": 14.018204235921223,
+      "is_exterior": true,
+      "room_ids": [
+        "room-patio-feec625665b2"
+      ],
+      "issues": []
+    }
+  ],
+  "wall_graph_readiness": {
+    "status": "needs_wall_graph_review",
+    "issues": [
+      "inferred_from_bbox",
+      "isolated_room",
+      "missing_category"
+    ]
+  },
+  "wall_graph_issues": [
+    "inferred_from_bbox",
+    "isolated_room",
+    "missing_category"
   ]
 }

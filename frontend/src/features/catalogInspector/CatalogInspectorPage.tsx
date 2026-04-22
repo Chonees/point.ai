@@ -17,6 +17,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(topology.rooms[0]?.room_id ?? null)
   const [showIds, setShowIds] = useState(false)
   const [showAdjacency, setShowAdjacency] = useState(false)
+  const [showWalls, setShowWalls] = useState(true)
   const roomById = useMemo(() => new Map(topology.rooms.map((room) => [room.room_id, room])), [topology.rooms])
 
   useEffect(() => {
@@ -38,6 +39,8 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
   const categorizedRooms = topology.rooms.filter((room) => room.category !== 'unknown').length
   const exteriorRooms = topology.rooms.filter((room) => room.is_exterior_touching).length
   const roomsWithAdjacency = topology.rooms.filter((room) => room.adjacent_room_ids.length > 0).length
+  const sharedWalls = topology.walls.filter((wall) => !wall.is_exterior).length
+  const inferredWalls = topology.walls.filter((wall) => wall.issues.includes('inferred_from_bbox')).length
 
   return (
     <div className="min-h-screen bg-[#090909] text-zinc-100">
@@ -47,11 +50,11 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             <p className="text-[11px] uppercase tracking-[0.26em] text-zinc-600">Temporary screen</p>
             <h1 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-50">Topology inspector</h1>
             <p className="mt-1 text-sm text-zinc-400">
-              ValidaciÃ³n visual temporal del plano real de <span className="font-medium text-zinc-200">{topology.name}</span>.
+              Validación visual temporal del plano real de <span className="font-medium text-zinc-200">{topology.name}</span>.
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-5">
             <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
               <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Rooms</p>
               <p className="mt-1 text-lg font-semibold text-zinc-100">{topology.rooms.length}</p>
@@ -64,20 +67,28 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
               <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Exterior touch</p>
               <p className="mt-1 text-lg font-semibold text-zinc-100">{exteriorRooms}</p>
             </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Shared walls</p>
+              <p className="mt-1 text-lg font-semibold text-zinc-100">{sharedWalls}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Inferred walls</p>
+              <p className="mt-1 text-lg font-semibold text-zinc-100">{inferredWalls}</p>
+            </div>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <section className="mb-6 rounded-[24px] border border-white/6 bg-zinc-950/70 p-4">
-          <div className="grid gap-4 lg:grid-cols-[1fr_auto_auto] lg:items-center">
+          <div className="grid gap-4 lg:grid-cols-[1fr_auto_auto_auto] lg:items-center">
             <div>
               <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Validation</p>
               <p className="mt-1 text-sm text-zinc-300">
-                {roomsWithAdjacency} rooms with adjacency, {topology.topology_issues.length} topology issues.
+                {roomsWithAdjacency} rooms with adjacency, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues.
               </p>
               <p className="mt-1 text-sm text-zinc-500">
-                Readiness: <span className="font-medium text-zinc-200">{topology.topology_readiness.status}</span>
+                Readiness: <span className="font-medium text-zinc-200">{topology.topology_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.wall_graph_readiness.status}</span>
               </p>
             </div>
 
@@ -100,6 +111,16 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
               />
               Adjacency
             </label>
+
+            <label className="inline-flex items-center gap-3 rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3 text-sm text-zinc-200">
+              <input
+                type="checkbox"
+                checked={showWalls}
+                onChange={(event) => setShowWalls(event.target.checked)}
+                className="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-cyan-400 focus:ring-cyan-500"
+              />
+              Walls
+            </label>
           </div>
         </section>
 
@@ -110,6 +131,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             onSelectRoom={setSelectedRoomId}
             showIds={showIds}
             showAdjacency={showAdjacency}
+            showWalls={showWalls}
           />
 
           <CatalogInspectorSidebar topology={topology} selectedRoom={selectedRoom} />

@@ -206,11 +206,15 @@ def test_export_topology_fixture_writes_expected_topology_json(tmp_path: Path):
     seed = build_seed()
     seed_path.write_text(seed.model_dump_json(indent=2), encoding="utf-8")
 
-    topology = export_topology_fixture(seed_path, output_path)
+    payload = export_topology_fixture(seed_path, output_path)
 
     assert output_path.exists()
-    assert topology.model_dump() == derive_floor_plan_topology(seed).model_dump()
-    assert json.loads(output_path.read_text(encoding="utf-8")) == topology.model_dump()
+    expected_topology = derive_floor_plan_topology(seed).model_dump()
+    assert payload["floor_plan_id"] == expected_topology["floor_plan_id"]
+    assert payload["rooms"] == expected_topology["rooms"]
+    assert payload["topology_readiness"] == expected_topology["topology_readiness"]
+    assert payload["walls"]
+    assert json.loads(output_path.read_text(encoding="utf-8")) == payload
 
 
 def test_export_seminole_topology_fixture_cli_writes_real_frontend_json():
@@ -244,3 +248,4 @@ def test_export_seminole_topology_fixture_cli_writes_real_frontend_json():
     finally:
         if output_path.exists():
             output_path.unlink()
+

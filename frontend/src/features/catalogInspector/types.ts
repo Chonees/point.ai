@@ -28,6 +28,17 @@ export interface CatalogInspectorRoom {
   issues: string[]
 }
 
+export interface CatalogInspectorWall {
+  wall_id: string
+  start: CatalogInspectorPoint
+  end: CatalogInspectorPoint
+  orientation: 'horizontal' | 'vertical' | 'diagonal'
+  length: number
+  is_exterior: boolean
+  room_ids: string[]
+  issues: string[]
+}
+
 export interface CatalogInspectorTopology {
   floor_plan_id: string
   name: string
@@ -39,4 +50,10 @@ export interface CatalogInspectorTopology {
     issues: string[]
   }
   topology_issues: string[]
+  walls: CatalogInspectorWall[]
+  wall_graph_readiness: {
+    status: string
+    issues: string[]
+  }
+  wall_graph_issues: string[]
 }

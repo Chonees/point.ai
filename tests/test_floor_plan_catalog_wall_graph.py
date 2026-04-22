@@ -150,3 +150,23 @@ def test_derive_floor_plan_wall_graph_handles_real_seminole_seed():
     assert wall_graph.walls
     assert any(len(wall.room_ids) == 2 for wall in wall_graph.walls)
     assert any(wall.is_exterior for wall in wall_graph.walls)
+
+
+
+def test_export_topology_fixture_includes_wall_graph(tmp_path: Path):
+    seed_path = tmp_path / "seminole-2000.json"
+    output_path = tmp_path / "catalogInspector.fixture.json"
+    seed = build_seed()
+    seed_path.write_text(seed.model_dump_json(indent=2), encoding="utf-8")
+
+    from scripts.export_seminole_topology_fixture import export_topology_fixture
+
+    payload = export_topology_fixture(seed_path, output_path)
+
+    assert output_path.exists()
+    assert payload["floor_plan_id"] == "seminole-2000"
+    assert payload["walls"]
+    assert payload["wall_graph_readiness"]["status"] in {
+        "ready_for_wall_graph_review",
+        "needs_wall_graph_review",
+    }

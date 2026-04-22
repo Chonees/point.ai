@@ -1,6 +1,6 @@
 import type { KeyboardEvent } from 'react'
 
-import type { CatalogInspectorRoom, CatalogInspectorTopology } from './types'
+import type { CatalogInspectorRoom, CatalogInspectorTopology, CatalogInspectorWall } from './types'
 
 interface CatalogInspectorCanvasProps {
   topology: CatalogInspectorTopology
@@ -8,6 +8,7 @@ interface CatalogInspectorCanvasProps {
   onSelectRoom: (roomId: string) => void
   showIds: boolean
   showAdjacency: boolean
+  showWalls: boolean
 }
 
 function getViewBox(topology: CatalogInspectorTopology) {
@@ -20,12 +21,23 @@ function roomPoints(room: CatalogInspectorRoom) {
   return room.polygon.map((point) => `${point.x},${point.y}`).join(' ')
 }
 
+function wallStroke(wall: CatalogInspectorWall, isHighlighted: boolean) {
+  if (wall.issues.includes('inferred_from_bbox')) {
+    return isHighlighted ? '#f97316' : 'rgba(249,115,22,0.78)'
+  }
+  if (wall.is_exterior) {
+    return isHighlighted ? '#22d3ee' : 'rgba(34,211,238,0.72)'
+  }
+  return isHighlighted ? '#34d399' : 'rgba(52,211,153,0.76)'
+}
+
 export function CatalogInspectorCanvas({
   topology,
   selectedRoomId,
   onSelectRoom,
   showIds,
   showAdjacency,
+  showWalls,
 }: CatalogInspectorCanvasProps) {
   const roomById = new Map(topology.rooms.map((room) => [room.room_id, room]))
   const roomPairs = new Set<string>()
@@ -44,9 +56,9 @@ export function CatalogInspectorCanvas({
     <section className="overflow-hidden rounded-[24px] border border-white/6 bg-zinc-950/80">
       <div className="border-b border-white/6 px-5 py-4">
         <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Canvas</p>
-        <h2 className="mt-2 text-lg font-semibold text-zinc-100">Plano real de topology</h2>
+        <h2 className="mt-2 text-lg font-semibold text-zinc-100">Plano real de topology + wall graph</h2>
         <p className="mt-1 text-sm text-zinc-400">
-          Se renderiza la geometrÃ­a real del seed curado, con rooms, IDs opcionales y relaciones de adyacencia.
+          Se renderiza la geometría real del seed curado, con rooms, IDs opcionales, relaciones y boundaries exactas o inferidas.
         </p>
       </div>
 
@@ -68,6 +80,25 @@ export function CatalogInspectorCanvas({
             stroke="rgba(255,255,255,0.10)"
             strokeWidth={2}
           />
+
+          {showWalls && topology.walls.map((wall) => {
+            const isHighlighted = !!selectedRoomId && wall.room_ids.includes(selectedRoomId)
+            return (
+              <line
+                key={wall.wall_id}
+                data-testid={`wall-${wall.wall_id}`}
+                x1={wall.start.x}
+                y1={wall.start.y}
+                x2={wall.end.x}
+                y2={wall.end.y}
+                stroke={wallStroke(wall, isHighlighted)}
+                strokeWidth={isHighlighted ? 5 : (wall.issues.includes('inferred_from_bbox') ? 3 : 2.5)}
+                strokeDasharray={wall.issues.includes('inferred_from_bbox') ? '12 7' : undefined}
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+              />
+            )
+          })}
 
           {showAdjacency && topology.rooms.flatMap((room) => room.adjacent_room_ids.map((adjacentRoomId) => {
             const pairKey = [room.room_id, adjacentRoomId].sort().join('::')
