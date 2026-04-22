@@ -9,8 +9,11 @@ import type {
 
 interface CatalogInspectorCanvasProps {
   topology: CatalogInspectorTopology
+  visibleWalls: CatalogInspectorWall[]
   selectedRoomId: string | null
+  selectedWallId: string | null
   onSelectRoom: (roomId: string) => void
+  onSelectWall: (wallId: string) => void
   showIds: boolean
   showAdjacency: boolean
   showWalls: boolean
@@ -43,15 +46,16 @@ function wallStroke(wall: CatalogInspectorWall, isHighlighted: boolean) {
   return isHighlighted ? '#34d399' : 'rgba(52,211,153,0.76)'
 }
 
-function traceStroke(trace: CatalogInspectorWallTrace) {
-  if (trace.type === 'polyline') return 'rgba(148,163,184,0.44)'
-  return 'rgba(120,113,108,0.35)'
-}
-
 function wallDashArray(wall: CatalogInspectorWall) {
   if (wall.trace_support_status === 'unsupported') return '8 6'
   if (wall.issues.includes('inferred_from_bbox')) return '12 7'
   return undefined
+}
+
+function traceStroke(trace: CatalogInspectorWallTrace, isSelected: boolean) {
+  if (isSelected) return 'rgba(248,250,252,0.98)'
+  if (trace.type === 'polyline') return 'rgba(148,163,184,0.44)'
+  return 'rgba(120,113,108,0.35)'
 }
 
 function tracePoints(trace: CatalogInspectorWallTrace) {
@@ -60,8 +64,11 @@ function tracePoints(trace: CatalogInspectorWallTrace) {
 
 export function CatalogInspectorCanvas({
   topology,
+  visibleWalls,
   selectedRoomId,
+  selectedWallId,
   onSelectRoom,
+  onSelectWall,
   showIds,
   showAdjacency,
   showWalls,
@@ -70,15 +77,19 @@ export function CatalogInspectorCanvas({
   const roomById = new Map(topology.rooms.map((room) => [room.room_id, room]))
   const roomPairs = new Set<string>()
   const rawTraces = topology.wall_traces ?? []
-
-  const selectRoom = (roomId: string) => {
-    onSelectRoom(roomId)
-  }
+  const selectedWall = visibleWalls.find((wall) => wall.wall_id === selectedWallId) ?? null
+  const selectedTraceIds = new Set(selectedWall?.trace_support_ids ?? [])
 
   const handleRoomKeyDown = (event: KeyboardEvent<SVGGElement>, roomId: string) => {
     if (event.key !== 'Enter' && event.key !== ' ') return
     event.preventDefault()
     onSelectRoom(roomId)
+  }
+
+  const handleWallKeyDown = (event: KeyboardEvent<SVGLineElement>, wallId: string) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    event.preventDefault()
+    onSelectWall(wallId)
   }
 
   return (
@@ -87,7 +98,7 @@ export function CatalogInspectorCanvas({
         <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Canvas</p>
         <h2 className="mt-2 text-lg font-semibold text-zinc-100">Plano real de topology + wall graph</h2>
         <p className="mt-1 text-sm text-zinc-400">
-          Se renderiza la geometr?a real del seed curado, con rooms, IDs opcionales, relaciones, boundaries exactas o inferidas y trazas crudas del CAD para comparar fidelidad.
+          Se renderiza la geometría real del seed curado, con rooms, IDs opcionales, relaciones, boundaries y trazas crudas del CAD para comparar fidelidad.
         </p>
         <p className="mt-2 text-xs text-zinc-500">
           Verde/cian = exactas. Ámbar = snapped a traza real. Rojo = sin soporte real. Gris = traza cruda del CAD.
@@ -114,6 +125,7 @@ export function CatalogInspectorCanvas({
           />
 
           {showRawTraces && rawTraces.map((trace) => {
+            const isSelectedTrace = selectedTraceIds.has(trace.trace_id)
             if (trace.points.length >= 2) {
               return (
                 <polyline
@@ -121,8 +133,8 @@ export function CatalogInspectorCanvas({
                   data-testid={`raw-trace-${trace.trace_id}`}
                   points={tracePoints(trace)}
                   fill="none"
-                  stroke={traceStroke(trace)}
-                  strokeWidth={1.25}
+                  stroke={traceStroke(trace, isSelectedTrace)}
+                  strokeWidth={isSelectedTrace ? 2.4 : 1.25}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   vectorEffect="non-scaling-stroke"
@@ -139,8 +151,8 @@ export function CatalogInspectorCanvas({
                   y1={trace.start.y}
                   x2={trace.end.x}
                   y2={trace.end.y}
-                  stroke={traceStroke(trace)}
-                  strokeWidth={1.1}
+                  stroke={traceStroke(trace, isSelectedTrace)}
+                  strokeWidth={isSelectedTrace ? 2.2 : 1.1}
                   strokeLinecap="round"
                   vectorEffect="non-scaling-stroke"
                 />
@@ -150,21 +162,28 @@ export function CatalogInspectorCanvas({
             return null
           })}
 
-          {showWalls && topology.walls.map((wall) => {
-            const isHighlighted = !!selectedRoomId && wall.room_ids.includes(selectedRoomId)
+          {showWalls && visibleWalls.map((wall) => {
+            const isWallSelected = wall.wall_id === selectedWallId
+            const isRoomHighlighted = !!selectedRoomId && wall.room_ids.includes(selectedRoomId)
+            const isHighlighted = isWallSelected || isRoomHighlighted
             return (
               <line
                 key={wall.wall_id}
                 data-testid={`wall-${wall.wall_id}`}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select wall ${wall.wall_id}`}
                 x1={wall.start.x}
                 y1={wall.start.y}
                 x2={wall.end.x}
                 y2={wall.end.y}
                 stroke={wallStroke(wall, isHighlighted)}
-                strokeWidth={isHighlighted ? 5 : (wall.issues.includes('inferred_from_bbox') ? 3 : 2.5)}
+                strokeWidth={isWallSelected ? 6 : isHighlighted ? 5 : (wall.issues.includes('inferred_from_bbox') ? 3 : 2.5)}
                 strokeDasharray={wallDashArray(wall)}
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
+                onClick={() => onSelectWall(wall.wall_id)}
+                onKeyDown={(event) => handleWallKeyDown(event, wall.wall_id)}
               />
             )
           })}
@@ -209,7 +228,7 @@ export function CatalogInspectorCanvas({
                 tabIndex={0}
                 aria-label={`Select ${room.name}`}
                 aria-pressed={isSelected}
-                onClick={() => selectRoom(room.room_id)}
+                onClick={() => onSelectRoom(room.room_id)}
                 onKeyDown={(event) => handleRoomKeyDown(event, room.room_id)}
                 className="cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >

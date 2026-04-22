@@ -42,12 +42,12 @@ describe('CatalogInspectorPage', () => {
 
     expect(screen.getAllByText(/shared walls/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/^inferred walls$/i)).toBeInTheDocument()
-    expect(screen.getAllByTestId(/wall-/).length).toBeGreaterThan(0)
+    expect(screen.getAllByTestId(/^wall-/).length).toBeGreaterThan(0)
 
     const wallsToggle = screen.getByRole('checkbox', { name: /walls/i })
     fireEvent.click(wallsToggle)
 
-    expect(screen.queryAllByTestId(/wall-/)).toHaveLength(0)
+    expect(screen.queryAllByTestId(/^wall-/)).toHaveLength(0)
   })
 
   it('shows selected room wall details including inferred boundaries', () => {
@@ -56,7 +56,7 @@ describe('CatalogInspectorPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /select bedroom 2/i }))
 
     expect(screen.getByText(/connected walls/i)).toBeInTheDocument()
-    expect(screen.getByText(/inferred_from_bbox/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/inferred_from_bbox/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/snapped to trace/i).length).toBeGreaterThan(0)
   })
 
@@ -70,5 +70,20 @@ describe('CatalogInspectorPage', () => {
     fireEvent.click(tracesToggle)
 
     expect(screen.queryAllByTestId(/raw-trace-/)).toHaveLength(0)
+  })
+
+  it('filters unsupported walls and lets you navigate the focused issue list', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /^Unsupported$/i }))
+
+    expect(screen.getByTestId('focus-mode-value')).toHaveTextContent('unsupported')
+    expect(screen.getAllByTestId(/focus-wall-/)).toHaveLength(3)
+    expect(screen.getAllByTestId(/^wall-/)).toHaveLength(3)
+
+    const firstWallId = screen.getByTestId('selected-wall-id').textContent
+    fireEvent.click(screen.getAllByRole('button', { name: /next issue/i })[0])
+
+    expect(screen.getByTestId('selected-wall-id').textContent).not.toEqual(firstWallId)
   })
 })

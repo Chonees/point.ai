@@ -392,11 +392,11 @@ Para el MVP:
 
 ## Temporary topology inspector
 
-Uso temporal de curación/debug para validar `SEMINOLE2000` antes de avanzar al executor geométrico.
+Uso temporal de curacion/debug para validar `SEMINOLE2000` antes de avanzar al executor geometrico.
 
 ### Workflow
 
-1. Regenerar la fixture real desde el catálogo curado:
+1. Regenerar la fixture real desde el catalogo curado:
 
    ```bash
    .\.venv\Scripts\python.exe scripts/export_seminole_topology_fixture.py D:\PointAIData\PLANS\catalog\seminole-2000.json --output frontend/src/features/catalogInspector/catalogInspector.fixture.json
@@ -411,10 +411,34 @@ Uso temporal de curación/debug para validar `SEMINOLE2000` antes de avanzar al 
    - adjacency
    - exterior-touch
    - topology issues
+   - raw CAD wall traces
+   - wall graph support states (`exact`, `snapped`, `unsupported`)
+   - focus queue de paredes problematicas
 
-### Propósito
+4. Para seguir progreso real, mirar estas metricas del header:
+   - `Shared exact`
+   - `Shared snapped`
+   - `Shared unsupported`
 
-Esta pantalla es intencionalmente temporal y removible. Existe para verificar que la topología derivada del floor plan sea coherente antes de invertir en el motor de reconstrucción geométrica.
+5. Para atacar problemas de a uno, usar `Focus mode`:
+   - `Shared`
+   - `Exact`
+   - `Snapped`
+   - `Unsupported`
+
+6. Navegar con:
+   - `Previous issue`
+   - `Next issue`
+
+7. Leer el canvas asi:
+   - gris = traza cruda real del CAD
+   - verde/cian = pared con soporte fuerte
+   - ambar = pared snappeada a traza real
+   - rojo = pared todavia sin soporte real
+
+### Proposito
+
+Esta pantalla es intencionalmente temporal y removible. Existe para verificar que la topologia derivada del floor plan sea coherente antes de invertir en el motor de reconstruccion geometrica.
 
 ## Próximos pasos
 
