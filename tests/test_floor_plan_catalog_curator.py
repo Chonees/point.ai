@@ -1,3 +1,5 @@
+import json
+from subprocess import run
 from pathlib import Path
 
 import ezdxf
@@ -51,6 +53,35 @@ def test_curate_floor_plan_seed_marks_low_room_coverage_as_manual_review(tmp_pat
 
     assert seed.readiness.status == "needs_manual_review"
     assert "Room coverage is too low for a trusted catalog entry." in seed.readiness.issues
+
+
+def test_curate_floor_plan_catalog_cli_writes_seed_json(tmp_path: Path):
+    dxf_path = tmp_path / "catalog-floor.dxf"
+    write_dimensioned_room_floor_dxf(dxf_path)
+    output_path = tmp_path / "seminole-2000.json"
+
+    result = run(
+        [
+            "C:\\Users\\lucas\\OneDrive\\Escritorio\\Point.ai\\.venv\\Scripts\\python.exe",
+            "scripts/curate_floor_plan_catalog.py",
+            str(dxf_path),
+            "--floor-plan-id",
+            "seminole-2000",
+            "--name",
+            "SEMINOLE2000",
+            "--output",
+            str(output_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=Path(__file__).resolve().parents[1],
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["floor_plan_id"] == "seminole-2000"
+    assert payload["readiness"]["status"] == "ready_for_catalog"
 
 
 def write_dimensioned_room_floor_dxf(path: Path) -> None:
