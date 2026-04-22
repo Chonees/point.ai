@@ -168,6 +168,8 @@ def _infer_category(name: str) -> str:
         return "powder_room"
     if "LIVING" in upper:
         return "living_room"
+    if "DINING" in upper:
+        return "dining"
     if "HALL" in upper:
         return "hall"
     if "ENTRY" in upper or "FOYER" in upper:

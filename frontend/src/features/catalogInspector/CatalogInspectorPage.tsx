@@ -51,11 +51,16 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
   const [showIds, setShowIds] = useState(false)
   const [showAdjacency, setShowAdjacency] = useState(false)
   const [showWalls, setShowWalls] = useState(true)
-  const [showRawTraces, setShowRawTraces] = useState(true)
+  const [showRawWallTraces, setShowRawWallTraces] = useState(true)
+  const [showDoorTraces, setShowDoorTraces] = useState(true)
+  const [showWindowTraces, setShowWindowTraces] = useState(true)
 
   const roomById = useMemo(() => new Map(topology.rooms.map((room) => [room.room_id, room])), [topology.rooms])
   const wallById = useMemo(() => new Map(topology.walls.map((wall) => [wall.wall_id, wall])), [topology.walls])
-  const rawTraces = topology.wall_traces ?? []
+  const cadTraces = topology.cad_traces ?? []
+  const rawWallTraces = useMemo(() => cadTraces.filter((trace) => trace.trace_kind === 'wall'), [cadTraces])
+  const doorTraces = useMemo(() => cadTraces.filter((trace) => trace.trace_kind === 'door'), [cadTraces])
+  const windowTraces = useMemo(() => cadTraces.filter((trace) => trace.trace_kind === 'window'), [cadTraces])
   const visibleWalls = useMemo(() => filterWalls(topology.walls, focusMode), [topology.walls, focusMode])
   const focusQueue = useMemo(() => buildFocusQueue(topology.walls, focusMode), [topology.walls, focusMode])
 
@@ -125,7 +130,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-9">
+          <div className="grid gap-3 sm:grid-cols-11">
             <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
               <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Rooms</p>
               <p className="mt-1 text-lg font-semibold text-zinc-100">{topology.rooms.length}</p>
@@ -147,8 +152,16 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
               <p className="mt-1 text-lg font-semibold text-zinc-100">{inferredWalls}</p>
             </div>
             <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Raw traces</p>
-              <p className="mt-1 text-lg font-semibold text-zinc-100">{rawTraces.length}</p>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Wall traces</p>
+              <p className="mt-1 text-lg font-semibold text-zinc-100">{rawWallTraces.length}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Door traces</p>
+              <p className="mt-1 text-lg font-semibold text-fuchsia-200">{doorTraces.length}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Window traces</p>
+              <p className="mt-1 text-lg font-semibold text-indigo-200">{windowTraces.length}</p>
             </div>
             <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
               <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Shared exact</p>
@@ -172,10 +185,13 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             <div>
               <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Validation</p>
               <p className="mt-1 text-sm text-zinc-300">
-                {roomsWithAdjacency} rooms with supported adjacency, {heuristicAdjacencyEdges} heuristic adjacency edges, {expectedIsolatedRooms} expected isolated rooms, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {rawTraces.length} raw wall traces, {unsupportedSharedWalls} unsupported shared walls.
+                {roomsWithAdjacency} rooms with supported adjacency, {heuristicAdjacencyEdges} heuristic adjacency edges, {expectedIsolatedRooms} expected isolated rooms, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {cadTraces.length} CAD traces split into {rawWallTraces.length} walls, {doorTraces.length} doors, {windowTraces.length} windows, {unsupportedSharedWalls} unsupported shared walls.
               </p>
               <p className="mt-1 text-sm text-zinc-500">
                 Readiness: <span className="font-medium text-zinc-200">{topology.topology_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.wall_graph_readiness.status}</span>
+              </p>
+              <p className="mt-1 text-xs text-zinc-500">
+                Importante: doors/windows se renderizan aparte y NO cuentan como soporte de wall graph.
               </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {FOCUS_MODES.map((mode) => (
@@ -230,11 +246,31 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             <label className="inline-flex items-center gap-3 rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3 text-sm text-zinc-200">
               <input
                 type="checkbox"
-                checked={showRawTraces}
-                onChange={(event) => setShowRawTraces(event.target.checked)}
+                checked={showRawWallTraces}
+                onChange={(event) => setShowRawWallTraces(event.target.checked)}
                 className="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-cyan-400 focus:ring-cyan-500"
               />
-              Raw traces
+              Raw wall traces
+            </label>
+
+            <label className="inline-flex items-center gap-3 rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3 text-sm text-zinc-200">
+              <input
+                type="checkbox"
+                checked={showDoorTraces}
+                onChange={(event) => setShowDoorTraces(event.target.checked)}
+                className="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-cyan-400 focus:ring-cyan-500"
+              />
+              Door traces
+            </label>
+
+            <label className="inline-flex items-center gap-3 rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3 text-sm text-zinc-200">
+              <input
+                type="checkbox"
+                checked={showWindowTraces}
+                onChange={(event) => setShowWindowTraces(event.target.checked)}
+                className="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-cyan-400 focus:ring-cyan-500"
+              />
+              Window traces
             </label>
 
             <div className="flex gap-2">
@@ -269,7 +305,9 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             showIds={showIds}
             showAdjacency={showAdjacency}
             showWalls={showWalls}
-            showRawTraces={showRawTraces}
+            showRawWallTraces={showRawWallTraces}
+            showDoorTraces={showDoorTraces}
+            showWindowTraces={showWindowTraces}
           />
 
           <CatalogInspectorSidebar

@@ -1,10 +1,10 @@
 import type { KeyboardEvent } from 'react'
 
 import type {
+  CatalogInspectorCadTrace,
   CatalogInspectorRoom,
   CatalogInspectorTopology,
   CatalogInspectorWall,
-  CatalogInspectorWallTrace,
 } from './types'
 
 interface CatalogInspectorCanvasProps {
@@ -17,7 +17,9 @@ interface CatalogInspectorCanvasProps {
   showIds: boolean
   showAdjacency: boolean
   showWalls: boolean
-  showRawTraces: boolean
+  showRawWallTraces: boolean
+  showDoorTraces: boolean
+  showWindowTraces: boolean
 }
 
 function getViewBox(topology: CatalogInspectorTopology) {
@@ -52,13 +54,19 @@ function wallDashArray(wall: CatalogInspectorWall) {
   return undefined
 }
 
-function traceStroke(trace: CatalogInspectorWallTrace, isSelected: boolean) {
+function traceStroke(trace: CatalogInspectorCadTrace, isSelected: boolean) {
   if (isSelected) return 'rgba(248,250,252,0.98)'
+  if (trace.trace_kind === 'door') {
+    return trace.type === 'polyline' ? 'rgba(244,114,182,0.62)' : 'rgba(232,121,249,0.54)'
+  }
+  if (trace.trace_kind === 'window') {
+    return trace.type === 'polyline' ? 'rgba(99,102,241,0.62)' : 'rgba(129,140,248,0.56)'
+  }
   if (trace.type === 'polyline') return 'rgba(148,163,184,0.44)'
   return 'rgba(120,113,108,0.35)'
 }
 
-function tracePoints(trace: CatalogInspectorWallTrace) {
+function tracePoints(trace: CatalogInspectorCadTrace) {
   return trace.points.map((point) => `${point.x},${point.y}`).join(' ')
 }
 
@@ -72,13 +80,21 @@ export function CatalogInspectorCanvas({
   showIds,
   showAdjacency,
   showWalls,
-  showRawTraces,
+  showRawWallTraces,
+  showDoorTraces,
+  showWindowTraces,
 }: CatalogInspectorCanvasProps) {
   const roomById = new Map(topology.rooms.map((room) => [room.room_id, room]))
   const roomPairs = new Set<string>()
-  const rawTraces = topology.wall_traces ?? []
+  const cadTraces = topology.cad_traces ?? []
   const selectedWall = visibleWalls.find((wall) => wall.wall_id === selectedWallId) ?? null
   const selectedTraceIds = new Set(selectedWall?.trace_support_ids ?? [])
+  const visibleTraces = cadTraces.filter((trace) => {
+    if (trace.trace_kind === 'wall') return showRawWallTraces
+    if (trace.trace_kind === 'door') return showDoorTraces
+    if (trace.trace_kind === 'window') return showWindowTraces
+    return false
+  })
 
   const handleRoomKeyDown = (event: KeyboardEvent<SVGGElement>, roomId: string) => {
     if (event.key !== 'Enter' && event.key !== ' ') return
@@ -98,10 +114,10 @@ export function CatalogInspectorCanvas({
         <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Canvas</p>
         <h2 className="mt-2 text-lg font-semibold text-zinc-100">Plano real de topology + wall graph</h2>
         <p className="mt-1 text-sm text-zinc-400">
-          Se renderiza la geometr√≠a real del seed curado, con rooms, IDs opcionales, relaciones, boundaries y trazas crudas del CAD para comparar fidelidad.
+          Se renderiza la geometrÌa real del seed curado, con rooms, IDs opcionales, relaciones, boundaries y trazas CAD separadas por walls, doors y windows para comparar fidelidad.
         </p>
         <p className="mt-2 text-xs text-zinc-500">
-          Verde/cian = exactas. √Åmbar = snapped a traza real. Rojo = sin soporte real. Gris = traza cruda del CAD.
+          Verde/cian = exactas. ¡mbar = snapped a traza real. Rojo = sin soporte real. Gris = walls crudas. Fucsia = doors. Õndigo = windows.
         </p>
       </div>
 
@@ -124,13 +140,14 @@ export function CatalogInspectorCanvas({
             strokeWidth={2}
           />
 
-          {showRawTraces && rawTraces.map((trace) => {
+          {visibleTraces.map((trace) => {
             const isSelectedTrace = selectedTraceIds.has(trace.trace_id)
+            const traceTestId = `raw-${trace.trace_kind}-trace-${trace.trace_id}`
             if (trace.points.length >= 2) {
               return (
                 <polyline
                   key={trace.trace_id}
-                  data-testid={`raw-trace-${trace.trace_id}`}
+                  data-testid={traceTestId}
                   points={tracePoints(trace)}
                   fill="none"
                   stroke={traceStroke(trace, isSelectedTrace)}
@@ -146,7 +163,7 @@ export function CatalogInspectorCanvas({
               return (
                 <line
                   key={trace.trace_id}
-                  data-testid={`raw-trace-${trace.trace_id}`}
+                  data-testid={traceTestId}
                   x1={trace.start.x}
                   y1={trace.start.y}
                   x2={trace.end.x}

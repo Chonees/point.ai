@@ -5,10 +5,10 @@ import math
 from dataclasses import dataclass
 
 from backend.floor_plan_catalog.contracts import (
+    CatalogCadTrace,
     CatalogPoint,
     CatalogRoomTopology,
     CatalogWallBoundary,
-    CatalogWallTrace,
     FloorPlanTopologyV1,
     FloorPlanWallGraphV1,
     WallGraphReadiness,
@@ -52,7 +52,7 @@ class _TraceSupport:
 
 def derive_floor_plan_wall_graph(
     topology: FloorPlanTopologyV1,
-    wall_traces: list[CatalogWallTrace] | None = None,
+    cad_traces: list[CatalogCadTrace] | None = None,
     tolerance: float = 3.0,
     bbox_inference_tolerance: float = 10.0,
     minimum_overlap: float = 12.0,
@@ -145,6 +145,8 @@ def derive_floor_plan_wall_graph(
                 )
 
     walls = sorted(shared_walls + exterior_walls, key=lambda wall: wall.wall_id)
+    has_trace_context = bool(cad_traces)
+    wall_traces = [trace for trace in (cad_traces or []) if trace.trace_kind == "wall"]
     if wall_traces:
         raw_segments = _trace_segments(wall_traces, tolerance)
         walls = [
@@ -157,6 +159,8 @@ def derive_floor_plan_wall_graph(
             )
             for wall in walls
         ]
+    elif has_trace_context:
+        walls = [_mark_trace_support_unsupported(wall) for wall in walls]
     walls = _prune_low_fidelity_shared_walls(
         walls,
         topology,
@@ -166,7 +170,7 @@ def derive_floor_plan_wall_graph(
     )
 
     wall_graph_issues = sorted({issue for wall in walls for issue in wall.issues})
-    if wall_traces and any((not wall.is_exterior) and wall.trace_support_status == "unsupported" for wall in walls):
+    if has_trace_context and any((not wall.is_exterior) and wall.trace_support_status == "unsupported" for wall in walls):
         wall_graph_issues.append("unsupported_trace_support")
     if not walls:
         wall_graph_issues.append("missing_walls")
@@ -202,7 +206,7 @@ def _room_segments(room_id: str, polygon: list[CatalogPoint]) -> list[_Segment]:
     return segments
 
 
-def _trace_segments(wall_traces: list[CatalogWallTrace], tolerance: float) -> list[_RawTraceSegment]:
+def _trace_segments(wall_traces: list[CatalogCadTrace], tolerance: float) -> list[_RawTraceSegment]:
     segments: list[_RawTraceSegment] = []
     for trace in wall_traces:
         if trace.points and len(trace.points) >= 2:
@@ -275,6 +279,17 @@ def _apply_trace_support(
             }
         )
 
+    return wall.model_copy(
+        update={
+            "confidence": "unsupported",
+            "trace_support_status": "unsupported",
+            "trace_support_ids": [],
+            "trace_support_gap": None,
+        }
+    )
+
+
+def _mark_trace_support_unsupported(wall: CatalogWallBoundary) -> CatalogWallBoundary:
     return wall.model_copy(
         update={
             "confidence": "unsupported",
@@ -699,19 +714,7 @@ def _prune_low_fidelity_shared_walls(
         if wall.length < minimum_shared_wall_length:
             continue
         if "inferred_from_bbox" in wall.issues and wall.trace_support_status == "unsupported":
-            rooms = [room_by_id.get(room_id) for room_id in wall.room_ids]
-            if None in rooms:
-                continue
-            if not all(
-                _room_has_parallel_edge_support(
-                    room,
-                    wall,
-                    axis_tolerance=edge_axis_tolerance,
-                    minimum_overlap=minimum_edge_overlap,
-                )
-                for room in rooms
-            ):
-                continue
+            continue
         filtered.append(wall)
     return filtered
 

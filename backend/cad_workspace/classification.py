@@ -104,7 +104,7 @@ def is_annotation_geometry_layer(layer: str) -> bool:
 
 def is_room_closure_layer(layer: str) -> bool:
     upper = (layer or "").upper()
-    keywords = ("DOOR", "WIND", "OPEN", "SEPAR", "COL")
+    keywords = ("DOOR", "WIND", "WIN", "OPEN", "SEPAR", "COL")
     return any(keyword in upper for keyword in keywords)
 
 

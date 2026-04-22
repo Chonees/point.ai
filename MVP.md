@@ -411,14 +411,18 @@ Uso temporal de curacion/debug para validar `SEMINOLE2000` antes de avanzar al e
    - adjacency
    - exterior-touch
    - topology issues
-   - raw CAD wall traces
+   - raw CAD traces separadas por `wall`, `door` y `window`
    - wall graph support states (`exact`, `snapped`, `unsupported`)
    - focus queue de paredes problematicas
+   - confirmación visual de que `doors/windows` NO contaminan soporte de paredes
 
 4. Para seguir progreso real, mirar estas metricas del header:
    - `Shared exact`
    - `Shared snapped`
    - `Shared unsupported`
+   - `Wall traces`
+   - `Door traces`
+   - `Window traces`
 
 5. Para atacar problemas de a uno, usar `Focus mode`:
    - `Shared`

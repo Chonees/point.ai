@@ -67,6 +67,7 @@ def extract_cad_file(path: Path, *, source_name: str | None = None) -> dict:
             floor_entities["entities"],
             measurements=floor_entities["measurements"],
             rooms=floor_entities["rooms"],
+            support_entities=floor_entities["support_entities"],
         )
         site_view = _build_view("site_plan", site_entities["entities"], measurements=site_entities["measurements"])
         fit_summary = _build_fit_summary(
@@ -422,7 +423,12 @@ def _normalize_floor_entities(cluster: list[ExtractedCadEntity]) -> dict:
     room_labels = preferred_room_layers or room_label_candidates
     normalized_room_labels = _coalesce_room_labels(_apply_normalization_transform(room_labels, transform))
     rooms = _extract_rooms_from_labels(normalized_room_geometry, normalized_room_labels)
-    return {"entities": normalized_entities, "measurements": measurements, "rooms": rooms}
+    return {
+        "entities": normalized_entities,
+        "support_entities": normalized_room_geometry,
+        "measurements": measurements,
+        "rooms": rooms,
+    }
 
 
 def _normalize_site_entities(cluster: list[ExtractedCadEntity]) -> dict:
@@ -1605,6 +1611,7 @@ def _build_view(
     *,
     measurements: ExtractedMeasurements | None = None,
     rooms: list[ExtractedRoom] | None = None,
+    support_entities: list[ExtractedCadEntity] | None = None,
 ) -> dict:
     if not entities:
         return {
@@ -1612,6 +1619,7 @@ def _build_view(
             "bbox": None,
             "summary": {"entity_count": 0, "line_count": 0, "polyline_count": 0, "text_count": 0},
             "entities": [],
+            "support_entities": [],
             "measurements": None,
             "rooms": [],
         }
@@ -1665,11 +1673,27 @@ def _build_view(
                 "measurement_source": room.measurement_source,
             }
         )
+    support_serialized = []
+    for entity in support_entities or []:
+        support_serialized.append(
+            {
+                "type": entity.type,
+                "layer": entity.layer,
+                "origin": entity.origin,
+                "start": entity.start,
+                "end": entity.end,
+                "points": list(entity.points),
+                "text": entity.text,
+                "position": entity.position,
+                "bbox": entity.bbox,
+            }
+        )
     return {
         "role": role,
         "bbox": bbox,
         "summary": summary,
         "entities": serialized,
+        "support_entities": support_serialized,
         "measurements": measurements_payload,
         "rooms": rooms_payload,
     }

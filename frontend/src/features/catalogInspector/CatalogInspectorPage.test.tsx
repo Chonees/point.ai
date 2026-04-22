@@ -4,9 +4,21 @@ import { describe, expect, it } from 'vitest'
 import fixture from './catalogInspector.fixture.json'
 import { CatalogInspectorPage } from './CatalogInspectorPage'
 
+const kitchenRoom = fixture.rooms.find((room) => room.name === 'KITCHEN')!
+const bedroom2Room = fixture.rooms.find((room) => room.name === 'BEDROOM 2')!
+const rawWallTraceCount = fixture.cad_traces.filter((trace) => trace.trace_kind === 'wall').length
+const rawDoorTraceCount = fixture.cad_traces.filter((trace) => trace.trace_kind === 'door').length
+const rawWindowTraceCount = fixture.cad_traces.filter((trace) => trace.trace_kind === 'window').length
+const snappedSharedWallCount = fixture.walls.filter(
+  (wall) => !wall.is_exterior && wall.trace_support_status === 'snapped_to_trace',
+).length
+const unsupportedSharedWallCount = fixture.walls.filter(
+  (wall) => !wall.is_exterior && wall.trace_support_status === 'unsupported',
+).length
+
 const topologyWithoutKitchen = {
   ...fixture,
-  rooms: fixture.rooms.filter((room) => room.room_id !== 'room-kitchen-c5e1fe755eb1'),
+  rooms: fixture.rooms.filter((room) => room.room_id !== kitchenRoom.room_id),
 }
 
 describe('CatalogInspectorPage', () => {
@@ -21,7 +33,7 @@ describe('CatalogInspectorPage', () => {
     fireEvent.keyDown(bedroom2Button, { key: 'Enter', code: 'Enter' })
 
     expect(screen.getByRole('heading', { name: 'BEDROOM 2' })).toBeInTheDocument()
-    expect(screen.getByTestId('selected-room-id')).toHaveTextContent('room-bedroom-2-f167749e3959')
+    expect(screen.getByTestId('selected-room-id')).toHaveTextContent(bedroom2Room.room_id)
   })
 
   it('drops a stale selected room when the topology changes', () => {
@@ -34,7 +46,7 @@ describe('CatalogInspectorPage', () => {
 
     expect(screen.queryByRole('heading', { name: 'KITCHEN' })).not.toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'BEDROOM 2' })).toBeInTheDocument()
-    expect(within(screen.getByTestId('catalog-inspector-canvas')).queryByTestId('room-room-kitchen-c5e1fe755eb1')).not.toBeInTheDocument()
+    expect(within(screen.getByTestId('catalog-inspector-canvas')).queryByTestId(`room-${kitchenRoom.room_id}`)).not.toBeInTheDocument()
   })
 
   it('renders wall graph metrics and toggles wall overlays', () => {
@@ -73,13 +85,29 @@ describe('CatalogInspectorPage', () => {
   it('renders raw wall traces and toggles them off', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 
-    expect(screen.getByRole('checkbox', { name: /raw traces/i })).toBeChecked()
-    expect(screen.getAllByTestId(/raw-trace-/).length).toBeGreaterThan(100)
+    expect(screen.getByRole('checkbox', { name: /raw wall traces/i })).toBeChecked()
+    expect(screen.getAllByTestId(/raw-wall-trace-/).length).toBe(rawWallTraceCount)
 
-    const tracesToggle = screen.getByRole('checkbox', { name: /raw traces/i })
+    const tracesToggle = screen.getByRole('checkbox', { name: /raw wall traces/i })
     fireEvent.click(tracesToggle)
 
-    expect(screen.queryAllByTestId(/raw-trace-/)).toHaveLength(0)
+    expect(screen.queryAllByTestId(/raw-wall-trace-/)).toHaveLength(0)
+  })
+
+  it('renders door and window traces separately from wall traces', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(screen.getAllByText(/^Door traces$/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/^Window traces$/i).length).toBeGreaterThan(0)
+    expect(screen.getByRole('checkbox', { name: /door traces/i })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: /window traces/i })).toBeChecked()
+    expect(screen.getAllByTestId(/raw-door-trace-/).length).toBe(rawDoorTraceCount)
+    expect(screen.getAllByTestId(/raw-window-trace-/).length).toBe(rawWindowTraceCount)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /door traces/i }))
+    expect(screen.queryAllByTestId(/raw-door-trace-/)).toHaveLength(0)
+    expect(screen.getAllByTestId(/raw-window-trace-/).length).toBe(rawWindowTraceCount)
+    expect(screen.getAllByTestId(/raw-wall-trace-/).length).toBe(rawWallTraceCount)
   })
 
   it('filters snapped walls and lets you navigate the focused issue list', () => {
@@ -88,8 +116,8 @@ describe('CatalogInspectorPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Snapped$/i }))
 
     expect(screen.getByTestId('focus-mode-value')).toHaveTextContent('snapped')
-    expect(screen.getAllByTestId(/focus-wall-/)).toHaveLength(8)
-    expect(screen.getAllByTestId(/^wall-/)).toHaveLength(8)
+    expect(screen.getAllByTestId(/focus-wall-/)).toHaveLength(snappedSharedWallCount)
+    expect(screen.getAllByTestId(/^wall-/)).toHaveLength(snappedSharedWallCount)
 
     const firstWallId = screen.getByTestId('selected-wall-id').textContent
     fireEvent.click(screen.getAllByRole('button', { name: /next issue/i })[0])
@@ -97,14 +125,19 @@ describe('CatalogInspectorPage', () => {
     expect(screen.getByTestId('selected-wall-id').textContent).not.toEqual(firstWallId)
   })
 
-  it('shows unsupported focus mode as empty when no unresolved shared walls remain', () => {
+  it('shows unsupported focus mode only for unresolved shared walls', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 
     fireEvent.click(screen.getByRole('button', { name: /^Unsupported$/i }))
 
     expect(screen.getByTestId('focus-mode-value')).toHaveTextContent('unsupported')
-    expect(screen.queryAllByTestId(/focus-wall-/)).toHaveLength(0)
-    expect(screen.queryAllByTestId(/^wall-/)).toHaveLength(0)
-    expect(screen.queryByTestId('selected-wall-panel')).not.toBeInTheDocument()
+    expect(screen.queryAllByTestId(/focus-wall-/)).toHaveLength(unsupportedSharedWallCount)
+    expect(screen.queryAllByTestId(/^wall-/)).toHaveLength(unsupportedSharedWallCount)
+
+    if (unsupportedSharedWallCount === 0) {
+      expect(screen.queryByTestId('selected-wall-panel')).not.toBeInTheDocument()
+    } else {
+      expect(screen.getByTestId('selected-wall-panel')).toBeInTheDocument()
+    }
   })
 })

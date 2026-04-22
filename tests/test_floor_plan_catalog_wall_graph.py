@@ -3,10 +3,10 @@ from pathlib import Path
 
 from backend.floor_plan_catalog.contracts import (
     CatalogBBox,
+    CatalogCadTrace,
     CatalogPoint,
     CatalogReadiness,
     CatalogRoom,
-    CatalogWallTrace,
     FloorPlanCatalogSeed,
 )
 from backend.floor_plan_catalog.topology import derive_floor_plan_topology
@@ -67,25 +67,28 @@ def build_seed() -> FloorPlanCatalogSeed:
                 measurement_source="room_region",
             ),
         ],
-        wall_traces=[
-            CatalogWallTrace(
+        cad_traces=[
+            CatalogCadTrace(
                 trace_id="trace-room-divider-horizontal",
+                trace_kind="wall",
                 type="line",
                 layer="WALLS",
                 start=CatalogPoint(x=0, y=500),
                 end=CatalogPoint(x=160, y=500),
                 bbox=CatalogBBox(x1=0, y1=500, x2=160, y2=500, width=160, height=0),
             ),
-            CatalogWallTrace(
+            CatalogCadTrace(
                 trace_id="trace-room-divider-vertical",
+                trace_kind="wall",
                 type="line",
                 layer="WALLS",
                 start=CatalogPoint(x=160, y=300),
                 end=CatalogPoint(x=160, y=500),
                 bbox=CatalogBBox(x1=160, y1=300, x2=160, y2=500, width=0, height=200),
             ),
-            CatalogWallTrace(
+            CatalogCadTrace(
                 trace_id="trace-hall-exterior",
+                trace_kind="wall",
                 type="line",
                 layer="WALLS",
                 start=CatalogPoint(x=240, y=300),
@@ -138,17 +141,19 @@ def build_multi_trace_inferred_seed() -> FloorPlanCatalogSeed:
                 measurement_source="room_region",
             ),
         ],
-        wall_traces=[
-            CatalogWallTrace(
+        cad_traces=[
+            CatalogCadTrace(
                 trace_id="trace-a",
+                trace_kind="wall",
                 type="line",
                 layer="WALLS",
                 start=CatalogPoint(x=20, y=103),
                 end=CatalogPoint(x=60, y=103),
                 bbox=CatalogBBox(x1=20, y1=103, x2=60, y2=103, width=40, height=0),
             ),
-            CatalogWallTrace(
+            CatalogCadTrace(
                 trace_id="trace-b",
+                trace_kind="wall",
                 type="line",
                 layer="WALLS",
                 start=CatalogPoint(x=70, y=103),
@@ -166,7 +171,7 @@ def test_derive_floor_plan_wall_graph_creates_shared_and_exterior_boundaries():
     seed = build_seed()
     topology = derive_floor_plan_topology(seed)
 
-    wall_graph = derive_floor_plan_wall_graph(topology, seed.wall_traces)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
     walls = wall_graph.walls
 
     assert wall_graph.wall_graph_readiness.status == "ready_for_wall_graph_review"
@@ -208,7 +213,7 @@ def test_derive_floor_plan_wall_graph_falls_back_to_bbox_inference_when_polygons
     seed.rooms[0].bbox = CatalogBBox(x1=0, y1=500.99, x2=160, y2=792, width=160, height=291.01)
 
     topology = derive_floor_plan_topology(seed)
-    wall_graph = derive_floor_plan_wall_graph(topology, seed.wall_traces)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
 
     kitchen = next(room for room in topology.rooms if room.name == "KITCHEN")
     bedroom = next(room for room in topology.rooms if room.name == "BEDROOM 2")
@@ -235,7 +240,7 @@ def test_derive_floor_plan_wall_graph_deduplicates_shared_boundaries():
     seed = build_seed()
     topology = derive_floor_plan_topology(seed)
 
-    wall_graph = derive_floor_plan_wall_graph(topology, seed.wall_traces)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
     shared_pairs = [tuple(sorted(wall.room_ids)) for wall in wall_graph.walls if not wall.is_exterior]
 
     assert len(shared_pairs) == len(set(shared_pairs))
@@ -246,7 +251,7 @@ def test_derive_floor_plan_wall_graph_handles_real_seminole_seed():
     seed = FloorPlanCatalogSeed.model_validate(seed_payload)
     topology = derive_floor_plan_topology(seed)
 
-    wall_graph = derive_floor_plan_wall_graph(topology, seed.wall_traces)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
 
     assert wall_graph.floor_plan_id == "seminole-2000"
     assert wall_graph.walls
@@ -258,7 +263,7 @@ def test_derive_floor_plan_wall_graph_merges_multi_trace_support_for_inferred_wa
     seed = build_multi_trace_inferred_seed()
     topology = derive_floor_plan_topology(seed)
 
-    wall_graph = derive_floor_plan_wall_graph(topology, seed.wall_traces)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
 
     room_a = next(room for room in topology.rooms if room.name == "ROOM A")
     room_b = next(room for room in topology.rooms if room.name == "ROOM B")
@@ -283,7 +288,7 @@ def test_derive_floor_plan_wall_graph_prunes_false_pairs_and_slivers_in_real_sem
     seed = FloorPlanCatalogSeed.model_validate(seed_payload)
     topology = derive_floor_plan_topology(seed)
 
-    wall_graph = derive_floor_plan_wall_graph(topology, seed.wall_traces)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
     names_by_room_id = {room.room_id: room.name for room in topology.rooms}
     shared_pairs = {
         tuple(sorted(names_by_room_id[room_id] for room_id in wall.room_ids)): wall
@@ -291,8 +296,14 @@ def test_derive_floor_plan_wall_graph_prunes_false_pairs_and_slivers_in_real_sem
         if not wall.is_exterior
     }
 
-    assert ("BEDROOM 2", "KITCHEN") not in shared_pairs
-    assert ("LIVING ROOM", "MSTR. BEDROOM") not in shared_pairs
+    assert ("DINING", "PATIO") not in shared_pairs
+    assert ("ENTRY", "LIVING ROOM") not in shared_pairs
+
+    bedroom_kitchen_wall = shared_pairs[tuple(sorted(("BEDROOM 2", "KITCHEN")))]
+    assert bedroom_kitchen_wall.trace_support_status == "snapped_to_trace"
+    assert bedroom_kitchen_wall.provenance == "bbox_inferred"
+    assert bedroom_kitchen_wall.confidence == "trace_supported"
+    assert "inferred_from_bbox" not in bedroom_kitchen_wall.issues
 
     closet_wall = shared_pairs[tuple(sorted(("CLOSET", "MASTER BATH")))]
     assert closet_wall.trace_support_status == "snapped_to_trace"
@@ -302,6 +313,44 @@ def test_derive_floor_plan_wall_graph_prunes_false_pairs_and_slivers_in_real_sem
     assert "inferred_from_bbox" not in closet_wall.issues
     assert wall_graph.wall_graph_issues == []
 
+
+def test_derive_floor_plan_wall_graph_ignores_door_and_window_traces_as_wall_support():
+    seed = build_seed().model_copy(deep=True)
+    seed.cad_traces = [
+        CatalogCadTrace(
+            trace_id="trace-door-divider",
+            trace_kind="door",
+            type="line",
+            layer="DOORS",
+            start=CatalogPoint(x=160, y=300),
+            end=CatalogPoint(x=160, y=500),
+            bbox=CatalogBBox(x1=160, y1=300, x2=160, y2=500, width=0, height=200),
+        ),
+        CatalogCadTrace(
+            trace_id="trace-window-divider",
+            trace_kind="window",
+            type="line",
+            layer="WINS",
+            start=CatalogPoint(x=160, y=300),
+            end=CatalogPoint(x=160, y=500),
+            bbox=CatalogBBox(x1=160, y1=300, x2=160, y2=500, width=0, height=200),
+        ),
+    ]
+
+    topology = derive_floor_plan_topology(seed)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
+
+    bedroom = next(room for room in topology.rooms if room.name == "BEDROOM 2")
+    hall = next(room for room in topology.rooms if room.name == "HALL")
+    shared_wall = next(
+        wall
+        for wall in wall_graph.walls
+        if not wall.is_exterior and set(wall.room_ids) == {bedroom.room_id, hall.room_id}
+    )
+
+    assert shared_wall.trace_support_status == "unsupported"
+    assert shared_wall.trace_support_ids == []
+    assert shared_wall.confidence == "unsupported"
 
 
 def test_export_topology_fixture_includes_wall_graph(tmp_path: Path):

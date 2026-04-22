@@ -23,6 +23,7 @@ def test_floor_plan_catalog_seed_exposes_minimum_curated_shape():
             "height": 792.0,
         },
         rooms=[],
+        cad_traces=[],
         source_layers=[],
         block_refs=[],
         readiness={
@@ -56,10 +57,13 @@ def test_curate_floor_plan_seed_merges_extraction_and_audit(tmp_path: Path):
     assert len(seed.rooms[0].polygon) >= 4
     assert "WALLS" in seed.source_layers
     assert seed.readiness.status == "ready_for_catalog"
+    assert seed.cad_traces
     assert seed.wall_traces
+    assert any(trace.trace_kind == "door" for trace in seed.cad_traces)
+    assert any(trace.trace_kind == "window" for trace in seed.cad_traces)
     assert seed.wall_traces[0].layer == "WALLS"
     assert seed.wall_traces[0].trace_id
-    assert len({trace.trace_id for trace in seed.wall_traces}) == len(seed.wall_traces)
+    assert len({trace.trace_id for trace in seed.cad_traces}) == len(seed.cad_traces)
 
 
 def test_curate_floor_plan_seed_marks_low_room_coverage_as_manual_review(tmp_path: Path):
@@ -164,6 +168,8 @@ def write_dimensioned_room_floor_dxf(path: Path) -> None:
     msp.add_line((120, 0), (120, 144), dxfattribs={"layer": "WALLS"})
     msp.add_line((120, 144), (120, 288), dxfattribs={"layer": "WALLS"})
     msp.add_line((0, 144), (468, 144), dxfattribs={"layer": "WALLS"})
+    msp.add_line((120, 52), (120, 96), dxfattribs={"layer": "DOORS"})
+    msp.add_line((210, 0), (270, 0), dxfattribs={"layer": "WINS"})
 
     msp.add_text(
         "BEDROOM 2",
@@ -216,6 +222,22 @@ def test_curate_floor_plan_seed_preserves_wall_trace_geometry(tmp_path: Path):
     assert polyline_trace.bbox.width == 468.0
     assert line_trace.start is not None
     assert line_trace.end is not None
+
+
+def test_curate_floor_plan_seed_separates_opening_trace_kinds(tmp_path: Path):
+    dxf_path = tmp_path / "opening-aware-floor.dxf"
+    write_dimensioned_room_floor_dxf(dxf_path)
+
+    seed = curate_floor_plan_seed(dxf_path)
+    trace_kinds = {trace.trace_kind for trace in seed.cad_traces}
+    door_traces = [trace for trace in seed.cad_traces if trace.trace_kind == "door"]
+    window_traces = [trace for trace in seed.cad_traces if trace.trace_kind == "window"]
+
+    assert {"wall", "door", "window"}.issubset(trace_kinds)
+    assert door_traces
+    assert window_traces
+    assert all(trace.layer == "DOORS" for trace in door_traces)
+    assert all(trace.layer in {"WIN", "WINS"} for trace in window_traces)
 
 
 def test_curate_floor_plan_seed_makes_duplicate_wall_trace_ids_unique(tmp_path: Path):

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field
+from pydantic import AliasChoices, BaseModel, Field
 
 
 class CatalogReadiness(BaseModel):
@@ -22,14 +22,18 @@ class CatalogPoint(BaseModel):
     y: float
 
 
-class CatalogWallTrace(BaseModel):
+class CatalogCadTrace(BaseModel):
     trace_id: str
+    trace_kind: str = "wall"
     type: str
     layer: str
     start: CatalogPoint | None = None
     end: CatalogPoint | None = None
     points: list[CatalogPoint] = Field(default_factory=list)
     bbox: CatalogBBox
+
+
+CatalogWallTrace = CatalogCadTrace
 
 
 class CatalogRoom(BaseModel):
@@ -50,10 +54,25 @@ class FloorPlanCatalogSeed(BaseModel):
     canonical_unit: str
     footprint_bbox: CatalogBBox
     rooms: list[CatalogRoom] = Field(default_factory=list)
-    wall_traces: list[CatalogWallTrace] = Field(default_factory=list)
+    cad_traces: list[CatalogCadTrace] = Field(
+        default_factory=list,
+        validation_alias=AliasChoices("cad_traces", "wall_traces"),
+    )
     source_layers: list[str] = Field(default_factory=list)
     block_refs: list[str] = Field(default_factory=list)
     readiness: CatalogReadiness
+
+    @property
+    def wall_traces(self) -> list[CatalogCadTrace]:
+        return [trace for trace in self.cad_traces if trace.trace_kind == "wall"]
+
+    @property
+    def door_traces(self) -> list[CatalogCadTrace]:
+        return [trace for trace in self.cad_traces if trace.trace_kind == "door"]
+
+    @property
+    def window_traces(self) -> list[CatalogCadTrace]:
+        return [trace for trace in self.cad_traces if trace.trace_kind == "window"]
 
 
 class CatalogRoomTopology(BaseModel):

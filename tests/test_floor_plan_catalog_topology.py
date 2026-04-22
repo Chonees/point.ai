@@ -214,8 +214,8 @@ def test_export_topology_fixture_writes_expected_topology_json(tmp_path: Path):
     assert payload["floor_plan_id"] == expected_topology["floor_plan_id"]
     assert payload["rooms"] == expected_topology["rooms"]
     assert payload["topology_readiness"] == expected_topology["topology_readiness"]
-    assert "wall_traces" in payload
-    assert isinstance(payload["wall_traces"], list)
+    assert "cad_traces" in payload
+    assert isinstance(payload["cad_traces"], list)
     assert payload["walls"]
     assert json.loads(output_path.read_text(encoding="utf-8")) == payload
 
@@ -346,7 +346,7 @@ def test_strengthen_real_seminole_topology_replaces_false_adjacency_and_expected
     seed = FloorPlanCatalogSeed.model_validate(seed_payload)
 
     topology = derive_floor_plan_topology(seed)
-    wall_graph = derive_floor_plan_wall_graph(topology, seed.wall_traces)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
     strengthened = strengthen_floor_plan_topology(topology, wall_graph)
     rooms_by_name = {room.name: room for room in strengthened.rooms}
     names_by_room_id = {room.room_id: room.name for room in strengthened.rooms}
@@ -354,13 +354,14 @@ def test_strengthen_real_seminole_topology_replaces_false_adjacency_and_expected
     bedroom_2_adjacency = {names_by_room_id[room_id] for room_id in rooms_by_name["BEDROOM 2"].adjacent_room_ids}
     living_room_adjacency = {names_by_room_id[room_id] for room_id in rooms_by_name["LIVING ROOM"].adjacent_room_ids}
 
-    assert bedroom_2_adjacency == {"BATH 3"}
-    assert living_room_adjacency == {"BATH 3"}
-    assert rooms_by_name["PATIO"].isolation_status == "expected_isolated"
+    assert bedroom_2_adjacency == {"BATH 3", "KITCHEN"}
+    assert living_room_adjacency == {"PATIO"}
+    assert rooms_by_name["PATIO"].isolation_status == "connected"
     assert "isolated_room" not in rooms_by_name["PATIO"].issues
-    assert rooms_by_name["KITCHEN"].isolation_status == "suspicious_isolated"
+    assert rooms_by_name["KITCHEN"].isolation_status == "connected"
     assert rooms_by_name["MSTR. BEDROOM"].isolation_status == "suspicious_isolated"
-    assert rooms_by_name["KITCHEN"].heuristic_adjacent_room_ids == [rooms_by_name["BEDROOM 2"].room_id]
-    assert rooms_by_name["MSTR. BEDROOM"].heuristic_adjacent_room_ids == [rooms_by_name["LIVING ROOM"].room_id]
+    assert rooms_by_name["KITCHEN"].heuristic_adjacent_room_ids == []
+    assert rooms_by_name["DINING"].heuristic_adjacent_room_ids == [rooms_by_name["PATIO"].room_id]
+    assert rooms_by_name["MSTR. BEDROOM"].heuristic_adjacent_room_ids == []
     assert "inferred_adjacency" not in strengthened.topology_issues
     assert "isolated_room" in strengthened.topology_issues
