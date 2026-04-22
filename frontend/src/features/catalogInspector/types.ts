@@ -24,6 +24,7 @@ export interface CatalogInspectorRoom {
   area: number
   measurement_source: string
   adjacent_room_ids: string[]
+  opening_adjacent_room_ids: string[]
   heuristic_adjacent_room_ids: string[]
   is_exterior_touching: boolean
   isolation_status: string

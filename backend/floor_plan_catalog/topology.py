@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import hashlib
+import math
 import re
 
 from backend.floor_plan_catalog.contracts import (
+    CatalogCadTrace,
+    CatalogPoint,
     CatalogRoom,
     CatalogRoomTopology,
     FloorPlanCatalogSeed,
@@ -65,8 +68,10 @@ def derive_floor_plan_topology(seed: FloorPlanCatalogSeed) -> FloorPlanTopologyV
 def strengthen_floor_plan_topology(
     topology: FloorPlanTopologyV1,
     wall_graph: FloorPlanWallGraphV1,
+    cad_traces: list[CatalogCadTrace] | None = None,
 ) -> FloorPlanTopologyV1:
     supported_adjacency: dict[str, set[str]] = {room.room_id: set() for room in topology.rooms}
+    opening_adjacency = _derive_opening_adjacency(topology.rooms, cad_traces or [])
 
     for wall in wall_graph.walls:
         if wall.is_exterior or len(wall.room_ids) != 2:
@@ -80,10 +85,11 @@ def strengthen_floor_plan_topology(
     rooms: list[CatalogRoomTopology] = []
     for room in topology.rooms:
         supported_ids = sorted(supported_adjacency.get(room.room_id, set()))
-        heuristic_ids = sorted(set(room.adjacent_room_ids) - set(supported_ids))
+        opening_ids = sorted(set(opening_adjacency.get(room.room_id, set())) - set(supported_ids))
+        heuristic_ids = sorted(set(room.adjacent_room_ids) - set(supported_ids) - set(opening_ids))
         issues = [issue for issue in room.issues if issue not in {"inferred_adjacency", "isolated_room"}]
 
-        if supported_ids:
+        if supported_ids or opening_ids:
             isolation_status = "connected"
         elif room.category in EXPECTED_ISOLATED_CATEGORIES:
             isolation_status = "expected_isolated"
@@ -95,6 +101,7 @@ def strengthen_floor_plan_topology(
             room.model_copy(
                 update={
                     "adjacent_room_ids": supported_ids,
+                    "opening_adjacent_room_ids": opening_ids,
                     "heuristic_adjacent_room_ids": heuristic_ids,
                     "isolation_status": isolation_status,
                     "issues": sorted(set(issues)),
@@ -232,3 +239,80 @@ def _touches_exterior(seed: FloorPlanCatalogSeed, room: CatalogRoomTopology, tol
         or abs(room.bbox.x2 - bbox.x2) <= tolerance
         or abs(room.bbox.y2 - bbox.y2) <= tolerance
     )
+
+
+def _derive_opening_adjacency(
+    rooms: list[CatalogRoomTopology],
+    cad_traces: list[CatalogCadTrace],
+    tolerance: float = 6.0,
+) -> dict[str, set[str]]:
+    adjacency: dict[str, set[str]] = {room.room_id: set() for room in rooms}
+    if not cad_traces:
+        return adjacency
+
+    for trace in cad_traces:
+        if trace.trace_kind != "door":
+            continue
+        start, end = _trace_endpoints(trace)
+        if start is None or end is None:
+            continue
+        start_room_ids = {
+            room.room_id
+            for room in rooms
+            if _point_in_or_near_polygon(start, room.polygon, tolerance)
+        }
+        end_room_ids = {
+            room.room_id
+            for room in rooms
+            if _point_in_or_near_polygon(end, room.polygon, tolerance)
+        }
+        for start_room_id in start_room_ids:
+            for end_room_id in end_room_ids:
+                if start_room_id == end_room_id:
+                    continue
+                adjacency[start_room_id].add(end_room_id)
+                adjacency[end_room_id].add(start_room_id)
+
+    return adjacency
+
+
+def _trace_endpoints(trace: CatalogCadTrace) -> tuple[CatalogPoint | None, CatalogPoint | None]:
+    if trace.points and len(trace.points) >= 2:
+        return trace.points[0], trace.points[-1]
+    return trace.start, trace.end
+
+
+def _point_in_or_near_polygon(point: CatalogPoint, polygon: list[CatalogPoint], tolerance: float) -> bool:
+    if _point_in_polygon(point, polygon):
+        return True
+    for index in range(len(polygon)):
+        start = polygon[index]
+        end = polygon[(index + 1) % len(polygon)]
+        if _distance_point_to_segment(point, start, end) <= tolerance:
+            return True
+    return False
+
+
+def _point_in_polygon(point: CatalogPoint, polygon: list[CatalogPoint]) -> bool:
+    inside = False
+    for index in range(len(polygon)):
+        start = polygon[index]
+        end = polygon[(index + 1) % len(polygon)]
+        if (start.y > point.y) == (end.y > point.y):
+            continue
+        x_intersection = ((end.x - start.x) * (point.y - start.y) / ((end.y - start.y) or 1e-12)) + start.x
+        if point.x < x_intersection:
+            inside = not inside
+    return inside
+
+
+def _distance_point_to_segment(point: CatalogPoint, start: CatalogPoint, end: CatalogPoint) -> float:
+    dx = end.x - start.x
+    dy = end.y - start.y
+    if dx == 0 and dy == 0:
+        return math.hypot(point.x - start.x, point.y - start.y)
+    t = ((point.x - start.x) * dx + (point.y - start.y) * dy) / ((dx * dx) + (dy * dy))
+    t = max(0.0, min(1.0, t))
+    projection_x = start.x + (t * dx)
+    projection_y = start.y + (t * dy)
+    return math.hypot(point.x - projection_x, point.y - projection_y)

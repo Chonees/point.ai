@@ -87,6 +87,7 @@ class CatalogRoomTopology(BaseModel):
     area: float
     measurement_source: str
     adjacent_room_ids: list[str] = Field(default_factory=list)
+    opening_adjacent_room_ids: list[str] = Field(default_factory=list)
     heuristic_adjacent_room_ids: list[str] = Field(default_factory=list)
     is_exterior_touching: bool = False
     isolation_status: str = "connected"

@@ -104,6 +104,10 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
     (count, room) => count + (room.heuristic_adjacent_room_ids?.length ?? 0),
     0,
   ) / 2
+  const openingAdjacencyEdges = topology.rooms.reduce(
+    (count, room) => count + (room.opening_adjacent_room_ids?.length ?? 0),
+    0,
+  ) / 2
   const sharedWalls = topology.walls.filter((wall) => !wall.is_exterior).length
   const inferredWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.provenance === 'bbox_inferred').length
   const exactSharedWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.trace_support_status === 'exact_trace_supported').length
@@ -185,7 +189,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             <div>
               <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Validation</p>
               <p className="mt-1 text-sm text-zinc-300">
-                {roomsWithAdjacency} rooms with supported adjacency, {heuristicAdjacencyEdges} heuristic adjacency edges, {expectedIsolatedRooms} expected isolated rooms, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {cadTraces.length} CAD traces split into {rawWallTraces.length} walls, {doorTraces.length} doors, {windowTraces.length} windows, {unsupportedSharedWalls} unsupported shared walls.
+                {roomsWithAdjacency} rooms with wall-backed adjacency, {openingAdjacencyEdges} opening-backed adjacency edges, {heuristicAdjacencyEdges} heuristic adjacency edges, {expectedIsolatedRooms} expected isolated rooms, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {cadTraces.length} CAD traces split into {rawWallTraces.length} walls, {doorTraces.length} doors, {windowTraces.length} windows, {unsupportedSharedWalls} unsupported shared walls.
               </p>
               <p className="mt-1 text-sm text-zinc-500">
                 Readiness: <span className="font-medium text-zinc-200">{topology.topology_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.wall_graph_readiness.status}</span>

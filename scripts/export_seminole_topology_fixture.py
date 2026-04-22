@@ -17,7 +17,7 @@ from backend.floor_plan_catalog.wall_graph import derive_floor_plan_wall_graph
 def build_inspector_payload(seed: FloorPlanCatalogSeed) -> dict:
     topology = derive_floor_plan_topology(seed)
     wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
-    topology = strengthen_floor_plan_topology(topology, wall_graph)
+    topology = strengthen_floor_plan_topology(topology, wall_graph, seed.cad_traces)
     payload = topology.model_dump()
     payload["cad_traces"] = [trace.model_dump() for trace in seed.cad_traces]
     payload["walls"] = [wall.model_dump() for wall in wall_graph.walls]

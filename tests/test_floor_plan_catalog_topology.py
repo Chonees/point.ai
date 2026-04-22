@@ -5,6 +5,7 @@ from subprocess import run
 
 from backend.floor_plan_catalog.contracts import (
     CatalogBBox,
+    CatalogCadTrace,
     CatalogPoint,
     CatalogReadiness,
     CatalogRoom,
@@ -341,27 +342,102 @@ def test_strengthen_floor_plan_topology_rebuilds_supported_adjacency_from_wall_g
     assert strengthened.topology_issues == []
 
 
+def test_strengthen_floor_plan_topology_uses_door_traces_to_resolve_isolated_rooms():
+    seed = FloorPlanCatalogSeed(
+        floor_plan_id="opening-connected",
+        name="OPENING CONNECTED",
+        source_path="D:/PointAIData/PLANS/originalFloorPlans/OPENING.dxf",
+        canonical_unit="inch",
+        footprint_bbox=CatalogBBox(x1=0, y1=0, x2=260, y2=120, width=260, height=120),
+        rooms=[
+            CatalogRoom(
+                name="KITCHEN",
+                polygon=[
+                    CatalogPoint(x=0, y=0),
+                    CatalogPoint(x=100, y=0),
+                    CatalogPoint(x=100, y=100),
+                    CatalogPoint(x=0, y=100),
+                ],
+                bbox=CatalogBBox(x1=0, y1=0, x2=100, y2=100, width=100, height=100),
+                centroid=CatalogPoint(x=50, y=50),
+                width=100,
+                height=100,
+                area=10000,
+                measurement_source="room_region",
+            ),
+            CatalogRoom(
+                name="BEDROOM 2",
+                polygon=[
+                    CatalogPoint(x=160, y=0),
+                    CatalogPoint(x=260, y=0),
+                    CatalogPoint(x=260, y=100),
+                    CatalogPoint(x=160, y=100),
+                ],
+                bbox=CatalogBBox(x1=160, y1=0, x2=260, y2=100, width=100, height=100),
+                centroid=CatalogPoint(x=210, y=50),
+                width=100,
+                height=100,
+                area=10000,
+                measurement_source="room_region",
+            ),
+        ],
+        cad_traces=[
+            CatalogCadTrace(
+                trace_id="door-room-a-room-b",
+                trace_kind="door",
+                type="line",
+                layer="DOORS",
+                start=CatalogPoint(x=95, y=50),
+                end=CatalogPoint(x=165, y=50),
+                bbox=CatalogBBox(x1=95, y1=50, x2=165, y2=50, width=70, height=0),
+            ),
+        ],
+        source_layers=["ROOM LBLS", "DOORS"],
+        block_refs=[],
+        readiness=CatalogReadiness(status="ready_for_catalog", issues=[]),
+    )
+
+    topology = derive_floor_plan_topology(seed)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
+    strengthened = strengthen_floor_plan_topology(topology, wall_graph, seed.cad_traces)
+    room_by_name = {room.name: room for room in strengthened.rooms}
+
+    assert room_by_name["KITCHEN"].adjacent_room_ids == []
+    assert room_by_name["KITCHEN"].opening_adjacent_room_ids == [room_by_name["BEDROOM 2"].room_id]
+    assert room_by_name["BEDROOM 2"].opening_adjacent_room_ids == [room_by_name["KITCHEN"].room_id]
+    assert room_by_name["KITCHEN"].isolation_status == "connected"
+    assert room_by_name["BEDROOM 2"].isolation_status == "connected"
+    assert strengthened.topology_issues == []
+
+
 def test_strengthen_real_seminole_topology_replaces_false_adjacency_and_expected_isolation():
     seed_payload = json.loads(Path(r"D:\PointAIData\PLANS\catalog\seminole-2000.json").read_text(encoding="utf-8"))
     seed = FloorPlanCatalogSeed.model_validate(seed_payload)
 
     topology = derive_floor_plan_topology(seed)
     wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
-    strengthened = strengthen_floor_plan_topology(topology, wall_graph)
+    strengthened = strengthen_floor_plan_topology(topology, wall_graph, seed.cad_traces)
     rooms_by_name = {room.name: room for room in strengthened.rooms}
     names_by_room_id = {room.room_id: room.name for room in strengthened.rooms}
 
     bedroom_2_adjacency = {names_by_room_id[room_id] for room_id in rooms_by_name["BEDROOM 2"].adjacent_room_ids}
     living_room_adjacency = {names_by_room_id[room_id] for room_id in rooms_by_name["LIVING ROOM"].adjacent_room_ids}
+    dining_openings = {names_by_room_id[room_id] for room_id in rooms_by_name["DINING"].opening_adjacent_room_ids}
+    master_bedroom_openings = {
+        names_by_room_id[room_id] for room_id in rooms_by_name["MSTR. BEDROOM"].opening_adjacent_room_ids
+    }
 
     assert bedroom_2_adjacency == {"BATH 3", "KITCHEN"}
     assert living_room_adjacency == {"PATIO"}
     assert rooms_by_name["PATIO"].isolation_status == "connected"
     assert "isolated_room" not in rooms_by_name["PATIO"].issues
     assert rooms_by_name["KITCHEN"].isolation_status == "connected"
-    assert rooms_by_name["MSTR. BEDROOM"].isolation_status == "suspicious_isolated"
+    assert dining_openings == {"PATIO"}
+    assert master_bedroom_openings == {"LIVING ROOM"}
+    assert rooms_by_name["DINING"].isolation_status == "connected"
+    assert rooms_by_name["MSTR. BEDROOM"].isolation_status == "connected"
     assert rooms_by_name["KITCHEN"].heuristic_adjacent_room_ids == []
-    assert rooms_by_name["DINING"].heuristic_adjacent_room_ids == [rooms_by_name["PATIO"].room_id]
+    assert rooms_by_name["DINING"].heuristic_adjacent_room_ids == []
     assert rooms_by_name["MSTR. BEDROOM"].heuristic_adjacent_room_ids == []
     assert "inferred_adjacency" not in strengthened.topology_issues
-    assert "isolated_room" in strengthened.topology_issues
+    assert strengthened.topology_issues == []

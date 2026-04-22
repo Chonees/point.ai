@@ -233,6 +233,11 @@ export function CatalogInspectorSidebar({
               </div>
 
               <div>
+                <h4 className="text-sm font-semibold uppercase tracking-[0.22em] text-zinc-400">Opening adjacency</h4>
+                <p className="mt-2 text-sm text-zinc-200">{roomNames(topology, selectedRoom.opening_adjacent_room_ids ?? [])}</p>
+              </div>
+
+              <div>
                 <h4 className="text-sm font-semibold uppercase tracking-[0.22em] text-zinc-400">Heuristic adjacency</h4>
                 <p className="mt-2 text-sm text-zinc-200">{roomNames(topology, selectedRoom.heuristic_adjacent_room_ids ?? [])}</p>
               </div>

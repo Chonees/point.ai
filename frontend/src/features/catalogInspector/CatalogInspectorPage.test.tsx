@@ -78,8 +78,21 @@ describe('CatalogInspectorPage', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /select patio/i }))
 
-    expect(screen.getAllByText(/expected isolated/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/connected/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/opening adjacency/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/heuristic adjacency/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows opening adjacency for master bedroom and dining without faking wall adjacency', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /select mstr\. bedroom/i }))
+    expect(screen.getAllByText(/opening adjacency/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/^LIVING ROOM$/i).length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: /select dining/i }))
+    expect(screen.getAllByText(/opening adjacency/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/^PATIO$/i).length).toBeGreaterThan(0)
   })
 
   it('renders raw wall traces and toggles them off', () => {
