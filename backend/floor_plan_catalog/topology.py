@@ -14,16 +14,27 @@ from backend.floor_plan_catalog.contracts import (
 
 def derive_floor_plan_topology(seed: FloorPlanCatalogSeed) -> FloorPlanTopologyV1:
     rooms = [_to_room_topology(room) for room in seed.rooms]
+    adjacent_room_ids: dict[str, set[str]] = {room.room_id: set() for room in rooms}
+    inferred_adjacency_ids: dict[str, set[str]] = {room.room_id: set() for room in rooms}
+
+    for index, room in enumerate(rooms):
+        for other_room in rooms[index + 1 :]:
+            source = _adjacency_source(room, other_room)
+            if source is None:
+                continue
+            adjacent_room_ids[room.room_id].add(other_room.room_id)
+            adjacent_room_ids[other_room.room_id].add(room.room_id)
+            if source == "inferred":
+                inferred_adjacency_ids[room.room_id].add(other_room.room_id)
+                inferred_adjacency_ids[other_room.room_id].add(room.room_id)
 
     for room in rooms:
-        room.adjacent_room_ids = sorted(
-            other.room_id
-            for other in rooms
-            if other.room_id != room.room_id and _rooms_are_adjacent(room, other)
-        )
+        room.adjacent_room_ids = sorted(adjacent_room_ids[room.room_id])
         room.is_exterior_touching = _touches_exterior(seed, room)
         if room.category == "unknown":
             room.issues.append("missing_category")
+        if inferred_adjacency_ids[room.room_id]:
+            room.issues.append("inferred_adjacency")
         if not room.adjacent_room_ids:
             room.issues.append("isolated_room")
         if room.area <= 0 or len(room.polygon) < 4:
@@ -94,13 +105,33 @@ def _infer_category(name: str) -> str:
         return "bedroom"
     if "BATH" in upper:
         return "bath"
+    if "PWDR" in upper or "POWDER" in upper:
+        return "powder_room"
+    if "LIVING" in upper:
+        return "living_room"
     if "HALL" in upper:
         return "hall"
+    if "ENTRY" in upper or "FOYER" in upper:
+        return "entry"
     if "PATIO" in upper:
         return "patio"
+    if "PORCH" in upper:
+        return "porch"
     if "GARAGE" in upper:
         return "garage"
+    if "UTILITY" in upper:
+        return "utility"
+    if "CLOSET" in upper or "WIC" in upper:
+        return "closet"
     return "unknown"
+
+
+def _adjacency_source(a: CatalogRoomTopology, b: CatalogRoomTopology) -> str | None:
+    if _rooms_are_adjacent(a, b):
+        return "exact"
+    if _rooms_are_bbox_adjacent(a, b):
+        return "inferred"
+    return None
 
 
 def _rooms_are_adjacent(a: CatalogRoomTopology, b: CatalogRoomTopology, tolerance: float = 3.0) -> bool:
@@ -114,6 +145,21 @@ def _rooms_are_adjacent(a: CatalogRoomTopology, b: CatalogRoomTopology, toleranc
         abs(a.bbox.x2 - b.bbox.x1),
         abs(b.bbox.x2 - a.bbox.x1),
     ) <= tolerance
+    return touches_vertically or touches_horizontally
+
+
+def _rooms_are_bbox_adjacent(
+    a: CatalogRoomTopology,
+    b: CatalogRoomTopology,
+    tolerance: float = 10.0,
+    minimum_overlap: float = 12.0,
+) -> bool:
+    horizontal_overlap = min(a.bbox.x2, b.bbox.x2) - max(a.bbox.x1, b.bbox.x1)
+    vertical_overlap = min(a.bbox.y2, b.bbox.y2) - max(a.bbox.y1, b.bbox.y1)
+    vertical_gap = min(abs(a.bbox.y2 - b.bbox.y1), abs(b.bbox.y2 - a.bbox.y1))
+    horizontal_gap = min(abs(a.bbox.x2 - b.bbox.x1), abs(b.bbox.x2 - a.bbox.x1))
+    touches_vertically = horizontal_overlap > minimum_overlap and vertical_gap <= tolerance
+    touches_horizontally = vertical_overlap > minimum_overlap and horizontal_gap <= tolerance
     return touches_vertically or touches_horizontally
 
 

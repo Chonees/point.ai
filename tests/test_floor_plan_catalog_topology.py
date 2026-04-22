@@ -249,3 +249,75 @@ def test_export_seminole_topology_fixture_cli_writes_real_frontend_json():
         if output_path.exists():
             output_path.unlink()
 
+
+
+
+def test_derive_floor_plan_topology_infers_more_semantic_categories():
+    seed = build_seed().model_copy(deep=True)
+    seed.rooms = [
+        seed.rooms[0].model_copy(deep=True),
+        seed.rooms[0].model_copy(deep=True),
+        seed.rooms[0].model_copy(deep=True),
+        seed.rooms[0].model_copy(deep=True),
+        seed.rooms[0].model_copy(deep=True),
+    ]
+    seed.rooms[0].name = "LIVING ROOM"
+    seed.rooms[1].name = "ENTRY"
+    seed.rooms[2].name = "PWDR."
+    seed.rooms[3].name = "UTILITY"
+    seed.rooms[4].name = "CLOSET"
+
+    topology = derive_floor_plan_topology(seed)
+    categories = {room.name: room.category for room in topology.rooms}
+
+    assert categories == {
+        "LIVING ROOM": "living_room",
+        "ENTRY": "entry",
+        "PWDR.": "powder_room",
+        "UTILITY": "utility",
+        "CLOSET": "closet",
+    }
+
+
+def test_derive_floor_plan_topology_adds_inferred_bbox_adjacency_without_hiding_it():
+    seed = build_seed().model_copy(deep=True)
+    seed.rooms[0].name = "LIVING ROOM"
+    seed.rooms[1].name = "PWDR."
+    seed.rooms[0].bbox = CatalogBBox(x1=0, y1=400, x2=150, y2=520, width=150, height=120)
+    seed.rooms[0].polygon = [
+        CatalogPoint(x=0, y=400),
+        CatalogPoint(x=150, y=400),
+        CatalogPoint(x=150, y=520),
+        CatalogPoint(x=0, y=520),
+    ]
+    seed.rooms[0].centroid = CatalogPoint(x=75, y=460)
+    seed.rooms[1].bbox = CatalogBBox(x1=0, y1=529, x2=120, y2=580, width=120, height=51)
+    seed.rooms[1].polygon = [
+        CatalogPoint(x=0, y=529),
+        CatalogPoint(x=120, y=529),
+        CatalogPoint(x=120, y=580),
+        CatalogPoint(x=0, y=580),
+    ]
+    seed.rooms[1].centroid = CatalogPoint(x=60, y=554.5)
+    seed.rooms = seed.rooms[:2]
+
+    topology = derive_floor_plan_topology(seed)
+    living_room = next(room for room in topology.rooms if room.name == "LIVING ROOM")
+    powder = next(room for room in topology.rooms if room.name == "PWDR.")
+
+    assert powder.room_id in living_room.adjacent_room_ids
+    assert living_room.room_id in powder.adjacent_room_ids
+    assert "inferred_adjacency" in living_room.issues
+    assert "inferred_adjacency" in powder.issues
+    assert topology.topology_readiness.status == "needs_topology_review"
+    assert "inferred_adjacency" in topology.topology_issues
+
+
+def test_real_seminole_topology_no_longer_flags_missing_category_everywhere():
+    seed_payload = json.loads(Path(r"D:\PointAIData\PLANS\catalog\seminole-2000.json").read_text(encoding="utf-8"))
+    seed = FloorPlanCatalogSeed.model_validate(seed_payload)
+
+    topology = derive_floor_plan_topology(seed)
+
+    assert "missing_category" not in topology.topology_issues
+    assert sum(len(room.adjacent_room_ids) for room in topology.rooms) // 2 >= 6
