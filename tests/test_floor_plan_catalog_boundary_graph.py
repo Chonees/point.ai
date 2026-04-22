@@ -74,6 +74,34 @@ def test_boundary_graph_marks_parallel_shell_trace_as_support_boundary():
     assert support_boundary.companion_boundary_id is not None
 
 
+def test_boundary_graph_groups_exact_duplicate_segments_into_one_family():
+    seed = build_duplicate_geometry_seed()
+
+    graph = derive_floor_plan_boundary_graph(seed)
+    family_members = [
+        boundary
+        for boundary in graph.boundaries
+        if boundary.boundary_family_id is not None
+    ]
+    canonical = [boundary for boundary in family_members if boundary.family_role == "canonical"]
+    duplicates = [boundary for boundary in family_members if boundary.family_role == "duplicate"]
+
+    assert canonical
+    assert duplicates
+    assert len({boundary.boundary_family_id for boundary in family_members}) == 1
+    assert all(boundary.duplicate_of_boundary_id == canonical[0].boundary_id for boundary in duplicates)
+
+
+def test_boundary_graph_picks_the_best_boundary_as_family_canonical_member():
+    seed = build_duplicate_geometry_seed()
+
+    graph = derive_floor_plan_boundary_graph(seed)
+    canonical = next(boundary for boundary in graph.boundaries if boundary.family_role == "canonical")
+
+    assert canonical.boundary_kind in {"shared", "exterior", "support"}
+    assert canonical.duplicate_of_boundary_id is None
+
+
 def test_seminole_boundary_graph_produces_shared_boundaries_without_bbox_inference():
     seed = load_seminole_seed()
 
@@ -95,9 +123,11 @@ def test_seminole_boundary_graph_reduces_unknown_boundary_count():
     graph = derive_floor_plan_boundary_graph(seed)
     unknown = [boundary for boundary in graph.boundaries if boundary.boundary_kind == "unknown"]
     support = [boundary for boundary in graph.boundaries if boundary.boundary_kind == "support"]
+    duplicates = [boundary for boundary in graph.boundaries if boundary.family_role == "duplicate"]
 
     assert support
-    assert len(unknown) < 346
+    assert duplicates
+    assert len(unknown) < 286
 
 
 def build_l_shape_seed() -> FloorPlanCatalogSeed:
@@ -236,6 +266,42 @@ def build_double_line_shell_seed() -> FloorPlanCatalogSeed:
             build_trace("wall-top", (0, 60), (100, 60)),
             build_trace("wall-right", (100, 0), (100, 60)),
             build_trace("wall-bottom", (0, 0), (100, 0)),
+        ],
+        source_layers=["WALLS"],
+        block_refs=[],
+        readiness=CatalogReadiness(status="ready_for_catalog", issues=[]),
+    )
+
+
+def build_duplicate_geometry_seed() -> FloorPlanCatalogSeed:
+    room = CatalogRoom(
+        name="DUPLICATE TEST",
+        polygon=[
+            CatalogPoint(x=0, y=0),
+            CatalogPoint(x=120, y=0),
+            CatalogPoint(x=120, y=60),
+            CatalogPoint(x=0, y=60),
+        ],
+        bbox=CatalogBBox(x1=0, y1=0, x2=120, y2=60, width=120, height=60),
+        centroid=CatalogPoint(x=60, y=30),
+        width=120,
+        height=60,
+        area=7200,
+        measurement_source="room_region",
+    )
+    return FloorPlanCatalogSeed(
+        floor_plan_id="duplicate-geometry-seed",
+        name="DUPLICATE GEOMETRY",
+        source_path="synthetic/duplicate-geometry.dxf",
+        canonical_unit="inch",
+        footprint_bbox=CatalogBBox(x1=0, y1=0, x2=120, y2=60, width=120, height=60),
+        rooms=[room],
+        cad_traces=[
+            build_trace("wall-bottom-a", (0, 0), (120, 0)),
+            build_trace("wall-bottom-b", (0, 0), (120, 0)),
+            build_trace("wall-left", (0, 0), (0, 60)),
+            build_trace("wall-right", (120, 0), (120, 60)),
+            build_trace("wall-top", (0, 60), (120, 60)),
         ],
         source_layers=["WALLS"],
         block_refs=[],
