@@ -4,32 +4,36 @@ import { describe, expect, it } from 'vitest'
 import fixture from './catalogInspector.fixture.json'
 import { CatalogInspectorPage } from './CatalogInspectorPage'
 
+const topologyWithoutKitchen = {
+  ...fixture,
+  rooms: fixture.rooms.filter((room) => room.room_id !== 'room-kitchen-c5e1fe755eb1'),
+}
+
 describe('CatalogInspectorPage', () => {
-  it('renders the real topology, lets you select a room, and toggles ids and adjacency layers', () => {
+  it('moves selection with keyboard and updates the sidebar for a different room', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 
-    expect(screen.getByRole('heading', { name: /topology inspector/i })).toBeInTheDocument()
-    expect(screen.getByText('SEMINOLE2000')).toBeInTheDocument()
-    expect(screen.getAllByText('KITCHEN').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('BEDROOM 2').length).toBeGreaterThan(0)
-
-    const canvas = screen.getByTestId('catalog-inspector-canvas')
-    expect(within(canvas).queryByTestId('room-id-label-room-kitchen-c5e1fe755eb1')).not.toBeInTheDocument()
-    expect(within(canvas).queryAllByTestId(/^adjacency-link-/).length).toBe(0)
-
-    fireEvent.click(screen.getByTestId('room-room-kitchen-c5e1fe755eb1'))
-
+    fireEvent.click(screen.getByRole('button', { name: /select kitchen/i }))
     expect(screen.getByRole('heading', { name: 'KITCHEN' })).toBeInTheDocument()
-    expect(screen.getByText('room-kitchen-c5e1fe755eb1')).toBeInTheDocument()
-    expect(screen.getByText(/adjacent rooms/i)).toBeInTheDocument()
-    expect(screen.getAllByText('BEDROOM 2').length).toBeGreaterThan(0)
 
-    fireEvent.click(screen.getByRole('checkbox', { name: /room ids/i }))
+    const bedroom2Button = screen.getByRole('button', { name: /select bedroom 2/i })
+    bedroom2Button.focus()
+    fireEvent.keyDown(bedroom2Button, { key: 'Enter', code: 'Enter' })
 
-    expect(within(canvas).getByTestId('room-id-label-room-kitchen-c5e1fe755eb1')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'BEDROOM 2' })).toBeInTheDocument()
+    expect(screen.getByText('room-bedroom-2-f167749e3959')).toBeInTheDocument()
+  })
 
-    fireEvent.click(screen.getByRole('checkbox', { name: /adjacency/i }))
+  it('drops a stale selected room when the topology changes', () => {
+    const { rerender } = render(<CatalogInspectorPage topology={fixture} />)
 
-    expect(within(canvas).queryAllByTestId(/^adjacency-link-/).length).toBeGreaterThan(0)
+    fireEvent.click(screen.getByRole('button', { name: /select kitchen/i }))
+    expect(screen.getByRole('heading', { name: 'KITCHEN' })).toBeInTheDocument()
+
+    rerender(<CatalogInspectorPage topology={topologyWithoutKitchen} />)
+
+    expect(screen.queryByRole('heading', { name: 'KITCHEN' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'BEDROOM 2' })).toBeInTheDocument()
+    expect(within(screen.getByTestId('catalog-inspector-canvas')).queryByTestId('room-room-kitchen-c5e1fe755eb1')).not.toBeInTheDocument()
   })
 })

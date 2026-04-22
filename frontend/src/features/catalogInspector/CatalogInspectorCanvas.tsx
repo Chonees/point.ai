@@ -1,3 +1,5 @@
+import type { KeyboardEvent } from 'react'
+
 import type { CatalogInspectorRoom, CatalogInspectorTopology } from './types'
 
 interface CatalogInspectorCanvasProps {
@@ -27,6 +29,16 @@ export function CatalogInspectorCanvas({
 }: CatalogInspectorCanvasProps) {
   const roomById = new Map(topology.rooms.map((room) => [room.room_id, room]))
   const roomPairs = new Set<string>()
+
+  const selectRoom = (roomId: string) => {
+    onSelectRoom(roomId)
+  }
+
+  const handleRoomKeyDown = (event: KeyboardEvent<SVGGElement>, roomId: string) => {
+    if (event.key !== 'Enter' && event.key !== ' ') return
+    event.preventDefault()
+    onSelectRoom(roomId)
+  }
 
   return (
     <section className="overflow-hidden rounded-[24px] border border-white/6 bg-zinc-950/80">
@@ -93,8 +105,13 @@ export function CatalogInspectorCanvas({
               <g
                 key={room.room_id}
                 data-testid={`room-${room.room_id}`}
-                onClick={() => onSelectRoom(room.room_id)}
-                className="cursor-pointer"
+                role="button"
+                tabIndex={0}
+                aria-label={`Select ${room.name}`}
+                aria-pressed={isSelected}
+                onClick={() => selectRoom(room.room_id)}
+                onKeyDown={(event) => handleRoomKeyDown(event, room.room_id)}
+                className="cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <polygon
                   points={roomPoints(room)}

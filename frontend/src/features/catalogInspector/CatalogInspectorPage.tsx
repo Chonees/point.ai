@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import type { CatalogInspectorRoom, CatalogInspectorTopology } from './types'
 import { CatalogInspectorCanvas } from './CatalogInspectorCanvas'
@@ -17,11 +17,23 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(topology.rooms[0]?.room_id ?? null)
   const [showIds, setShowIds] = useState(false)
   const [showAdjacency, setShowAdjacency] = useState(false)
+  const roomById = useMemo(() => new Map(topology.rooms.map((room) => [room.room_id, room])), [topology.rooms])
+
+  useEffect(() => {
+    if (topology.rooms.length === 0) {
+      if (selectedRoomId !== null) setSelectedRoomId(null)
+      return
+    }
+
+    if (!selectedRoomId || !roomById.has(selectedRoomId)) {
+      setSelectedRoomId(topology.rooms[0].room_id)
+    }
+  }, [roomById, selectedRoomId, topology.rooms])
 
   const selectedRoom = useMemo<CatalogInspectorRoom | null>(() => {
     if (!selectedRoomId) return null
-    return topology.rooms.find((room) => room.room_id === selectedRoomId) ?? null
-  }, [selectedRoomId, topology.rooms])
+    return roomById.get(selectedRoomId) ?? null
+  }, [roomById, selectedRoomId])
 
   const categorizedRooms = topology.rooms.filter((room) => room.category !== 'unknown').length
   const exteriorRooms = topology.rooms.filter((room) => room.is_exterior_touching).length
