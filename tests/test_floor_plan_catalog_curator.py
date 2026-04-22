@@ -84,6 +84,51 @@ def test_curate_floor_plan_catalog_cli_writes_seed_json(tmp_path: Path):
     assert payload["readiness"]["status"] == "ready_for_catalog"
 
 
+def test_curate_floor_plan_seed_marks_aggregate_room_name_as_manual_review(monkeypatch, tmp_path: Path):
+    dxf_path = tmp_path / "aggregate-floor.dxf"
+    dxf_path.write_text("placeholder", encoding="utf-8")
+
+    monkeypatch.setattr(
+        "backend.floor_plan_catalog.curator.extract_cad_file",
+        lambda path, source_name=None: {
+            "canonical_unit": "inch",
+            "warnings": [],
+            "floor_plan": {
+                "bbox": {"width": 1633.66, "height": 1080.0},
+                "rooms": [
+                    {
+                        "name": "COV'D. PATIO PANTRY MASTER BEDROOM DINING KITCHEN UTILITY MSTR. BATH LIVING ROOM BATH 2 BEDROOM 2 ENTRY BEDROOM 3",
+                        "width": 1633.66,
+                        "height": 1080.0,
+                        "area": 1666626.68,
+                        "measurement_source": "room_region",
+                    },
+                    {
+                        "name": "PORCH",
+                        "width": 136.0,
+                        "height": 180.0,
+                        "area": 11971.98,
+                        "measurement_source": "room_region",
+                    },
+                ],
+            },
+        },
+    )
+    monkeypatch.setattr(
+        "backend.floor_plan_catalog.curator.audit_floor_plan_source",
+        lambda path: type(
+            "Audit",
+            (),
+            {"source_layers": ["WALLS", "ROOM LBLS"], "block_refs": {"TOILET1": 2}},
+        )(),
+    )
+
+    seed = curate_floor_plan_seed(dxf_path, floor_plan_id="santa-barbara", name="SANTA-BARBARA")
+
+    assert seed.readiness.status == "needs_manual_review"
+    assert "Aggregate room labels suggest unresolved room segmentation." in seed.readiness.issues
+
+
 def write_dimensioned_room_floor_dxf(path: Path) -> None:
     doc = ezdxf.new(setup=True)
     doc.units = 1

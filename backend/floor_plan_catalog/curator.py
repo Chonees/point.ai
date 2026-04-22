@@ -60,6 +60,8 @@ def _build_readiness(*, rooms: list[CatalogRoom], warnings: list[str]) -> Catalo
         issues.append("No rooms were extracted.")
     if len(rooms) < 2:
         issues.append("Room coverage is too low for a trusted catalog entry.")
+    if any(_looks_like_aggregate_room_label(room.name) for room in rooms):
+        issues.append("Aggregate room labels suggest unresolved room segmentation.")
     status = "ready_for_catalog" if not issues else "needs_manual_review"
     return CatalogReadiness(status=status, issues=issues)
 
@@ -67,3 +69,23 @@ def _build_readiness(*, rooms: list[CatalogRoom], warnings: list[str]) -> Catalo
 def _slugify(value: str) -> str:
     normalized = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
     return normalized or "floor-plan"
+
+
+def _looks_like_aggregate_room_label(name: str) -> bool:
+    upper = name.upper()
+    room_keywords = (
+        "BEDROOM",
+        "BATH",
+        "KITCHEN",
+        "LIVING",
+        "DINING",
+        "PANTRY",
+        "ENTRY",
+        "UTILITY",
+        "PATIO",
+        "CLOSET",
+        "GARAGE",
+        "PORCH",
+    )
+    matched = sum(1 for keyword in room_keywords if keyword in upper)
+    return matched >= 4
