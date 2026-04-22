@@ -19,7 +19,7 @@ from backend.floor_plan_catalog.wall_graph import derive_floor_plan_wall_graph
 def build_inspector_payload(seed: FloorPlanCatalogSeed) -> dict:
     boundary_graph = derive_floor_plan_boundary_graph(seed)
     topology = derive_floor_plan_topology(seed)
-    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces, boundary_graph=boundary_graph)
     opening_graph = derive_floor_plan_opening_graph(topology, wall_graph, seed.cad_traces)
     topology = strengthen_floor_plan_topology(topology, wall_graph, seed.cad_traces, opening_graph)
     payload = topology.model_dump()

@@ -5,10 +5,12 @@ import math
 from dataclasses import dataclass
 
 from backend.floor_plan_catalog.contracts import (
+    CatalogBoundarySegment,
     CatalogCadTrace,
     CatalogPoint,
     CatalogRoomTopology,
     CatalogWallBoundary,
+    FloorPlanBoundaryGraphV1,
     FloorPlanTopologyV1,
     FloorPlanWallGraphV1,
     WallGraphReadiness,
@@ -53,6 +55,8 @@ class _TraceSupport:
 def derive_floor_plan_wall_graph(
     topology: FloorPlanTopologyV1,
     cad_traces: list[CatalogCadTrace] | None = None,
+    *,
+    boundary_graph: FloorPlanBoundaryGraphV1 | None = None,
     tolerance: float = 3.0,
     bbox_inference_tolerance: float = 10.0,
     minimum_overlap: float = 12.0,
@@ -123,32 +127,48 @@ def derive_floor_plan_wall_graph(
             seen_shared_keys.add(dedupe_key)
             shared_walls.append(inferred_wall)
 
-    exterior_walls: list[CatalogWallBoundary] = []
-    for room_id, segments in room_segments.items():
-        for segment in segments:
-            intervals = used_intervals.get((room_id, segment.edge_index), [])
-            for interval in _subtract_intervals(intervals):
-                start = _point_at(segment.start, segment.end, interval[0])
-                end = _point_at(segment.start, segment.end, interval[1])
-                if _distance(start, end) <= tolerance:
-                    continue
-                exterior_walls.append(
-                    CatalogWallBoundary(
-                        wall_id=_build_wall_id("exterior", (room_id,), start, end),
-                        start=start,
-                        end=end,
-                        orientation=_orientation(start, end, tolerance),
-                        length=_distance(start, end),
-                        is_exterior=True,
-                        room_ids=[room_id],
-                        boundary_kind="exterior",
-                        owner_room_ids=[room_id],
-                        provenance="room_exterior_boundary",
-                        confidence="geometric_exact",
+    if boundary_graph is not None and boundary_graph.boundaries:
+        exterior_walls = _exterior_walls_from_boundary_graph(boundary_graph)
+    else:
+        exterior_walls = []
+        for room_id, segments in room_segments.items():
+            for segment in segments:
+                intervals = used_intervals.get((room_id, segment.edge_index), [])
+                for interval in _subtract_intervals(intervals):
+                    start = _point_at(segment.start, segment.end, interval[0])
+                    end = _point_at(segment.start, segment.end, interval[1])
+                    if _distance(start, end) <= tolerance:
+                        continue
+                    exterior_walls.append(
+                        CatalogWallBoundary(
+                            wall_id=_build_wall_id("exterior", (room_id,), start, end),
+                            start=start,
+                            end=end,
+                            orientation=_orientation(start, end, tolerance),
+                            length=_distance(start, end),
+                            is_exterior=True,
+                            room_ids=[room_id],
+                            boundary_kind="exterior",
+                            owner_room_ids=[room_id],
+                            provenance="room_exterior_boundary",
+                            confidence="geometric_exact",
+                        )
                     )
-                )
 
     walls = sorted(shared_walls + exterior_walls, key=lambda wall: wall.wall_id)
+    if boundary_graph is not None and boundary_graph.boundaries:
+        walls = [
+            _apply_boundary_graph_support(
+                wall,
+                boundary_graph.boundaries,
+                tolerance=exact_support_tolerance,
+                snap_tolerance=snap_support_tolerance,
+                minimum_support_ratio=minimum_support_ratio,
+            )
+            if wall.is_exterior
+            else wall
+            for wall in walls
+        ]
     has_trace_context = bool(cad_traces)
     wall_traces = [trace for trace in (cad_traces or []) if trace.trace_kind == "wall"]
     if wall_traces:
@@ -208,6 +228,35 @@ def _room_segments(room_id: str, polygon: list[CatalogPoint]) -> list[_Segment]:
             continue
         segments.append(_Segment(room_id=room_id, edge_index=index, start=start, end=end))
     return segments
+
+
+def _exterior_walls_from_boundary_graph(boundary_graph: FloorPlanBoundaryGraphV1) -> list[CatalogWallBoundary]:
+    walls: list[CatalogWallBoundary] = []
+    for boundary in boundary_graph.boundaries:
+        if boundary.boundary_kind != "exterior" or not boundary.owner_room_ids:
+            continue
+        confidence = "exact" if boundary.confidence == "trace_exact" else "trace_supported"
+        wall_id = f"wall-{boundary.boundary_id.removeprefix('boundary-')}"
+        walls.append(
+            CatalogWallBoundary(
+                wall_id=wall_id,
+                start=boundary.start,
+                end=boundary.end,
+                orientation=boundary.orientation,
+                length=boundary.length,
+                is_exterior=True,
+                room_ids=list(boundary.owner_room_ids),
+                boundary_kind="exterior",
+                owner_room_ids=list(boundary.owner_room_ids),
+                provenance="boundary_graph_exterior",
+                confidence=confidence,
+                trace_support_status="exact_trace_supported",
+                trace_support_ids=list(boundary.source_trace_ids),
+                trace_support_gap=0.0,
+                issues=list(boundary.issues),
+            )
+        )
+    return walls
 
 
 def _trace_segments(wall_traces: list[CatalogCadTrace], tolerance: float) -> list[_RawTraceSegment]:
@@ -302,6 +351,55 @@ def _mark_trace_support_unsupported(wall: CatalogWallBoundary) -> CatalogWallBou
             "trace_support_gap": None,
         }
     )
+
+
+def _apply_boundary_graph_support(
+    wall: CatalogWallBoundary,
+    boundaries: list[CatalogBoundarySegment],
+    *,
+    tolerance: float,
+    snap_tolerance: float,
+    minimum_support_ratio: float,
+) -> CatalogWallBoundary:
+    exact = _best_boundary_group_support(
+        wall,
+        boundaries,
+        axis_tolerance=tolerance,
+        minimum_support_ratio=minimum_support_ratio,
+    )
+    if exact is not None:
+        return wall.model_copy(
+            update={
+                "confidence": "exact",
+                "trace_support_status": "exact_trace_supported",
+                "trace_support_ids": exact["trace_ids"],
+                "trace_support_gap": 0.0,
+                "start": exact["start"],
+                "end": exact["end"],
+                "length": _distance(exact["start"], exact["end"]),
+            }
+        )
+
+    snapped = _best_boundary_group_support(
+        wall,
+        boundaries,
+        axis_tolerance=snap_tolerance,
+        minimum_support_ratio=minimum_support_ratio,
+    )
+    if snapped is not None:
+        return wall.model_copy(
+            update={
+                "confidence": "trace_supported",
+                "trace_support_status": "snapped_to_trace",
+                "trace_support_ids": snapped["trace_ids"],
+                "trace_support_gap": round(snapped["gap"], 3),
+                "start": snapped["start"],
+                "end": snapped["end"],
+                "length": _distance(snapped["start"], snapped["end"]),
+            }
+        )
+
+    return wall
 
 
 def _find_exact_trace_support(
@@ -402,6 +500,56 @@ def _best_trace_group_support(
     return best
 
 
+def _best_boundary_group_support(
+    wall: CatalogWallBoundary,
+    boundaries: list[CatalogBoundarySegment],
+    *,
+    axis_tolerance: float,
+    minimum_support_ratio: float,
+) -> dict[str, object] | None:
+    if wall.orientation not in {"horizontal", "vertical"} or not wall.owner_room_ids:
+        return None
+
+    owner_room_id = wall.owner_room_ids[0]
+    candidates: list[tuple[float, CatalogBoundarySegment]] = []
+    for boundary in boundaries:
+        if boundary.boundary_kind != "exterior":
+            continue
+        if owner_room_id not in boundary.owner_room_ids:
+            continue
+        if boundary.orientation != wall.orientation:
+            continue
+        gap, overlap = _axis_gap_and_overlap(wall.start, wall.end, boundary.start, boundary.end, wall.orientation)
+        if gap is None or overlap is None or overlap <= 0 or wall.length == 0:
+            continue
+        if gap > axis_tolerance:
+            continue
+        candidates.append((gap, boundary))
+
+    if not candidates:
+        return None
+
+    best: dict[str, object] | None = None
+    for cluster in _cluster_boundary_segments(candidates, wall.orientation, axis_tolerance):
+        coverage = _boundary_cluster_coverage(wall, cluster)
+        if coverage["covered_length"] <= 0:
+            continue
+        ratio = coverage["covered_length"] / wall.length
+        if ratio < minimum_support_ratio:
+            continue
+        score = (coverage["gap"], -coverage["covered_length"], -len(coverage["trace_ids"]))
+        if best is None or score < best["score"]:
+            start, end = _points_from_axis_and_interval(wall.orientation, coverage["axis"], coverage["interval"])
+            best = {
+                "score": score,
+                "gap": coverage["gap"],
+                "trace_ids": coverage["trace_ids"],
+                "start": start,
+                "end": end,
+            }
+    return best
+
+
 def _cluster_trace_segments(
     candidates: list[tuple[float, _RawTraceSegment]],
     orientation: str,
@@ -420,6 +568,30 @@ def _cluster_trace_segments(
             last_cluster.append(segment)
         else:
             clusters.append([segment])
+    return clusters
+
+
+def _cluster_boundary_segments(
+    candidates: list[tuple[float, CatalogBoundarySegment]],
+    orientation: str,
+    axis_tolerance: float,
+) -> list[list[CatalogBoundarySegment]]:
+    ordered = sorted(
+        (boundary for _, boundary in candidates),
+        key=lambda boundary: _segment_axis(boundary.start, boundary.end, orientation),
+    )
+    clusters: list[list[CatalogBoundarySegment]] = []
+    for boundary in ordered:
+        axis = _segment_axis(boundary.start, boundary.end, orientation)
+        if not clusters:
+            clusters.append([boundary])
+            continue
+        last_cluster = clusters[-1]
+        last_axis = sum(_segment_axis(item.start, item.end, orientation) for item in last_cluster) / len(last_cluster)
+        if abs(axis - last_axis) <= axis_tolerance:
+            last_cluster.append(boundary)
+        else:
+            clusters.append([boundary])
     return clusters
 
 
@@ -443,6 +615,40 @@ def _trace_cluster_coverage(wall: CatalogWallBoundary, cluster: list[_RawTraceSe
             continue
         intervals.append((start, end))
         trace_ids.append(segment.trace_id)
+
+    merged = _merge_scalar_intervals(intervals)
+    covered_length = sum(end - start for start, end in merged)
+    interval = (merged[0][0], merged[-1][1]) if merged else wall_interval
+    axis = sum(axes) / len(axes) if axes else _segment_axis(wall.start, wall.end, wall.orientation)
+    return {
+        "gap": 0.0 if min_gap is math.inf else min_gap,
+        "covered_length": covered_length,
+        "trace_ids": sorted(set(trace_ids)),
+        "interval": interval,
+        "axis": axis,
+    }
+
+
+def _boundary_cluster_coverage(wall: CatalogWallBoundary, cluster: list[CatalogBoundarySegment]) -> dict[str, object]:
+    wall_interval = _major_interval(wall.start, wall.end, wall.orientation)
+    intervals: list[tuple[float, float]] = []
+    trace_ids: list[str] = []
+    axes: list[float] = []
+    min_gap = math.inf
+
+    for boundary in cluster:
+        gap, overlap = _axis_gap_and_overlap(wall.start, wall.end, boundary.start, boundary.end, wall.orientation)
+        if gap is None or overlap is None or overlap <= 0:
+            continue
+        min_gap = min(min_gap, gap)
+        axes.append(_segment_axis(boundary.start, boundary.end, wall.orientation))
+        boundary_interval = _major_interval(boundary.start, boundary.end, wall.orientation)
+        start = max(wall_interval[0], boundary_interval[0])
+        end = min(wall_interval[1], boundary_interval[1])
+        if end <= start:
+            continue
+        intervals.append((start, end))
+        trace_ids.extend(boundary.source_trace_ids)
 
     merged = _merge_scalar_intervals(intervals)
     covered_length = sum(end - start for start, end in merged)

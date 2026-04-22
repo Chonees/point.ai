@@ -11,6 +11,7 @@ from backend.floor_plan_catalog.contracts import (
     CatalogRoom,
     FloorPlanCatalogSeed,
 )
+from backend.floor_plan_catalog.boundary_graph import derive_floor_plan_boundary_graph
 from backend.floor_plan_catalog.opening_graph import derive_floor_plan_opening_graph
 from backend.floor_plan_catalog.topology import derive_floor_plan_topology, strengthen_floor_plan_topology
 from backend.floor_plan_catalog.wall_graph import derive_floor_plan_wall_graph
@@ -241,9 +242,10 @@ def test_export_topology_fixture_writes_expected_topology_json(tmp_path: Path):
     payload = export_topology_fixture(seed_path, output_path)
 
     assert output_path.exists()
+    boundary_graph = derive_floor_plan_boundary_graph(seed)
     expected_topology = strengthen_floor_plan_topology(
         derive_floor_plan_topology(seed),
-        derive_floor_plan_wall_graph(derive_floor_plan_topology(seed), seed.cad_traces),
+        derive_floor_plan_wall_graph(derive_floor_plan_topology(seed), seed.cad_traces, boundary_graph=boundary_graph),
         seed.cad_traces,
     ).model_dump()
     assert payload["floor_plan_id"] == expected_topology["floor_plan_id"]

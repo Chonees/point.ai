@@ -9,6 +9,7 @@ from backend.floor_plan_catalog.contracts import (
     CatalogRoom,
     FloorPlanCatalogSeed,
 )
+from backend.floor_plan_catalog.boundary_graph import derive_floor_plan_boundary_graph
 from backend.floor_plan_catalog.topology import derive_floor_plan_topology
 from backend.floor_plan_catalog.wall_graph import derive_floor_plan_wall_graph
 
@@ -261,6 +262,28 @@ def test_derive_floor_plan_wall_graph_handles_real_seminole_seed():
     assert wall_graph.walls
     assert any(len(wall.room_ids) == 2 for wall in wall_graph.walls)
     assert any(wall.is_exterior for wall in wall_graph.walls)
+
+
+def test_derive_floor_plan_wall_graph_uses_boundary_graph_to_reduce_real_seminole_exterior_unsupported():
+    seed_payload = json.loads(Path(r"D:\PointAIData\PLANS\catalog\seminole-2000.json").read_text(encoding="utf-8"))
+    seed = FloorPlanCatalogSeed.model_validate(seed_payload)
+    topology = derive_floor_plan_topology(seed)
+    boundary_graph = derive_floor_plan_boundary_graph(seed)
+
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces, boundary_graph=boundary_graph)
+    unsupported_exterior = [
+        wall
+        for wall in wall_graph.walls
+        if wall.is_exterior and wall.trace_support_status == "unsupported"
+    ]
+    boundary_backed_exterior = [
+        wall
+        for wall in wall_graph.walls
+        if wall.is_exterior and wall.provenance == "boundary_graph_exterior"
+    ]
+
+    assert unsupported_exterior == []
+    assert boundary_backed_exterior
 
 
 def test_derive_floor_plan_wall_graph_merges_multi_trace_support_for_inferred_wall():
