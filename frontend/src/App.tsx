@@ -6,6 +6,8 @@ import { isSupabaseConfigured } from './lib/supabase'
 import { LoginPage } from './components/Auth/LoginPage'
 import { ProjectList } from './components/ProjectList/ProjectList'
 import type { ProjectScene } from './hooks/useProject'
+import inspectorTopology from './features/catalogInspector/catalogInspector.fixture.json'
+import { CatalogInspectorPage } from './features/catalogInspector/CatalogInspectorPage'
 import { runChatAgentTool } from './features/chatThread/chatAgent'
 import type { ThreadComposerSubmission, ThreadMessage } from './features/chatThread/thread.types'
 import {
@@ -22,7 +24,16 @@ const ThreadWorkspacePage = lazy(() =>
 
 type Page = 'login' | 'projects' | 'editor'
 
+function isSeminoleTopologyInspectorRoute() {
+  if (typeof window === 'undefined') return false
+  return new URLSearchParams(window.location.search).get('debug') === 'seminole-topology'
+}
+
 export default function App() {
+  if (isSeminoleTopologyInspectorRoute()) {
+    return <CatalogInspectorPage topology={inspectorTopology} />
+  }
+
   const auth = useAuth()
   const projectList = useProjectList(auth.user?.id)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)

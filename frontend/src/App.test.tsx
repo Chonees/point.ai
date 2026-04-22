@@ -117,4 +117,13 @@ describe('App chat shell', () => {
     expect(await screen.findByText(/analicé el site plan/i)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/api/cad-workspace/export-overlay/cad-123')
   })
+
+  it('renders the temporary seminole topology inspector when the debug query flag is present', async () => {
+    window.history.replaceState({}, '', '/?debug=seminole-topology')
+
+    render(<App />)
+
+    expect(await screen.findByRole('heading', { name: /topology inspector/i })).toBeInTheDocument()
+    expect(screen.getByText(/SEMINOLE2000/i)).toBeInTheDocument()
+  })
 })
