@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+from subprocess import run
+
 from backend.floor_plan_catalog.contracts import (
     CatalogBBox,
     CatalogPoint,
@@ -192,3 +196,29 @@ def test_derive_floor_plan_topology_marks_suspicious_polygon():
     assert "suspicious_polygon" in room.issues
     assert topology.topology_readiness.status == "needs_topology_review"
     assert "suspicious_polygon" in topology.topology_issues
+
+
+def test_export_seminole_topology_fixture_writes_frontend_json(tmp_path: Path):
+    input_path = Path(r"D:\PointAIData\PLANS\catalog\seminole-2000.json")
+    output_path = tmp_path / "catalogInspector.fixture.json"
+
+    result = run(
+        [
+            ".\\.venv\\Scripts\\python.exe",
+            "scripts/export_seminole_topology_fixture.py",
+            str(input_path),
+            "--output",
+            str(output_path),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+        cwd=Path(__file__).resolve().parents[1],
+    )
+
+    assert result.returncode == 0, result.stderr
+
+    payload = json.loads(output_path.read_text(encoding="utf-8"))
+    assert payload["floor_plan_id"] == "seminole-2000"
+    assert payload["rooms"]
+    assert "topology_readiness" in payload
