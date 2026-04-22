@@ -6,8 +6,6 @@ import { isSupabaseConfigured } from './lib/supabase'
 import { LoginPage } from './components/Auth/LoginPage'
 import { ProjectList } from './components/ProjectList/ProjectList'
 import type { ProjectScene } from './hooks/useProject'
-import inspectorTopology from './features/catalogInspector/catalogInspector.fixture.json'
-import { CatalogInspectorPage } from './features/catalogInspector/CatalogInspectorPage'
 import { runChatAgentTool } from './features/chatThread/chatAgent'
 import type { ThreadComposerSubmission, ThreadMessage } from './features/chatThread/thread.types'
 import {
@@ -21,6 +19,11 @@ import {
 const ThreadWorkspacePage = lazy(() =>
   import('./features/chatThread/ThreadWorkspacePage').then((m) => ({ default: m.ThreadWorkspacePage })),
 )
+const SeminoleTopologyInspectorEntry = lazy(() =>
+  import('./features/catalogInspector/SeminoleTopologyInspectorEntry').then((m) => ({
+    default: m.SeminoleTopologyInspectorEntry,
+  })),
+)
 
 type Page = 'login' | 'projects' | 'editor'
 
@@ -29,11 +32,28 @@ function isSeminoleTopologyInspectorRoute() {
   return new URLSearchParams(window.location.search).get('debug') === 'seminole-topology'
 }
 
-export default function App() {
-  if (isSeminoleTopologyInspectorRoute()) {
-    return <CatalogInspectorPage topology={inspectorTopology} />
-  }
+function AppRouteLoading() {
+  return (
+    <div
+      data-testid="app-route-loading"
+      className="flex min-h-screen items-center justify-center bg-zinc-950"
+    >
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-zinc-400" />
+    </div>
+  )
+}
 
+export default function App() {
+  return isSeminoleTopologyInspectorRoute()
+    ? (
+      <Suspense fallback={<AppRouteLoading />}>
+        <SeminoleTopologyInspectorEntry />
+      </Suspense>
+    )
+    : <MainAppShell />
+}
+
+function MainAppShell() {
   const auth = useAuth()
   const projectList = useProjectList(auth.user?.id)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)

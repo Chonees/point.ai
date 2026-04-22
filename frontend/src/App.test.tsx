@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 vi.mock('./hooks/useAuth', () => ({
   useAuth: () => ({
@@ -67,6 +67,12 @@ vi.mock('./features/chatThread/chatAgent', () => ({
 
 import App from './App'
 
+const originalUrl = window.location.href
+
+afterEach(() => {
+  window.history.replaceState({}, '', originalUrl)
+})
+
 describe('App chat shell', () => {
   it('lands on the project shell instead of an empty black thread workspace when no thread is active', async () => {
     render(<App />)
@@ -123,7 +129,15 @@ describe('App chat shell', () => {
 
     render(<App />)
 
+    expect(screen.getByTestId('app-route-loading')).toBeInTheDocument()
     expect(await screen.findByRole('heading', { name: /topology inspector/i })).toBeInTheDocument()
     expect(screen.getByText(/SEMINOLE2000/i)).toBeInTheDocument()
+  })
+
+  it('restores the URL state between tests so the main shell does not stay stuck in debug mode', async () => {
+    render(<App />)
+
+    expect(await screen.findByText(/your workspace/i)).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: /topology inspector/i })).not.toBeInTheDocument()
   })
 })
