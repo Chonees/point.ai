@@ -79,6 +79,29 @@ export interface CatalogInspectorOpening {
   issues: string[]
 }
 
+export interface CatalogInspectorBoundaryNode {
+  node_id: string
+  point: CatalogInspectorPoint
+  node_kind: string
+  incident_boundary_ids: string[]
+}
+
+export interface CatalogInspectorBoundary {
+  boundary_id: string
+  start_node_id: string
+  end_node_id: string
+  start: CatalogInspectorPoint
+  end: CatalogInspectorPoint
+  orientation: 'horizontal' | 'vertical' | 'diagonal' | string
+  length: number
+  source_trace_ids: string[]
+  boundary_kind: 'shared' | 'exterior' | 'unknown' | string
+  owner_room_ids: string[]
+  opening_ids: string[]
+  confidence: string
+  issues: string[]
+}
+
 export interface CatalogInspectorTopology {
   floor_plan_id: string
   name: string
@@ -86,6 +109,8 @@ export interface CatalogInspectorTopology {
   footprint_bbox: CatalogInspectorBBox
   rooms: CatalogInspectorRoom[]
   cad_traces?: CatalogInspectorCadTrace[]
+  boundary_nodes?: CatalogInspectorBoundaryNode[]
+  boundaries?: CatalogInspectorBoundary[]
   openings?: CatalogInspectorOpening[]
   topology_readiness: {
     status: string
@@ -103,4 +128,9 @@ export interface CatalogInspectorTopology {
     issues: string[]
   }
   opening_graph_issues?: string[]
+  boundary_graph_readiness?: {
+    status: string
+    issues: string[]
+  }
+  boundary_graph_issues?: string[]
 }

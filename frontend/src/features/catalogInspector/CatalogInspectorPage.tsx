@@ -1,6 +1,13 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import type { CatalogInspectorOpening, CatalogInspectorRoom, CatalogInspectorTopology, CatalogInspectorWall } from './types'
+import type {
+  CatalogInspectorBoundary,
+  CatalogInspectorBoundaryNode,
+  CatalogInspectorOpening,
+  CatalogInspectorRoom,
+  CatalogInspectorTopology,
+  CatalogInspectorWall,
+} from './types'
 import { CatalogInspectorCanvas } from './CatalogInspectorCanvas'
 import { CatalogInspectorSidebar } from './CatalogInspectorSidebar'
 
@@ -47,11 +54,13 @@ function buildFocusQueue(walls: CatalogInspectorWall[], focusMode: FocusMode) {
 export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(topology.rooms[0]?.room_id ?? null)
   const [selectedWallId, setSelectedWallId] = useState<string | null>(null)
+  const [selectedBoundaryId, setSelectedBoundaryId] = useState<string | null>(null)
   const [selectedOpeningId, setSelectedOpeningId] = useState<string | null>(null)
   const [focusMode, setFocusMode] = useState<FocusMode>('all')
   const [showIds, setShowIds] = useState(false)
   const [showAdjacency, setShowAdjacency] = useState(false)
   const [showWalls, setShowWalls] = useState(true)
+  const [showExactBoundaries, setShowExactBoundaries] = useState(false)
   const [showRawWallTraces, setShowRawWallTraces] = useState(true)
   const [showDoorTraces, setShowDoorTraces] = useState(true)
   const [showWindowTraces, setShowWindowTraces] = useState(true)
@@ -59,6 +68,9 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
 
   const roomById = useMemo(() => new Map(topology.rooms.map((room) => [room.room_id, room])), [topology.rooms])
   const wallById = useMemo(() => new Map(topology.walls.map((wall) => [wall.wall_id, wall])), [topology.walls])
+  const boundaries = topology.boundaries ?? []
+  const boundaryNodes = topology.boundary_nodes ?? []
+  const boundaryById = useMemo(() => new Map(boundaries.map((boundary) => [boundary.boundary_id, boundary])), [boundaries])
   const openingById = useMemo(() => new Map((topology.openings ?? []).map((opening) => [opening.opening_id, opening])), [topology.openings])
   const cadTraces = topology.cad_traces ?? []
   const hostedOpenings = topology.openings ?? []
@@ -100,6 +112,17 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
     return wallById.get(selectedWallId) ?? null
   }, [selectedWallId, wallById])
 
+  const selectedBoundary = useMemo<CatalogInspectorBoundary | null>(() => {
+    if (!selectedBoundaryId) return null
+    return boundaryById.get(selectedBoundaryId) ?? null
+  }, [boundaryById, selectedBoundaryId])
+
+  const selectedBoundaryNodes = useMemo<CatalogInspectorBoundaryNode[]>(() => {
+    if (!selectedBoundary) return []
+    const nodeIds = new Set([selectedBoundary.start_node_id, selectedBoundary.end_node_id])
+    return boundaryNodes.filter((node) => nodeIds.has(node.node_id))
+  }, [boundaryNodes, selectedBoundary])
+
   const selectedOpening = useMemo<CatalogInspectorOpening | null>(() => {
     if (!selectedOpeningId) return null
     return openingById.get(selectedOpeningId) ?? null
@@ -123,6 +146,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
   const exactSharedWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.trace_support_status === 'exact_trace_supported').length
   const snappedSharedWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.trace_support_status === 'snapped_to_trace').length
   const unsupportedSharedWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.trace_support_status === 'unsupported').length
+  const exactBoundarySharedCount = boundaries.filter((boundary) => boundary.boundary_kind === 'shared').length
   const hostedDoorCount = hostedOpenings.filter((opening) => opening.opening_kind === 'door' && opening.host_wall_id).length
   const hostedWindowCount = hostedOpenings.filter((opening) => opening.opening_kind === 'window' && opening.host_wall_id).length
   const unhostedOpeningCount = hostedOpenings.filter((opening) => !opening.host_wall_id).length
@@ -202,10 +226,10 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             <div>
               <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Validation</p>
               <p className="mt-1 text-sm text-zinc-300">
-                {roomsWithAdjacency} rooms with wall-backed adjacency, {openingAdjacencyEdges} opening-backed adjacency edges, {heuristicAdjacencyEdges} heuristic adjacency edges, {roomsWithOwnedWalls} rooms with owned walls, {hostedDoorCount} hosted doors, {hostedWindowCount} hosted windows, {unhostedOpeningCount} unhosted openings, {expectedIsolatedRooms} expected isolated rooms, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {cadTraces.length} CAD traces split into {rawWallTraces.length} walls, {doorTraces.length} doors, {windowTraces.length} windows, {unsupportedSharedWalls} unsupported shared walls.
+                {roomsWithAdjacency} rooms with wall-backed adjacency, {openingAdjacencyEdges} opening-backed adjacency edges, {heuristicAdjacencyEdges} heuristic adjacency edges, {roomsWithOwnedWalls} rooms with owned walls, {hostedDoorCount} hosted doors, {hostedWindowCount} hosted windows, {unhostedOpeningCount} unhosted openings, {expectedIsolatedRooms} expected isolated rooms, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {cadTraces.length} CAD traces split into {rawWallTraces.length} walls, {doorTraces.length} doors, {windowTraces.length} windows, {unsupportedSharedWalls} unsupported shared walls, {exactBoundarySharedCount} exact-graph shared boundaries.
               </p>
               <p className="mt-1 text-sm text-zinc-500">
-                Readiness: <span className="font-medium text-zinc-200">{topology.topology_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.wall_graph_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.opening_graph_readiness?.status ?? 'opening_graph_unavailable'}</span>
+                Readiness: <span className="font-medium text-zinc-200">{topology.topology_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.wall_graph_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.opening_graph_readiness?.status ?? 'opening_graph_unavailable'}</span> / <span className="font-medium text-zinc-200">{topology.boundary_graph_readiness?.status ?? 'boundary_graph_unavailable'}</span>
               </p>
               <p className="mt-1 text-xs text-zinc-500">
                 Importante: doors/windows se renderizan aparte y NO cuentan como soporte de wall graph.
@@ -258,6 +282,16 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
                 className="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-cyan-400 focus:ring-cyan-500"
               />
               Walls
+            </label>
+
+            <label className="inline-flex items-center gap-3 rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3 text-sm text-zinc-200">
+              <input
+                type="checkbox"
+                checked={showExactBoundaries}
+                onChange={(event) => setShowExactBoundaries(event.target.checked)}
+                className="h-4 w-4 rounded border-zinc-600 bg-zinc-900 text-cyan-400 focus:ring-cyan-500"
+              />
+              Exact boundaries
             </label>
 
             <label className="inline-flex items-center gap-3 rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3 text-sm text-zinc-200">
@@ -327,9 +361,11 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             visibleWalls={visibleWalls}
             selectedRoomId={selectedRoomId}
             selectedWallId={selectedWallId}
+            selectedBoundaryId={selectedBoundaryId}
             selectedOpeningId={selectedOpeningId}
             onSelectRoom={setSelectedRoomId}
             onSelectWall={setSelectedWallId}
+            onSelectBoundary={setSelectedBoundaryId}
             onSelectOpening={(openingId, hostWallId) => {
               setSelectedOpeningId(openingId)
               if (hostWallId) setSelectedWallId(hostWallId)
@@ -337,6 +373,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             showIds={showIds}
             showAdjacency={showAdjacency}
             showWalls={showWalls}
+            showExactBoundaries={showExactBoundaries}
             showRawWallTraces={showRawWallTraces}
             showDoorTraces={showDoorTraces}
             showWindowTraces={showWindowTraces}
@@ -347,6 +384,8 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             topology={topology}
             selectedRoom={selectedRoom}
             selectedWall={selectedWall}
+            selectedBoundary={selectedBoundary}
+            selectedBoundaryNodes={selectedBoundaryNodes}
             selectedOpening={selectedOpening}
             focusMode={focusMode}
             focusWalls={focusQueue}

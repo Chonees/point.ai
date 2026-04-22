@@ -71,6 +71,35 @@ def build_seed() -> FloorPlanCatalogSeed:
                 measurement_source="room_region",
             ),
         ],
+        cad_traces=[
+            CatalogCadTrace(
+                trace_id="trace-room-divider-horizontal",
+                trace_kind="wall",
+                type="line",
+                layer="WALLS",
+                start=CatalogPoint(x=0, y=500),
+                end=CatalogPoint(x=160, y=500),
+                bbox=CatalogBBox(x1=0, y1=500, x2=160, y2=500, width=160, height=0),
+            ),
+            CatalogCadTrace(
+                trace_id="trace-room-divider-vertical",
+                trace_kind="wall",
+                type="line",
+                layer="WALLS",
+                start=CatalogPoint(x=160, y=300),
+                end=CatalogPoint(x=160, y=500),
+                bbox=CatalogBBox(x1=160, y1=300, x2=160, y2=500, width=0, height=200),
+            ),
+            CatalogCadTrace(
+                trace_id="trace-hall-exterior",
+                trace_kind="wall",
+                type="line",
+                layer="WALLS",
+                start=CatalogPoint(x=240, y=300),
+                end=CatalogPoint(x=240, y=500),
+                bbox=CatalogBBox(x1=240, y1=300, x2=240, y2=500, width=0, height=200),
+            ),
+        ],
         source_layers=["WALLS", "ROOM LBLS", "DOORS"],
         block_refs=["TOILET1"],
         readiness=CatalogReadiness(status="ready_for_catalog", issues=[]),
@@ -227,6 +256,19 @@ def test_export_topology_fixture_writes_expected_topology_json(tmp_path: Path):
     assert isinstance(payload["openings"], list)
     assert all("boundary_kind" in wall and "owner_room_ids" in wall for wall in payload["walls"])
     assert json.loads(output_path.read_text(encoding="utf-8")) == payload
+
+
+def test_export_fixture_includes_boundary_graph_payload(tmp_path: Path):
+    seed_path = tmp_path / "seminole-2000.json"
+    output_path = tmp_path / "catalogInspector.fixture.json"
+    seed = build_seed()
+    seed_path.write_text(seed.model_dump_json(indent=2), encoding="utf-8")
+
+    payload = export_topology_fixture(seed_path, output_path)
+
+    assert "boundary_nodes" in payload
+    assert "boundaries" in payload
+    assert payload["boundaries"]
 
 
 def test_export_seminole_topology_fixture_cli_writes_real_frontend_json():

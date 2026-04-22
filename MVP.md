@@ -521,3 +521,29 @@ Conectar el chat para:
 
 ### Paso 5
 Construir el primer geometry executor acotado.
+
+
+## Estado actual de implementaci?n (2026-04-22)
+
+### Ya logrado en `SEMINOLE2000`
+- cat?logo curado con `rooms`, `walls`, `openings`
+- wall ownership y opening ownership parciales
+- inspector visual temporal en `?debug=seminole-topology`
+- `topology_issues = []`
+- `wall_graph_issues = []`
+- `opening_graph_issues = ["unhosted_opening"]`
+
+### Nuevo logro
+- `Exact Boundary Graph v1` ya existe como capa nueva con:
+  - `boundary_nodes`
+  - `boundaries`
+  - clasificaci?n inicial `shared | exterior | unknown`
+  - confianza `trace_exact | trace_partitioned | unverified`
+- el inspector ya puede mostrar raw traces + wall graph + exact boundaries
+
+### Lo que todav?a falta antes del executor serio
+- reducir boundaries `unknown`
+- bajar openings `unhosted`
+- agregar `mutability / constraints`
+- definir `site-aware mutation contract`
+- implementar geometry executor y DXF recompilation

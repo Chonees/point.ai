@@ -1,9 +1,18 @@
-﻿import type { CatalogInspectorOpening, CatalogInspectorRoom, CatalogInspectorTopology, CatalogInspectorWall } from './types'
+import type {
+  CatalogInspectorBoundary,
+  CatalogInspectorBoundaryNode,
+  CatalogInspectorOpening,
+  CatalogInspectorRoom,
+  CatalogInspectorTopology,
+  CatalogInspectorWall,
+} from './types'
 
 interface CatalogInspectorSidebarProps {
   topology: CatalogInspectorTopology
   selectedRoom: CatalogInspectorRoom | null
   selectedWall: CatalogInspectorWall | null
+  selectedBoundary: CatalogInspectorBoundary | null
+  selectedBoundaryNodes: CatalogInspectorBoundaryNode[]
   selectedOpening: CatalogInspectorOpening | null
   focusMode: string
   focusWalls: CatalogInspectorWall[]
@@ -103,6 +112,8 @@ export function CatalogInspectorSidebar({
   topology,
   selectedRoom,
   selectedWall,
+  selectedBoundary,
+  selectedBoundaryNodes,
   selectedOpening,
   focusMode,
   focusWalls,
@@ -179,6 +190,40 @@ export function CatalogInspectorSidebar({
               <p className="mt-3 text-xs text-zinc-500">{selectedWall.trace_support_ids.join(', ')}</p>
             ) : null}
             <p className="mt-2 text-xs text-amber-300">{formatIssueList(selectedWall.issues)}</p>
+          </div>
+        ) : null}
+
+        {selectedBoundary ? (
+          <div data-testid="selected-boundary-panel" className="rounded-2xl border border-white/6 bg-white/[0.03] p-4">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-zinc-400">Selected boundary</h3>
+            <p className="mt-2 text-sm font-medium text-zinc-100">{selectedBoundary.boundary_id}</p>
+            <p className="mt-1 text-sm text-zinc-300">{formatBoundaryKind(selectedBoundary.boundary_kind)}</p>
+            <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Owner rooms</p>
+                <p className="mt-1 text-zinc-100">{roomNames(topology, selectedBoundary.owner_room_ids)}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Confidence</p>
+                <p className="mt-1 text-zinc-100">{formatConfidence(selectedBoundary.confidence)}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Source traces</p>
+                <p className="mt-1 text-zinc-100">{selectedBoundary.source_trace_ids.join(', ') || 'None'}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Nodes</p>
+                <p className="mt-1 text-zinc-100">
+                  {selectedBoundaryNodes.length > 0
+                    ? selectedBoundaryNodes.map((node) => `${node.node_kind}:${node.node_id}`).join(', ')
+                    : 'None'}
+                </p>
+              </div>
+            </div>
+            <p className="mt-3 text-xs text-zinc-500">
+              {selectedBoundary.orientation} ? {selectedBoundary.length.toFixed(2)} in ? openings {selectedBoundary.opening_ids.length}
+            </p>
+            <p className="mt-2 text-xs text-amber-300">{formatIssueList(selectedBoundary.issues)}</p>
           </div>
         ) : null}
 

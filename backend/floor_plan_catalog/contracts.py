@@ -173,3 +173,36 @@ class FloorPlanOpeningGraphV1(BaseModel):
     openings: list[CatalogOpening] = Field(default_factory=list)
     opening_graph_readiness: OpeningGraphReadiness
     opening_graph_issues: list[str] = Field(default_factory=list)
+
+
+class CatalogBoundaryNode(BaseModel):
+    node_id: str
+    point: CatalogPoint
+    node_kind: str = "corner"
+    incident_boundary_ids: list[str] = Field(default_factory=list)
+
+
+class CatalogBoundarySegment(BaseModel):
+    boundary_id: str
+    start_node_id: str
+    end_node_id: str
+    start: CatalogPoint
+    end: CatalogPoint
+    orientation: str
+    length: float
+    source_trace_ids: list[str] = Field(default_factory=list)
+    boundary_kind: str = "unknown"
+    owner_room_ids: list[str] = Field(default_factory=list)
+    opening_ids: list[str] = Field(default_factory=list)
+    confidence: str = "unverified"
+    issues: list[str] = Field(default_factory=list)
+
+
+class FloorPlanBoundaryGraphV1(BaseModel):
+    floor_plan_id: str
+    name: str
+    canonical_unit: str
+    nodes: list[CatalogBoundaryNode] = Field(default_factory=list)
+    boundaries: list[CatalogBoundarySegment] = Field(default_factory=list)
+    boundary_graph_readiness: CatalogReadiness
+    boundary_graph_issues: list[str] = Field(default_factory=list)

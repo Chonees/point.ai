@@ -1,6 +1,8 @@
 ﻿import type { KeyboardEvent } from 'react'
 
 import type {
+  CatalogInspectorBoundary,
+  CatalogInspectorBoundaryNode,
   CatalogInspectorCadTrace,
   CatalogInspectorOpening,
   CatalogInspectorRoom,
@@ -13,13 +15,16 @@ interface CatalogInspectorCanvasProps {
   visibleWalls: CatalogInspectorWall[]
   selectedRoomId: string | null
   selectedWallId: string | null
+  selectedBoundaryId: string | null
   selectedOpeningId: string | null
   onSelectRoom: (roomId: string) => void
   onSelectWall: (wallId: string) => void
+  onSelectBoundary: (boundaryId: string) => void
   onSelectOpening: (openingId: string, hostWallId?: string | null) => void
   showIds: boolean
   showAdjacency: boolean
   showWalls: boolean
+  showExactBoundaries: boolean
   showRawWallTraces: boolean
   showDoorTraces: boolean
   showWindowTraces: boolean
@@ -81,18 +86,34 @@ function openingStroke(opening: CatalogInspectorOpening, isSelected: boolean) {
   return isSelected ? '#f9a8d4' : 'rgba(232,121,249,0.85)'
 }
 
+function boundaryStroke(boundary: CatalogInspectorBoundary, isSelected: boolean) {
+  if (boundary.boundary_kind === 'shared') return isSelected ? '#fde68a' : 'rgba(250,204,21,0.82)'
+  if (boundary.boundary_kind === 'exterior') return isSelected ? '#67e8f9' : 'rgba(34,211,238,0.68)'
+  return isSelected ? '#fca5a5' : 'rgba(248,113,113,0.58)'
+}
+
+function boundaryNodeFill(node: CatalogInspectorBoundaryNode, isSelected: boolean) {
+  if (isSelected) return '#f8fafc'
+  if (node.node_kind === 'opening_cut') return '#f9a8d4'
+  if (node.node_kind === 'tee') return '#fcd34d'
+  return '#94a3b8'
+}
+
 export function CatalogInspectorCanvas({
   topology,
   visibleWalls,
   selectedRoomId,
   selectedWallId,
+  selectedBoundaryId,
   selectedOpeningId,
   onSelectRoom,
   onSelectWall,
+  onSelectBoundary,
   onSelectOpening,
   showIds,
   showAdjacency,
   showWalls,
+  showExactBoundaries,
   showRawWallTraces,
   showDoorTraces,
   showWindowTraces,
@@ -101,10 +122,16 @@ export function CatalogInspectorCanvas({
   const roomById = new Map(topology.rooms.map((room) => [room.room_id, room]))
   const roomPairs = new Set<string>()
   const cadTraces = topology.cad_traces ?? []
+  const boundaries = topology.boundaries ?? []
+  const boundaryNodes = topology.boundary_nodes ?? []
   const visibleOpenings = topology.openings ?? []
   const selectedWall = visibleWalls.find((wall) => wall.wall_id === selectedWallId) ?? null
+  const selectedBoundary = boundaries.find((boundary) => boundary.boundary_id === selectedBoundaryId) ?? null
   const selectedOpening = visibleOpenings.find((opening) => opening.opening_id === selectedOpeningId) ?? null
   const selectedTraceIds = new Set([...(selectedWall?.trace_support_ids ?? []), ...(selectedOpening?.trace_ids ?? [])])
+  const selectedBoundaryNodeIds = new Set(
+    selectedBoundary ? [selectedBoundary.start_node_id, selectedBoundary.end_node_id] : [],
+  )
   const visibleTraces = cadTraces.filter((trace) => {
     if (trace.trace_kind === 'wall') return showRawWallTraces
     if (trace.trace_kind === 'door') return showDoorTraces
@@ -217,6 +244,48 @@ export function CatalogInspectorCanvas({
                 vectorEffect="non-scaling-stroke"
                 onClick={() => onSelectWall(wall.wall_id)}
                 onKeyDown={(event) => handleWallKeyDown(event, wall.wall_id)}
+              />
+            )
+          })}
+
+          {showExactBoundaries && boundaries.map((boundary) => {
+            const isSelected = boundary.boundary_id === selectedBoundaryId
+            return (
+              <line
+                key={boundary.boundary_id}
+                data-testid={`boundary-${boundary.boundary_id}`}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select boundary ${boundary.boundary_id}`}
+                x1={boundary.start.x}
+                y1={boundary.start.y}
+                x2={boundary.end.x}
+                y2={boundary.end.y}
+                stroke={boundaryStroke(boundary, isSelected)}
+                strokeWidth={isSelected ? 4.5 : 2}
+                strokeLinecap="round"
+                vectorEffect="non-scaling-stroke"
+                onClick={() => onSelectBoundary(boundary.boundary_id)}
+                onKeyDown={(event) => {
+                  if (event.key !== 'Enter' && event.key !== ' ') return
+                  event.preventDefault()
+                  onSelectBoundary(boundary.boundary_id)
+                }}
+              />
+            )
+          })}
+
+          {showExactBoundaries && boundaryNodes.map((node) => {
+            const isSelected = selectedBoundaryNodeIds.has(node.node_id)
+            return (
+              <circle
+                key={node.node_id}
+                data-testid={`boundary-node-${node.node_id}`}
+                cx={node.point.x}
+                cy={node.point.y}
+                r={isSelected ? 3.6 : 2.2}
+                fill={boundaryNodeFill(node, isSelected)}
+                opacity={isSelected ? 1 : 0.82}
               />
             )
           })}

@@ -150,6 +150,23 @@ describe('CatalogInspectorPage', () => {
     expect(screen.getByText(/connected rooms/i)).toBeInTheDocument()
   })
 
+  it('renders exact boundaries and shows selected boundary details', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    const exactBoundariesToggle = screen.getByRole('checkbox', { name: /exact boundaries/i })
+    fireEvent.click(exactBoundariesToggle)
+
+    const boundaries = screen.getAllByTestId(/^boundary-/)
+    expect(boundaries.length).toBeGreaterThan(0)
+
+    fireEvent.click(boundaries[0])
+
+    const boundaryPanel = screen.getByTestId('selected-boundary-panel')
+    expect(boundaryPanel).toBeInTheDocument()
+    expect(within(boundaryPanel).getByText(/source traces/i)).toBeInTheDocument()
+    expect(within(boundaryPanel).getByText(/owner rooms/i)).toBeInTheDocument()
+  })
+
   it('filters snapped walls and lets you navigate the focused issue list', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 
