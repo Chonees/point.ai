@@ -39,12 +39,23 @@ export interface CatalogInspectorWall {
   issues: string[]
 }
 
+export interface CatalogInspectorWallTrace {
+  trace_id: string
+  type: 'line' | 'polyline' | string
+  layer: string
+  start?: CatalogInspectorPoint | null
+  end?: CatalogInspectorPoint | null
+  points: CatalogInspectorPoint[]
+  bbox: CatalogInspectorBBox
+}
+
 export interface CatalogInspectorTopology {
   floor_plan_id: string
   name: string
   canonical_unit: string
   footprint_bbox: CatalogInspectorBBox
   rooms: CatalogInspectorRoom[]
+  wall_traces?: CatalogInspectorWallTrace[]
   topology_readiness: {
     status: string
     issues: string[]

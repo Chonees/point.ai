@@ -58,4 +58,16 @@ describe('CatalogInspectorPage', () => {
     expect(screen.getByText(/connected walls/i)).toBeInTheDocument()
     expect(screen.getByText(/inferred_from_bbox/i)).toBeInTheDocument()
   })
+
+  it('renders raw wall traces and toggles them off', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(screen.getByRole('checkbox', { name: /raw traces/i })).toBeChecked()
+    expect(screen.getAllByTestId(/raw-trace-/).length).toBeGreaterThan(100)
+
+    const tracesToggle = screen.getByRole('checkbox', { name: /raw traces/i })
+    fireEvent.click(tracesToggle)
+
+    expect(screen.queryAllByTestId(/raw-trace-/)).toHaveLength(0)
+  })
 })

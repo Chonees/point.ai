@@ -56,6 +56,10 @@ def test_curate_floor_plan_seed_merges_extraction_and_audit(tmp_path: Path):
     assert len(seed.rooms[0].polygon) >= 4
     assert "WALLS" in seed.source_layers
     assert seed.readiness.status == "ready_for_catalog"
+    assert seed.wall_traces
+    assert seed.wall_traces[0].layer == "WALLS"
+    assert seed.wall_traces[0].trace_id
+    assert len({trace.trace_id for trace in seed.wall_traces}) == len(seed.wall_traces)
 
 
 def test_curate_floor_plan_seed_marks_low_room_coverage_as_manual_review(tmp_path: Path):
@@ -194,6 +198,51 @@ def write_sparse_room_floor_dxf(path: Path) -> None:
     msp.add_text(
         "GARAGE",
         dxfattribs={"layer": "ROOM LBLS", "height": 12, "insert": (150, 150)},
+    )
+
+    doc.saveas(path)
+
+
+
+def test_curate_floor_plan_seed_preserves_wall_trace_geometry(tmp_path: Path):
+    dxf_path = tmp_path / "catalog-floor.dxf"
+    write_dimensioned_room_floor_dxf(dxf_path)
+
+    seed = curate_floor_plan_seed(dxf_path)
+    polyline_trace = next(trace for trace in seed.wall_traces if trace.type == "polyline")
+    line_trace = next(trace for trace in seed.wall_traces if trace.type == "line")
+
+    assert len(polyline_trace.points) >= 4
+    assert polyline_trace.bbox.width == 468.0
+    assert line_trace.start is not None
+    assert line_trace.end is not None
+
+
+def test_curate_floor_plan_seed_makes_duplicate_wall_trace_ids_unique(tmp_path: Path):
+    dxf_path = tmp_path / "duplicate-wall-floor.dxf"
+    write_duplicate_wall_trace_floor_dxf(dxf_path)
+
+    seed = curate_floor_plan_seed(dxf_path)
+    trace_ids = [trace.trace_id for trace in seed.wall_traces]
+
+    assert len(trace_ids) >= 2
+    assert len(set(trace_ids)) == len(trace_ids)
+
+
+def write_duplicate_wall_trace_floor_dxf(path: Path) -> None:
+    doc = ezdxf.new(setup=True)
+    doc.units = 1
+    msp = doc.modelspace()
+
+    msp.add_line((0, 0), (120, 0), dxfattribs={"layer": "WALLS"})
+    msp.add_line((0, 0), (120, 0), dxfattribs={"layer": "WALLS"})
+    msp.add_text(
+        "GARAGE",
+        dxfattribs={"layer": "ROOM LBLS", "height": 12, "insert": (60, 30)},
+    )
+    msp.add_text(
+        "UTILITY",
+        dxfattribs={"layer": "ROOM LBLS", "height": 12, "insert": (60, 80)},
     )
 
     doc.saveas(path)

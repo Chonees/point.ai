@@ -213,6 +213,8 @@ def test_export_topology_fixture_writes_expected_topology_json(tmp_path: Path):
     assert payload["floor_plan_id"] == expected_topology["floor_plan_id"]
     assert payload["rooms"] == expected_topology["rooms"]
     assert payload["topology_readiness"] == expected_topology["topology_readiness"]
+    assert "wall_traces" in payload
+    assert isinstance(payload["wall_traces"], list)
     assert payload["walls"]
     assert json.loads(output_path.read_text(encoding="utf-8")) == payload
 

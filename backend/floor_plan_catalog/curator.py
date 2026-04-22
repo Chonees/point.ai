@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+import hashlib
 import re
 from pathlib import Path
 
 from backend.cad_workspace.extractor import extract_cad_file
 
 from .audit import audit_floor_plan_source
-from .contracts import CatalogBBox, CatalogPoint, CatalogReadiness, CatalogRoom, FloorPlanCatalogSeed
+from .contracts import CatalogBBox, CatalogPoint, CatalogReadiness, CatalogRoom, CatalogWallTrace, FloorPlanCatalogSeed
 
 
 def curate_floor_plan_seed(
@@ -32,6 +33,11 @@ def curate_floor_plan_seed(
         )
         for room in floor.get("rooms", [])
     ]
+    wall_traces = [
+        _to_catalog_wall_trace(entity, index)
+        for index, entity in enumerate(floor.get("entities", []))
+        if _is_wall_trace_entity(entity)
+    ]
 
     bbox = floor.get("bbox") or {"width": 0.0, "height": 0.0}
     return FloorPlanCatalogSeed(
@@ -41,6 +47,7 @@ def curate_floor_plan_seed(
         canonical_unit=extracted["canonical_unit"],
         footprint_bbox=_to_catalog_bbox(bbox),
         rooms=rooms,
+        wall_traces=wall_traces,
         source_layers=audit.source_layers,
         block_refs=sorted(audit.block_refs.keys()),
         readiness=_build_readiness(rooms=rooms, warnings=extracted.get("warnings", [])),
@@ -72,6 +79,43 @@ def _build_readiness(*, rooms: list[CatalogRoom], warnings: list[str]) -> Catalo
 def _slugify(value: str) -> str:
     normalized = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
     return normalized or "floor-plan"
+
+
+def _is_wall_trace_entity(entity: dict) -> bool:
+    layer = (entity.get("layer") or "").upper()
+    entity_type = entity.get("type")
+    return "WALL" in layer and entity_type in {"line", "polyline"}
+
+
+def _to_catalog_wall_trace(entity: dict, index: int) -> CatalogWallTrace:
+    start = entity.get("start")
+    end = entity.get("end")
+    points = entity.get("points") or []
+    signature = "|".join(
+        [
+            entity.get("type") or "",
+            entity.get("layer") or "",
+            str(start or ""),
+            str(end or ""),
+            str(points),
+        ]
+    )
+    trace_id = hashlib.sha1(f"{index}|{signature}".encode("utf-8")).hexdigest()[:12]
+    return CatalogWallTrace(
+        trace_id=f"trace-{trace_id}",
+        type=entity.get("type") or "unknown",
+        layer=entity.get("layer") or "0",
+        start=_to_catalog_point(start),
+        end=_to_catalog_point(end),
+        points=[CatalogPoint(x=point["x"], y=point["y"]) for point in points],
+        bbox=_to_catalog_bbox(entity.get("bbox")),
+    )
+
+
+def _to_catalog_point(payload: dict | None) -> CatalogPoint | None:
+    if not payload:
+        return None
+    return CatalogPoint(x=payload.get("x", 0.0), y=payload.get("y", 0.0))
 
 
 def _to_catalog_bbox(payload: dict | None) -> CatalogBBox:

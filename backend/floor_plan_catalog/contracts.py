@@ -22,6 +22,16 @@ class CatalogPoint(BaseModel):
     y: float
 
 
+class CatalogWallTrace(BaseModel):
+    trace_id: str
+    type: str
+    layer: str
+    start: CatalogPoint | None = None
+    end: CatalogPoint | None = None
+    points: list[CatalogPoint] = Field(default_factory=list)
+    bbox: CatalogBBox
+
+
 class CatalogRoom(BaseModel):
     name: str
     polygon: list[CatalogPoint] = Field(default_factory=list)
@@ -40,6 +50,7 @@ class FloorPlanCatalogSeed(BaseModel):
     canonical_unit: str
     footprint_bbox: CatalogBBox
     rooms: list[CatalogRoom] = Field(default_factory=list)
+    wall_traces: list[CatalogWallTrace] = Field(default_factory=list)
     source_layers: list[str] = Field(default_factory=list)
     block_refs: list[str] = Field(default_factory=list)
     readiness: CatalogReadiness

@@ -1,6 +1,11 @@
 import type { KeyboardEvent } from 'react'
 
-import type { CatalogInspectorRoom, CatalogInspectorTopology, CatalogInspectorWall } from './types'
+import type {
+  CatalogInspectorRoom,
+  CatalogInspectorTopology,
+  CatalogInspectorWall,
+  CatalogInspectorWallTrace,
+} from './types'
 
 interface CatalogInspectorCanvasProps {
   topology: CatalogInspectorTopology
@@ -9,6 +14,7 @@ interface CatalogInspectorCanvasProps {
   showIds: boolean
   showAdjacency: boolean
   showWalls: boolean
+  showRawTraces: boolean
 }
 
 function getViewBox(topology: CatalogInspectorTopology) {
@@ -31,6 +37,15 @@ function wallStroke(wall: CatalogInspectorWall, isHighlighted: boolean) {
   return isHighlighted ? '#34d399' : 'rgba(52,211,153,0.76)'
 }
 
+function traceStroke(trace: CatalogInspectorWallTrace) {
+  if (trace.type === 'polyline') return 'rgba(148,163,184,0.44)'
+  return 'rgba(120,113,108,0.35)'
+}
+
+function tracePoints(trace: CatalogInspectorWallTrace) {
+  return trace.points.map((point) => `${point.x},${point.y}`).join(' ')
+}
+
 export function CatalogInspectorCanvas({
   topology,
   selectedRoomId,
@@ -38,9 +53,11 @@ export function CatalogInspectorCanvas({
   showIds,
   showAdjacency,
   showWalls,
+  showRawTraces,
 }: CatalogInspectorCanvasProps) {
   const roomById = new Map(topology.rooms.map((room) => [room.room_id, room]))
   const roomPairs = new Set<string>()
+  const rawTraces = topology.wall_traces ?? []
 
   const selectRoom = (roomId: string) => {
     onSelectRoom(roomId)
@@ -58,7 +75,7 @@ export function CatalogInspectorCanvas({
         <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Canvas</p>
         <h2 className="mt-2 text-lg font-semibold text-zinc-100">Plano real de topology + wall graph</h2>
         <p className="mt-1 text-sm text-zinc-400">
-          Se renderiza la geometría real del seed curado, con rooms, IDs opcionales, relaciones y boundaries exactas o inferidas.
+          Se renderiza la geometr?a real del seed curado, con rooms, IDs opcionales, relaciones, boundaries exactas o inferidas y trazas crudas del CAD para comparar fidelidad.
         </p>
       </div>
 
@@ -80,6 +97,43 @@ export function CatalogInspectorCanvas({
             stroke="rgba(255,255,255,0.10)"
             strokeWidth={2}
           />
+
+          {showRawTraces && rawTraces.map((trace) => {
+            if (trace.points.length >= 2) {
+              return (
+                <polyline
+                  key={trace.trace_id}
+                  data-testid={`raw-trace-${trace.trace_id}`}
+                  points={tracePoints(trace)}
+                  fill="none"
+                  stroke={traceStroke(trace)}
+                  strokeWidth={1.25}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              )
+            }
+
+            if (trace.start && trace.end) {
+              return (
+                <line
+                  key={trace.trace_id}
+                  data-testid={`raw-trace-${trace.trace_id}`}
+                  x1={trace.start.x}
+                  y1={trace.start.y}
+                  x2={trace.end.x}
+                  y2={trace.end.y}
+                  stroke={traceStroke(trace)}
+                  strokeWidth={1.1}
+                  strokeLinecap="round"
+                  vectorEffect="non-scaling-stroke"
+                />
+              )
+            }
+
+            return null
+          })}
 
           {showWalls && topology.walls.map((wall) => {
             const isHighlighted = !!selectedRoomId && wall.room_ids.includes(selectedRoomId)
