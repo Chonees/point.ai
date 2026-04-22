@@ -390,6 +390,32 @@ Para el MVP:
 
 ---
 
+## Temporary topology inspector
+
+Uso temporal de curación/debug para validar `SEMINOLE2000` antes de avanzar al executor geométrico.
+
+### Workflow
+
+1. Regenerar la fixture real desde el catálogo curado:
+
+   ```bash
+   .\.venv\Scripts\python.exe scripts/export_seminole_topology_fixture.py D:\PointAIData\PLANS\catalog\seminole-2000.json --output frontend/src/features/catalogInspector/catalogInspector.fixture.json
+   ```
+
+2. Abrir la app React con el flag temporal:
+   - `?debug=seminole-topology`
+
+3. Usar la screen para inspeccionar:
+   - room identity (`room_id`)
+   - category inference
+   - adjacency
+   - exterior-touch
+   - topology issues
+
+### Propósito
+
+Esta pantalla es intencionalmente temporal y removible. Existe para verificar que la topología derivada del floor plan sea coherente antes de invertir en el motor de reconstrucción geométrica.
+
 ## Próximos pasos
 
 ### Paso 1
