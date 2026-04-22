@@ -25,6 +25,14 @@ const topologyWithoutKitchen = {
 }
 
 describe('CatalogInspectorPage', () => {
+  it('starts with no room preselected so the canvas does not imply a preferred room', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(screen.queryByTestId('selected-room-id')).not.toBeInTheDocument()
+    expect(screen.getByText(/click any room in the canvas to inspect its topology details/i)).toBeInTheDocument()
+    expect(screen.getByTestId(`room-${bedroom2Room.room_id}`)).toHaveAttribute('aria-pressed', 'false')
+  })
+
   it('moves selection with keyboard and updates the sidebar for a different room', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 

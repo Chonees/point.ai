@@ -52,7 +52,7 @@ function buildFocusQueue(walls: CatalogInspectorWall[], focusMode: FocusMode) {
 }
 
 export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
-  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(topology.rooms[0]?.room_id ?? null)
+  const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null)
   const [selectedWallId, setSelectedWallId] = useState<string | null>(null)
   const [selectedBoundaryId, setSelectedBoundaryId] = useState<string | null>(null)
   const [selectedOpeningId, setSelectedOpeningId] = useState<string | null>(null)
@@ -86,7 +86,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
       return
     }
 
-    if (!selectedRoomId || !roomById.has(selectedRoomId)) {
+    if (selectedRoomId && !roomById.has(selectedRoomId)) {
       setSelectedRoomId(topology.rooms[0].room_id)
     }
   }, [roomById, selectedRoomId, topology.rooms])
