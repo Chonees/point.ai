@@ -194,6 +194,9 @@ class CatalogBoundarySegment(BaseModel):
     boundary_kind: str = "unknown"
     owner_room_ids: list[str] = Field(default_factory=list)
     companion_boundary_id: str | None = None
+    boundary_family_id: str | None = None
+    family_role: str = "unknown"
+    duplicate_of_boundary_id: str | None = None
     opening_ids: list[str] = Field(default_factory=list)
     confidence: str = "unverified"
     issues: list[str] = Field(default_factory=list)

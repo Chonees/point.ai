@@ -14,6 +14,21 @@ from backend.floor_plan_catalog.contracts import (
     FloorPlanCatalogSeed,
 )
 
+_BOUNDARY_KIND_PRIORITY = {
+    "shared": 0,
+    "exterior": 1,
+    "support": 2,
+    "unknown": 3,
+}
+
+_CONFIDENCE_PRIORITY = {
+    "trace_projected": 0,
+    "trace_exact": 1,
+    "trace_partitioned": 2,
+    "trace_companion": 3,
+    "unverified": 4,
+}
+
 
 def derive_floor_plan_boundary_graph(seed: FloorPlanCatalogSeed) -> FloorPlanBoundaryGraphV1:
     wall_traces = [trace for trace in seed.cad_traces if trace.trace_kind == "wall"]
@@ -67,6 +82,7 @@ def derive_floor_plan_boundary_graph(seed: FloorPlanCatalogSeed) -> FloorPlanBou
             incident_boundary_ids.setdefault(end_node.node_id, []).append(boundary_id)
 
     boundaries = _promote_support_boundaries(boundaries)
+    boundaries = _cluster_exact_duplicate_boundaries(boundaries)
 
     nodes = []
     opening_point_keys = {
@@ -124,6 +140,13 @@ def _build_boundary_id(trace_id: str, start: CatalogPoint, end: CatalogPoint) ->
         f"{trace_id}|{start.x:.3f}|{start.y:.3f}|{end.x:.3f}|{end.y:.3f}".encode("utf-8")
     ).hexdigest()[:12]
     return f"boundary-{digest}"
+
+
+def _build_boundary_family_id(orientation: str, start: CatalogPoint, end: CatalogPoint) -> str:
+    digest = hashlib.sha1(
+        f"{orientation}|{start.x:.3f}|{start.y:.3f}|{end.x:.3f}|{end.y:.3f}".encode("utf-8")
+    ).hexdigest()[:12]
+    return f"family-{digest}"
 
 
 def _distance(start: CatalogPoint, end: CatalogPoint) -> float:
@@ -329,11 +352,75 @@ def _promote_support_boundaries(
                     "owner_room_ids": list(companion.owner_room_ids),
                     "companion_boundary_id": companion.boundary_id,
                     "confidence": "trace_companion",
+                    "family_role": "support",
                     "issues": sorted({*boundary.issues, "secondary_shell"}),
                 }
             )
         )
     return promoted
+
+
+def _cluster_exact_duplicate_boundaries(
+    boundaries: list[CatalogBoundarySegment],
+) -> list[CatalogBoundarySegment]:
+    grouped: dict[tuple[str, tuple[tuple[float, float], tuple[float, float]]], list[CatalogBoundarySegment]] = defaultdict(list)
+    for boundary in boundaries:
+        canonical_start, canonical_end = _sorted_boundary_endpoints(boundary.start, boundary.end)
+        grouped[(boundary.orientation, (canonical_start, canonical_end))].append(boundary)
+
+    clustered: list[CatalogBoundarySegment] = []
+    for (orientation, (start_key, end_key)), members in grouped.items():
+        if len(members) == 1:
+            clustered.append(members[0])
+            continue
+
+        canonical = sorted(members, key=_boundary_family_rank)[0]
+        family_id = _build_boundary_family_id(
+            orientation,
+            CatalogPoint(x=start_key[0], y=start_key[1]),
+            CatalogPoint(x=end_key[0], y=end_key[1]),
+        )
+        for member in members:
+            if member.boundary_id == canonical.boundary_id:
+                clustered.append(
+                    member.model_copy(
+                        update={
+                            "boundary_family_id": family_id,
+                            "family_role": "canonical",
+                            "duplicate_of_boundary_id": None,
+                        }
+                    )
+                )
+                continue
+            clustered.append(
+                member.model_copy(
+                    update={
+                        "boundary_kind": "duplicate",
+                        "owner_room_ids": list(canonical.owner_room_ids),
+                        "boundary_family_id": family_id,
+                        "family_role": "duplicate",
+                        "duplicate_of_boundary_id": canonical.boundary_id,
+                        "companion_boundary_id": member.companion_boundary_id or canonical.companion_boundary_id,
+                        "confidence": member.confidence if member.confidence == "trace_companion" else canonical.confidence,
+                        "issues": sorted({*member.issues, "duplicate_geometry"}),
+                    }
+                )
+            )
+
+    return clustered
+
+
+def _sorted_boundary_endpoints(start: CatalogPoint, end: CatalogPoint) -> tuple[tuple[float, float], tuple[float, float]]:
+    return tuple(sorted(((round(start.x, 3), round(start.y, 3)), (round(end.x, 3), round(end.y, 3)))))  # type: ignore[return-value]
+
+
+def _boundary_family_rank(boundary: CatalogBoundarySegment) -> tuple[int, int, float, str]:
+    return (
+        _BOUNDARY_KIND_PRIORITY.get(boundary.boundary_kind, 99),
+        _CONFIDENCE_PRIORITY.get(boundary.confidence, 99),
+        -boundary.length,
+        boundary.boundary_id,
+    )
 
 
 def _find_boundary_companion(
