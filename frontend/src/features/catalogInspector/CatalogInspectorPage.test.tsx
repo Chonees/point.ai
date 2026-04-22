@@ -72,18 +72,29 @@ describe('CatalogInspectorPage', () => {
     expect(screen.queryAllByTestId(/raw-trace-/)).toHaveLength(0)
   })
 
-  it('filters unsupported walls and lets you navigate the focused issue list', () => {
+  it('filters snapped walls and lets you navigate the focused issue list', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 
-    fireEvent.click(screen.getByRole('button', { name: /^Unsupported$/i }))
+    fireEvent.click(screen.getByRole('button', { name: /^Snapped$/i }))
 
-    expect(screen.getByTestId('focus-mode-value')).toHaveTextContent('unsupported')
-    expect(screen.getAllByTestId(/focus-wall-/)).toHaveLength(3)
-    expect(screen.getAllByTestId(/^wall-/)).toHaveLength(3)
+    expect(screen.getByTestId('focus-mode-value')).toHaveTextContent('snapped')
+    expect(screen.getAllByTestId(/focus-wall-/)).toHaveLength(8)
+    expect(screen.getAllByTestId(/^wall-/)).toHaveLength(8)
 
     const firstWallId = screen.getByTestId('selected-wall-id').textContent
     fireEvent.click(screen.getAllByRole('button', { name: /next issue/i })[0])
 
     expect(screen.getByTestId('selected-wall-id').textContent).not.toEqual(firstWallId)
+  })
+
+  it('shows unsupported focus mode as empty when no unresolved shared walls remain', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /^Unsupported$/i }))
+
+    expect(screen.getByTestId('focus-mode-value')).toHaveTextContent('unsupported')
+    expect(screen.queryAllByTestId(/focus-wall-/)).toHaveLength(0)
+    expect(screen.queryAllByTestId(/^wall-/)).toHaveLength(0)
+    expect(screen.queryByTestId('selected-wall-panel')).not.toBeInTheDocument()
   })
 })

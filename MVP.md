@@ -436,6 +436,14 @@ Uso temporal de curacion/debug para validar `SEMINOLE2000` antes de avanzar al e
    - ambar = pared snappeada a traza real
    - rojo = pared todavia sin soporte real
 
+### Estado actual de referencia
+
+- `SEMINOLE2000` hoy muestra:
+  - `Shared exact = 0`
+  - `Shared snapped = 8`
+  - `Shared unsupported = 0`
+- Eso significa que el cuello de botella ya no es una wall sin soporte real, sino la calidad de las inferencias topologicas que todavia quedan marcadas como `inferred_adjacency` / `inferred_from_bbox`.
+
 ### Proposito
 
 Esta pantalla es intencionalmente temporal y removible. Existe para verificar que la topologia derivada del floor plan sea coherente antes de invertir en el motor de reconstruccion geometrica.

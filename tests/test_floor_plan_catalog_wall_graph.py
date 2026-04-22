@@ -99,6 +99,69 @@ def build_seed() -> FloorPlanCatalogSeed:
     )
 
 
+def build_multi_trace_inferred_seed() -> FloorPlanCatalogSeed:
+    return FloorPlanCatalogSeed(
+        floor_plan_id="multi-trace-inferred",
+        name="MULTI TRACE INFERRED",
+        source_path="D:/PointAIData/PLANS/originalFloorPlans/MULTI.dxf",
+        canonical_unit="inch",
+        footprint_bbox=CatalogBBox(x1=0, y1=0, x2=240, y2=220, width=240, height=220),
+        rooms=[
+            CatalogRoom(
+                name="ROOM A",
+                polygon=[
+                    CatalogPoint(x=20, y=20),
+                    CatalogPoint(x=120, y=20),
+                    CatalogPoint(x=120, y=100),
+                    CatalogPoint(x=20, y=100),
+                ],
+                bbox=CatalogBBox(x1=20, y1=20, x2=120, y2=100, width=100, height=80),
+                centroid=CatalogPoint(x=70, y=60),
+                width=100,
+                height=80,
+                area=8000,
+                measurement_source="room_region",
+            ),
+            CatalogRoom(
+                name="ROOM B",
+                polygon=[
+                    CatalogPoint(x=20, y=106),
+                    CatalogPoint(x=120, y=106),
+                    CatalogPoint(x=120, y=186),
+                    CatalogPoint(x=20, y=186),
+                ],
+                bbox=CatalogBBox(x1=20, y1=106, x2=120, y2=186, width=100, height=80),
+                centroid=CatalogPoint(x=70, y=146),
+                width=100,
+                height=80,
+                area=8000,
+                measurement_source="room_region",
+            ),
+        ],
+        wall_traces=[
+            CatalogWallTrace(
+                trace_id="trace-a",
+                type="line",
+                layer="WALLS",
+                start=CatalogPoint(x=20, y=103),
+                end=CatalogPoint(x=60, y=103),
+                bbox=CatalogBBox(x1=20, y1=103, x2=60, y2=103, width=40, height=0),
+            ),
+            CatalogWallTrace(
+                trace_id="trace-b",
+                type="line",
+                layer="WALLS",
+                start=CatalogPoint(x=70, y=103),
+                end=CatalogPoint(x=120, y=103),
+                bbox=CatalogBBox(x1=70, y1=103, x2=120, y2=103, width=50, height=0),
+            ),
+        ],
+        source_layers=["WALLS", "ROOM LBLS"],
+        block_refs=[],
+        readiness=CatalogReadiness(status="ready_for_catalog", issues=[]),
+    )
+
+
 def test_derive_floor_plan_wall_graph_creates_shared_and_exterior_boundaries():
     seed = build_seed()
     topology = derive_floor_plan_topology(seed)
@@ -187,6 +250,48 @@ def test_derive_floor_plan_wall_graph_handles_real_seminole_seed():
     assert wall_graph.walls
     assert any(len(wall.room_ids) == 2 for wall in wall_graph.walls)
     assert any(wall.is_exterior for wall in wall_graph.walls)
+
+
+def test_derive_floor_plan_wall_graph_merges_multi_trace_support_for_inferred_wall():
+    seed = build_multi_trace_inferred_seed()
+    topology = derive_floor_plan_topology(seed)
+
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.wall_traces)
+
+    room_a = next(room for room in topology.rooms if room.name == "ROOM A")
+    room_b = next(room for room in topology.rooms if room.name == "ROOM B")
+    shared_wall = next(
+        wall
+        for wall in wall_graph.walls
+        if not wall.is_exterior and set(wall.room_ids) == {room_a.room_id, room_b.room_id}
+    )
+
+    assert shared_wall.trace_support_status == "exact_trace_supported"
+    assert shared_wall.trace_support_ids == ["trace-a", "trace-b"]
+    assert shared_wall.start == CatalogPoint(x=20, y=103)
+    assert shared_wall.end == CatalogPoint(x=120, y=103)
+    assert shared_wall.trace_support_gap == 0.0
+
+
+def test_derive_floor_plan_wall_graph_prunes_false_pairs_and_slivers_in_real_seminole():
+    seed_payload = json.loads(Path(r"D:\PointAIData\PLANS\catalog\seminole-2000.json").read_text(encoding="utf-8"))
+    seed = FloorPlanCatalogSeed.model_validate(seed_payload)
+    topology = derive_floor_plan_topology(seed)
+
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.wall_traces)
+    names_by_room_id = {room.room_id: room.name for room in topology.rooms}
+    shared_pairs = {
+        tuple(sorted(names_by_room_id[room_id] for room_id in wall.room_ids)): wall
+        for wall in wall_graph.walls
+        if not wall.is_exterior
+    }
+
+    assert ("BEDROOM 2", "KITCHEN") not in shared_pairs
+    assert ("LIVING ROOM", "MSTR. BEDROOM") not in shared_pairs
+
+    closet_wall = shared_pairs[tuple(sorted(("CLOSET", "MASTER BATH")))]
+    assert closet_wall.trace_support_status == "snapped_to_trace"
+    assert len(closet_wall.trace_support_ids) >= 2
 
 
 
