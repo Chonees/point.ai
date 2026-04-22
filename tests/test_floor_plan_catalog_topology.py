@@ -211,13 +211,18 @@ def test_export_topology_fixture_writes_expected_topology_json(tmp_path: Path):
     payload = export_topology_fixture(seed_path, output_path)
 
     assert output_path.exists()
-    expected_topology = derive_floor_plan_topology(seed).model_dump()
+    expected_topology = strengthen_floor_plan_topology(
+        derive_floor_plan_topology(seed),
+        derive_floor_plan_wall_graph(derive_floor_plan_topology(seed), seed.cad_traces),
+        seed.cad_traces,
+    ).model_dump()
     assert payload["floor_plan_id"] == expected_topology["floor_plan_id"]
     assert payload["rooms"] == expected_topology["rooms"]
     assert payload["topology_readiness"] == expected_topology["topology_readiness"]
     assert "cad_traces" in payload
     assert isinstance(payload["cad_traces"], list)
     assert payload["walls"]
+    assert all("boundary_kind" in wall and "owner_room_ids" in wall for wall in payload["walls"])
     assert json.loads(output_path.read_text(encoding="utf-8")) == payload
 
 
@@ -340,6 +345,23 @@ def test_strengthen_floor_plan_topology_rebuilds_supported_adjacency_from_wall_g
     assert room_by_name["HALL"].adjacent_room_ids == [room_by_name["BEDROOM 2"].room_id]
     assert room_by_name["KITCHEN"].isolation_status == "connected"
     assert strengthened.topology_issues == []
+
+
+def test_strengthen_floor_plan_topology_assigns_owned_shared_and_exterior_wall_ids():
+    seed = build_seed()
+    topology = derive_floor_plan_topology(seed)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
+
+    strengthened = strengthen_floor_plan_topology(topology, wall_graph, seed.cad_traces)
+    room_by_name = {room.name: room for room in strengthened.rooms}
+
+    bedroom = room_by_name["BEDROOM 2"]
+
+    assert bedroom.owned_wall_ids
+    assert bedroom.shared_wall_ids
+    assert bedroom.exterior_wall_ids
+    assert set(bedroom.shared_wall_ids).issubset(set(bedroom.owned_wall_ids))
+    assert set(bedroom.exterior_wall_ids).issubset(set(bedroom.owned_wall_ids))
 
 
 def test_strengthen_floor_plan_topology_uses_door_traces_to_resolve_isolated_rooms():

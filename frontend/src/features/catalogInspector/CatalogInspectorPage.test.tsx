@@ -73,6 +73,19 @@ describe('CatalogInspectorPage', () => {
     expect(screen.getAllByText(/snapped to trace/i).length).toBeGreaterThan(0)
   })
 
+  it('shows wall ownership metadata in the selected wall and room panels', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /^Shared$/i }))
+    expect(screen.getByText(/boundary kind/i)).toBeInTheDocument()
+    expect(screen.getByText(/owner rooms/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /select bedroom 2/i }))
+    expect(screen.getAllByText(/owned walls/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/^shared walls$/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/exterior walls/i)).toBeInTheDocument()
+  })
+
   it('shows expected isolated status for patio', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 

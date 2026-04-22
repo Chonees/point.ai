@@ -258,6 +258,41 @@ Una reconstrucción solo vive si pasa:
    - “master y baños intocables”
 6. Point recalcula el plan textual
 7. cuando el usuario aprueba:
+
+---
+
+## Estado actual del laboratorio de curado
+
+Hoy `SEMINOLE2000` ya tiene:
+
+- `topology_issues = []`
+- `wall_graph_issues = []`
+- `shared_unsupported = 0`
+- `cad_traces` separadas en `wall / door / window`
+- `opening_adjacent_room_ids` para conectividad por puertas sin inventar shared walls
+- `boundary_kind` + `owner_room_ids` por wall
+- `owned_wall_ids / shared_wall_ids / exterior_wall_ids` por room
+
+### Inspector temporal
+
+Ruta:
+
+- `http://localhost:5173/?debug=seminole-topology`
+
+La screen temporal hoy permite validar:
+
+- walls soportadas contra trazas CAD reales
+- separación walls vs doors vs windows
+- adjacency por wall vs adjacency por opening
+- ownership de boundaries por wall y por room
+
+### Próximo salto recomendado
+
+Con ownership de walls ya expuesto, lo siguiente senior es:
+
+1. bajar la heurística remanente `ENTRY ↔ LIVING ROOM`
+2. pasar a `Opening Ownership v1`
+3. recién después habilitar planning/ejecución geométrica sobre walls hosteadas
    - Point ejecuta
    - devuelve preview final
    - exporta DXF

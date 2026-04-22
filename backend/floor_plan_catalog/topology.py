@@ -72,8 +72,19 @@ def strengthen_floor_plan_topology(
 ) -> FloorPlanTopologyV1:
     supported_adjacency: dict[str, set[str]] = {room.room_id: set() for room in topology.rooms}
     opening_adjacency = _derive_opening_adjacency(topology.rooms, cad_traces or [])
+    owned_wall_ids: dict[str, set[str]] = {room.room_id: set() for room in topology.rooms}
+    shared_wall_ids: dict[str, set[str]] = {room.room_id: set() for room in topology.rooms}
+    exterior_wall_ids: dict[str, set[str]] = {room.room_id: set() for room in topology.rooms}
 
     for wall in wall_graph.walls:
+        for owner_room_id in wall.owner_room_ids:
+            if owner_room_id not in owned_wall_ids:
+                continue
+            owned_wall_ids[owner_room_id].add(wall.wall_id)
+            if wall.boundary_kind == "shared":
+                shared_wall_ids[owner_room_id].add(wall.wall_id)
+            if wall.boundary_kind == "exterior":
+                exterior_wall_ids[owner_room_id].add(wall.wall_id)
         if wall.is_exterior or len(wall.room_ids) != 2:
             continue
         if wall.confidence == "unsupported":
@@ -103,6 +114,9 @@ def strengthen_floor_plan_topology(
                     "adjacent_room_ids": supported_ids,
                     "opening_adjacent_room_ids": opening_ids,
                     "heuristic_adjacent_room_ids": heuristic_ids,
+                    "owned_wall_ids": sorted(owned_wall_ids.get(room.room_id, set())),
+                    "shared_wall_ids": sorted(shared_wall_ids.get(room.room_id, set())),
+                    "exterior_wall_ids": sorted(exterior_wall_ids.get(room.room_id, set())),
                     "isolation_status": isolation_status,
                     "issues": sorted(set(issues)),
                 }

@@ -26,6 +26,9 @@ export interface CatalogInspectorRoom {
   adjacent_room_ids: string[]
   opening_adjacent_room_ids: string[]
   heuristic_adjacent_room_ids: string[]
+  owned_wall_ids: string[]
+  shared_wall_ids: string[]
+  exterior_wall_ids: string[]
   is_exterior_touching: boolean
   isolation_status: string
   issues: string[]
@@ -39,6 +42,8 @@ export interface CatalogInspectorWall {
   length: number
   is_exterior: boolean
   room_ids: string[]
+  boundary_kind: 'shared' | 'exterior' | string
+  owner_room_ids: string[]
   provenance: string
   confidence: string
   trace_support_status: 'not_evaluated' | 'exact_trace_supported' | 'snapped_to_trace' | 'unsupported' | string

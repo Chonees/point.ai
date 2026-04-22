@@ -89,6 +89,9 @@ class CatalogRoomTopology(BaseModel):
     adjacent_room_ids: list[str] = Field(default_factory=list)
     opening_adjacent_room_ids: list[str] = Field(default_factory=list)
     heuristic_adjacent_room_ids: list[str] = Field(default_factory=list)
+    owned_wall_ids: list[str] = Field(default_factory=list)
+    shared_wall_ids: list[str] = Field(default_factory=list)
+    exterior_wall_ids: list[str] = Field(default_factory=list)
     is_exterior_touching: bool = False
     isolation_status: str = "connected"
     issues: list[str] = Field(default_factory=list)
@@ -117,6 +120,8 @@ class CatalogWallBoundary(BaseModel):
     length: float
     is_exterior: bool
     room_ids: list[str] = Field(default_factory=list)
+    boundary_kind: str = "unknown"
+    owner_room_ids: list[str] = Field(default_factory=list)
     provenance: str = "unknown"
     confidence: str = "unverified"
     trace_support_status: str = "not_evaluated"

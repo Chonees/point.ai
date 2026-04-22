@@ -91,6 +91,40 @@
       ],
       "opening_adjacent_room_ids": [],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-20dd15886c4d",
+        "wall-459416bee456",
+        "wall-6fce903b108e",
+        "wall-7638334bb351",
+        "wall-87d8fc992e96",
+        "wall-96dfacc4044c",
+        "wall-a1f776d46545",
+        "wall-a8b52e0533eb",
+        "wall-ba3a13565e0c",
+        "wall-c2d8a808e32e",
+        "wall-c7e1aae1b69b",
+        "wall-cf15ec594b77",
+        "wall-d14d462b3456",
+        "wall-ea6faddea851"
+      ],
+      "shared_wall_ids": [
+        "wall-96dfacc4044c",
+        "wall-a1f776d46545"
+      ],
+      "exterior_wall_ids": [
+        "wall-20dd15886c4d",
+        "wall-459416bee456",
+        "wall-6fce903b108e",
+        "wall-7638334bb351",
+        "wall-87d8fc992e96",
+        "wall-a8b52e0533eb",
+        "wall-ba3a13565e0c",
+        "wall-c2d8a808e32e",
+        "wall-c7e1aae1b69b",
+        "wall-cf15ec594b77",
+        "wall-d14d462b3456",
+        "wall-ea6faddea851"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -178,6 +212,40 @@
       ],
       "opening_adjacent_room_ids": [],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-01ad6e2c1d57",
+        "wall-1cac80563ca3",
+        "wall-2c6052bd7e0c",
+        "wall-2c9bdc9b0eb6",
+        "wall-2dbd47b8f14e",
+        "wall-40618286bd07",
+        "wall-4b8972b5790d",
+        "wall-733a3b62647d",
+        "wall-9c4a8e1f1818",
+        "wall-a1f776d46545",
+        "wall-ac7aced5696c",
+        "wall-c2cfec57f876",
+        "wall-c43109a70236",
+        "wall-ef2ff2226d46"
+      ],
+      "shared_wall_ids": [
+        "wall-a1f776d46545"
+      ],
+      "exterior_wall_ids": [
+        "wall-01ad6e2c1d57",
+        "wall-1cac80563ca3",
+        "wall-2c6052bd7e0c",
+        "wall-2c9bdc9b0eb6",
+        "wall-2dbd47b8f14e",
+        "wall-40618286bd07",
+        "wall-4b8972b5790d",
+        "wall-733a3b62647d",
+        "wall-9c4a8e1f1818",
+        "wall-ac7aced5696c",
+        "wall-c2cfec57f876",
+        "wall-c43109a70236",
+        "wall-ef2ff2226d46"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -277,6 +345,43 @@
         "room-patio-baedb76676bf"
       ],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-093dae81fa76",
+        "wall-35dc848bdd01",
+        "wall-39765f4fbc9e",
+        "wall-3ac05eb7d518",
+        "wall-61aed3cb2d5c",
+        "wall-64c310f2f8c1",
+        "wall-763a04d849be",
+        "wall-7eadfcbca625",
+        "wall-847625a810cd",
+        "wall-a719af4c6fad",
+        "wall-c470b369b817",
+        "wall-c9be05d88c71",
+        "wall-cec3a8e5516f",
+        "wall-e12c0bed7410",
+        "wall-e517c08bb42c",
+        "wall-e7f8a652fc25"
+      ],
+      "shared_wall_ids": [],
+      "exterior_wall_ids": [
+        "wall-093dae81fa76",
+        "wall-35dc848bdd01",
+        "wall-39765f4fbc9e",
+        "wall-3ac05eb7d518",
+        "wall-61aed3cb2d5c",
+        "wall-64c310f2f8c1",
+        "wall-763a04d849be",
+        "wall-7eadfcbca625",
+        "wall-847625a810cd",
+        "wall-a719af4c6fad",
+        "wall-c470b369b817",
+        "wall-c9be05d88c71",
+        "wall-cec3a8e5516f",
+        "wall-e12c0bed7410",
+        "wall-e517c08bb42c",
+        "wall-e7f8a652fc25"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -378,6 +483,42 @@
         "room-dining-4a09d8e5e599"
       ],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-08efae3ca9c9",
+        "wall-11dcf511a876",
+        "wall-21694f432579",
+        "wall-2bfea465733e",
+        "wall-2ffc99c2a609",
+        "wall-360deac21f63",
+        "wall-64a0d488063a",
+        "wall-723b16443a85",
+        "wall-801fcb74e83f",
+        "wall-8aa7322aee42",
+        "wall-b70bef940135",
+        "wall-bbd70fa821e3",
+        "wall-c08b634230a2",
+        "wall-d71743eb9c01",
+        "wall-ecd740c45be8"
+      ],
+      "shared_wall_ids": [
+        "wall-2bfea465733e"
+      ],
+      "exterior_wall_ids": [
+        "wall-08efae3ca9c9",
+        "wall-11dcf511a876",
+        "wall-21694f432579",
+        "wall-2ffc99c2a609",
+        "wall-360deac21f63",
+        "wall-64a0d488063a",
+        "wall-723b16443a85",
+        "wall-801fcb74e83f",
+        "wall-8aa7322aee42",
+        "wall-b70bef940135",
+        "wall-bbd70fa821e3",
+        "wall-c08b634230a2",
+        "wall-d71743eb9c01",
+        "wall-ecd740c45be8"
+      ],
       "is_exterior_touching": true,
       "isolation_status": "connected",
       "issues": []
@@ -461,6 +602,38 @@
       ],
       "opening_adjacent_room_ids": [],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-0f247a63725b",
+        "wall-227341f4ff0c",
+        "wall-27490ad3dc13",
+        "wall-4c6de5461b13",
+        "wall-5a975a25d550",
+        "wall-6060627d4ae8",
+        "wall-a08b8e6c64ff",
+        "wall-bc39d99a8492",
+        "wall-c5156ebce609",
+        "wall-cf68e87ecc48",
+        "wall-d3380acb69ca",
+        "wall-ec231f800d05",
+        "wall-f5c8ceb7d983"
+      ],
+      "shared_wall_ids": [
+        "wall-4c6de5461b13"
+      ],
+      "exterior_wall_ids": [
+        "wall-0f247a63725b",
+        "wall-227341f4ff0c",
+        "wall-27490ad3dc13",
+        "wall-5a975a25d550",
+        "wall-6060627d4ae8",
+        "wall-a08b8e6c64ff",
+        "wall-bc39d99a8492",
+        "wall-c5156ebce609",
+        "wall-cf68e87ecc48",
+        "wall-d3380acb69ca",
+        "wall-ec231f800d05",
+        "wall-f5c8ceb7d983"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -569,6 +742,52 @@
       ],
       "opening_adjacent_room_ids": [],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-01d2478bca6a",
+        "wall-02038fb7528a",
+        "wall-0c636dc7c6e3",
+        "wall-21943bb102c4",
+        "wall-2bbe73c44345",
+        "wall-3696a9806f12",
+        "wall-4c6de5461b13",
+        "wall-4e52799c6fc2",
+        "wall-58aea2dafb59",
+        "wall-6cf8af041c15",
+        "wall-83e29cf28026",
+        "wall-893e42db06f4",
+        "wall-92a509d5145c",
+        "wall-959963821dde",
+        "wall-ae84ff10d967",
+        "wall-b6afbeec384b",
+        "wall-c8dc4b540604",
+        "wall-e37de51ac6db",
+        "wall-ed18d497b304",
+        "wall-f2c36de09520"
+      ],
+      "shared_wall_ids": [
+        "wall-2bbe73c44345",
+        "wall-4c6de5461b13"
+      ],
+      "exterior_wall_ids": [
+        "wall-01d2478bca6a",
+        "wall-02038fb7528a",
+        "wall-0c636dc7c6e3",
+        "wall-21943bb102c4",
+        "wall-3696a9806f12",
+        "wall-4e52799c6fc2",
+        "wall-58aea2dafb59",
+        "wall-6cf8af041c15",
+        "wall-83e29cf28026",
+        "wall-893e42db06f4",
+        "wall-92a509d5145c",
+        "wall-959963821dde",
+        "wall-ae84ff10d967",
+        "wall-b6afbeec384b",
+        "wall-c8dc4b540604",
+        "wall-e37de51ac6db",
+        "wall-ed18d497b304",
+        "wall-f2c36de09520"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -648,6 +867,36 @@
       ],
       "opening_adjacent_room_ids": [],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-00301de80b7d",
+        "wall-36b4aff02cc7",
+        "wall-486454ab1c84",
+        "wall-4dbf91b98b02",
+        "wall-6685b6512908",
+        "wall-6d3b83d77be4",
+        "wall-7fbe84e1873a",
+        "wall-96dfacc4044c",
+        "wall-b52b9b6677bf",
+        "wall-d5a3cae5e033",
+        "wall-e58b47322bdd",
+        "wall-f09cd7444612"
+      ],
+      "shared_wall_ids": [
+        "wall-96dfacc4044c"
+      ],
+      "exterior_wall_ids": [
+        "wall-00301de80b7d",
+        "wall-36b4aff02cc7",
+        "wall-486454ab1c84",
+        "wall-4dbf91b98b02",
+        "wall-6685b6512908",
+        "wall-6d3b83d77be4",
+        "wall-7fbe84e1873a",
+        "wall-b52b9b6677bf",
+        "wall-d5a3cae5e033",
+        "wall-e58b47322bdd",
+        "wall-f09cd7444612"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -890,6 +1139,118 @@
       "heuristic_adjacent_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "owned_wall_ids": [
+        "wall-02ec72ff024a",
+        "wall-05d681461f70",
+        "wall-105c23fd961a",
+        "wall-11178582569c",
+        "wall-11bf0bf277a7",
+        "wall-17866a659c57",
+        "wall-1849c93463bf",
+        "wall-2657fee90880",
+        "wall-3b39f3318b14",
+        "wall-3b6807498fe7",
+        "wall-40957a86e415",
+        "wall-42e58c906cb4",
+        "wall-4626e6a2ddf0",
+        "wall-466b5c80c6c2",
+        "wall-4c5f8e5704a0",
+        "wall-4eb8b148ca8d",
+        "wall-4f35ba40587b",
+        "wall-5194e15db540",
+        "wall-590cd05f8918",
+        "wall-5966171c2207",
+        "wall-5ef7dbfbff9d",
+        "wall-6414d8684a37",
+        "wall-6419acd55c6d",
+        "wall-67fe7f4eaa13",
+        "wall-6de153b9ea2a",
+        "wall-74a1e0772796",
+        "wall-792d1f19bf7c",
+        "wall-863e83e5b79a",
+        "wall-8c123f0df076",
+        "wall-8dd730898a0e",
+        "wall-914178d1a90f",
+        "wall-91ab114f91fa",
+        "wall-936c8b489ffe",
+        "wall-9b132d0b0c15",
+        "wall-9d30659a6a4d",
+        "wall-a53782d0273b",
+        "wall-a7fbf925ef37",
+        "wall-aa6d365b6724",
+        "wall-ae62dece357d",
+        "wall-b26ba1a5e6ce",
+        "wall-b7cc3288c95d",
+        "wall-b9f2f292cdc9",
+        "wall-baa37f9cd173",
+        "wall-bd52ae033d34",
+        "wall-c0bca889276e",
+        "wall-c514fc413567",
+        "wall-cc888e321efc",
+        "wall-db340512e092",
+        "wall-e167f2faed6b",
+        "wall-ee8443139c7b",
+        "wall-f22fa3651589",
+        "wall-f60d5e5af5ac",
+        "wall-f6ad9750c820"
+      ],
+      "shared_wall_ids": [
+        "wall-8c123f0df076",
+        "wall-9d30659a6a4d"
+      ],
+      "exterior_wall_ids": [
+        "wall-02ec72ff024a",
+        "wall-05d681461f70",
+        "wall-105c23fd961a",
+        "wall-11178582569c",
+        "wall-11bf0bf277a7",
+        "wall-17866a659c57",
+        "wall-1849c93463bf",
+        "wall-2657fee90880",
+        "wall-3b39f3318b14",
+        "wall-3b6807498fe7",
+        "wall-40957a86e415",
+        "wall-42e58c906cb4",
+        "wall-4626e6a2ddf0",
+        "wall-466b5c80c6c2",
+        "wall-4c5f8e5704a0",
+        "wall-4eb8b148ca8d",
+        "wall-4f35ba40587b",
+        "wall-5194e15db540",
+        "wall-590cd05f8918",
+        "wall-5966171c2207",
+        "wall-5ef7dbfbff9d",
+        "wall-6414d8684a37",
+        "wall-6419acd55c6d",
+        "wall-67fe7f4eaa13",
+        "wall-6de153b9ea2a",
+        "wall-74a1e0772796",
+        "wall-792d1f19bf7c",
+        "wall-863e83e5b79a",
+        "wall-8dd730898a0e",
+        "wall-914178d1a90f",
+        "wall-91ab114f91fa",
+        "wall-936c8b489ffe",
+        "wall-9b132d0b0c15",
+        "wall-a53782d0273b",
+        "wall-a7fbf925ef37",
+        "wall-aa6d365b6724",
+        "wall-ae62dece357d",
+        "wall-b26ba1a5e6ce",
+        "wall-b7cc3288c95d",
+        "wall-b9f2f292cdc9",
+        "wall-baa37f9cd173",
+        "wall-bd52ae033d34",
+        "wall-c0bca889276e",
+        "wall-c514fc413567",
+        "wall-cc888e321efc",
+        "wall-db340512e092",
+        "wall-e167f2faed6b",
+        "wall-ee8443139c7b",
+        "wall-f22fa3651589",
+        "wall-f60d5e5af5ac",
+        "wall-f6ad9750c820"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -1021,6 +1382,60 @@
       "heuristic_adjacent_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "owned_wall_ids": [
+        "wall-120bc2a6b1ce",
+        "wall-1585970bff06",
+        "wall-16b26d6e1b69",
+        "wall-198e517ddcec",
+        "wall-22d9729c5054",
+        "wall-2398bd8f3603",
+        "wall-26edcf09b6b8",
+        "wall-2bfea465733e",
+        "wall-31317d4b3988",
+        "wall-372176924ea1",
+        "wall-37d8172d1be3",
+        "wall-3d77b2edc5df",
+        "wall-4ff8a4065a8a",
+        "wall-5afeb0ed8f63",
+        "wall-63d3d40e7213",
+        "wall-7a0e07a43bd1",
+        "wall-829d0c7c1a83",
+        "wall-b44a69cb1faa",
+        "wall-d2ff086cbf01",
+        "wall-d886d11efef0",
+        "wall-db193060a6a9",
+        "wall-de6c2a5c8e68",
+        "wall-e70497af559a",
+        "wall-ef5e6e54e331"
+      ],
+      "shared_wall_ids": [
+        "wall-2bfea465733e"
+      ],
+      "exterior_wall_ids": [
+        "wall-120bc2a6b1ce",
+        "wall-1585970bff06",
+        "wall-16b26d6e1b69",
+        "wall-198e517ddcec",
+        "wall-22d9729c5054",
+        "wall-2398bd8f3603",
+        "wall-26edcf09b6b8",
+        "wall-31317d4b3988",
+        "wall-372176924ea1",
+        "wall-37d8172d1be3",
+        "wall-3d77b2edc5df",
+        "wall-4ff8a4065a8a",
+        "wall-5afeb0ed8f63",
+        "wall-63d3d40e7213",
+        "wall-7a0e07a43bd1",
+        "wall-829d0c7c1a83",
+        "wall-b44a69cb1faa",
+        "wall-d2ff086cbf01",
+        "wall-d886d11efef0",
+        "wall-db193060a6a9",
+        "wall-de6c2a5c8e68",
+        "wall-e70497af559a",
+        "wall-ef5e6e54e331"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -1105,6 +1520,40 @@
       ],
       "opening_adjacent_room_ids": [],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-1c72a3e7353a",
+        "wall-1ff588d186df",
+        "wall-272f91122480",
+        "wall-2bbe73c44345",
+        "wall-2ca290880ece",
+        "wall-5b13193e9e89",
+        "wall-61ebcdcf4c0f",
+        "wall-9985aec7b463",
+        "wall-b92ff62a3134",
+        "wall-c2108d5f39e3",
+        "wall-d8f541f6373c",
+        "wall-ebab09e94eed",
+        "wall-f0a60bd1ee29",
+        "wall-f65a688984ab"
+      ],
+      "shared_wall_ids": [
+        "wall-2bbe73c44345",
+        "wall-5b13193e9e89"
+      ],
+      "exterior_wall_ids": [
+        "wall-1c72a3e7353a",
+        "wall-1ff588d186df",
+        "wall-272f91122480",
+        "wall-2ca290880ece",
+        "wall-61ebcdcf4c0f",
+        "wall-9985aec7b463",
+        "wall-b92ff62a3134",
+        "wall-c2108d5f39e3",
+        "wall-d8f541f6373c",
+        "wall-ebab09e94eed",
+        "wall-f0a60bd1ee29",
+        "wall-f65a688984ab"
+      ],
       "is_exterior_touching": true,
       "isolation_status": "connected",
       "issues": []
@@ -1178,6 +1627,36 @@
       ],
       "opening_adjacent_room_ids": [],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-14fd971a7e9d",
+        "wall-1826d4d12358",
+        "wall-1da6ac7ad340",
+        "wall-23967a3a7dc3",
+        "wall-6768cc491c0a",
+        "wall-8c123f0df076",
+        "wall-8c77ea196f68",
+        "wall-9ad9ac451fd0",
+        "wall-a899594c3caa",
+        "wall-b518a9852bcb",
+        "wall-b6ab99c6d93d",
+        "wall-b8c1d7b47cdc"
+      ],
+      "shared_wall_ids": [
+        "wall-1826d4d12358",
+        "wall-6768cc491c0a",
+        "wall-8c123f0df076"
+      ],
+      "exterior_wall_ids": [
+        "wall-14fd971a7e9d",
+        "wall-1da6ac7ad340",
+        "wall-23967a3a7dc3",
+        "wall-8c77ea196f68",
+        "wall-9ad9ac451fd0",
+        "wall-a899594c3caa",
+        "wall-b518a9852bcb",
+        "wall-b6ab99c6d93d",
+        "wall-b8c1d7b47cdc"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -1275,6 +1754,48 @@
       ],
       "opening_adjacent_room_ids": [],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-0c91311ead87",
+        "wall-1826d4d12358",
+        "wall-23f1f7ef0c25",
+        "wall-38f22a2f06f6",
+        "wall-3946142381c5",
+        "wall-3fec1bf8951c",
+        "wall-4d730fcba76f",
+        "wall-4ec92bb21c8f",
+        "wall-56b1fd72cab8",
+        "wall-86b62e56da58",
+        "wall-8fe7da9a5daf",
+        "wall-9b627f165b75",
+        "wall-9d30659a6a4d",
+        "wall-b63200605527",
+        "wall-ceb2c7f8c220",
+        "wall-ddd18a8686bd",
+        "wall-efa70609548c",
+        "wall-f1ccb5d9b3bd"
+      ],
+      "shared_wall_ids": [
+        "wall-1826d4d12358",
+        "wall-9d30659a6a4d",
+        "wall-ddd18a8686bd"
+      ],
+      "exterior_wall_ids": [
+        "wall-0c91311ead87",
+        "wall-23f1f7ef0c25",
+        "wall-38f22a2f06f6",
+        "wall-3946142381c5",
+        "wall-3fec1bf8951c",
+        "wall-4d730fcba76f",
+        "wall-4ec92bb21c8f",
+        "wall-56b1fd72cab8",
+        "wall-86b62e56da58",
+        "wall-8fe7da9a5daf",
+        "wall-9b627f165b75",
+        "wall-b63200605527",
+        "wall-ceb2c7f8c220",
+        "wall-efa70609548c",
+        "wall-f1ccb5d9b3bd"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -1326,6 +1847,22 @@
       ],
       "opening_adjacent_room_ids": [],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-38319378b22d",
+        "wall-5b13193e9e89",
+        "wall-64c8274538e1",
+        "wall-c70fe9280642",
+        "wall-daa07a5d648e"
+      ],
+      "shared_wall_ids": [
+        "wall-5b13193e9e89"
+      ],
+      "exterior_wall_ids": [
+        "wall-38319378b22d",
+        "wall-64c8274538e1",
+        "wall-c70fe9280642",
+        "wall-daa07a5d648e"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -1401,6 +1938,31 @@
         "room-living-room-f08c7113b7e9"
       ],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-09e770e3c2cc",
+        "wall-2eccf9a351ee",
+        "wall-34b717440ded",
+        "wall-579cfdfb1283",
+        "wall-5c23a6d12080",
+        "wall-83ad67fe824f",
+        "wall-90493a01e9c7",
+        "wall-9debe13d5ba5",
+        "wall-ca33c8a98b2c",
+        "wall-ecfafa10f60b"
+      ],
+      "shared_wall_ids": [],
+      "exterior_wall_ids": [
+        "wall-09e770e3c2cc",
+        "wall-2eccf9a351ee",
+        "wall-34b717440ded",
+        "wall-579cfdfb1283",
+        "wall-5c23a6d12080",
+        "wall-83ad67fe824f",
+        "wall-90493a01e9c7",
+        "wall-9debe13d5ba5",
+        "wall-ca33c8a98b2c",
+        "wall-ecfafa10f60b"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -1597,6 +2159,96 @@
       ],
       "opening_adjacent_room_ids": [],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-05675ac525c8",
+        "wall-0595029c502f",
+        "wall-07c31dca60a2",
+        "wall-161b529427e0",
+        "wall-1bc4aa36ec35",
+        "wall-1ff7b5d3b95d",
+        "wall-201ce3e8150c",
+        "wall-205cc3b455cc",
+        "wall-211c4c2c3a45",
+        "wall-217bbebdcab8",
+        "wall-27bf6ceacf14",
+        "wall-2bd6dab84c0e",
+        "wall-306d9abcfdef",
+        "wall-403baf9b1a37",
+        "wall-47ffe0c1fa38",
+        "wall-491e8db07f15",
+        "wall-516254e9f8d9",
+        "wall-5add8e24b74f",
+        "wall-5dbe8a640074",
+        "wall-6768cc491c0a",
+        "wall-6913378533f8",
+        "wall-719aac7a1985",
+        "wall-7409b0dfb230",
+        "wall-74460b5ccdd0",
+        "wall-77cc6260c907",
+        "wall-877cd5868545",
+        "wall-90dac4828b49",
+        "wall-97172cda1be9",
+        "wall-9eee4e4b919d",
+        "wall-a142ed62ee85",
+        "wall-b0c53c938778",
+        "wall-b3f772ea5540",
+        "wall-c70ec1730058",
+        "wall-d03ce25c1fd4",
+        "wall-d5540bbf9714",
+        "wall-d6e6359ba82a",
+        "wall-e1340f0ab013",
+        "wall-e7f5200310a6",
+        "wall-ee831be0b557",
+        "wall-f28b24e55dca",
+        "wall-f444473ad44c",
+        "wall-f50b79434d83"
+      ],
+      "shared_wall_ids": [
+        "wall-6768cc491c0a",
+        "wall-97172cda1be9"
+      ],
+      "exterior_wall_ids": [
+        "wall-05675ac525c8",
+        "wall-0595029c502f",
+        "wall-07c31dca60a2",
+        "wall-161b529427e0",
+        "wall-1bc4aa36ec35",
+        "wall-1ff7b5d3b95d",
+        "wall-201ce3e8150c",
+        "wall-205cc3b455cc",
+        "wall-211c4c2c3a45",
+        "wall-217bbebdcab8",
+        "wall-27bf6ceacf14",
+        "wall-2bd6dab84c0e",
+        "wall-306d9abcfdef",
+        "wall-403baf9b1a37",
+        "wall-47ffe0c1fa38",
+        "wall-491e8db07f15",
+        "wall-516254e9f8d9",
+        "wall-5add8e24b74f",
+        "wall-5dbe8a640074",
+        "wall-6913378533f8",
+        "wall-719aac7a1985",
+        "wall-7409b0dfb230",
+        "wall-74460b5ccdd0",
+        "wall-77cc6260c907",
+        "wall-877cd5868545",
+        "wall-90dac4828b49",
+        "wall-9eee4e4b919d",
+        "wall-a142ed62ee85",
+        "wall-b0c53c938778",
+        "wall-b3f772ea5540",
+        "wall-c70ec1730058",
+        "wall-d03ce25c1fd4",
+        "wall-d5540bbf9714",
+        "wall-d6e6359ba82a",
+        "wall-e1340f0ab013",
+        "wall-e7f5200310a6",
+        "wall-ee831be0b557",
+        "wall-f28b24e55dca",
+        "wall-f444473ad44c",
+        "wall-f50b79434d83"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -1681,6 +2333,40 @@
       ],
       "opening_adjacent_room_ids": [],
       "heuristic_adjacent_room_ids": [],
+      "owned_wall_ids": [
+        "wall-0c310fdeb90b",
+        "wall-0c64228765f1",
+        "wall-1ade1c1569c4",
+        "wall-3fe1252fa428",
+        "wall-53e1a7b9d136",
+        "wall-6437961d1551",
+        "wall-6c7a4a9d67f6",
+        "wall-7a044a8c7acb",
+        "wall-7cf27f95881e",
+        "wall-833dca5bac55",
+        "wall-8adea62d220b",
+        "wall-97172cda1be9",
+        "wall-c50e5e995315",
+        "wall-ddd18a8686bd"
+      ],
+      "shared_wall_ids": [
+        "wall-97172cda1be9",
+        "wall-ddd18a8686bd"
+      ],
+      "exterior_wall_ids": [
+        "wall-0c310fdeb90b",
+        "wall-0c64228765f1",
+        "wall-1ade1c1569c4",
+        "wall-3fe1252fa428",
+        "wall-53e1a7b9d136",
+        "wall-6437961d1551",
+        "wall-6c7a4a9d67f6",
+        "wall-7a044a8c7acb",
+        "wall-7cf27f95881e",
+        "wall-833dca5bac55",
+        "wall-8adea62d220b",
+        "wall-c50e5e995315"
+      ],
       "is_exterior_touching": false,
       "isolation_status": "connected",
       "issues": []
@@ -35158,6 +35844,10 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35179,6 +35869,10 @@
       "length": 4.200214280248111,
       "is_exterior": true,
       "room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-kitchen-30c3548c559f"
       ],
       "provenance": "room_exterior_boundary",
@@ -35204,6 +35898,10 @@
       "room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35227,6 +35925,10 @@
       "room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35248,6 +35950,10 @@
       "length": 18.809999999999974,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -35276,6 +35982,10 @@
       "length": 39.18827629927682,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -35310,6 +36020,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35331,6 +36045,10 @@
       "length": 25.976890691535846,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -35356,6 +36074,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35377,6 +36099,10 @@
       "length": 4.950000000000029,
       "is_exterior": true,
       "room_ids": [
+        "room-patio-baedb76676bf"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-patio-baedb76676bf"
       ],
       "provenance": "room_exterior_boundary",
@@ -35402,6 +36128,10 @@
       "room_ids": [
         "room-dining-4a09d8e5e599"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35423,6 +36153,10 @@
       "length": 38.11500000000001,
       "is_exterior": true,
       "room_ids": [
+        "room-mstr-bedroom-f807fea0d33b"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-mstr-bedroom-f807fea0d33b"
       ],
       "provenance": "room_exterior_boundary",
@@ -35448,6 +36182,10 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35471,6 +36209,10 @@
       "room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35492,6 +36234,10 @@
       "length": 92.07,
       "is_exterior": true,
       "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-closet-c59e39a3c606"
       ],
       "provenance": "room_exterior_boundary",
@@ -35524,6 +36270,10 @@
       "room_ids": [
         "room-utility-d426eaa238c3"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -35552,6 +36302,10 @@
       "room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35573,6 +36327,10 @@
       "length": 20.045972164003416,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -35598,6 +36356,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35621,6 +36383,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35642,6 +36408,10 @@
       "length": 13.230261529541139,
       "is_exterior": true,
       "room_ids": [
+        "room-patio-baedb76676bf"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-patio-baedb76676bf"
       ],
       "provenance": "room_exterior_boundary",
@@ -35670,6 +36440,10 @@
       "length": 58.905,
       "is_exterior": true,
       "room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "provenance": "room_exterior_boundary",
@@ -35702,6 +36476,10 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35723,6 +36501,10 @@
       "length": 14.363531947261402,
       "is_exterior": true,
       "room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "provenance": "room_exterior_boundary",
@@ -35748,6 +36530,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35769,6 +36555,10 @@
       "length": 18.018271975969295,
       "is_exterior": true,
       "room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "provenance": "room_exterior_boundary",
@@ -35794,6 +36584,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35815,6 +36609,11 @@
       "length": 29.69999999999999,
       "is_exterior": false,
       "room_ids": [
+        "room-pwdr-f2cbb3be1766",
+        "room-utility-d426eaa238c3"
+      ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
         "room-pwdr-f2cbb3be1766",
         "room-utility-d426eaa238c3"
       ],
@@ -35846,6 +36645,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35867,6 +36670,10 @@
       "length": 180.00983848219494,
       "is_exterior": true,
       "room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "provenance": "room_exterior_boundary",
@@ -35897,6 +36704,10 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -35925,6 +36736,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -35946,6 +36761,10 @@
       "length": 152.33226908184307,
       "is_exterior": true,
       "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-porch-4997efb61d6a"
       ],
       "provenance": "room_exterior_boundary",
@@ -35978,6 +36797,10 @@
       "room_ids": [
         "room-kitchen-30c3548c559f"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -36008,6 +36831,10 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -36036,6 +36863,10 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -36062,6 +36893,10 @@
       "length": 39.10500000000002,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -36094,6 +36929,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36115,6 +36954,10 @@
       "length": 7.99696973859476,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -36140,6 +36983,10 @@
       "room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36161,6 +37008,10 @@
       "length": 10.48886194970643,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -36186,6 +37037,10 @@
       "room_ids": [
         "room-patio-baedb76676bf"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36209,6 +37064,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36230,6 +37089,10 @@
       "length": 7.9199999999999875,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "provenance": "room_exterior_boundary",
@@ -36258,6 +37121,10 @@
       "length": 88.60499999999999,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
       "provenance": "room_exterior_boundary",
@@ -36290,6 +37157,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36311,6 +37182,10 @@
       "length": 8.058016195069348,
       "is_exterior": true,
       "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
       "provenance": "room_exterior_boundary",
@@ -36336,6 +37211,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36357,6 +37236,10 @@
       "length": 3.9599999999999795,
       "is_exterior": true,
       "room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-utility-d426eaa238c3"
       ],
       "provenance": "room_exterior_boundary",
@@ -36383,6 +37266,10 @@
       "length": 8.107761041864592,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -36413,6 +37300,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36434,6 +37325,10 @@
       "length": 13.860000000000014,
       "is_exterior": true,
       "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-porch-4997efb61d6a"
       ],
       "provenance": "room_exterior_boundary",
@@ -36466,6 +37361,10 @@
       "room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -36494,6 +37393,10 @@
       "length": 13.860000000000014,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -36527,6 +37430,11 @@
         "room-bedroom-4-04b61e6be876",
         "room-porch-4997efb61d6a"
       ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876",
+        "room-porch-4997efb61d6a"
+      ],
       "provenance": "bbox_inferred",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -36553,6 +37461,10 @@
       "length": 42.07499999999999,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -36586,6 +37498,11 @@
         "room-living-room-f08c7113b7e9",
         "room-patio-baedb76676bf"
       ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9",
+        "room-patio-baedb76676bf"
+      ],
       "provenance": "bbox_inferred",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -36616,6 +37533,10 @@
       "room_ids": [
         "room-kitchen-30c3548c559f"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36637,6 +37558,10 @@
       "length": 24.429593775602896,
       "is_exterior": true,
       "room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-kitchen-30c3548c559f"
       ],
       "provenance": "room_exterior_boundary",
@@ -36667,6 +37592,10 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -36695,6 +37624,10 @@
       "room_ids": [
         "room-kitchen-30c3548c559f"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36718,6 +37651,10 @@
       "room_ids": [
         "room-mstr-bedroom-f807fea0d33b"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-mstr-bedroom-f807fea0d33b"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36739,6 +37676,10 @@
       "length": 6.93,
       "is_exterior": true,
       "room_ids": [
+        "room-patio-baedb76676bf"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-patio-baedb76676bf"
       ],
       "provenance": "room_exterior_boundary",
@@ -36769,6 +37710,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36790,6 +37735,10 @@
       "length": 49.00500000000005,
       "is_exterior": true,
       "room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "provenance": "room_exterior_boundary",
@@ -36822,6 +37771,10 @@
       "room_ids": [
         "room-mstr-bedroom-f807fea0d33b"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-mstr-bedroom-f807fea0d33b"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36843,6 +37796,10 @@
       "length": 24.254999999999995,
       "is_exterior": true,
       "room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-dining-4a09d8e5e599"
       ],
       "provenance": "room_exterior_boundary",
@@ -36873,6 +37830,10 @@
       "room_ids": [
         "room-patio-baedb76676bf"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36894,6 +37855,10 @@
       "length": 37.13819765416734,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "provenance": "room_exterior_boundary",
@@ -36919,6 +37884,10 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36940,6 +37909,10 @@
       "length": 139.9388725479807,
       "is_exterior": true,
       "room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "provenance": "room_exterior_boundary",
@@ -36965,6 +37938,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -36986,6 +37963,10 @@
       "length": 171.76499999999996,
       "is_exterior": true,
       "room_ids": [
+        "room-garage-bd6ecee651da"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-garage-bd6ecee651da"
       ],
       "provenance": "room_exterior_boundary",
@@ -37016,6 +37997,10 @@
       "room_ids": [
         "room-utility-d426eaa238c3"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37037,6 +38022,10 @@
       "length": 8.923739406773409,
       "is_exterior": true,
       "room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-utility-d426eaa238c3"
       ],
       "provenance": "room_exterior_boundary",
@@ -37062,6 +38051,10 @@
       "room_ids": [
         "room-dining-4a09d8e5e599"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37083,6 +38076,10 @@
       "length": 6.732727901823994,
       "is_exterior": true,
       "room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-dining-4a09d8e5e599"
       ],
       "provenance": "room_exterior_boundary",
@@ -37108,6 +38105,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37129,6 +38130,10 @@
       "length": 13.939326561925444,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -37154,6 +38159,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37175,6 +38184,10 @@
       "length": 3.1306548835667245,
       "is_exterior": true,
       "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-closet-c59e39a3c606"
       ],
       "provenance": "room_exterior_boundary",
@@ -37200,6 +38213,10 @@
       "room_ids": [
         "room-utility-d426eaa238c3"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37221,6 +38238,10 @@
       "length": 10.810963185581544,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -37246,6 +38267,10 @@
       "room_ids": [
         "room-kitchen-30c3548c559f"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37267,6 +38292,10 @@
       "length": 15.963270341631148,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -37292,6 +38321,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37315,6 +38348,10 @@
       "room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37336,6 +38373,10 @@
       "length": 36.64325270714994,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -37364,6 +38405,10 @@
       "length": 38.60999999999996,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -37396,6 +38441,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37417,6 +38466,10 @@
       "length": 50.985000000000014,
       "is_exterior": true,
       "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
       "provenance": "room_exterior_boundary",
@@ -37447,6 +38500,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37468,6 +38525,10 @@
       "length": 139.44686810753402,
       "is_exterior": true,
       "room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-kitchen-30c3548c559f"
       ],
       "provenance": "room_exterior_boundary",
@@ -37493,6 +38554,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37514,6 +38579,11 @@
       "length": 122.75999999999999,
       "is_exterior": false,
       "room_ids": [
+        "room-bedroom-3-b8f109d99d59",
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
         "room-bedroom-3-b8f109d99d59",
         "room-bedroom-4-04b61e6be876"
       ],
@@ -37545,6 +38615,10 @@
       "room_ids": [
         "room-utility-d426eaa238c3"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -37573,6 +38647,10 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37594,6 +38672,10 @@
       "length": 8.770238465341286,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "provenance": "room_exterior_boundary",
@@ -37624,6 +38706,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37647,6 +38733,10 @@
       "room_ids": [
         "room-utility-d426eaa238c3"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37668,6 +38758,10 @@
       "length": 25.73999999999998,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -37698,6 +38792,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -37726,6 +38824,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -37752,6 +38854,10 @@
       "length": 83.67107004568601,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -37784,6 +38890,10 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37807,6 +38917,10 @@
       "room_ids": [
         "room-utility-d426eaa238c3"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37828,6 +38942,10 @@
       "length": 68.805,
       "is_exterior": true,
       "room_ids": [
+        "room-mstr-bedroom-f807fea0d33b"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-mstr-bedroom-f807fea0d33b"
       ],
       "provenance": "room_exterior_boundary",
@@ -37858,6 +38976,10 @@
       "room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37879,6 +39001,10 @@
       "length": 23.27026536161544,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -37904,6 +39030,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37925,6 +39055,10 @@
       "length": 32.66999999999996,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
       "provenance": "room_exterior_boundary",
@@ -37950,6 +39084,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37973,6 +39111,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -37994,6 +39136,11 @@
       "length": 98.505,
       "is_exterior": false,
       "room_ids": [
+        "room-garage-bd6ecee651da",
+        "room-porch-4997efb61d6a"
+      ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
         "room-garage-bd6ecee651da",
         "room-porch-4997efb61d6a"
       ],
@@ -38023,6 +39170,10 @@
       "room_ids": [
         "room-mstr-bedroom-f807fea0d33b"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-mstr-bedroom-f807fea0d33b"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38044,6 +39195,10 @@
       "length": 62.295624473057785,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -38078,6 +39233,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38099,6 +39258,10 @@
       "length": 6.732727901824062,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
       "provenance": "room_exterior_boundary",
@@ -38124,6 +39287,10 @@
       "room_ids": [
         "room-dining-4a09d8e5e599"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38145,6 +39312,10 @@
       "length": 49.5,
       "is_exterior": true,
       "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-porch-4997efb61d6a"
       ],
       "provenance": "room_exterior_boundary",
@@ -38181,6 +39352,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38202,6 +39377,10 @@
       "length": 17.556806372458535,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -38227,6 +39406,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38248,6 +39431,10 @@
       "length": 92.07,
       "is_exterior": true,
       "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-closet-c59e39a3c606"
       ],
       "provenance": "room_exterior_boundary",
@@ -38278,6 +39465,10 @@
       "room_ids": [
         "room-patio-baedb76676bf"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -38302,6 +39493,10 @@
       "length": 4.221210393820229,
       "is_exterior": true,
       "room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-dining-4a09d8e5e599"
       ],
       "provenance": "room_exterior_boundary",
@@ -38332,6 +39527,10 @@
       "room_ids": [
         "room-garage-bd6ecee651da"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-garage-bd6ecee651da"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -38360,6 +39559,10 @@
       "length": 52.965,
       "is_exterior": true,
       "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
       "provenance": "room_exterior_boundary",
@@ -38393,6 +39596,11 @@
         "room-master-bath-8c1d12c9d850",
         "room-pwdr-f2cbb3be1766"
       ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850",
+        "room-pwdr-f2cbb3be1766"
+      ],
       "provenance": "bbox_inferred",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -38423,6 +39631,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38444,6 +39656,10 @@
       "length": 7.826637208916703,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -38469,6 +39685,10 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38490,6 +39710,10 @@
       "length": 3.9599999999999937,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "provenance": "room_exterior_boundary",
@@ -38520,6 +39744,10 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38541,6 +39769,10 @@
       "length": 14.897065905400268,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -38571,6 +39803,10 @@
       "room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38592,6 +39828,10 @@
       "length": 28.215000000000032,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -38622,6 +39862,10 @@
       "room_ids": [
         "room-patio-baedb76676bf"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -38650,6 +39894,10 @@
       "room_ids": [
         "room-kitchen-30c3548c559f"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38671,6 +39919,10 @@
       "length": 18.4947262753467,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -38696,6 +39948,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38717,6 +39973,10 @@
       "length": 20.581812177557595,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -38751,6 +40011,10 @@
       "room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38772,6 +40036,10 @@
       "length": 117.56640782978786,
       "is_exterior": true,
       "room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-dining-4a09d8e5e599"
       ],
       "provenance": "room_exterior_boundary",
@@ -38797,6 +40065,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38818,6 +40090,10 @@
       "length": 9.40500000000003,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -38848,6 +40124,10 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38869,6 +40149,10 @@
       "length": 117.56640782978786,
       "is_exterior": true,
       "room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "provenance": "room_exterior_boundary",
@@ -38894,6 +40178,10 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38915,6 +40203,10 @@
       "length": 9.405000000000001,
       "is_exterior": true,
       "room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-dining-4a09d8e5e599"
       ],
       "provenance": "room_exterior_boundary",
@@ -38945,6 +40237,10 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -38966,6 +40262,10 @@
       "length": 62.86500000000001,
       "is_exterior": true,
       "room_ids": [
+        "room-patio-baedb76676bf"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-patio-baedb76676bf"
       ],
       "provenance": "room_exterior_boundary",
@@ -38992,6 +40292,10 @@
       "length": 82.4568121775576,
       "is_exterior": true,
       "room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "provenance": "room_exterior_boundary",
@@ -39026,6 +40330,10 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -39056,6 +40364,10 @@
       "room_ids": [
         "room-mstr-bedroom-f807fea0d33b"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-mstr-bedroom-f807fea0d33b"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -39082,6 +40394,10 @@
       "length": 66.82499999999999,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "provenance": "room_exterior_boundary",
@@ -39112,6 +40428,10 @@
       "room_ids": [
         "room-dining-4a09d8e5e599"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39135,6 +40455,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39156,6 +40480,10 @@
       "length": 26.730000000000018,
       "is_exterior": true,
       "room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-utility-d426eaa238c3"
       ],
       "provenance": "room_exterior_boundary",
@@ -39186,6 +40514,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39207,6 +40539,10 @@
       "length": 33.164999999999964,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
       "provenance": "room_exterior_boundary",
@@ -39232,6 +40568,10 @@
       "room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39253,6 +40593,10 @@
       "length": 3.1306548835667107,
       "is_exterior": true,
       "room_ids": [
+        "room-patio-baedb76676bf"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-patio-baedb76676bf"
       ],
       "provenance": "room_exterior_boundary",
@@ -39278,6 +40622,10 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39299,6 +40647,11 @@
       "length": 32.17500000000001,
       "is_exterior": false,
       "room_ids": [
+        "room-entry-782df4e2a9f2",
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2",
         "room-pwdr-f2cbb3be1766"
       ],
@@ -39334,6 +40687,10 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39357,6 +40714,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39378,6 +40739,10 @@
       "length": 32.66999999999996,
       "is_exterior": true,
       "room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-utility-d426eaa238c3"
       ],
       "provenance": "room_exterior_boundary",
@@ -39410,6 +40775,10 @@
       "room_ids": [
         "room-mstr-bedroom-f807fea0d33b"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-mstr-bedroom-f807fea0d33b"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39431,6 +40800,10 @@
       "length": 14.431605939742125,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -39456,6 +40829,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39477,6 +40854,10 @@
       "length": 14.183283294075448,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -39502,6 +40883,10 @@
       "room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39523,6 +40908,10 @@
       "length": 110.38499999999999,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -39555,6 +40944,10 @@
       "room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39576,6 +40969,11 @@
       "length": 66.82500000000005,
       "is_exterior": false,
       "room_ids": [
+        "room-bath-3-dc0b2895fe53",
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
         "room-bath-3-dc0b2895fe53",
         "room-bedroom-2-cf9dbc0716ff"
       ],
@@ -39614,6 +41012,11 @@
         "room-closet-c59e39a3c606",
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606",
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "bbox_inferred",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -39648,6 +41051,10 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39669,6 +41076,10 @@
       "length": 56.92500000000001,
       "is_exterior": true,
       "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
       "provenance": "room_exterior_boundary",
@@ -39703,6 +41114,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -39731,6 +41146,10 @@
       "room_ids": [
         "room-utility-d426eaa238c3"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39752,6 +41171,10 @@
       "length": 60.39,
       "is_exterior": true,
       "room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-kitchen-30c3548c559f"
       ],
       "provenance": "room_exterior_boundary",
@@ -39780,6 +41203,11 @@
       "length": 35.347750646007796,
       "is_exterior": false,
       "room_ids": [
+        "room-entry-782df4e2a9f2",
+        "room-utility-d426eaa238c3"
+      ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2",
         "room-utility-d426eaa238c3"
       ],
@@ -39813,6 +41241,10 @@
       "room_ids": [
         "room-mstr-bedroom-f807fea0d33b"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-mstr-bedroom-f807fea0d33b"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -39841,6 +41273,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39862,6 +41298,10 @@
       "length": 14.389097435211127,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
       "provenance": "room_exterior_boundary",
@@ -39887,6 +41327,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39908,6 +41352,11 @@
       "length": 108.9,
       "is_exterior": false,
       "room_ids": [
+        "room-bedroom-2-cf9dbc0716ff",
+        "room-kitchen-30c3548c559f"
+      ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
         "room-bedroom-2-cf9dbc0716ff",
         "room-kitchen-30c3548c559f"
       ],
@@ -39945,6 +41394,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -39966,6 +41419,10 @@
       "length": 12.955389805019355,
       "is_exterior": true,
       "room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-dining-4a09d8e5e599"
       ],
       "provenance": "room_exterior_boundary",
@@ -39991,6 +41448,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40012,6 +41473,10 @@
       "length": 52.96500000000003,
       "is_exterior": true,
       "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
       "provenance": "room_exterior_boundary",
@@ -40042,6 +41507,10 @@
       "length": 108.9,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
       "provenance": "room_exterior_boundary",
@@ -40078,6 +41547,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "exact",
       "trace_support_status": "exact_trace_supported",
@@ -40102,6 +41575,10 @@
       "length": 126.71999999999991,
       "is_exterior": true,
       "room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-kitchen-30c3548c559f"
       ],
       "provenance": "room_exterior_boundary",
@@ -40132,6 +41609,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40153,6 +41634,10 @@
       "length": 24.75,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "provenance": "room_exterior_boundary",
@@ -40181,6 +41666,10 @@
       "length": 32.59241298599818,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -40215,6 +41704,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40236,6 +41729,10 @@
       "length": 51.97500000000002,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -40274,6 +41771,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40297,6 +41798,10 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40318,6 +41823,10 @@
       "length": 50.49000000000001,
       "is_exterior": true,
       "room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
       "provenance": "room_exterior_boundary",
@@ -40350,6 +41859,10 @@
       "room_ids": [
         "room-utility-d426eaa238c3"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40371,6 +41884,10 @@
       "length": 7.747975542036792,
       "is_exterior": true,
       "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
       "provenance": "room_exterior_boundary",
@@ -40396,6 +41913,10 @@
       "room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40417,6 +41938,10 @@
       "length": 62.86500000000001,
       "is_exterior": true,
       "room_ids": [
+        "room-patio-baedb76676bf"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-patio-baedb76676bf"
       ],
       "provenance": "room_exterior_boundary",
@@ -40445,6 +41970,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -40469,6 +41998,10 @@
       "length": 29.69999999999999,
       "is_exterior": true,
       "room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
       "provenance": "room_exterior_boundary",
@@ -40499,6 +42032,10 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -40527,6 +42064,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40548,6 +42089,10 @@
       "length": 4.949999999999989,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
       "provenance": "room_exterior_boundary",
@@ -40578,6 +42123,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -40604,6 +42153,10 @@
       "length": 11.15080225453596,
       "is_exterior": true,
       "room_ids": [
+        "room-patio-baedb76676bf"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-patio-baedb76676bf"
       ],
       "provenance": "room_exterior_boundary",
@@ -40634,6 +42187,10 @@
       "room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -40662,6 +42219,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40683,6 +42244,10 @@
       "length": 3.1306548835666974,
       "is_exterior": true,
       "room_ids": [
+        "room-patio-baedb76676bf"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-patio-baedb76676bf"
       ],
       "provenance": "room_exterior_boundary",
@@ -40708,6 +42273,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40729,6 +42298,10 @@
       "length": 17.963703381816288,
       "is_exterior": true,
       "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-porch-4997efb61d6a"
       ],
       "provenance": "room_exterior_boundary",
@@ -40759,6 +42332,10 @@
       "room_ids": [
         "room-kitchen-30c3548c559f"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40780,6 +42357,10 @@
       "length": 13.619248327275637,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
       "provenance": "room_exterior_boundary",
@@ -40805,6 +42386,10 @@
       "room_ids": [
         "room-kitchen-30c3548c559f"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40828,6 +42413,10 @@
       "room_ids": [
         "room-dining-4a09d8e5e599"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40849,6 +42438,10 @@
       "length": 24.75,
       "is_exterior": true,
       "room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-closet-c59e39a3c606"
       ],
       "provenance": "room_exterior_boundary",
@@ -40883,6 +42476,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -40909,6 +42506,10 @@
       "room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -40930,6 +42531,10 @@
       "length": 23.264999999999986,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -40960,6 +42565,10 @@
       "room_ids": [
         "room-garage-bd6ecee651da"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-garage-bd6ecee651da"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -40986,6 +42595,10 @@
       "room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41007,6 +42620,10 @@
       "length": 126.72,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "provenance": "room_exterior_boundary",
@@ -41037,6 +42654,10 @@
       "room_ids": [
         "room-dining-4a09d8e5e599"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41058,6 +42679,10 @@
       "length": 38.11499999999995,
       "is_exterior": true,
       "room_ids": [
+        "room-mstr-bedroom-f807fea0d33b"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-mstr-bedroom-f807fea0d33b"
       ],
       "provenance": "room_exterior_boundary",
@@ -41083,6 +42708,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41104,6 +42733,10 @@
       "length": 4.081874569361466,
       "is_exterior": true,
       "room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-utility-d426eaa238c3"
       ],
       "provenance": "room_exterior_boundary",
@@ -41129,6 +42762,10 @@
       "room_ids": [
         "room-dining-4a09d8e5e599"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41150,6 +42787,10 @@
       "length": 71.77500000000003,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
       "provenance": "room_exterior_boundary",
@@ -41186,6 +42827,10 @@
       "room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41209,6 +42854,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41230,6 +42879,10 @@
       "length": 59.89500000000004,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
       "provenance": "room_exterior_boundary",
@@ -41258,6 +42911,10 @@
       "length": 52.09195249967371,
       "is_exterior": true,
       "room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "provenance": "room_exterior_boundary",
@@ -41290,6 +42947,10 @@
       "room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41311,6 +42972,10 @@
       "length": 44.55000000000001,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -41341,6 +43006,10 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41364,6 +43033,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41385,6 +43058,10 @@
       "length": 75.23999999999998,
       "is_exterior": true,
       "room_ids": [
+        "room-patio-baedb76676bf"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-patio-baedb76676bf"
       ],
       "provenance": "room_exterior_boundary",
@@ -41421,6 +43098,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41442,6 +43123,10 @@
       "length": 13.859999999999985,
       "is_exterior": true,
       "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-porch-4997efb61d6a"
       ],
       "provenance": "room_exterior_boundary",
@@ -41472,6 +43157,10 @@
       "room_ids": [
         "room-garage-bd6ecee651da"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-garage-bd6ecee651da"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41493,6 +43182,10 @@
       "length": 21.285000000000025,
       "is_exterior": true,
       "room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "provenance": "room_exterior_boundary",
@@ -41523,6 +43216,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41544,6 +43241,11 @@
       "length": 40.59000000000003,
       "is_exterior": false,
       "room_ids": [
+        "room-closet-c59e39a3c606",
+        "room-utility-d426eaa238c3"
+      ],
+      "boundary_kind": "shared",
+      "owner_room_ids": [
         "room-closet-c59e39a3c606",
         "room-utility-d426eaa238c3"
       ],
@@ -41575,6 +43277,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41598,6 +43304,10 @@
       "room_ids": [
         "room-dining-4a09d8e5e599"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41619,6 +43329,10 @@
       "length": 26.652412985998183,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -41653,6 +43367,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41674,6 +43392,10 @@
       "length": 12.375,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "provenance": "room_exterior_boundary",
@@ -41700,6 +43422,10 @@
       "length": 18.81000000000006,
       "is_exterior": true,
       "room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-dining-4a09d8e5e599"
       ],
       "provenance": "room_exterior_boundary",
@@ -41730,6 +43456,10 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -41758,6 +43488,10 @@
       "room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41779,6 +43513,10 @@
       "length": 7.826637208916703,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -41804,6 +43542,10 @@
       "room_ids": [
         "room-dining-4a09d8e5e599"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41827,6 +43569,10 @@
       "room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41848,6 +43594,10 @@
       "length": 30.689999999999998,
       "is_exterior": true,
       "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-porch-4997efb61d6a"
       ],
       "provenance": "room_exterior_boundary",
@@ -41876,6 +43626,10 @@
       "room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41897,6 +43651,10 @@
       "length": 12.937140565083254,
       "is_exterior": true,
       "room_ids": [
+        "room-patio-baedb76676bf"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-patio-baedb76676bf"
       ],
       "provenance": "room_exterior_boundary",
@@ -41927,6 +43685,10 @@
       "room_ids": [
         "room-mstr-bedroom-f807fea0d33b"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-mstr-bedroom-f807fea0d33b"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41948,6 +43710,10 @@
       "length": 6.732727901824039,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "provenance": "room_exterior_boundary",
@@ -41973,6 +43739,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -41994,6 +43764,10 @@
       "length": 7.747975542036792,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -42019,6 +43793,10 @@
       "room_ids": [
         "room-kitchen-30c3548c559f"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -42040,6 +43818,10 @@
       "length": 49.067460195123196,
       "is_exterior": true,
       "room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "provenance": "room_exterior_boundary",
@@ -42065,6 +43847,10 @@
       "room_ids": [
         "room-utility-d426eaa238c3"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -42088,6 +43874,10 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -42109,6 +43899,10 @@
       "length": 44.55,
       "is_exterior": true,
       "room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-porch-4997efb61d6a"
       ],
       "provenance": "room_exterior_boundary",
@@ -42137,6 +43931,10 @@
       "room_ids": [
         "room-utility-d426eaa238c3"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-utility-d426eaa238c3"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -42158,6 +43956,10 @@
       "length": 8.644803352303615,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",
@@ -42183,6 +43985,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -42206,6 +44012,10 @@
       "room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -42227,6 +44037,10 @@
       "length": 6.8129011272060325,
       "is_exterior": true,
       "room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "provenance": "room_exterior_boundary",
@@ -42261,6 +44075,10 @@
       "room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -42282,6 +44100,10 @@
       "length": 77.21999999999997,
       "is_exterior": true,
       "room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-bedroom-3-b8f109d99d59"
       ],
       "provenance": "room_exterior_boundary",
@@ -42312,6 +44134,10 @@
       "room_ids": [
         "room-entry-782df4e2a9f2"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "trace_supported",
       "trace_support_status": "snapped_to_trace",
@@ -42338,6 +44164,10 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
       "provenance": "room_exterior_boundary",
       "confidence": "unsupported",
       "trace_support_status": "unsupported",
@@ -42359,6 +44189,10 @@
       "length": 31.785777762053044,
       "is_exterior": true,
       "room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "boundary_kind": "exterior",
+      "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "provenance": "room_exterior_boundary",

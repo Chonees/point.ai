@@ -204,6 +204,10 @@ def test_derive_floor_plan_wall_graph_creates_shared_and_exterior_boundaries():
     assert hall_exterior.end == CatalogPoint(x=240, y=500)
     assert hall_exterior.trace_support_status == "exact_trace_supported"
     assert hall_exterior.trace_support_ids == ["trace-hall-exterior"]
+    assert shared_wall.boundary_kind == "shared"
+    assert set(shared_wall.owner_room_ids) == {bedroom.room_id, hall.room_id}
+    assert hall_exterior.boundary_kind == "exterior"
+    assert hall_exterior.owner_room_ids == [hall.room_id]
 
 
 def test_derive_floor_plan_wall_graph_falls_back_to_bbox_inference_when_polygons_do_not_touch():

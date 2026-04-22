@@ -1,4 +1,4 @@
-import type { CatalogInspectorRoom, CatalogInspectorTopology, CatalogInspectorWall } from './types'
+﻿import type { CatalogInspectorRoom, CatalogInspectorTopology, CatalogInspectorWall } from './types'
 
 interface CatalogInspectorSidebarProps {
   topology: CatalogInspectorTopology
@@ -59,6 +59,17 @@ function formatConfidence(confidence: string) {
   }
 }
 
+function formatBoundaryKind(boundaryKind: string) {
+  switch (boundaryKind) {
+    case 'shared':
+      return 'Shared'
+    case 'exterior':
+      return 'Exterior'
+    default:
+      return boundaryKind
+  }
+}
+
 function formatIsolationStatus(status: string) {
   switch (status) {
     case 'connected':
@@ -94,7 +105,7 @@ export function CatalogInspectorSidebar({
   onNextWall,
 }: CatalogInspectorSidebarProps) {
   const selectedRoomWalls = selectedRoom
-    ? topology.walls.filter((wall) => wall.room_ids.includes(selectedRoom.room_id))
+    ? topology.walls.filter((wall) => wall.owner_room_ids.includes(selectedRoom.room_id))
     : []
 
   return (
@@ -149,6 +160,14 @@ export function CatalogInspectorSidebar({
                 <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Confidence</p>
                 <p className="mt-1 text-zinc-100">{formatConfidence(selectedWall.confidence)}</p>
               </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Boundary kind</p>
+                <p className="mt-1 text-zinc-100">{formatBoundaryKind(selectedWall.boundary_kind)}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Owner rooms</p>
+                <p className="mt-1 text-zinc-100">{roomNames(topology, selectedWall.owner_room_ids)}</p>
+              </div>
             </div>
             {selectedWall.trace_support_ids.length > 0 ? (
               <p className="mt-3 text-xs text-zinc-500">{selectedWall.trace_support_ids.join(', ')}</p>
@@ -176,7 +195,7 @@ export function CatalogInspectorSidebar({
                     <p className="font-medium text-zinc-100">{roomPairLabel(topology, wall)}</p>
                     <p className="mt-1 text-xs text-sky-300">{formatTraceSupportStatus(wall.trace_support_status)}</p>
                     <p className="mt-1 text-xs text-zinc-500">
-                      {formatProvenance(wall.provenance)} · {formatConfidence(wall.confidence)}
+                      {formatProvenance(wall.provenance)} · {formatConfidence(wall.confidence)} · {formatBoundaryKind(wall.boundary_kind)}
                     </p>
                     {wall.trace_support_gap != null ? (
                       <p className="mt-1 text-xs text-zinc-500">gap {wall.trace_support_gap.toFixed(3)}</p>
@@ -225,6 +244,18 @@ export function CatalogInspectorSidebar({
                   <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Adjacency</p>
                   <p className="mt-1 text-zinc-100">{selectedRoom.adjacent_room_ids.length}</p>
                 </div>
+                <div className="rounded-xl bg-white/[0.02] p-3">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Owned walls</p>
+                  <p className="mt-1 text-zinc-100">{selectedRoom.owned_wall_ids.length}</p>
+                </div>
+                <div className="rounded-xl bg-white/[0.02] p-3">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Shared walls</p>
+                  <p className="mt-1 text-zinc-100">{selectedRoom.shared_wall_ids.length}</p>
+                </div>
+                <div className="rounded-xl bg-white/[0.02] p-3">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Exterior walls</p>
+                  <p className="mt-1 text-zinc-100">{selectedRoom.exterior_wall_ids.length}</p>
+                </div>
               </div>
 
               <div>
@@ -254,6 +285,7 @@ export function CatalogInspectorSidebar({
                         </div>
                         <p className="mt-1 text-sm text-zinc-300">{wall.is_exterior ? 'Exterior' : 'Shared'} · {wall.length.toFixed(1)} in</p>
                         <p className="mt-1 text-xs text-zinc-500">{wall.room_ids.join(' / ')}</p>
+                        <p className="mt-1 text-xs text-zinc-500">Boundary: {formatBoundaryKind(wall.boundary_kind)} · Owners: {roomNames(topology, wall.owner_room_ids)}</p>
                         <p className="mt-1 text-xs text-sky-300">
                           {formatTraceSupportStatus(wall.trace_support_status)}
                           {wall.trace_support_gap != null ? ` · gap ${wall.trace_support_gap.toFixed(3)}` : ''}
@@ -288,3 +320,4 @@ export function CatalogInspectorSidebar({
     </aside>
   )
 }
+
