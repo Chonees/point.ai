@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import re
 
 from backend.floor_plan_catalog.contracts import (
@@ -25,6 +26,9 @@ def derive_floor_plan_topology(seed: FloorPlanCatalogSeed) -> FloorPlanTopologyV
             room.issues.append("missing_category")
         if not room.adjacent_room_ids:
             room.issues.append("isolated_room")
+        if room.area <= 0 or len(room.polygon) < 4:
+            room.issues.append("suspicious_polygon")
+        room.issues = sorted(set(room.issues))
 
     topology_issues = sorted({issue for room in rooms for issue in room.issues})
     readiness = TopologyReadiness(
@@ -44,11 +48,9 @@ def derive_floor_plan_topology(seed: FloorPlanCatalogSeed) -> FloorPlanTopologyV
 
 
 def _to_room_topology(room: CatalogRoom) -> CatalogRoomTopology:
-    x = int(round(room.centroid.x))
-    y = int(round(room.centroid.y))
     slug = re.sub(r"[^a-z0-9]+", "-", room.name.lower()).strip("-")
     return CatalogRoomTopology(
-        room_id=f"room-{slug}-{x:03d}-{y:03d}",
+        room_id=_build_room_id(room, slug),
         name=room.name,
         category=_infer_category(room.name),
         polygon=room.polygon,
@@ -59,6 +61,25 @@ def _to_room_topology(room: CatalogRoom) -> CatalogRoomTopology:
         area=room.area,
         measurement_source=room.measurement_source,
     )
+
+
+def _build_room_id(room: CatalogRoom, slug: str) -> str:
+    signature = "|".join(
+        [
+            room.name,
+            f"{room.bbox.x1:.3f}",
+            f"{room.bbox.y1:.3f}",
+            f"{room.bbox.x2:.3f}",
+            f"{room.bbox.y2:.3f}",
+            f"{room.width:.3f}",
+            f"{room.height:.3f}",
+            f"{room.area:.3f}",
+            room.measurement_source,
+            str(len(room.polygon)),
+        ]
+    )
+    digest = hashlib.sha1(signature.encode("utf-8")).hexdigest()[:12]
+    return f"room-{slug}-{digest}"
 
 
 def _infer_category(name: str) -> str:
