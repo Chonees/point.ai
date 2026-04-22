@@ -1,4 +1,5 @@
 import json
+import sys
 from pathlib import Path
 from subprocess import run
 
@@ -10,6 +11,7 @@ from backend.floor_plan_catalog.contracts import (
     FloorPlanCatalogSeed,
 )
 from backend.floor_plan_catalog.topology import derive_floor_plan_topology
+from scripts.export_seminole_topology_fixture import export_topology_fixture
 
 
 def build_seed() -> FloorPlanCatalogSeed:
@@ -198,27 +200,47 @@ def test_derive_floor_plan_topology_marks_suspicious_polygon():
     assert "suspicious_polygon" in topology.topology_issues
 
 
-def test_export_seminole_topology_fixture_writes_frontend_json(tmp_path: Path):
-    input_path = Path(r"D:\PointAIData\PLANS\catalog\seminole-2000.json")
+def test_export_topology_fixture_writes_expected_topology_json(tmp_path: Path):
+    seed_path = tmp_path / "seminole-2000.json"
     output_path = tmp_path / "catalogInspector.fixture.json"
+    seed = build_seed()
+    seed_path.write_text(seed.model_dump_json(indent=2), encoding="utf-8")
 
-    result = run(
-        [
-            ".\\.venv\\Scripts\\python.exe",
-            "scripts/export_seminole_topology_fixture.py",
-            str(input_path),
-            "--output",
-            str(output_path),
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
-        cwd=Path(__file__).resolve().parents[1],
-    )
+    topology = export_topology_fixture(seed_path, output_path)
 
-    assert result.returncode == 0, result.stderr
+    assert output_path.exists()
+    assert topology.model_dump() == derive_floor_plan_topology(seed).model_dump()
+    assert json.loads(output_path.read_text(encoding="utf-8")) == topology.model_dump()
 
-    payload = json.loads(output_path.read_text(encoding="utf-8"))
-    assert payload["floor_plan_id"] == "seminole-2000"
-    assert payload["rooms"]
-    assert "topology_readiness" in payload
+
+def test_export_seminole_topology_fixture_cli_writes_real_frontend_json():
+    input_path = Path(r"D:\PointAIData\PLANS\catalog\seminole-2000.json")
+    output_path = Path.cwd() / "tmp-seminole-topology-fixture.json"
+
+    try:
+        result = run(
+            [
+                sys.executable,
+                "scripts/export_seminole_topology_fixture.py",
+                str(input_path),
+                "--output",
+                str(output_path),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=Path(__file__).resolve().parents[1],
+        )
+
+        assert result.returncode == 0, result.stderr
+
+        payload = json.loads(output_path.read_text(encoding="utf-8"))
+        assert payload["floor_plan_id"] == "seminole-2000"
+        assert payload["rooms"]
+        assert payload["topology_readiness"]["status"] in {
+            "ready_for_topology_review",
+            "needs_topology_review",
+        }
+    finally:
+        if output_path.exists():
+            output_path.unlink()

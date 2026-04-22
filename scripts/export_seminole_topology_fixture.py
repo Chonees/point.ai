@@ -13,19 +13,24 @@ from backend.floor_plan_catalog.contracts import FloorPlanCatalogSeed
 from backend.floor_plan_catalog.topology import derive_floor_plan_topology
 
 
+def export_topology_fixture(seed_path: Path, output_path: Path):
+    seed_payload = json.loads(seed_path.read_text(encoding="utf-8"))
+    seed = FloorPlanCatalogSeed.model_validate(seed_payload)
+    topology = derive_floor_plan_topology(seed)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(topology.model_dump_json(indent=2), encoding="utf-8")
+    return topology
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("seed_json")
     parser.add_argument("--output", required=True)
     args = parser.parse_args()
 
-    seed_payload = json.loads(Path(args.seed_json).read_text(encoding="utf-8"))
-    seed = FloorPlanCatalogSeed.model_validate(seed_payload)
-    topology = derive_floor_plan_topology(seed)
-
     output_path = Path(args.output)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(topology.model_dump_json(indent=2), encoding="utf-8")
+    export_topology_fixture(Path(args.seed_json), output_path)
     print(output_path)
     return 0
 
