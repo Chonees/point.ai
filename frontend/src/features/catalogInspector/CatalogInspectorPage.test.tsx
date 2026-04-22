@@ -18,6 +18,7 @@ const unsupportedSharedWallCount = fixture.walls.filter(
 ).length
 const supportBoundaryCount = fixture.boundaries.filter((boundary) => boundary.boundary_kind === 'support').length
 const firstSupportBoundary = fixture.boundaries.find((boundary) => boundary.boundary_kind === 'support') ?? null
+const duplicateBoundaryCount = fixture.boundaries.filter((boundary) => boundary.family_role === 'duplicate').length
 
 const topologyWithoutKitchen = {
   ...fixture,
@@ -190,6 +191,26 @@ describe('CatalogInspectorPage', () => {
     const boundaryPanel = screen.getByTestId('selected-boundary-panel')
     expect(within(boundaryPanel).getByText(/^Support$/i)).toBeInTheDocument()
     expect(within(boundaryPanel).getByText(/companion boundary/i)).toBeInTheDocument()
+  })
+
+  it('renders duplicate boundary metrics from the fixture', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(duplicateBoundaryCount).toBeGreaterThan(0)
+    expect(screen.getByText(/^Duplicate boundaries$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Support boundaries$/i)).toBeInTheDocument()
+  })
+
+  it('shows boundary family metadata for a selected duplicate or canonical member', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /exact boundaries/i }))
+    fireEvent.click(screen.getAllByTestId(/^boundary-/)[0])
+
+    const boundaryPanel = screen.getByTestId('selected-boundary-panel')
+    expect(within(boundaryPanel).getByText(/family id/i)).toBeInTheDocument()
+    expect(within(boundaryPanel).getByText(/family role/i)).toBeInTheDocument()
+    expect(within(boundaryPanel).getByText(/duplicate of/i)).toBeInTheDocument()
   })
 
   it('filters snapped walls and lets you navigate the focused issue list', () => {
