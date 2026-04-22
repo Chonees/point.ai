@@ -64,6 +64,9 @@ def _to_room_topology(room: CatalogRoom) -> CatalogRoomTopology:
 
 
 def _build_room_id(room: CatalogRoom, slug: str) -> str:
+    polygon_signature = "|".join(
+        f"{point.x:.3f},{point.y:.3f}" for point in room.polygon
+    )
     signature = "|".join(
         [
             room.name,
@@ -76,6 +79,7 @@ def _build_room_id(room: CatalogRoom, slug: str) -> str:
             f"{room.area:.3f}",
             room.measurement_source,
             str(len(room.polygon)),
+            polygon_signature,
         ]
     )
     digest = hashlib.sha1(signature.encode("utf-8")).hexdigest()[:12]

@@ -74,6 +74,22 @@ def test_derive_floor_plan_topology_reports_ready_status_for_clean_seed():
     assert topology.topology_readiness.status == "ready_for_topology_review"
     assert topology.topology_readiness.issues == []
     assert topology.topology_issues == []
+    assert topology.rooms[0].category == "kitchen"
+    assert topology.rooms[1].category == "bedroom"
+    assert topology.rooms[2].category == "hall"
+
+
+def test_derive_floor_plan_topology_preserves_task1_room_relationships():
+    topology = derive_floor_plan_topology(build_seed())
+
+    kitchen = next(room for room in topology.rooms if room.name == "KITCHEN")
+    bedroom = next(room for room in topology.rooms if room.name == "BEDROOM 2")
+    hall = next(room for room in topology.rooms if room.name == "HALL")
+
+    assert bedroom.room_id in kitchen.adjacent_room_ids
+    assert hall.room_id in bedroom.adjacent_room_ids
+    assert kitchen.is_exterior_touching is True
+    assert hall.is_exterior_touching is False
 
 
 def test_derive_floor_plan_topology_keeps_adjacency_symmetric():
@@ -135,6 +151,24 @@ def test_derive_floor_plan_topology_avoids_room_id_collision_for_similar_rooms()
         CatalogPoint(x=0, y=520),
     ]
     seed.rooms[1].centroid = CatalogPoint(x=90.2, y=420.2)
+
+    topology = derive_floor_plan_topology(seed)
+    room_ids = [room.room_id for room in topology.rooms]
+
+    assert len(room_ids) == len(set(room_ids))
+
+
+def test_derive_floor_plan_topology_avoids_room_id_collision_for_distinct_geometry():
+    seed = build_seed().model_copy(deep=True)
+    seed.rooms = [seed.rooms[0].model_copy(deep=True), seed.rooms[0].model_copy(deep=True)]
+    seed.rooms[0].name = "OFFICE"
+    seed.rooms[1].name = "OFFICE"
+    seed.rooms[1].polygon = [
+        CatalogPoint(x=0, y=500),
+        CatalogPoint(x=160, y=500),
+        CatalogPoint(x=150, y=792),
+        CatalogPoint(x=0, y=792),
+    ]
 
     topology = derive_floor_plan_topology(seed)
     room_ids = [room.room_id for room in topology.rooms]
