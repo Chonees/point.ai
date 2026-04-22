@@ -89,6 +89,7 @@ function openingStroke(opening: CatalogInspectorOpening, isSelected: boolean) {
 function boundaryStroke(boundary: CatalogInspectorBoundary, isSelected: boolean) {
   if (boundary.boundary_kind === 'shared') return isSelected ? '#fde68a' : 'rgba(250,204,21,0.82)'
   if (boundary.boundary_kind === 'exterior') return isSelected ? '#67e8f9' : 'rgba(34,211,238,0.68)'
+  if (boundary.boundary_kind === 'support') return isSelected ? '#c4b5fd' : 'rgba(167,139,250,0.72)'
   return isSelected ? '#fca5a5' : 'rgba(248,113,113,0.58)'
 }
 

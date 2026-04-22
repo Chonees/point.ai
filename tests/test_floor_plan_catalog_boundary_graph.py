@@ -59,6 +59,21 @@ def test_boundary_graph_marks_opening_cuts_on_horizontal_wall():
     assert any(boundary.opening_ids for boundary in graph.boundaries)
 
 
+def test_boundary_graph_marks_parallel_shell_trace_as_support_boundary():
+    seed = build_double_line_shell_seed()
+
+    graph = derive_floor_plan_boundary_graph(seed)
+    support_boundary = next(
+        boundary
+        for boundary in graph.boundaries
+        if boundary.boundary_kind == "support"
+    )
+
+    assert len(support_boundary.owner_room_ids) == 1
+    assert support_boundary.confidence == "trace_companion"
+    assert support_boundary.companion_boundary_id is not None
+
+
 def test_seminole_boundary_graph_produces_shared_boundaries_without_bbox_inference():
     seed = load_seminole_seed()
 
@@ -79,8 +94,10 @@ def test_seminole_boundary_graph_reduces_unknown_boundary_count():
 
     graph = derive_floor_plan_boundary_graph(seed)
     unknown = [boundary for boundary in graph.boundaries if boundary.boundary_kind == "unknown"]
+    support = [boundary for boundary in graph.boundaries if boundary.boundary_kind == "support"]
 
-    assert len(unknown) < 500
+    assert support
+    assert len(unknown) < 346
 
 
 def build_l_shape_seed() -> FloorPlanCatalogSeed:
@@ -185,6 +202,42 @@ def build_opening_cut_seed() -> FloorPlanCatalogSeed:
             build_trace("door-cut", (48, 20), (72, 20), trace_kind="door"),
         ],
         source_layers=["WALLS", "DOORS"],
+        block_refs=[],
+        readiness=CatalogReadiness(status="ready_for_catalog", issues=[]),
+    )
+
+
+def build_double_line_shell_seed() -> FloorPlanCatalogSeed:
+    room = CatalogRoom(
+        name="SHELL ROOM",
+        polygon=[
+            CatalogPoint(x=0, y=0),
+            CatalogPoint(x=100, y=0),
+            CatalogPoint(x=100, y=60),
+            CatalogPoint(x=0, y=60),
+        ],
+        bbox=CatalogBBox(x1=0, y1=0, x2=100, y2=60, width=100, height=60),
+        centroid=CatalogPoint(x=50, y=30),
+        width=100,
+        height=60,
+        area=6000,
+        measurement_source="room_region",
+    )
+    return FloorPlanCatalogSeed(
+        floor_plan_id="double-line-shell-seed",
+        name="DOUBLE LINE SHELL",
+        source_path="synthetic/double-line-shell.dxf",
+        canonical_unit="inch",
+        footprint_bbox=CatalogBBox(x1=0, y1=0, x2=109, y2=60, width=109, height=60),
+        rooms=[room],
+        cad_traces=[
+            build_trace("wall-left-primary", (0, 0), (0, 60)),
+            build_trace("wall-left-shell", (9, 0), (9, 60)),
+            build_trace("wall-top", (0, 60), (100, 60)),
+            build_trace("wall-right", (100, 0), (100, 60)),
+            build_trace("wall-bottom", (0, 0), (100, 0)),
+        ],
+        source_layers=["WALLS"],
         block_refs=[],
         readiness=CatalogReadiness(status="ready_for_catalog", issues=[]),
     )

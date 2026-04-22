@@ -60,6 +60,8 @@ function formatConfidence(confidence: string) {
       return 'Exact trace backed'
     case 'trace_supported':
       return 'Trace supported'
+    case 'trace_companion':
+      return 'Companion shell'
     case 'heuristic':
       return 'Heuristic'
     case 'unsupported':
@@ -79,6 +81,8 @@ function formatBoundaryKind(boundaryKind: string) {
       return 'Shared'
     case 'exterior':
       return 'Exterior'
+    case 'support':
+      return 'Support'
     default:
       return boundaryKind
   }
@@ -218,6 +222,10 @@ export function CatalogInspectorSidebar({
                     ? selectedBoundaryNodes.map((node) => `${node.node_kind}:${node.node_id}`).join(', ')
                     : 'None'}
                 </p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Companion boundary</p>
+                <p className="mt-1 text-zinc-100">{selectedBoundary.companion_boundary_id ?? 'None'}</p>
               </div>
             </div>
             <p className="mt-3 text-xs text-zinc-500">

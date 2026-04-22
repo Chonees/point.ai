@@ -16,6 +16,8 @@ const snappedSharedWallCount = fixture.walls.filter(
 const unsupportedSharedWallCount = fixture.walls.filter(
   (wall) => !wall.is_exterior && wall.trace_support_status === 'unsupported',
 ).length
+const supportBoundaryCount = fixture.boundaries.filter((boundary) => boundary.boundary_kind === 'support').length
+const firstSupportBoundary = fixture.boundaries.find((boundary) => boundary.boundary_kind === 'support') ?? null
 
 const topologyWithoutKitchen = {
   ...fixture,
@@ -154,6 +156,7 @@ describe('CatalogInspectorPage', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 
     expect(screen.getByText(/^Unknown boundaries$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Support boundaries$/i)).toBeInTheDocument()
     const exactBoundariesToggle = screen.getByRole('checkbox', { name: /exact boundaries/i })
     fireEvent.click(exactBoundariesToggle)
 
@@ -166,6 +169,19 @@ describe('CatalogInspectorPage', () => {
     expect(boundaryPanel).toBeInTheDocument()
     expect(within(boundaryPanel).getByText(/source traces/i)).toBeInTheDocument()
     expect(within(boundaryPanel).getByText(/owner rooms/i)).toBeInTheDocument()
+  })
+
+  it('surfaces support boundaries as companion shell pieces in the inspector', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(supportBoundaryCount).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /exact boundaries/i }))
+    fireEvent.click(screen.getByTestId(`boundary-${firstSupportBoundary!.boundary_id}`))
+
+    const boundaryPanel = screen.getByTestId('selected-boundary-panel')
+    expect(within(boundaryPanel).getByText(/^Support$/i)).toBeInTheDocument()
+    expect(within(boundaryPanel).getByText(/companion boundary/i)).toBeInTheDocument()
   })
 
   it('filters snapped walls and lets you navigate the focused issue list', () => {

@@ -66,6 +66,8 @@ def derive_floor_plan_boundary_graph(seed: FloorPlanCatalogSeed) -> FloorPlanBou
             incident_boundary_ids.setdefault(start_node.node_id, []).append(boundary_id)
             incident_boundary_ids.setdefault(end_node.node_id, []).append(boundary_id)
 
+    boundaries = _promote_support_boundaries(boundaries)
+
     nodes = []
     opening_point_keys = {
         point
@@ -291,6 +293,99 @@ def _classify_boundary(
     if len(owner_room_ids) == 1:
         return "exterior", owner_room_ids, "trace_exact"
     return "unknown", sorted(owner_room_ids), "unverified"
+
+
+def _promote_support_boundaries(
+    boundaries: list[CatalogBoundarySegment],
+    *,
+    axis_gap_tolerance: float = 12.0,
+    minimum_overlap: float = 4.0,
+    minimum_overlap_ratio: float = 0.6,
+) -> list[CatalogBoundarySegment]:
+    classified = [
+        boundary
+        for boundary in boundaries
+        if boundary.boundary_kind in {"shared", "exterior"} and boundary.owner_room_ids
+    ]
+    promoted: list[CatalogBoundarySegment] = []
+    for boundary in boundaries:
+        if boundary.boundary_kind != "unknown":
+            promoted.append(boundary)
+            continue
+        companion = _find_boundary_companion(
+            boundary,
+            classified,
+            axis_gap_tolerance=axis_gap_tolerance,
+            minimum_overlap=minimum_overlap,
+            minimum_overlap_ratio=minimum_overlap_ratio,
+        )
+        if companion is None:
+            promoted.append(boundary)
+            continue
+        promoted.append(
+            boundary.model_copy(
+                update={
+                    "boundary_kind": "support",
+                    "owner_room_ids": list(companion.owner_room_ids),
+                    "companion_boundary_id": companion.boundary_id,
+                    "confidence": "trace_companion",
+                    "issues": sorted({*boundary.issues, "secondary_shell"}),
+                }
+            )
+        )
+    return promoted
+
+
+def _find_boundary_companion(
+    boundary: CatalogBoundarySegment,
+    candidates: list[CatalogBoundarySegment],
+    *,
+    axis_gap_tolerance: float,
+    minimum_overlap: float,
+    minimum_overlap_ratio: float,
+) -> CatalogBoundarySegment | None:
+    if boundary.orientation not in {"horizontal", "vertical"}:
+        return None
+
+    best_candidate: CatalogBoundarySegment | None = None
+    best_score: tuple[float, float, float] | None = None
+    boundary_axis = _axis_value(boundary)
+    boundary_span = _span_value(boundary)
+
+    for candidate in candidates:
+        if candidate.orientation != boundary.orientation:
+            continue
+        axis_gap = abs(boundary_axis - _axis_value(candidate))
+        if axis_gap > axis_gap_tolerance:
+            continue
+        overlap = _overlap_1d(
+            boundary_span[0],
+            boundary_span[1],
+            *_span_value(candidate),
+        )
+        if overlap < minimum_overlap:
+            continue
+        overlap_ratio = overlap / max(1.0, min(boundary.length, candidate.length))
+        if overlap_ratio < minimum_overlap_ratio:
+            continue
+        score = (axis_gap, -overlap_ratio, -overlap)
+        if best_score is None or score < best_score:
+            best_score = score
+            best_candidate = candidate
+
+    return best_candidate
+
+
+def _axis_value(boundary: CatalogBoundarySegment) -> float:
+    if boundary.orientation == "vertical":
+        return boundary.start.x
+    return boundary.start.y
+
+
+def _span_value(boundary: CatalogBoundarySegment) -> tuple[float, float]:
+    if boundary.orientation == "vertical":
+        return tuple(sorted((boundary.start.y, boundary.end.y)))
+    return tuple(sorted((boundary.start.x, boundary.end.x)))
 
 
 def _project_owner_room_ids_to_polygon_edges(
