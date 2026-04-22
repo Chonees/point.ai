@@ -74,3 +74,29 @@ class FloorPlanTopologyV1(BaseModel):
     rooms: list[CatalogRoomTopology] = Field(default_factory=list)
     topology_readiness: TopologyReadiness
     topology_issues: list[str] = Field(default_factory=list)
+
+
+class CatalogWallBoundary(BaseModel):
+    wall_id: str
+    start: CatalogPoint
+    end: CatalogPoint
+    orientation: str
+    length: float
+    is_exterior: bool
+    room_ids: list[str] = Field(default_factory=list)
+    issues: list[str] = Field(default_factory=list)
+
+
+class WallGraphReadiness(BaseModel):
+    status: str
+    issues: list[str] = Field(default_factory=list)
+
+
+class FloorPlanWallGraphV1(BaseModel):
+    floor_plan_id: str
+    name: str
+    canonical_unit: str
+    footprint_bbox: CatalogBBox
+    walls: list[CatalogWallBoundary] = Field(default_factory=list)
+    wall_graph_readiness: WallGraphReadiness
+    wall_graph_issues: list[str] = Field(default_factory=list)
