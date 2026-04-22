@@ -9,12 +9,24 @@ class CatalogReadiness(BaseModel):
 
 
 class CatalogBBox(BaseModel):
+    x1: float = 0.0
+    y1: float = 0.0
+    x2: float = 0.0
+    y2: float = 0.0
     width: float
     height: float
 
 
+class CatalogPoint(BaseModel):
+    x: float
+    y: float
+
+
 class CatalogRoom(BaseModel):
     name: str
+    polygon: list[CatalogPoint] = Field(default_factory=list)
+    bbox: CatalogBBox
+    centroid: CatalogPoint
     width: float
     height: float
     area: float

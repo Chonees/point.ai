@@ -14,7 +14,14 @@ def test_floor_plan_catalog_seed_exposes_minimum_curated_shape():
         name="SEMINOLE2000",
         source_path="D:/PointAIData/PLANS/originalFloorPlans/SEMINOLE2000.dxf",
         canonical_unit="inch",
-        footprint_bbox={"width": 468.0, "height": 792.0},
+        footprint_bbox={
+            "x1": 0.0,
+            "y1": 0.0,
+            "x2": 468.0,
+            "y2": 792.0,
+            "width": 468.0,
+            "height": 792.0,
+        },
         rooms=[],
         source_layers=[],
         block_refs=[],
@@ -29,6 +36,7 @@ def test_floor_plan_catalog_seed_exposes_minimum_curated_shape():
     assert payload["floor_plan_id"] == "seminole-2000"
     assert payload["canonical_unit"] == "inch"
     assert payload["readiness"]["status"] == "ready_for_catalog"
+    assert payload["footprint_bbox"]["x2"] == 468.0
 
 
 def test_curate_floor_plan_seed_merges_extraction_and_audit(tmp_path: Path):
@@ -41,6 +49,11 @@ def test_curate_floor_plan_seed_merges_extraction_and_audit(tmp_path: Path):
     assert seed.footprint_bbox.width == 468.0
     assert len(seed.rooms) == 2
     assert seed.rooms[0].name == "BEDROOM 2"
+    assert seed.rooms[0].bbox.x1 == 0.0
+    assert seed.rooms[0].bbox.y2 == 144.0
+    assert seed.rooms[0].centroid.x == 60.0
+    assert seed.rooms[0].centroid.y == 72.0
+    assert len(seed.rooms[0].polygon) >= 4
     assert "WALLS" in seed.source_layers
     assert seed.readiness.status == "ready_for_catalog"
 
@@ -95,21 +108,27 @@ def test_curate_floor_plan_seed_marks_aggregate_room_name_as_manual_review(monke
             "warnings": [],
             "floor_plan": {
                 "bbox": {"width": 1633.66, "height": 1080.0},
-                "rooms": [
-                    {
-                        "name": "COV'D. PATIO PANTRY MASTER BEDROOM DINING KITCHEN UTILITY MSTR. BATH LIVING ROOM BATH 2 BEDROOM 2 ENTRY BEDROOM 3",
-                        "width": 1633.66,
-                        "height": 1080.0,
-                        "area": 1666626.68,
-                        "measurement_source": "room_region",
-                    },
-                    {
-                        "name": "PORCH",
-                        "width": 136.0,
-                        "height": 180.0,
-                        "area": 11971.98,
-                        "measurement_source": "room_region",
-                    },
+                    "rooms": [
+                        {
+                            "name": "COV'D. PATIO PANTRY MASTER BEDROOM DINING KITCHEN UTILITY MSTR. BATH LIVING ROOM BATH 2 BEDROOM 2 ENTRY BEDROOM 3",
+                            "polygon": [],
+                            "bbox": {"x1": 0.0, "y1": 0.0, "x2": 1633.66, "y2": 1080.0, "width": 1633.66, "height": 1080.0},
+                            "centroid": {"x": 800.0, "y": 540.0},
+                            "width": 1633.66,
+                            "height": 1080.0,
+                            "area": 1666626.68,
+                            "measurement_source": "room_region",
+                        },
+                        {
+                            "name": "PORCH",
+                            "polygon": [],
+                            "bbox": {"x1": 10.0, "y1": 10.0, "x2": 146.0, "y2": 190.0, "width": 136.0, "height": 180.0},
+                            "centroid": {"x": 78.0, "y": 100.0},
+                            "width": 136.0,
+                            "height": 180.0,
+                            "area": 11971.98,
+                            "measurement_source": "room_region",
+                        },
                 ],
             },
         },

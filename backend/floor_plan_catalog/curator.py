@@ -6,7 +6,7 @@ from pathlib import Path
 from backend.cad_workspace.extractor import extract_cad_file
 
 from .audit import audit_floor_plan_source
-from .contracts import CatalogBBox, CatalogReadiness, CatalogRoom, FloorPlanCatalogSeed
+from .contracts import CatalogBBox, CatalogPoint, CatalogReadiness, CatalogRoom, FloorPlanCatalogSeed
 
 
 def curate_floor_plan_seed(
@@ -22,6 +22,9 @@ def curate_floor_plan_seed(
     rooms = [
         CatalogRoom(
             name=room["name"],
+            polygon=[CatalogPoint(x=point["x"], y=point["y"]) for point in room.get("polygon", [])],
+            bbox=_to_catalog_bbox(room.get("bbox")),
+            centroid=CatalogPoint(x=room["centroid"]["x"], y=room["centroid"]["y"]),
             width=room["width"],
             height=room["height"],
             area=room["area"],
@@ -36,7 +39,7 @@ def curate_floor_plan_seed(
         name=name or path.stem,
         source_path=str(path),
         canonical_unit=extracted["canonical_unit"],
-        footprint_bbox=CatalogBBox(width=bbox["width"], height=bbox["height"]),
+        footprint_bbox=_to_catalog_bbox(bbox),
         rooms=rooms,
         source_layers=audit.source_layers,
         block_refs=sorted(audit.block_refs.keys()),
@@ -69,6 +72,18 @@ def _build_readiness(*, rooms: list[CatalogRoom], warnings: list[str]) -> Catalo
 def _slugify(value: str) -> str:
     normalized = re.sub(r"[^a-z0-9]+", "-", value.lower()).strip("-")
     return normalized or "floor-plan"
+
+
+def _to_catalog_bbox(payload: dict | None) -> CatalogBBox:
+    payload = payload or {}
+    return CatalogBBox(
+        x1=payload.get("x1", 0.0),
+        y1=payload.get("y1", 0.0),
+        x2=payload.get("x2", 0.0),
+        y2=payload.get("y2", 0.0),
+        width=payload.get("width", 0.0),
+        height=payload.get("height", 0.0),
+    )
 
 
 def _looks_like_aggregate_room_label(name: str) -> bool:

@@ -382,9 +382,11 @@ Para el MVP:
 - `D:\PointAIData\PLANS\catalog\seminole-2000.json`
   - `readiness.status = ready_for_catalog`
   - 14 rooms curados hoy
+  - rooms ya incluyen `polygon`, `bbox` y `centroid`
 - `D:\PointAIData\PLANS\catalog\santa-barbara.json`
   - `readiness.status = needs_manual_review`
   - issue: `Aggregate room labels suggest unresolved room segmentation.`
+  - rooms ya incluyen `polygon`, `bbox` y `centroid`
 
 ---
 
