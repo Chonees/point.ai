@@ -8,6 +8,7 @@ from backend.floor_plan_catalog.contracts import (
     CatalogPoint,
     CatalogRoomTopology,
     CatalogWallBoundary,
+    CatalogWallTrace,
     FloorPlanTopologyV1,
     FloorPlanWallGraphV1,
     WallGraphReadiness,
@@ -23,6 +24,14 @@ class _Segment:
 
 
 @dataclass(frozen=True)
+class _RawTraceSegment:
+    trace_id: str
+    start: CatalogPoint
+    end: CatalogPoint
+    orientation: str
+
+
+@dataclass(frozen=True)
 class _Overlap:
     segment_a: _Segment
     segment_b: _Segment
@@ -32,11 +41,24 @@ class _Overlap:
     interval_b: tuple[float, float]
 
 
+@dataclass(frozen=True)
+class _TraceSupport:
+    status: str
+    trace_ids: list[str]
+    gap: float | None
+    start: CatalogPoint
+    end: CatalogPoint
+
+
 def derive_floor_plan_wall_graph(
     topology: FloorPlanTopologyV1,
+    wall_traces: list[CatalogWallTrace] | None = None,
     tolerance: float = 3.0,
     bbox_inference_tolerance: float = 10.0,
     minimum_overlap: float = 12.0,
+    exact_support_tolerance: float = 0.25,
+    snap_support_tolerance: float = 8.0,
+    minimum_support_ratio: float = 0.85,
 ) -> FloorPlanWallGraphV1:
     room_segments = {room.room_id: _room_segments(room.room_id, room.polygon) for room in topology.rooms}
     shared_walls: list[CatalogWallBoundary] = []
@@ -44,7 +66,6 @@ def derive_floor_plan_wall_graph(
     seen_shared_keys: set[tuple[tuple[str, ...], tuple[float, float, float, float]]] = set()
     exact_pairs: set[tuple[str, str]] = set()
 
-    room_by_id = {room.room_id: room for room in topology.rooms}
     rooms = topology.rooms
     for index, room in enumerate(rooms):
         for other_room in rooms[index + 1 :]:
@@ -116,8 +137,23 @@ def derive_floor_plan_wall_graph(
                 )
 
     walls = sorted(shared_walls + exterior_walls, key=lambda wall: wall.wall_id)
+    if wall_traces:
+        raw_segments = _trace_segments(wall_traces, tolerance)
+        walls = [
+            _apply_trace_support(
+                wall,
+                raw_segments,
+                tolerance=exact_support_tolerance,
+                snap_tolerance=snap_support_tolerance,
+                minimum_support_ratio=minimum_support_ratio,
+            )
+            for wall in walls
+        ]
+
     wall_graph_issues = sorted({issue for wall in walls for issue in wall.issues})
     wall_graph_issues = sorted(set(topology.topology_issues + wall_graph_issues))
+    if wall_traces and any((not wall.is_exterior) and wall.trace_support_status == "unsupported" for wall in walls):
+        wall_graph_issues.append("unsupported_trace_support")
     if not walls:
         wall_graph_issues.append("missing_walls")
     if not any(not wall.is_exterior for wall in walls):
@@ -150,6 +186,187 @@ def _room_segments(room_id: str, polygon: list[CatalogPoint]) -> list[_Segment]:
             continue
         segments.append(_Segment(room_id=room_id, edge_index=index, start=start, end=end))
     return segments
+
+
+def _trace_segments(wall_traces: list[CatalogWallTrace], tolerance: float) -> list[_RawTraceSegment]:
+    segments: list[_RawTraceSegment] = []
+    for trace in wall_traces:
+        if trace.points and len(trace.points) >= 2:
+            for index in range(len(trace.points) - 1):
+                start = trace.points[index]
+                end = trace.points[index + 1]
+                if _distance(start, end) <= tolerance:
+                    continue
+                segments.append(
+                    _RawTraceSegment(
+                        trace_id=trace.trace_id,
+                        start=start,
+                        end=end,
+                        orientation=_orientation(start, end, tolerance),
+                    )
+                )
+            continue
+        if trace.start and trace.end and _distance(trace.start, trace.end) > tolerance:
+            segments.append(
+                _RawTraceSegment(
+                    trace_id=trace.trace_id,
+                    start=trace.start,
+                    end=trace.end,
+                    orientation=_orientation(trace.start, trace.end, tolerance),
+                )
+            )
+    return segments
+
+
+def _apply_trace_support(
+    wall: CatalogWallBoundary,
+    raw_segments: list[_RawTraceSegment],
+    *,
+    tolerance: float,
+    snap_tolerance: float,
+    minimum_support_ratio: float,
+) -> CatalogWallBoundary:
+    exact = _find_exact_trace_support(wall, raw_segments, tolerance=tolerance, minimum_support_ratio=minimum_support_ratio)
+    if exact is not None:
+        return wall.model_copy(
+            update={
+                "trace_support_status": exact.status,
+                "trace_support_ids": exact.trace_ids,
+                "trace_support_gap": exact.gap,
+                "start": exact.start,
+                "end": exact.end,
+                "length": _distance(exact.start, exact.end),
+            }
+        )
+
+    snapped = _find_snap_trace_support(
+        wall,
+        raw_segments,
+        snap_tolerance=snap_tolerance,
+        minimum_support_ratio=minimum_support_ratio,
+    )
+    if snapped is not None:
+        return wall.model_copy(
+            update={
+                "trace_support_status": snapped.status,
+                "trace_support_ids": snapped.trace_ids,
+                "trace_support_gap": snapped.gap,
+                "start": snapped.start,
+                "end": snapped.end,
+                "length": _distance(snapped.start, snapped.end),
+            }
+        )
+
+    return wall.model_copy(update={"trace_support_status": "unsupported", "trace_support_ids": [], "trace_support_gap": None})
+
+
+def _find_exact_trace_support(
+    wall: CatalogWallBoundary,
+    raw_segments: list[_RawTraceSegment],
+    *,
+    tolerance: float,
+    minimum_support_ratio: float,
+) -> _TraceSupport | None:
+    best: tuple[float, _RawTraceSegment] | None = None
+    for segment in raw_segments:
+        if segment.orientation != wall.orientation:
+            continue
+        gap, overlap = _axis_gap_and_overlap(wall.start, wall.end, segment.start, segment.end, wall.orientation)
+        if gap is None or overlap is None or wall.length == 0:
+            continue
+        ratio = overlap / wall.length
+        if gap <= tolerance and ratio >= minimum_support_ratio:
+            score = (gap, -overlap)
+            if best is None or score < best[0]:
+                best = (score, segment)
+    if best is None:
+        return None
+    return _TraceSupport(
+        status="exact_trace_supported",
+        trace_ids=[best[1].trace_id],
+        gap=0.0,
+        start=wall.start,
+        end=wall.end,
+    )
+
+
+def _find_snap_trace_support(
+    wall: CatalogWallBoundary,
+    raw_segments: list[_RawTraceSegment],
+    *,
+    snap_tolerance: float,
+    minimum_support_ratio: float,
+) -> _TraceSupport | None:
+    if wall.orientation not in {"horizontal", "vertical"}:
+        return None
+
+    best: tuple[tuple[float, float], _RawTraceSegment, CatalogPoint, CatalogPoint] | None = None
+    for segment in raw_segments:
+        if segment.orientation != wall.orientation:
+            continue
+        gap, overlap = _axis_gap_and_overlap(wall.start, wall.end, segment.start, segment.end, wall.orientation)
+        if gap is None or overlap is None or wall.length == 0:
+            continue
+        ratio = overlap / wall.length
+        if gap > snap_tolerance or ratio < minimum_support_ratio:
+            continue
+        snapped_start, snapped_end = _snap_wall_to_trace(wall.start, wall.end, segment.start, segment.end, wall.orientation)
+        if _distance(snapped_start, snapped_end) <= 0:
+            continue
+        score = (gap, -overlap)
+        if best is None or score < best[0]:
+            best = (score, segment, snapped_start, snapped_end)
+    if best is None:
+        return None
+
+    gap = round(best[0][0], 3)
+    return _TraceSupport(
+        status="snapped_to_trace",
+        trace_ids=[best[1].trace_id],
+        gap=gap,
+        start=best[2],
+        end=best[3],
+    )
+
+
+def _axis_gap_and_overlap(
+    wall_start: CatalogPoint,
+    wall_end: CatalogPoint,
+    trace_start: CatalogPoint,
+    trace_end: CatalogPoint,
+    orientation: str,
+) -> tuple[float | None, float | None]:
+    if orientation == "horizontal":
+        gap = abs(trace_start.y - wall_start.y)
+        overlap = _overlap_1d(wall_start.x, wall_end.x, trace_start.x, trace_end.x)
+        return gap, overlap
+    if orientation == "vertical":
+        gap = abs(trace_start.x - wall_start.x)
+        overlap = _overlap_1d(wall_start.y, wall_end.y, trace_start.y, trace_end.y)
+        return gap, overlap
+    return None, None
+
+
+def _snap_wall_to_trace(
+    wall_start: CatalogPoint,
+    wall_end: CatalogPoint,
+    trace_start: CatalogPoint,
+    trace_end: CatalogPoint,
+    orientation: str,
+) -> tuple[CatalogPoint, CatalogPoint]:
+    if orientation == "horizontal":
+        x1 = max(min(wall_start.x, wall_end.x), min(trace_start.x, trace_end.x))
+        x2 = min(max(wall_start.x, wall_end.x), max(trace_start.x, trace_end.x))
+        y = (trace_start.y + trace_end.y) / 2
+        return CatalogPoint(x=x1, y=y), CatalogPoint(x=x2, y=y)
+    x = (trace_start.x + trace_end.x) / 2
+    y1 = max(min(wall_start.y, wall_end.y), min(trace_start.y, trace_end.y))
+    y2 = min(max(wall_start.y, wall_end.y), max(trace_start.y, trace_end.y))
+    return CatalogPoint(x=x, y=y1), CatalogPoint(x=x, y=y2)
+
+
+def _overlap_1d(a1: float, a2: float, b1: float, b2: float) -> float:
+    return min(max(a1, a2), max(b1, b2)) - max(min(a1, a2), min(b1, b2))
 
 
 def _segment_overlap(segment_a: _Segment, segment_b: _Segment, tolerance: float) -> _Overlap | None:

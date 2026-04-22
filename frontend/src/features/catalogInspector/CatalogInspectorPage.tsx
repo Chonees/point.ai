@@ -43,6 +43,9 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
   const roomsWithAdjacency = topology.rooms.filter((room) => room.adjacent_room_ids.length > 0).length
   const sharedWalls = topology.walls.filter((wall) => !wall.is_exterior).length
   const inferredWalls = topology.walls.filter((wall) => wall.issues.includes('inferred_from_bbox')).length
+  const exactSharedWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.trace_support_status === 'exact_trace_supported').length
+  const snappedSharedWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.trace_support_status === 'snapped_to_trace').length
+  const unsupportedSharedWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.trace_support_status === 'unsupported').length
 
   return (
     <div className="min-h-screen bg-[#090909] text-zinc-100">
@@ -56,7 +59,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-6">
+          <div className="grid gap-3 sm:grid-cols-9">
             <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
               <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Rooms</p>
               <p className="mt-1 text-lg font-semibold text-zinc-100">{topology.rooms.length}</p>
@@ -81,6 +84,18 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
               <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Raw traces</p>
               <p className="mt-1 text-lg font-semibold text-zinc-100">{rawTraces.length}</p>
             </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Shared exact</p>
+              <p className="mt-1 text-lg font-semibold text-emerald-300">{exactSharedWalls}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Shared snapped</p>
+              <p className="mt-1 text-lg font-semibold text-amber-300">{snappedSharedWalls}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Shared unsupported</p>
+              <p className="mt-1 text-lg font-semibold text-rose-300">{unsupportedSharedWalls}</p>
+            </div>
           </div>
         </div>
       </header>
@@ -91,7 +106,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             <div>
               <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Validation</p>
               <p className="mt-1 text-sm text-zinc-300">
-                {roomsWithAdjacency} rooms with adjacency, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {rawTraces.length} raw wall traces.
+                {roomsWithAdjacency} rooms with adjacency, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {rawTraces.length} raw wall traces, {unsupportedSharedWalls} unsupported shared walls.
               </p>
               <p className="mt-1 text-sm text-zinc-500">
                 Readiness: <span className="font-medium text-zinc-200">{topology.topology_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.wall_graph_readiness.status}</span>

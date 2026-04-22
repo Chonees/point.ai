@@ -28,6 +28,12 @@ function roomPoints(room: CatalogInspectorRoom) {
 }
 
 function wallStroke(wall: CatalogInspectorWall, isHighlighted: boolean) {
+  if (wall.trace_support_status === 'unsupported') {
+    return isHighlighted ? '#fb7185' : 'rgba(244,63,94,0.82)'
+  }
+  if (wall.trace_support_status === 'snapped_to_trace') {
+    return isHighlighted ? '#fbbf24' : 'rgba(245,158,11,0.82)'
+  }
   if (wall.issues.includes('inferred_from_bbox')) {
     return isHighlighted ? '#f97316' : 'rgba(249,115,22,0.78)'
   }
@@ -40,6 +46,12 @@ function wallStroke(wall: CatalogInspectorWall, isHighlighted: boolean) {
 function traceStroke(trace: CatalogInspectorWallTrace) {
   if (trace.type === 'polyline') return 'rgba(148,163,184,0.44)'
   return 'rgba(120,113,108,0.35)'
+}
+
+function wallDashArray(wall: CatalogInspectorWall) {
+  if (wall.trace_support_status === 'unsupported') return '8 6'
+  if (wall.issues.includes('inferred_from_bbox')) return '12 7'
+  return undefined
 }
 
 function tracePoints(trace: CatalogInspectorWallTrace) {
@@ -76,6 +88,9 @@ export function CatalogInspectorCanvas({
         <h2 className="mt-2 text-lg font-semibold text-zinc-100">Plano real de topology + wall graph</h2>
         <p className="mt-1 text-sm text-zinc-400">
           Se renderiza la geometr?a real del seed curado, con rooms, IDs opcionales, relaciones, boundaries exactas o inferidas y trazas crudas del CAD para comparar fidelidad.
+        </p>
+        <p className="mt-2 text-xs text-zinc-500">
+          Verde/cian = exactas. Ámbar = snapped a traza real. Rojo = sin soporte real. Gris = traza cruda del CAD.
         </p>
       </div>
 
@@ -147,7 +162,7 @@ export function CatalogInspectorCanvas({
                 y2={wall.end.y}
                 stroke={wallStroke(wall, isHighlighted)}
                 strokeWidth={isHighlighted ? 5 : (wall.issues.includes('inferred_from_bbox') ? 3 : 2.5)}
-                strokeDasharray={wall.issues.includes('inferred_from_bbox') ? '12 7' : undefined}
+                strokeDasharray={wallDashArray(wall)}
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
               />

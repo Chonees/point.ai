@@ -40,8 +40,8 @@ describe('CatalogInspectorPage', () => {
   it('renders wall graph metrics and toggles wall overlays', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 
-    expect(screen.getByText(/shared walls/i)).toBeInTheDocument()
-    expect(screen.getByText(/inferred walls/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/shared walls/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/^inferred walls$/i)).toBeInTheDocument()
     expect(screen.getAllByTestId(/wall-/).length).toBeGreaterThan(0)
 
     const wallsToggle = screen.getByRole('checkbox', { name: /walls/i })
@@ -57,6 +57,7 @@ describe('CatalogInspectorPage', () => {
 
     expect(screen.getByText(/connected walls/i)).toBeInTheDocument()
     expect(screen.getByText(/inferred_from_bbox/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/snapped to trace/i).length).toBeGreaterThan(0)
   })
 
   it('renders raw wall traces and toggles them off', () => {

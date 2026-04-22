@@ -10,6 +10,19 @@ function formatIssueList(issues: string[]) {
   return issues.join(', ')
 }
 
+function formatTraceSupportStatus(status: string) {
+  switch (status) {
+    case 'exact_trace_supported':
+      return 'Exact trace support'
+    case 'snapped_to_trace':
+      return 'Snapped to trace'
+    case 'unsupported':
+      return 'Unsupported by trace'
+    default:
+      return status
+  }
+}
+
 export function CatalogInspectorSidebar({ topology, selectedRoom }: CatalogInspectorSidebarProps) {
   const selectedRoomWalls = selectedRoom
     ? topology.walls.filter((wall) => wall.room_ids.includes(selectedRoom.room_id))
@@ -36,7 +49,7 @@ export function CatalogInspectorSidebar({ topology, selectedRoom }: CatalogInspe
               </div>
               <div className="rounded-xl bg-white/[0.02] p-3">
                 <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Size</p>
-                <p className="mt-1 text-zinc-100">{selectedRoom.width.toFixed(1)} × {selectedRoom.height.toFixed(1)}</p>
+                <p className="mt-1 text-zinc-100">{selectedRoom.width.toFixed(1)} ? {selectedRoom.height.toFixed(1)}</p>
               </div>
               <div className="rounded-xl bg-white/[0.02] p-3">
                 <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Exterior</p>
@@ -74,8 +87,15 @@ export function CatalogInspectorSidebar({ topology, selectedRoom }: CatalogInspe
                       <p className="font-medium text-zinc-100">{wall.wall_id}</p>
                       <span className="text-zinc-400">{wall.orientation}</span>
                     </div>
-                    <p className="mt-1 text-sm text-zinc-300">{wall.is_exterior ? 'Exterior' : 'Shared'} · {wall.length.toFixed(1)} in</p>
+                    <p className="mt-1 text-sm text-zinc-300">{wall.is_exterior ? 'Exterior' : 'Shared'} ? {wall.length.toFixed(1)} in</p>
                     <p className="mt-1 text-xs text-zinc-500">{wall.room_ids.join(' / ')}</p>
+                    <p className="mt-1 text-xs text-sky-300">
+                      {formatTraceSupportStatus(wall.trace_support_status)}
+                      {wall.trace_support_gap != null ? ` ? gap ${wall.trace_support_gap.toFixed(3)}` : ''}
+                    </p>
+                    {wall.trace_support_ids.length > 0 ? (
+                      <p className="mt-1 text-xs text-zinc-500">{wall.trace_support_ids.join(', ')}</p>
+                    ) : null}
                     <p className="mt-1 text-xs text-amber-300">{formatIssueList(wall.issues)}</p>
                   </div>
                 ))

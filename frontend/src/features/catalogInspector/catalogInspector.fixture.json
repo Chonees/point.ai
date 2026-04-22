@@ -16189,6 +16189,9 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16207,6 +16210,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16225,6 +16231,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16243,6 +16252,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16261,6 +16273,9 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16279,6 +16294,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16297,17 +16315,20 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-075c773a0043",
       "start": {
-        "x": 415.30499999999995,
-        "y": 431.145
+        "x": 417.69672370092024,
+        "y": 402.92999999999995
       },
       "end": {
-        "x": 415.30499999999995,
-        "y": 402.92999999999995
+        "x": 417.69672370092024,
+        "y": 431.145
       },
       "orientation": "vertical",
       "length": 28.215000000000032,
@@ -16315,17 +16336,22 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-84b1447e1088"
+      ],
+      "trace_support_gap": 2.392,
       "issues": []
     },
     {
       "wall_id": "wall-09d15a6cedd4",
       "start": {
         "x": 290.565,
-        "y": 404.41499999999996
+        "y": 401.96116650881083
       },
       "end": {
         "x": 320.265,
-        "y": 404.41499999999996
+        "y": 401.96116650881083
       },
       "orientation": "horizontal",
       "length": 29.69999999999999,
@@ -16334,6 +16360,11 @@
         "room-pwdr-f2cbb3be1766",
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-ef7b7abacf3a"
+      ],
+      "trace_support_gap": 2.454,
       "issues": [
         "inferred_from_bbox"
       ]
@@ -16341,12 +16372,12 @@
     {
       "wall_id": "wall-0a3e2e39c152",
       "start": {
-        "x": 146.51999999999998,
-        "y": 164.34
+        "x": 23.75999999999999,
+        "y": 161.80640177255876
       },
       "end": {
-        "x": 23.75999999999999,
-        "y": 164.34
+        "x": 146.51999999999998,
+        "y": 161.80640177255876
       },
       "orientation": "horizontal",
       "length": 122.75999999999999,
@@ -16354,6 +16385,11 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-bef2b3bedcc1"
+      ],
+      "trace_support_gap": 2.534,
       "issues": []
     },
     {
@@ -16372,16 +16408,19 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-0c64228765f1",
       "start": {
-        "x": 356.4,
+        "x": 353.85025762883623,
         "y": 302.445
       },
       "end": {
-        "x": 356.4,
+        "x": 353.85025762883623,
         "y": 394.515
       },
       "orientation": "vertical",
@@ -16390,16 +16429,21 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-3495c67a876b"
+      ],
+      "trace_support_gap": 2.55,
       "issues": []
     },
     {
       "wall_id": "wall-0d09baa9e53a",
       "start": {
-        "x": 17.82,
+        "x": 15.270513306959382,
         "y": 712.8
       },
       "end": {
-        "x": 17.82,
+        "x": 15.270513306959382,
         "y": 775.665
       },
       "orientation": "vertical",
@@ -16408,6 +16452,11 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-2f0a88d375a5"
+      ],
+      "trace_support_gap": 2.549,
       "issues": []
     },
     {
@@ -16426,16 +16475,19 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-0fbe0b560461",
       "start": {
-        "x": 154.935,
+        "x": 152.6371524317538,
         "y": 164.83499999999998
       },
       "end": {
-        "x": 154.935,
+        "x": 152.6371524317538,
         "y": 275.21999999999997
       },
       "orientation": "vertical",
@@ -16444,6 +16496,11 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-b839e5c866fa"
+      ],
+      "trace_support_gap": 2.298,
       "issues": []
     },
     {
@@ -16462,6 +16519,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16480,6 +16540,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16498,6 +16561,9 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16516,6 +16582,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16534,6 +16603,9 @@
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16552,6 +16624,9 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16570,6 +16645,9 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16588,17 +16666,20 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-19de7964a83a",
       "start": {
         "x": 290.565,
-        "y": 399.465
+        "y": 401.96116650881083
       },
       "end": {
         "x": 347.48999999999995,
-        "y": 399.465
+        "y": 401.96116650881083
       },
       "orientation": "horizontal",
       "length": 56.924999999999955,
@@ -16606,6 +16687,11 @@
       "room_ids": [
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-ef7b7abacf3a"
+      ],
+      "trace_support_gap": 2.496,
       "issues": []
     },
     {
@@ -16624,6 +16710,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16642,17 +16731,20 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-1ade1c1569c4",
       "start": {
-        "x": 459.85499999999996,
-        "y": 302.445
+        "x": 356.4,
+        "y": 299.7676495997786
       },
       "end": {
-        "x": 356.4,
-        "y": 302.445
+        "x": 459.85499999999996,
+        "y": 299.7676495997786
       },
       "orientation": "horizontal",
       "length": 103.45499999999998,
@@ -16660,16 +16752,21 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-4a9cf1505536"
+      ],
+      "trace_support_gap": 2.677,
       "issues": []
     },
     {
       "wall_id": "wall-1ae90f0bc7b7",
       "start": {
-        "x": 23.759999999999998,
+        "x": 21.07473749531687,
         "y": 677.16
       },
       "end": {
-        "x": 23.759999999999998,
+        "x": 21.07473749531687,
         "y": 702.9
       },
       "orientation": "vertical",
@@ -16678,24 +16775,34 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-37a09cbb8fcd"
+      ],
+      "trace_support_gap": 2.685,
       "issues": []
     },
     {
       "wall_id": "wall-1c72a3e7353a",
       "start": {
-        "x": 197.505,
-        "y": 35.64
+        "x": 195.2014631464928,
+        "y": 35.76773091815689
       },
       "end": {
-        "x": 197.505,
+        "x": 195.2014631464928,
         "y": 188.09999999999997
       },
       "orientation": "vertical",
-      "length": 152.45999999999998,
+      "length": 152.33226908184307,
       "is_exterior": true,
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-8cbe9b0d6bc1"
+      ],
+      "trace_support_gap": 2.304,
       "issues": []
     },
     {
@@ -16714,6 +16821,9 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16732,16 +16842,19 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-1da6ac7ad340",
       "start": {
-        "x": 263.34,
+        "x": 260.98267061473246,
         "y": 409.36499999999995
       },
       "end": {
-        "x": 263.34,
+        "x": 260.98267061473246,
         "y": 432.63
       },
       "orientation": "vertical",
@@ -16750,6 +16863,11 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-98fcc0c89024"
+      ],
+      "trace_support_gap": 2.357,
       "issues": []
     },
     {
@@ -16768,6 +16886,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16786,35 +16907,43 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-1ff588d186df",
       "start": {
-        "x": 263.34,
-        "y": 22.77
+        "x": 249.3742222379752,
+        "y": 20.4387033818225
       },
       "end": {
-        "x": 247.49999999999997,
-        "y": 21.285
+        "x": 263.34,
+        "y": 20.4387033818225
       },
       "orientation": "horizontal",
-      "length": 15.909457093188319,
+      "length": 13.965777762024771,
       "is_exterior": true,
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-d3a73abc2938"
+      ],
+      "trace_support_gap": 2.331,
       "issues": []
     },
     {
       "wall_id": "wall-206f66cd8051",
       "start": {
-        "x": 132.66,
-        "y": 438.57
+        "x": 135.04105410171113,
+        "y": 366.79499999999996
       },
       "end": {
-        "x": 132.66,
-        "y": 366.79499999999996
+        "x": 135.04105410171113,
+        "y": 438.57
       },
       "orientation": "vertical",
       "length": 71.77500000000003,
@@ -16822,6 +16951,11 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-45ae9156b3dd"
+      ],
+      "trace_support_gap": 2.381,
       "issues": []
     },
     {
@@ -16840,6 +16974,9 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16858,6 +16995,9 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16876,17 +17016,20 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-272f91122480",
       "start": {
         "x": 181.17,
-        "y": 33.165
+        "y": 35.767730918138284
       },
       "end": {
         "x": 195.03,
-        "y": 33.165
+        "y": 35.767730918138284
       },
       "orientation": "horizontal",
       "length": 13.860000000000014,
@@ -16894,6 +17037,11 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-165cb2444ba3"
+      ],
+      "trace_support_gap": 2.603,
       "issues": []
     },
     {
@@ -16912,6 +17060,9 @@
       "room_ids": [
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16930,6 +17081,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16948,6 +17102,9 @@
       "room_ids": [
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16966,6 +17123,9 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -16984,6 +17144,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17002,6 +17165,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17020,24 +17186,32 @@
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-2ca290880ece",
       "start": {
-        "x": 247.005,
-        "y": 188.1
+        "x": 249.37422223794692,
+        "y": 69.83223655447202
       },
       "end": {
-        "x": 247.005,
-        "y": 69.795
+        "x": 249.37422223794692,
+        "y": 188.1
       },
       "orientation": "vertical",
-      "length": 118.30499999999999,
+      "length": 118.26776344552798,
       "is_exterior": true,
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-580aa8c81708"
+      ],
+      "trace_support_gap": 2.369,
       "issues": []
     },
     {
@@ -17056,6 +17230,9 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17074,6 +17251,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17092,6 +17272,9 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17110,6 +17293,9 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17129,6 +17315,9 @@
         "room-bedroom-2-f167749e3959",
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17147,17 +17336,20 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-38319378b22d",
       "start": {
-        "x": 459.85499999999996,
-        "y": 261.35999999999996
+        "x": 462.19577581158615,
+        "y": 89.595
       },
       "end": {
-        "x": 459.85499999999996,
-        "y": 89.595
+        "x": 462.19577581158615,
+        "y": 261.35999999999996
       },
       "orientation": "vertical",
       "length": 171.76499999999996,
@@ -17165,6 +17357,11 @@
       "room_ids": [
         "room-garage-bd6ecee651da"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-165ca94b78dd"
+      ],
+      "trace_support_gap": 2.341,
       "issues": []
     },
     {
@@ -17183,17 +17380,20 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-3a8650f30449",
       "start": {
-        "x": 347.48999999999995,
-        "y": 399.465
+        "x": 349.9807748364301,
+        "y": 360.35999999999996
       },
       "end": {
-        "x": 347.48999999999995,
-        "y": 360.35999999999996
+        "x": 349.9807748364301,
+        "y": 399.465
       },
       "orientation": "vertical",
       "length": 39.10500000000002,
@@ -17201,6 +17401,11 @@
       "room_ids": [
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-03c09eb5a9e0"
+      ],
+      "trace_support_gap": 2.491,
       "issues": []
     },
     {
@@ -17219,6 +17424,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17237,16 +17445,19 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-3c73f93bdefd",
       "start": {
-        "x": 329.17499999999995,
+        "x": 326.76387808295783,
         "y": 409.36499999999995
       },
       "end": {
-        "x": 329.17499999999995,
+        "x": 326.76387808295783,
         "y": 453.91499999999996
       },
       "orientation": "vertical",
@@ -17255,16 +17466,21 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-ef4665dfb9ef"
+      ],
+      "trace_support_gap": 2.411,
       "issues": []
     },
     {
       "wall_id": "wall-3e29fa0a1320",
       "start": {
-        "x": 303.93,
+        "x": 301.6122399332913,
         "y": 558.855
       },
       "end": {
-        "x": 303.93,
+        "x": 301.6122399332913,
         "y": 702.9
       },
       "orientation": "vertical",
@@ -17273,6 +17489,11 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-b26da3316c2a"
+      ],
+      "trace_support_gap": 2.318,
       "issues": []
     },
     {
@@ -17291,16 +17512,19 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-3e92bd9391e2",
       "start": {
-        "x": 324.71999999999997,
+        "x": 322.8943952907101,
         "y": 409.36499999999995
       },
       "end": {
-        "x": 324.71999999999997,
+        "x": 322.8943952907101,
         "y": 462.33
       },
       "orientation": "vertical",
@@ -17310,6 +17534,11 @@
         "room-master-bath-119010f86e69",
         "room-pwdr-f2cbb3be1766"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-185a55afc54d"
+      ],
+      "trace_support_gap": 1.826,
       "issues": [
         "inferred_from_bbox"
       ]
@@ -17317,19 +17546,24 @@
     {
       "wall_id": "wall-3ed6d8f0c41f",
       "start": {
-        "x": 12.87,
-        "y": 342.53999999999996
-      },
-      "end": {
-        "x": 12.87,
+        "x": 15.270513306903073,
         "y": 330.65999999999997
       },
+      "end": {
+        "x": 15.270513306903073,
+        "y": 342.34828164519115
+      },
       "orientation": "vertical",
-      "length": 11.879999999999995,
+      "length": 11.688281645191182,
       "is_exterior": true,
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-c9e575650b6d"
+      ],
+      "trace_support_gap": 2.401,
       "issues": []
     },
     {
@@ -17348,17 +17582,20 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-3f9c7fb05aac",
       "start": {
-        "x": 459.85499999999996,
-        "y": 551.925
+        "x": 462.1957758115721,
+        "y": 528.66
       },
       "end": {
-        "x": 459.85499999999996,
-        "y": 528.66
+        "x": 462.1957758115721,
+        "y": 551.925
       },
       "orientation": "vertical",
       "length": 23.264999999999986,
@@ -17366,6 +17603,11 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-268fef2ebdca"
+      ],
+      "trace_support_gap": 2.341,
       "issues": []
     },
     {
@@ -17384,6 +17626,9 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17402,6 +17647,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17421,6 +17669,9 @@
         "room-closet-c59e39a3c606",
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": [
         "inferred_from_bbox"
       ]
@@ -17441,6 +17692,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17459,6 +17713,9 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17477,17 +17734,20 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-486454ab1c84",
       "start": {
-        "x": 194.535,
-        "y": 438.57
+        "x": 197.1362045426026,
+        "y": 387.585
       },
       "end": {
-        "x": 194.535,
-        "y": 387.585
+        "x": 197.1362045426026,
+        "y": 438.57
       },
       "orientation": "vertical",
       "length": 50.985000000000014,
@@ -17495,6 +17755,11 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-51d6a01dffc8"
+      ],
+      "trace_support_gap": 2.601,
       "issues": []
     },
     {
@@ -17513,6 +17778,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17531,17 +17799,20 @@
       "room_ids": [
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-4a649131cb12",
       "start": {
-        "x": 194.535,
-        "y": 446.98499999999996
+        "x": 186.11999999999998,
+        "y": 444.5417985542295
       },
       "end": {
-        "x": 186.11999999999998,
-        "y": 446.98499999999996
+        "x": 194.535,
+        "y": 444.5417985542295
       },
       "orientation": "horizontal",
       "length": 8.41500000000002,
@@ -17549,6 +17820,11 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-ac37a47935ae"
+      ],
+      "trace_support_gap": 2.443,
       "issues": []
     },
     {
@@ -17567,6 +17843,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17585,6 +17864,9 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17603,6 +17885,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17621,6 +17906,9 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17639,6 +17927,9 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17657,6 +17948,9 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17675,6 +17969,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17693,6 +17990,9 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17711,6 +18011,9 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17729,6 +18032,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17747,25 +18053,33 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-58c320f05115",
       "start": {
-        "x": 150.7275,
+        "x": 152.6371524317538,
         "y": 164.34
       },
       "end": {
-        "x": 150.7275,
-        "y": 282.15
+        "x": 152.6371524317538,
+        "y": 277.625720936133
       },
       "orientation": "vertical",
-      "length": 117.80999999999997,
+      "length": 113.285720936133,
       "is_exterior": false,
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226",
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-b839e5c866fa"
+      ],
+      "trace_support_gap": 1.91,
       "issues": [
         "inferred_from_bbox"
       ]
@@ -17774,28 +18088,33 @@
       "wall_id": "wall-598d2bbcf099",
       "start": {
         "x": 348.47999999999996,
-        "y": 518.76
+        "y": 521.1869362359881
       },
       "end": {
-        "x": 377.685,
-        "y": 521.235
+        "x": 375.13241298599814,
+        "y": 521.1869362359881
       },
       "orientation": "horizontal",
-      "length": 29.309685259313216,
+      "length": 26.652412985998183,
       "is_exterior": true,
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-338a6b1017f9"
+      ],
+      "trace_support_gap": 2.427,
       "issues": []
     },
     {
       "wall_id": "wall-5b13193e9e89",
       "start": {
-        "x": 260.61749999999995,
+        "x": 255.17844642631508,
         "y": 89.595
       },
       "end": {
-        "x": 260.61749999999995,
+        "x": 255.17844642631508,
         "y": 188.1
       },
       "orientation": "vertical",
@@ -17805,6 +18124,11 @@
         "room-garage-bd6ecee651da",
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-8a28c19f86bf"
+      ],
+      "trace_support_gap": 5.439,
       "issues": [
         "inferred_from_bbox"
       ]
@@ -17813,11 +18137,11 @@
       "wall_id": "wall-5b489e787201",
       "start": {
         "x": 91.08,
-        "y": 282.15
+        "y": 284.4386220633823
       },
       "end": {
         "x": 109.88999999999999,
-        "y": 282.15
+        "y": 284.4386220633823
       },
       "orientation": "horizontal",
       "length": 18.809999999999988,
@@ -17825,24 +18149,34 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-72efa6ccbd37"
+      ],
+      "trace_support_gap": 2.289,
       "issues": []
     },
     {
       "wall_id": "wall-5d92f3d254e6",
       "start": {
-        "x": 453.91499999999996,
-        "y": 710.3249999999999
+        "x": 456.3915516232568,
+        "y": 705.1352666722112
       },
       "end": {
-        "x": 454.40999999999997,
-        "y": 704.385
+        "x": 456.3915516232568,
+        "y": 710.2449425176374
       },
       "orientation": "vertical",
-      "length": 5.960589316502127,
+      "length": 5.109675845426182,
       "is_exterior": true,
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-5245c3c5f1c8"
+      ],
+      "trace_support_gap": 2.477,
       "issues": []
     },
     {
@@ -17861,6 +18195,9 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17879,6 +18216,9 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -17897,35 +18237,43 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-6428329f2019",
       "start": {
-        "x": 62.864999999999995,
-        "y": 710.3249999999999
-      },
-      "end": {
-        "x": 62.864999999999995,
+        "x": 65.57378960617977,
         "y": 705.375
       },
+      "end": {
+        "x": 65.57378960617977,
+        "y": 710.2449425176745
+      },
       "orientation": "vertical",
-      "length": 4.949999999999932,
+      "length": 4.869942517674531,
       "is_exterior": true,
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-f999474a9638"
+      ],
+      "trace_support_gap": 2.709,
       "issues": []
     },
     {
       "wall_id": "wall-6437961d1551",
       "start": {
-        "x": 459.85499999999996,
-        "y": 394.515
+        "x": 462.19577581161786,
+        "y": 302.445
       },
       "end": {
-        "x": 459.85499999999996,
-        "y": 302.445
+        "x": 462.19577581161786,
+        "y": 394.515
       },
       "orientation": "vertical",
       "length": 92.07,
@@ -17933,16 +18281,21 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-695fd4ebe888"
+      ],
+      "trace_support_gap": 2.341,
       "issues": []
     },
     {
       "wall_id": "wall-64c8274538e1",
       "start": {
-        "x": 257.895,
+        "x": 255.17844642631508,
         "y": 89.595
       },
       "end": {
-        "x": 257.895,
+        "x": 255.17844642631508,
         "y": 261.35999999999996
       },
       "orientation": "vertical",
@@ -17951,6 +18304,11 @@
       "room_ids": [
         "room-garage-bd6ecee651da"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-8a28c19f86bf"
+      ],
+      "trace_support_gap": 2.717,
       "issues": []
     },
     {
@@ -17969,17 +18327,20 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-6685b6512908",
       "start": {
         "x": 141.57,
-        "y": 438.57
+        "y": 441.1353479905955
       },
       "end": {
         "x": 194.535,
-        "y": 438.57
+        "y": 441.1353479905955
       },
       "orientation": "horizontal",
       "length": 52.965,
@@ -17987,17 +18348,22 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-12c2269b65e0"
+      ],
+      "trace_support_gap": 2.565,
       "issues": []
     },
     {
       "wall_id": "wall-6706a95b5ad5",
       "start": {
-        "x": 146.51999999999998,
-        "y": 775.665
+        "x": 148.76766963944976,
+        "y": 712.8
       },
       "end": {
-        "x": 146.51999999999998,
-        "y": 712.8
+        "x": 148.76766963944976,
+        "y": 775.665
       },
       "orientation": "vertical",
       "length": 62.86500000000001,
@@ -18005,6 +18371,11 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-dc9b8328a0a8"
+      ],
+      "trace_support_gap": 2.248,
       "issues": []
     },
     {
@@ -18023,6 +18394,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18042,6 +18416,9 @@
         "room-living-room-e2e5f9a1038c",
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": [
         "inferred_from_bbox"
       ]
@@ -18062,6 +18439,9 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18080,6 +18460,9 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18098,24 +18481,32 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-6fafbb6384a8",
       "start": {
-        "x": 348.47999999999996,
-        "y": 456.39
+        "x": 346.1112920441965,
+        "y": 456.4643755269422
       },
       "end": {
-        "x": 348.47999999999996,
+        "x": 346.1112920441965,
         "y": 518.76
       },
       "orientation": "vertical",
-      "length": 62.370000000000005,
+      "length": 62.295624473057785,
       "is_exterior": true,
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-4f39380a42a2"
+      ],
+      "trace_support_gap": 2.369,
       "issues": []
     },
     {
@@ -18134,6 +18525,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18152,6 +18546,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18170,16 +18567,19 @@
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-7218f3c47aae",
       "start": {
-        "x": 290.565,
+        "x": 288.0690501604805,
         "y": 372.73499999999996
       },
       "end": {
-        "x": 290.565,
+        "x": 288.0690501604805,
         "y": 399.465
       },
       "orientation": "vertical",
@@ -18188,6 +18588,11 @@
       "room_ids": [
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-680aef6b2221"
+      ],
+      "trace_support_gap": 2.496,
       "issues": []
     },
     {
@@ -18206,6 +18611,11 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "exact_trace_supported",
+      "trace_support_ids": [
+        "trace-59992f44c454"
+      ],
+      "trace_support_gap": 0.0,
       "issues": []
     },
     {
@@ -18224,6 +18634,9 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18242,24 +18655,32 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-771e24a7ff9a",
       "start": {
-        "x": 49.995,
-        "y": 494.01
+        "x": 23.759999999999998,
+        "y": 491.35542466868253
       },
       "end": {
-        "x": 23.759999999999998,
-        "y": 494.01
+        "x": 48.189593775602894,
+        "y": 491.35542466868253
       },
       "orientation": "horizontal",
-      "length": 26.235,
+      "length": 24.429593775602896,
       "is_exterior": true,
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-ab509b82b66c"
+      ],
+      "trace_support_gap": 2.655,
       "issues": []
     },
     {
@@ -18278,6 +18699,9 @@
       "room_ids": [
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18296,17 +18720,20 @@
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-7881030ba515",
       "start": {
-        "x": 96.02999999999999,
-        "y": 338.085
+        "x": 91.08,
+        "y": 335.5353805179294
       },
       "end": {
-        "x": 91.08,
-        "y": 338.085
+        "x": 96.02999999999999,
+        "y": 335.5353805179294
       },
       "orientation": "horizontal",
       "length": 4.949999999999989,
@@ -18314,6 +18741,11 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-f4a86b3ecf91"
+      ],
+      "trace_support_gap": 2.55,
       "issues": []
     },
     {
@@ -18332,24 +18764,32 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-7bd1b0705cea",
       "start": {
-        "x": 307.395,
-        "y": 712.8
+        "x": 277.355275716516,
+        "y": 710.2449425176808
       },
       "end": {
-        "x": 276.705,
-        "y": 712.305
+        "x": 307.395,
+        "y": 710.2449425176808
       },
       "orientation": "horizontal",
-      "length": 30.693991675896438,
+      "length": 30.039724283483963,
       "is_exterior": true,
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-2134974a2bd5"
+      ],
+      "trace_support_gap": 2.555,
       "issues": []
     },
     {
@@ -18368,6 +18808,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18386,24 +18829,32 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-7d18b5c5e232",
       "start": {
         "x": 154.935,
-        "y": 275.21999999999997
+        "y": 277.6257209361454
       },
       "end": {
-        "x": 178.695,
-        "y": 275.715
+        "x": 177.78879058136405,
+        "y": 277.6257209361454
       },
       "orientation": "horizontal",
-      "length": 23.765155690632444,
+      "length": 22.853790581364052,
       "is_exterior": true,
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-e33520b0a4ff"
+      ],
+      "trace_support_gap": 2.406,
       "issues": []
     },
     {
@@ -18422,6 +18873,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18440,6 +18894,9 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18458,17 +18915,20 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-808629a3cbdb",
       "start": {
-        "x": 30.689999999999998,
-        "y": 712.8
+        "x": 17.82,
+        "y": 710.2449425177118
       },
       "end": {
-        "x": 17.82,
-        "y": 712.8
+        "x": 30.689999999999998,
+        "y": 710.2449425177118
       },
       "orientation": "horizontal",
       "length": 12.869999999999997,
@@ -18476,6 +18936,11 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-c089b0a59b44"
+      ],
+      "trace_support_gap": 2.555,
       "issues": []
     },
     {
@@ -18494,17 +18959,20 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-833dca5bac55",
       "start": {
         "x": 417.28499999999997,
-        "y": 394.515
+        "y": 396.85149066313676
       },
       "end": {
         "x": 459.85499999999996,
-        "y": 394.515
+        "y": 396.85149066313676
       },
       "orientation": "horizontal",
       "length": 42.56999999999999,
@@ -18512,6 +18980,11 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-777f4f625b38"
+      ],
+      "trace_support_gap": 2.336,
       "issues": []
     },
     {
@@ -18530,24 +19003,32 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-89e7aef88c11",
       "start": {
-        "x": 132.165,
-        "y": 776.16
+        "x": 133.28973847045884,
+        "y": 778.374197745464
       },
       "end": {
         "x": 146.51999999999998,
-        "y": 775.665
+        "y": 778.374197745464
       },
       "orientation": "horizontal",
-      "length": 14.36353194726143,
+      "length": 13.230261529541139,
       "is_exterior": true,
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-df1203f35dc9"
+      ],
+      "trace_support_gap": 2.214,
       "issues": []
     },
     {
@@ -18566,6 +19047,9 @@
       "room_ids": [
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18584,24 +19068,32 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-8beeaa85e97e",
       "start": {
-        "x": 187.605,
-        "y": 197.01
-      },
-      "end": {
-        "x": 187.10999999999999,
+        "x": 189.39723895812483,
         "y": 164.83499999999998
       },
+      "end": {
+        "x": 189.39723895812483,
+        "y": 195.8709074089792
+      },
       "orientation": "vertical",
-      "length": 32.17880746702713,
+      "length": 31.035907408979227,
       "is_exterior": true,
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-d37017260a4f"
+      ],
+      "trace_support_gap": 1.792,
       "issues": []
     },
     {
@@ -18620,16 +19112,19 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-8c8e760731da",
       "start": {
-        "x": 351.94499999999994,
+        "x": 353.85025762883623,
         "y": 353.92499999999995
       },
       "end": {
-        "x": 351.94499999999994,
+        "x": 353.85025762883623,
         "y": 394.515
       },
       "orientation": "vertical",
@@ -18639,6 +19134,11 @@
         "room-closet-c59e39a3c606",
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-3495c67a876b"
+      ],
+      "trace_support_gap": 1.905,
       "issues": [
         "inferred_from_bbox"
       ]
@@ -18659,6 +19159,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18677,24 +19180,32 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-911e1d7be80f",
       "start": {
         "x": 17.82,
-        "y": 775.665
+        "y": 778.3741977454517
       },
       "end": {
-        "x": 31.68,
-        "y": 776.16
+        "x": 30.757140565083255,
+        "y": 778.3741977454517
       },
       "orientation": "horizontal",
-      "length": 13.86883646886068,
+      "length": 12.937140565083254,
       "is_exterior": true,
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-96942ff2b2d8"
+      ],
+      "trace_support_gap": 2.709,
       "issues": []
     },
     {
@@ -18713,6 +19224,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18731,24 +19245,32 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-9759b2941834",
       "start": {
-        "x": 205.92,
+        "x": 202.9404287309742,
         "y": 433.125
       },
       "end": {
-        "x": 203.94,
-        "y": 470.24999999999994
+        "x": 202.9404287309742,
+        "y": 468.38695249967367
       },
       "orientation": "vertical",
-      "length": 37.17776250663824,
+      "length": 35.26195249967367,
       "is_exterior": true,
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-31e9a4fcc0fc"
+      ],
+      "trace_support_gap": 2.98,
       "issues": []
     },
     {
@@ -18767,42 +19289,55 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-98f79f30aa0a",
       "start": {
         "x": 23.759999999999998,
-        "y": 702.9
+        "y": 705.1352666722607
       },
       "end": {
-        "x": 31.68,
-        "y": 703.395
+        "x": 30.748444475950325,
+        "y": 705.1352666722607
       },
       "orientation": "horizontal",
-      "length": 7.935453673231294,
+      "length": 6.9884444759503275,
       "is_exterior": true,
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-bceb8174fd79"
+      ],
+      "trace_support_gap": 2.235,
       "issues": []
     },
     {
       "wall_id": "wall-997fa034b737",
       "start": {
-        "x": 23.759999999999998,
+        "x": 21.074737495274604,
         "y": 164.34
       },
       "end": {
-        "x": 23.759999999999998,
-        "y": 247.005
+        "x": 21.074737495274604,
+        "y": 246.96766586335275
       },
       "orientation": "vertical",
-      "length": 82.66499999999999,
+      "length": 82.62766586335275,
       "is_exterior": true,
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-7165235bcd50"
+      ],
+      "trace_support_gap": 2.685,
       "issues": []
     },
     {
@@ -18821,17 +19356,20 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-9ad9ac451fd0",
       "start": {
-        "x": 320.265,
-        "y": 409.36499999999995
+        "x": 263.34,
+        "y": 407.0708423542618
       },
       "end": {
-        "x": 263.34,
-        "y": 409.36499999999995
+        "x": 320.265,
+        "y": 407.0708423542618
       },
       "orientation": "horizontal",
       "length": 56.92500000000001,
@@ -18839,6 +19377,11 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-935cb6aa2703"
+      ],
+      "trace_support_gap": 2.294,
       "issues": []
     },
     {
@@ -18857,24 +19400,32 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-9c11a9afcb5a",
       "start": {
-        "x": 375.21,
-        "y": 528.66
+        "x": 342.53999999999996,
+        "y": 526.2966120814576
       },
       "end": {
-        "x": 342.53999999999996,
-        "y": 528.66
+        "x": 375.13241298599814,
+        "y": 526.2966120814576
       },
       "orientation": "horizontal",
-      "length": 32.670000000000016,
+      "length": 32.59241298599818,
       "is_exterior": true,
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-0a2c436619f0"
+      ],
+      "trace_support_gap": 2.363,
       "issues": []
     },
     {
@@ -18893,17 +19444,20 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-9d4effadaaa7",
       "start": {
         "x": 141.57,
-        "y": 435.84749999999997
+        "y": 441.1353479905955
       },
       "end": {
         "x": 194.535,
-        "y": 435.84749999999997
+        "y": 441.1353479905955
       },
       "orientation": "horizontal",
       "length": 52.965,
@@ -18912,6 +19466,11 @@
         "room-bath-3-dc0b2895fe53",
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-12c2269b65e0"
+      ],
+      "trace_support_gap": 5.288,
       "issues": [
         "inferred_from_bbox"
       ]
@@ -18932,6 +19491,9 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18950,6 +19512,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18968,6 +19533,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -18986,6 +19554,9 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19004,17 +19575,20 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-a2c9e67a5586",
       "start": {
-        "x": 12.87,
-        "y": 486.585
+        "x": 15.270513306959382,
+        "y": 373.22999999999996
       },
       "end": {
-        "x": 12.87,
-        "y": 373.22999999999996
+        "x": 15.270513306959382,
+        "y": 486.585
       },
       "orientation": "vertical",
       "length": 113.35500000000002,
@@ -19022,6 +19596,11 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-83e3d0da3215"
+      ],
+      "trace_support_gap": 2.401,
       "issues": []
     },
     {
@@ -19040,17 +19619,20 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-a3d8d61a5b19",
       "start": {
-        "x": 459.85499999999996,
-        "y": 528.66
+        "x": 417.78,
+        "y": 526.2966120814142
       },
       "end": {
-        "x": 417.78,
-        "y": 528.66
+        "x": 459.85499999999996,
+        "y": 526.2966120814142
       },
       "orientation": "horizontal",
       "length": 42.07499999999999,
@@ -19058,6 +19640,11 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-a7b065d4be22"
+      ],
+      "trace_support_gap": 2.363,
       "issues": []
     },
     {
@@ -19076,6 +19663,9 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19094,6 +19684,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19112,6 +19705,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19130,6 +19726,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19148,17 +19747,20 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-a899594c3caa",
       "start": {
-        "x": 320.265,
-        "y": 462.33
+        "x": 322.8943952907101,
+        "y": 409.36499999999995
       },
       "end": {
-        "x": 320.265,
-        "y": 409.36499999999995
+        "x": 322.8943952907101,
+        "y": 462.33
       },
       "orientation": "vertical",
       "length": 52.96500000000003,
@@ -19166,6 +19768,11 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-185a55afc54d"
+      ],
+      "trace_support_gap": 2.629,
       "issues": []
     },
     {
@@ -19184,6 +19791,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19202,6 +19812,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19220,6 +19833,9 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19238,6 +19854,9 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19256,17 +19875,20 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-b0d09d85e3cc",
       "start": {
         "x": 33.165,
-        "y": 789.525
+        "y": 792.0
       },
       "end": {
         "x": 130.67999999999998,
-        "y": 789.525
+        "y": 792.0
       },
       "orientation": "horizontal",
       "length": 97.51499999999999,
@@ -19274,6 +19896,11 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-e4a5da8c1ae2"
+      ],
+      "trace_support_gap": 2.475,
       "issues": []
     },
     {
@@ -19292,17 +19919,20 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-b48e24b33bc9",
       "start": {
-        "x": 194.535,
-        "y": 468.27
+        "x": 197.1362045426026,
+        "y": 446.98499999999996
       },
       "end": {
-        "x": 194.535,
-        "y": 446.98499999999996
+        "x": 197.1362045426026,
+        "y": 468.27
       },
       "orientation": "vertical",
       "length": 21.285000000000025,
@@ -19310,6 +19940,11 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-e693239bb409"
+      ],
+      "trace_support_gap": 2.601,
       "issues": []
     },
     {
@@ -19328,6 +19963,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19346,16 +19984,19 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-b52b9b6677bf",
       "start": {
-        "x": 141.57,
+        "x": 138.91053689397293,
         "y": 388.08
       },
       "end": {
-        "x": 141.57,
+        "x": 138.91053689397293,
         "y": 438.57
       },
       "orientation": "vertical",
@@ -19364,6 +20005,11 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-960f6f665c67"
+      ],
+      "trace_support_gap": 2.659,
       "issues": []
     },
     {
@@ -19382,6 +20028,9 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19400,17 +20049,20 @@
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-b8c1d7b47cdc",
       "start": {
         "x": 290.565,
-        "y": 462.33
+        "y": 464.9805019360397
       },
       "end": {
         "x": 320.265,
-        "y": 462.33
+        "y": 464.9805019360397
       },
       "orientation": "horizontal",
       "length": 29.69999999999999,
@@ -19418,6 +20070,11 @@
       "room_ids": [
         "room-pwdr-f2cbb3be1766"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-4c201fd6a8a6"
+      ],
+      "trace_support_gap": 2.651,
       "issues": []
     },
     {
@@ -19436,17 +20093,20 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-b92ff62a3134",
       "start": {
-        "x": 247.005,
-        "y": 2.4749999999999996
+        "x": 181.17,
+        "y": 6.196297478953038e-12
       },
       "end": {
-        "x": 181.17,
-        "y": 2.4749999999999996
+        "x": 247.005,
+        "y": 6.196297478953038e-12
       },
       "orientation": "horizontal",
       "length": 65.83500000000001,
@@ -19454,6 +20114,11 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-06b8fe7b1248"
+      ],
+      "trace_support_gap": 2.475,
       "issues": []
     },
     {
@@ -19472,6 +20137,9 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19490,6 +20158,9 @@
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19508,6 +20179,9 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19526,24 +20200,32 @@
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-c2108d5f39e3",
       "start": {
-        "x": 247.49999999999997,
-        "y": 21.285
-      },
-      "end": {
-        "x": 247.005,
+        "x": 249.3742222379752,
         "y": 2.474999999999998
       },
+      "end": {
+        "x": 249.3742222379752,
+        "y": 20.438703381816286
+      },
       "orientation": "vertical",
-      "length": 18.816512030660732,
+      "length": 17.963703381816288,
       "is_exterior": true,
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-87d71c89b797"
+      ],
+      "trace_support_gap": 1.874,
       "issues": []
     },
     {
@@ -19562,35 +20244,43 @@
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-c3c3a0a346c2",
       "start": {
-        "x": 12.87,
-        "y": 626.175
-      },
-      "end": {
-        "x": 12.87,
+        "x": 15.270513306959382,
         "y": 487.08
       },
+      "end": {
+        "x": 15.270513306959382,
+        "y": 625.9352910677333
+      },
       "orientation": "vertical",
-      "length": 139.09499999999997,
+      "length": 138.85529106773328,
       "is_exterior": true,
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-83e3d0da3215"
+      ],
+      "trace_support_gap": 2.401,
       "issues": []
     },
     {
       "wall_id": "wall-c50e5e995315",
       "start": {
         "x": 356.4,
-        "y": 394.515
+        "y": 396.8514906631615
       },
       "end": {
         "x": 381.15,
-        "y": 394.515
+        "y": 396.8514906631615
       },
       "orientation": "horizontal",
       "length": 24.75,
@@ -19598,6 +20288,11 @@
       "room_ids": [
         "room-closet-c59e39a3c606"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-aaf2c227c3a9"
+      ],
+      "trace_support_gap": 2.336,
       "issues": []
     },
     {
@@ -19616,35 +20311,43 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-c665075d383c",
       "start": {
-        "x": 180.17999999999998,
+        "x": 177.78879058136405,
         "y": 277.695
       },
       "end": {
-        "x": 179.685,
-        "y": 289.08
+        "x": 177.78879058136405,
+        "y": 287.8450726270598
       },
       "orientation": "vertical",
-      "length": 11.395755788889115,
+      "length": 10.150072627059785,
       "is_exterior": true,
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-f2c3709f9aff"
+      ],
+      "trace_support_gap": 2.391,
       "issues": []
     },
     {
       "wall_id": "wall-c70fe9280642",
       "start": {
         "x": 257.895,
-        "y": 261.35999999999996
+        "y": 263.9999186794097
       },
       "end": {
         "x": 459.85499999999996,
-        "y": 261.35999999999996
+        "y": 263.9999186794097
       },
       "orientation": "horizontal",
       "length": 201.95999999999998,
@@ -19652,42 +20355,57 @@
       "room_ids": [
         "room-garage-bd6ecee651da"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-b242b4b63402"
+      ],
+      "trace_support_gap": 2.64,
       "issues": []
     },
     {
       "wall_id": "wall-c743e891c31a",
       "start": {
-        "x": 381.15,
-        "y": 409.36499999999995
+        "x": 329.17499999999995,
+        "y": 407.0708423544229
       },
       "end": {
-        "x": 329.17499999999995,
-        "y": 409.36499999999995
+        "x": 380.93663717465125,
+        "y": 407.0708423544229
       },
       "orientation": "horizontal",
-      "length": 51.97500000000002,
+      "length": 51.7616371746513,
       "is_exterior": true,
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-3f71f15abc46"
+      ],
+      "trace_support_gap": 2.294,
       "issues": []
     },
     {
       "wall_id": "wall-c89927cefa09",
       "start": {
-        "x": 23.759999999999998,
+        "x": 21.074737495330908,
         "y": 494.01
       },
       "end": {
-        "x": 23.759999999999998,
-        "y": 626.175
+        "x": 21.074737495330908,
+        "y": 625.9352910677209
       },
       "orientation": "vertical",
-      "length": 132.16499999999996,
+      "length": 131.92529106772088,
       "is_exterior": true,
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-ba987e349d8f"
+      ],
+      "trace_support_gap": 2.685,
       "issues": []
     },
     {
@@ -19706,6 +20424,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19724,6 +20445,9 @@
       "room_ids": [
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19742,6 +20466,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19760,24 +20487,32 @@
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-ce7baa9cbc79",
       "start": {
         "x": 329.17499999999995,
-        "y": 453.91499999999996
+        "y": 456.4643755269422
       },
       "end": {
-        "x": 348.47999999999996,
-        "y": 456.39
+        "x": 346.1112920441965,
+        "y": 456.4643755269422
       },
       "orientation": "horizontal",
-      "length": 19.463007218824135,
+      "length": 16.936292044196534,
       "is_exterior": true,
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-5ce54940af65"
+      ],
+      "trace_support_gap": 2.549,
       "issues": []
     },
     {
@@ -19796,6 +20531,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19814,6 +20552,9 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19832,6 +20573,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19850,17 +20594,20 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-d8f541f6373c",
       "start": {
         "x": 249.48,
-        "y": 67.32
+        "y": 69.83223655445957
       },
       "end": {
         "x": 263.34,
-        "y": 67.32
+        "y": 69.83223655445957
       },
       "orientation": "horizontal",
       "length": 13.859999999999985,
@@ -19868,6 +20615,11 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-6aa5bbfb0937"
+      ],
+      "trace_support_gap": 2.512,
       "issues": []
     },
     {
@@ -19886,6 +20638,9 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19904,17 +20659,20 @@
       "room_ids": [
         "room-garage-bd6ecee651da"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-daedac3367fe",
       "start": {
-        "x": 459.85499999999996,
-        "y": 702.9
+        "x": 462.1957758115721,
+        "y": 552.42
       },
       "end": {
-        "x": 459.85499999999996,
-        "y": 552.42
+        "x": 462.1957758115721,
+        "y": 702.9
       },
       "orientation": "vertical",
       "length": 150.48000000000002,
@@ -19922,6 +20680,11 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-268fef2ebdca"
+      ],
+      "trace_support_gap": 2.341,
       "issues": []
     },
     {
@@ -19940,6 +20703,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -19958,17 +20724,20 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-de588982a080",
       "start": {
         "x": 23.759999999999998,
-        "y": 438.57
+        "y": 441.13534799060164
       },
       "end": {
         "x": 132.66,
-        "y": 438.57
+        "y": 441.13534799060164
       },
       "orientation": "horizontal",
       "length": 108.9,
@@ -19976,16 +20745,21 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-2bec903f0dc1"
+      ],
+      "trace_support_gap": 2.565,
       "issues": []
     },
     {
       "wall_id": "wall-defe7eb085a3",
       "start": {
-        "x": 137.115,
+        "x": 135.04105410171113,
         "y": 371.74499999999995
       },
       "end": {
-        "x": 137.115,
+        "x": 135.04105410171113,
         "y": 438.57
       },
       "orientation": "vertical",
@@ -19995,6 +20769,11 @@
         "room-bath-3-dc0b2895fe53",
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-45ae9156b3dd"
+      ],
+      "trace_support_gap": 2.074,
       "issues": [
         "inferred_from_bbox"
       ]
@@ -20015,17 +20794,20 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-e254a761dd0e",
       "start": {
-        "x": 146.51999999999998,
-        "y": 252.945
+        "x": 148.7676696395061,
+        "y": 164.34
       },
       "end": {
-        "x": 146.51999999999998,
-        "y": 164.34
+        "x": 148.7676696395061,
+        "y": 252.945
       },
       "orientation": "vertical",
       "length": 88.60499999999999,
@@ -20033,24 +20815,34 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-998a4bb616eb"
+      ],
+      "trace_support_gap": 2.248,
       "issues": []
     },
     {
       "wall_id": "wall-e385c957871a",
       "start": {
-        "x": 459.85499999999996,
-        "y": 463.815
+        "x": 417.69672370072317,
+        "y": 461.57405137241807
       },
       "end": {
-        "x": 416.78999999999996,
-        "y": 463.32
+        "x": 459.85499999999996,
+        "y": 461.57405137241807
       },
       "orientation": "horizontal",
-      "length": 43.067844733629286,
+      "length": 42.15827629927679,
       "is_exterior": true,
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-026cb5ad9c31"
+      ],
+      "trace_support_gap": 2.241,
       "issues": []
     },
     {
@@ -20069,24 +20861,32 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-e4d8eb44080e",
       "start": {
-        "x": 65.33999999999999,
-        "y": 702.9
+        "x": 65.57378960617977,
+        "y": 705.1352666722048
       },
       "end": {
         "x": 94.05,
-        "y": 702.9
+        "y": 705.1352666722048
       },
       "orientation": "horizontal",
-      "length": 28.710000000000008,
+      "length": 28.476210393820224,
       "is_exterior": true,
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-71608de41f21"
+      ],
+      "trace_support_gap": 2.235,
       "issues": []
     },
     {
@@ -20105,24 +20905,32 @@
       "room_ids": [
         "room-utility-c5e0ad04c7ad"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-e58b47322bdd",
       "start": {
-        "x": 194.535,
-        "y": 387.585
+        "x": 166.2971760238524,
+        "y": 384.9289136906347
       },
       "end": {
-        "x": 164.34,
-        "y": 387.585
+        "x": 194.535,
+        "y": 384.9289136906347
       },
       "orientation": "horizontal",
-      "length": 30.194999999999993,
+      "length": 28.23782397614761,
       "is_exterior": true,
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-a44a6c3efa51"
+      ],
+      "trace_support_gap": 2.656,
       "issues": []
     },
     {
@@ -20141,6 +20949,9 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -20159,16 +20970,19 @@
       "room_ids": [
         "room-kitchen-c5e1fe755eb1"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-ebab09e94eed",
       "start": {
-        "x": 181.17,
+        "x": 178.75616127946108,
         "y": 2.4749999999999996
       },
       "end": {
-        "x": 181.17,
+        "x": 178.75616127946108,
         "y": 33.165
       },
       "orientation": "vertical",
@@ -20177,6 +20991,11 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-37e006538da3"
+      ],
+      "trace_support_gap": 2.414,
       "issues": []
     },
     {
@@ -20195,17 +21014,20 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-ef467677e1e6",
       "start": {
-        "x": 197.505,
-        "y": 198.49499999999998
+        "x": 189.58499999999998,
+        "y": 195.8709074089606
       },
       "end": {
-        "x": 189.58499999999998,
-        "y": 198.49499999999998
+        "x": 197.505,
+        "y": 195.8709074089606
       },
       "orientation": "horizontal",
       "length": 7.920000000000016,
@@ -20213,6 +21035,11 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-700e840e0a1d"
+      ],
+      "trace_support_gap": 2.624,
       "issues": []
     },
     {
@@ -20231,16 +21058,19 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-ef92229fca72",
       "start": {
-        "x": 23.759999999999998,
+        "x": 21.074737495330908,
         "y": 373.22999999999996
       },
       "end": {
-        "x": 23.759999999999998,
+        "x": 21.074737495330908,
         "y": 438.57
       },
       "orientation": "vertical",
@@ -20249,6 +21079,11 @@
       "room_ids": [
         "room-bedroom-2-f167749e3959"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-ba987e349d8f"
+      ],
+      "trace_support_gap": 2.685,
       "issues": []
     },
     {
@@ -20267,17 +21102,20 @@
       "room_ids": [
         "room-bath-3-dc0b2895fe53"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-f0a60bd1ee29",
       "start": {
-        "x": 263.34,
-        "y": 67.32
+        "x": 265.8195241049999,
+        "y": 22.769999999999996
       },
       "end": {
-        "x": 263.34,
-        "y": 22.769999999999996
+        "x": 265.8195241049999,
+        "y": 67.32
       },
       "orientation": "vertical",
       "length": 44.55,
@@ -20285,6 +21123,11 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-977176a66d53"
+      ],
+      "trace_support_gap": 2.48,
       "issues": []
     },
     {
@@ -20303,6 +21146,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -20321,6 +21167,9 @@
       "room_ids": [
         "room-porch-4997efb61d6a"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -20339,6 +21188,9 @@
       "room_ids": [
         "room-master-bath-119010f86e69"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -20357,24 +21209,32 @@
       "room_ids": [
         "room-living-room-e2e5f9a1038c"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
       "wall_id": "wall-fad442f66c26",
       "start": {
-        "x": 309.375,
-        "y": 704.385
+        "x": 307.4164641218318,
+        "y": 705.1352666722235
       },
       "end": {
-        "x": 309.87,
-        "y": 710.3249999999999
+        "x": 307.4164641218318,
+        "y": 710.2449425176374
       },
       "orientation": "vertical",
-      "length": 5.960589316502127,
+      "length": 5.1096758454139035,
       "is_exterior": true,
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "snapped_to_trace",
+      "trace_support_ids": [
+        "trace-c80909e76ef6"
+      ],
+      "trace_support_gap": 1.959,
       "issues": []
     },
     {
@@ -20393,6 +21253,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -20411,6 +21274,9 @@
       "room_ids": [
         "room-entry-c529fc99f31f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -20429,6 +21295,9 @@
       "room_ids": [
         "room-bedroom-3-ffb6e52d0226"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -20447,6 +21316,9 @@
       "room_ids": [
         "room-mstr-bedroom-6f97dd25826f"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     },
     {
@@ -20465,6 +21337,9 @@
       "room_ids": [
         "room-patio-feec625665b2"
       ],
+      "trace_support_status": "unsupported",
+      "trace_support_ids": [],
+      "trace_support_gap": null,
       "issues": []
     }
   ],
@@ -20473,12 +21348,14 @@
     "issues": [
       "inferred_adjacency",
       "inferred_from_bbox",
-      "isolated_room"
+      "isolated_room",
+      "unsupported_trace_support"
     ]
   },
   "wall_graph_issues": [
     "inferred_adjacency",
     "inferred_from_bbox",
-    "isolated_room"
+    "isolated_room",
+    "unsupported_trace_support"
   ]
 }

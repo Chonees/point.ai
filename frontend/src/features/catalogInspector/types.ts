@@ -36,6 +36,9 @@ export interface CatalogInspectorWall {
   length: number
   is_exterior: boolean
   room_ids: string[]
+  trace_support_status: 'not_evaluated' | 'exact_trace_supported' | 'snapped_to_trace' | 'unsupported' | string
+  trace_support_ids: string[]
+  trace_support_gap?: number | null
   issues: string[]
 }
 

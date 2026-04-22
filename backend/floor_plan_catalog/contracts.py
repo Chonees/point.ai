@@ -95,6 +95,9 @@ class CatalogWallBoundary(BaseModel):
     length: float
     is_exterior: bool
     room_ids: list[str] = Field(default_factory=list)
+    trace_support_status: str = "not_evaluated"
+    trace_support_ids: list[str] = Field(default_factory=list)
+    trace_support_gap: float | None = None
     issues: list[str] = Field(default_factory=list)
 
 
