@@ -87,6 +87,9 @@ function openingStroke(opening: CatalogInspectorOpening, isSelected: boolean) {
 }
 
 function boundaryStroke(boundary: CatalogInspectorBoundary, isSelected: boolean) {
+  if (boundary.family_role === 'duplicate' || boundary.boundary_kind === 'duplicate') {
+    return isSelected ? '#fda4af' : 'rgba(251,113,133,0.58)'
+  }
   if (boundary.boundary_kind === 'shared') return isSelected ? '#fde68a' : 'rgba(250,204,21,0.82)'
   if (boundary.boundary_kind === 'exterior') return isSelected ? '#67e8f9' : 'rgba(34,211,238,0.68)'
   if (boundary.boundary_kind === 'support') return isSelected ? '#c4b5fd' : 'rgba(167,139,250,0.72)'

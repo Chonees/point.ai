@@ -95,9 +95,12 @@ export interface CatalogInspectorBoundary {
   orientation: 'horizontal' | 'vertical' | 'diagonal' | string
   length: number
   source_trace_ids: string[]
-  boundary_kind: 'shared' | 'exterior' | 'support' | 'unknown' | string
+  boundary_kind: 'shared' | 'exterior' | 'support' | 'duplicate' | 'unknown' | string
   owner_room_ids: string[]
   companion_boundary_id?: string | null
+  boundary_family_id?: string | null
+  family_role?: 'canonical' | 'duplicate' | 'support' | 'unknown' | string
+  duplicate_of_boundary_id?: string | null
   opening_ids: string[]
   confidence: string
   issues: string[]

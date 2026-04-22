@@ -83,6 +83,8 @@ function formatBoundaryKind(boundaryKind: string) {
       return 'Exterior'
     case 'support':
       return 'Support'
+    case 'duplicate':
+      return 'Duplicate'
     default:
       return boundaryKind
   }
@@ -226,6 +228,18 @@ export function CatalogInspectorSidebar({
               <div className="rounded-xl bg-black/20 p-3">
                 <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Companion boundary</p>
                 <p className="mt-1 text-zinc-100">{selectedBoundary.companion_boundary_id ?? 'None'}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Family id</p>
+                <p className="mt-1 text-zinc-100">{selectedBoundary.boundary_family_id ?? 'None'}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Family role</p>
+                <p className="mt-1 text-zinc-100">{selectedBoundary.family_role ?? 'unknown'}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Duplicate of</p>
+                <p className="mt-1 text-zinc-100">{selectedBoundary.duplicate_of_boundary_id ?? 'None'}</p>
               </div>
             </div>
             <p className="mt-3 text-xs text-zinc-500">
