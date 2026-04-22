@@ -24,7 +24,9 @@ export interface CatalogInspectorRoom {
   area: number
   measurement_source: string
   adjacent_room_ids: string[]
+  heuristic_adjacent_room_ids: string[]
   is_exterior_touching: boolean
+  isolation_status: string
   issues: string[]
 }
 
@@ -36,6 +38,8 @@ export interface CatalogInspectorWall {
   length: number
   is_exterior: boolean
   room_ids: string[]
+  provenance: string
+  confidence: string
   trace_support_status: 'not_evaluated' | 'exact_trace_supported' | 'snapped_to_trace' | 'unsupported' | string
   trace_support_ids: string[]
   trace_support_gap?: number | null

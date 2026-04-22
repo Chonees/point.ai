@@ -8,8 +8,12 @@ from backend.floor_plan_catalog.contracts import (
     CatalogRoomTopology,
     FloorPlanCatalogSeed,
     FloorPlanTopologyV1,
+    FloorPlanWallGraphV1,
     TopologyReadiness,
 )
+
+
+EXPECTED_ISOLATED_CATEGORIES = {"patio"}
 
 
 def derive_floor_plan_topology(seed: FloorPlanCatalogSeed) -> FloorPlanTopologyV1:
@@ -55,6 +59,61 @@ def derive_floor_plan_topology(seed: FloorPlanCatalogSeed) -> FloorPlanTopologyV
         rooms=rooms,
         topology_readiness=readiness,
         topology_issues=topology_issues,
+    )
+
+
+def strengthen_floor_plan_topology(
+    topology: FloorPlanTopologyV1,
+    wall_graph: FloorPlanWallGraphV1,
+) -> FloorPlanTopologyV1:
+    supported_adjacency: dict[str, set[str]] = {room.room_id: set() for room in topology.rooms}
+
+    for wall in wall_graph.walls:
+        if wall.is_exterior or len(wall.room_ids) != 2:
+            continue
+        if wall.confidence == "unsupported":
+            continue
+        left_room_id, right_room_id = wall.room_ids
+        supported_adjacency[left_room_id].add(right_room_id)
+        supported_adjacency[right_room_id].add(left_room_id)
+
+    rooms: list[CatalogRoomTopology] = []
+    for room in topology.rooms:
+        supported_ids = sorted(supported_adjacency.get(room.room_id, set()))
+        heuristic_ids = sorted(set(room.adjacent_room_ids) - set(supported_ids))
+        issues = [issue for issue in room.issues if issue not in {"inferred_adjacency", "isolated_room"}]
+
+        if supported_ids:
+            isolation_status = "connected"
+        elif room.category in EXPECTED_ISOLATED_CATEGORIES:
+            isolation_status = "expected_isolated"
+        else:
+            isolation_status = "suspicious_isolated"
+            issues.append("isolated_room")
+
+        rooms.append(
+            room.model_copy(
+                update={
+                    "adjacent_room_ids": supported_ids,
+                    "heuristic_adjacent_room_ids": heuristic_ids,
+                    "isolation_status": isolation_status,
+                    "issues": sorted(set(issues)),
+                }
+            )
+        )
+
+    topology_issues = sorted({issue for room in rooms for issue in room.issues})
+    readiness = TopologyReadiness(
+        status="ready_for_topology_review" if not topology_issues else "needs_topology_review",
+        issues=topology_issues,
+    )
+
+    return topology.model_copy(
+        update={
+            "rooms": rooms,
+            "topology_readiness": readiness,
+            "topology_issues": topology_issues,
+        }
     )
 
 

@@ -10,13 +10,14 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from backend.floor_plan_catalog.contracts import FloorPlanCatalogSeed
-from backend.floor_plan_catalog.topology import derive_floor_plan_topology
+from backend.floor_plan_catalog.topology import derive_floor_plan_topology, strengthen_floor_plan_topology
 from backend.floor_plan_catalog.wall_graph import derive_floor_plan_wall_graph
 
 
 def build_inspector_payload(seed: FloorPlanCatalogSeed) -> dict:
     topology = derive_floor_plan_topology(seed)
     wall_graph = derive_floor_plan_wall_graph(topology, seed.wall_traces)
+    topology = strengthen_floor_plan_topology(topology, wall_graph)
     payload = topology.model_dump()
     payload["wall_traces"] = [trace.model_dump() for trace in seed.wall_traces]
     payload["walls"] = [wall.model_dump() for wall in wall_graph.walls]

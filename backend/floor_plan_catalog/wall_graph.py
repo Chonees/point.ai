@@ -96,6 +96,8 @@ def derive_floor_plan_wall_graph(
                             length=overlap_length,
                             is_exterior=False,
                             room_ids=list(pair_ids),
+                            provenance="exact_room_overlap",
+                            confidence="geometric_exact",
                         )
                     )
 
@@ -137,6 +139,8 @@ def derive_floor_plan_wall_graph(
                         length=_distance(start, end),
                         is_exterior=True,
                         room_ids=[room_id],
+                        provenance="room_exterior_boundary",
+                        confidence="geometric_exact",
                     )
                 )
 
@@ -162,7 +166,6 @@ def derive_floor_plan_wall_graph(
     )
 
     wall_graph_issues = sorted({issue for wall in walls for issue in wall.issues})
-    wall_graph_issues = sorted(set(topology.topology_issues + wall_graph_issues))
     if wall_traces and any((not wall.is_exterior) and wall.trace_support_status == "unsupported" for wall in walls):
         wall_graph_issues.append("unsupported_trace_support")
     if not walls:
@@ -241,12 +244,14 @@ def _apply_trace_support(
     if exact is not None:
         return wall.model_copy(
             update={
+                "confidence": "exact",
                 "trace_support_status": exact.status,
                 "trace_support_ids": exact.trace_ids,
                 "trace_support_gap": exact.gap,
                 "start": exact.start,
                 "end": exact.end,
                 "length": _distance(exact.start, exact.end),
+                "issues": [issue for issue in wall.issues if issue != "inferred_from_bbox"],
             }
         )
 
@@ -259,16 +264,25 @@ def _apply_trace_support(
     if snapped is not None:
         return wall.model_copy(
             update={
+                "confidence": "trace_supported",
                 "trace_support_status": snapped.status,
                 "trace_support_ids": snapped.trace_ids,
                 "trace_support_gap": snapped.gap,
                 "start": snapped.start,
                 "end": snapped.end,
                 "length": _distance(snapped.start, snapped.end),
+                "issues": [issue for issue in wall.issues if issue != "inferred_from_bbox"],
             }
         )
 
-    return wall.model_copy(update={"trace_support_status": "unsupported", "trace_support_ids": [], "trace_support_gap": None})
+    return wall.model_copy(
+        update={
+            "confidence": "unsupported",
+            "trace_support_status": "unsupported",
+            "trace_support_ids": [],
+            "trace_support_gap": None,
+        }
+    )
 
 
 def _find_exact_trace_support(
@@ -577,6 +591,8 @@ def _bbox_inferred_shared_wall(
             length=_distance(start, end),
             is_exterior=False,
             room_ids=list(room_ids),
+            provenance="bbox_inferred",
+            confidence="heuristic",
             issues=["inferred_from_bbox"],
         )
 
@@ -595,6 +611,8 @@ def _bbox_inferred_shared_wall(
             length=_distance(start, end),
             is_exterior=False,
             room_ids=list(room_ids),
+            provenance="bbox_inferred",
+            confidence="heuristic",
             issues=["inferred_from_bbox"],
         )
 

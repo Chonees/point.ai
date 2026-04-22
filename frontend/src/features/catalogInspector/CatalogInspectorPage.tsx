@@ -94,8 +94,13 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
   const categorizedRooms = topology.rooms.filter((room) => room.category !== 'unknown').length
   const exteriorRooms = topology.rooms.filter((room) => room.is_exterior_touching).length
   const roomsWithAdjacency = topology.rooms.filter((room) => room.adjacent_room_ids.length > 0).length
+  const expectedIsolatedRooms = topology.rooms.filter((room) => room.isolation_status === 'expected_isolated').length
+  const heuristicAdjacencyEdges = topology.rooms.reduce(
+    (count, room) => count + (room.heuristic_adjacent_room_ids?.length ?? 0),
+    0,
+  ) / 2
   const sharedWalls = topology.walls.filter((wall) => !wall.is_exterior).length
-  const inferredWalls = topology.walls.filter((wall) => wall.issues.includes('inferred_from_bbox')).length
+  const inferredWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.provenance === 'bbox_inferred').length
   const exactSharedWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.trace_support_status === 'exact_trace_supported').length
   const snappedSharedWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.trace_support_status === 'snapped_to_trace').length
   const unsupportedSharedWalls = topology.walls.filter((wall) => !wall.is_exterior && wall.trace_support_status === 'unsupported').length
@@ -167,7 +172,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             <div>
               <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Validation</p>
               <p className="mt-1 text-sm text-zinc-300">
-                {roomsWithAdjacency} rooms with adjacency, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {rawTraces.length} raw wall traces, {unsupportedSharedWalls} unsupported shared walls.
+                {roomsWithAdjacency} rooms with supported adjacency, {heuristicAdjacencyEdges} heuristic adjacency edges, {expectedIsolatedRooms} expected isolated rooms, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {rawTraces.length} raw wall traces, {unsupportedSharedWalls} unsupported shared walls.
               </p>
               <p className="mt-1 text-sm text-zinc-500">
                 Readiness: <span className="font-medium text-zinc-200">{topology.topology_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.wall_graph_readiness.status}</span>

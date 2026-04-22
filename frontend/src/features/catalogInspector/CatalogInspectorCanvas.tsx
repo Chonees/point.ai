@@ -37,7 +37,7 @@ function wallStroke(wall: CatalogInspectorWall, isHighlighted: boolean) {
   if (wall.trace_support_status === 'snapped_to_trace') {
     return isHighlighted ? '#fbbf24' : 'rgba(245,158,11,0.82)'
   }
-  if (wall.issues.includes('inferred_from_bbox')) {
+  if (wall.provenance === 'bbox_inferred') {
     return isHighlighted ? '#f97316' : 'rgba(249,115,22,0.78)'
   }
   if (wall.is_exterior) {
@@ -48,7 +48,7 @@ function wallStroke(wall: CatalogInspectorWall, isHighlighted: boolean) {
 
 function wallDashArray(wall: CatalogInspectorWall) {
   if (wall.trace_support_status === 'unsupported') return '8 6'
-  if (wall.issues.includes('inferred_from_bbox')) return '12 7'
+  if (wall.provenance === 'bbox_inferred') return '12 7'
   return undefined
 }
 
@@ -178,7 +178,7 @@ export function CatalogInspectorCanvas({
                 x2={wall.end.x}
                 y2={wall.end.y}
                 stroke={wallStroke(wall, isHighlighted)}
-                strokeWidth={isWallSelected ? 6 : isHighlighted ? 5 : (wall.issues.includes('inferred_from_bbox') ? 3 : 2.5)}
+                strokeWidth={isWallSelected ? 6 : isHighlighted ? 5 : (wall.provenance === 'bbox_inferred' ? 3 : 2.5)}
                 strokeDasharray={wallDashArray(wall)}
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"

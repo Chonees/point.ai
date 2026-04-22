@@ -50,14 +50,24 @@ describe('CatalogInspectorPage', () => {
     expect(screen.queryAllByTestId(/^wall-/)).toHaveLength(0)
   })
 
-  it('shows selected room wall details including inferred boundaries', () => {
+  it('shows selected room wall details including provenance and confidence', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 
     fireEvent.click(screen.getByRole('button', { name: /select bedroom 2/i }))
 
     expect(screen.getByText(/connected walls/i)).toBeInTheDocument()
-    expect(screen.getAllByText(/inferred_from_bbox/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/supported adjacency/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/provenance/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/snapped to trace/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows expected isolated status for patio', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /select patio/i }))
+
+    expect(screen.getAllByText(/expected isolated/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/heuristic adjacency/i).length).toBeGreaterThan(0)
   })
 
   it('renders raw wall traces and toggles them off', () => {

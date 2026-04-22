@@ -29,8 +29,58 @@ function formatTraceSupportStatus(status: string) {
   }
 }
 
+function formatProvenance(provenance: string) {
+  switch (provenance) {
+    case 'exact_room_overlap':
+      return 'Exact room overlap'
+    case 'bbox_inferred':
+      return 'BBox inferred'
+    case 'room_exterior_boundary':
+      return 'Room exterior boundary'
+    default:
+      return provenance
+  }
+}
+
+function formatConfidence(confidence: string) {
+  switch (confidence) {
+    case 'geometric_exact':
+      return 'Geometric exact'
+    case 'exact':
+      return 'Exact trace backed'
+    case 'trace_supported':
+      return 'Trace supported'
+    case 'heuristic':
+      return 'Heuristic'
+    case 'unsupported':
+      return 'Unsupported'
+    default:
+      return confidence
+  }
+}
+
+function formatIsolationStatus(status: string) {
+  switch (status) {
+    case 'connected':
+      return 'Connected'
+    case 'expected_isolated':
+      return 'Expected isolated'
+    case 'suspicious_isolated':
+      return 'Suspicious isolated'
+    default:
+      return status
+  }
+}
+
 function roomPairLabel(topology: CatalogInspectorTopology, wall: CatalogInspectorWall) {
-  return wall.room_ids.map((roomId) => topology.rooms.find((room) => room.room_id === roomId)?.name ?? roomId).join(' ↔ ')
+  return wall.room_ids
+    .map((roomId) => topology.rooms.find((room) => room.room_id === roomId)?.name ?? roomId)
+    .join(' <-> ')
+}
+
+function roomNames(topology: CatalogInspectorTopology, roomIds: string[]) {
+  if (roomIds.length === 0) return 'None'
+  return roomIds.map((roomId) => topology.rooms.find((room) => room.room_id === roomId)?.name ?? roomId).join(', ')
 }
 
 export function CatalogInspectorSidebar({
@@ -90,8 +140,18 @@ export function CatalogInspectorSidebar({
               {formatTraceSupportStatus(selectedWall.trace_support_status)}
               {selectedWall.trace_support_gap != null ? ` · gap ${selectedWall.trace_support_gap.toFixed(3)}` : ''}
             </p>
+            <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Provenance</p>
+                <p className="mt-1 text-zinc-100">{formatProvenance(selectedWall.provenance)}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Confidence</p>
+                <p className="mt-1 text-zinc-100">{formatConfidence(selectedWall.confidence)}</p>
+              </div>
+            </div>
             {selectedWall.trace_support_ids.length > 0 ? (
-              <p className="mt-1 text-xs text-zinc-500">{selectedWall.trace_support_ids.join(', ')}</p>
+              <p className="mt-3 text-xs text-zinc-500">{selectedWall.trace_support_ids.join(', ')}</p>
             ) : null}
             <p className="mt-2 text-xs text-amber-300">{formatIssueList(selectedWall.issues)}</p>
           </div>
@@ -115,6 +175,9 @@ export function CatalogInspectorSidebar({
                   >
                     <p className="font-medium text-zinc-100">{roomPairLabel(topology, wall)}</p>
                     <p className="mt-1 text-xs text-sky-300">{formatTraceSupportStatus(wall.trace_support_status)}</p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      {formatProvenance(wall.provenance)} · {formatConfidence(wall.confidence)}
+                    </p>
                     {wall.trace_support_gap != null ? (
                       <p className="mt-1 text-xs text-zinc-500">gap {wall.trace_support_gap.toFixed(3)}</p>
                     ) : null}
@@ -128,7 +191,7 @@ export function CatalogInspectorSidebar({
         </div>
 
         <div className="rounded-2xl border border-white/6 bg-white/[0.03] p-4">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-zinc-400">Room seleccionado</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-[0.22em] text-zinc-400">Room seleccionada</h3>
 
           {selectedRoom ? (
             <div className="mt-3 space-y-4">
@@ -148,12 +211,30 @@ export function CatalogInspectorSidebar({
                 </div>
                 <div className="rounded-xl bg-white/[0.02] p-3">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Size</p>
-                  <p className="mt-1 text-zinc-100">{selectedRoom.width.toFixed(1)} × {selectedRoom.height.toFixed(1)}</p>
+                  <p className="mt-1 text-zinc-100">{selectedRoom.width.toFixed(1)} x {selectedRoom.height.toFixed(1)}</p>
                 </div>
                 <div className="rounded-xl bg-white/[0.02] p-3">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Exterior</p>
                   <p className="mt-1 text-zinc-100">{selectedRoom.is_exterior_touching ? 'Yes' : 'No'}</p>
                 </div>
+                <div className="rounded-xl bg-white/[0.02] p-3">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Isolation</p>
+                  <p className="mt-1 text-zinc-100">{formatIsolationStatus(selectedRoom.isolation_status)}</p>
+                </div>
+                <div className="rounded-xl bg-white/[0.02] p-3">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Adjacency</p>
+                  <p className="mt-1 text-zinc-100">{selectedRoom.adjacent_room_ids.length}</p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold uppercase tracking-[0.22em] text-zinc-400">Supported adjacency</h4>
+                <p className="mt-2 text-sm text-zinc-200">{roomNames(topology, selectedRoom.adjacent_room_ids)}</p>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold uppercase tracking-[0.22em] text-zinc-400">Heuristic adjacency</h4>
+                <p className="mt-2 text-sm text-zinc-200">{roomNames(topology, selectedRoom.heuristic_adjacent_room_ids ?? [])}</p>
               </div>
 
               <div>
@@ -171,6 +252,9 @@ export function CatalogInspectorSidebar({
                         <p className="mt-1 text-xs text-sky-300">
                           {formatTraceSupportStatus(wall.trace_support_status)}
                           {wall.trace_support_gap != null ? ` · gap ${wall.trace_support_gap.toFixed(3)}` : ''}
+                        </p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          Provenance: {formatProvenance(wall.provenance)} · Confidence: {formatConfidence(wall.confidence)}
                         </p>
                         {wall.trace_support_ids.length > 0 ? (
                           <p className="mt-1 text-xs text-zinc-500">{wall.trace_support_ids.join(', ')}</p>

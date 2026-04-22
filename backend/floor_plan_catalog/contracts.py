@@ -68,7 +68,9 @@ class CatalogRoomTopology(BaseModel):
     area: float
     measurement_source: str
     adjacent_room_ids: list[str] = Field(default_factory=list)
+    heuristic_adjacent_room_ids: list[str] = Field(default_factory=list)
     is_exterior_touching: bool = False
+    isolation_status: str = "connected"
     issues: list[str] = Field(default_factory=list)
 
 
@@ -95,6 +97,8 @@ class CatalogWallBoundary(BaseModel):
     length: float
     is_exterior: bool
     room_ids: list[str] = Field(default_factory=list)
+    provenance: str = "unknown"
+    confidence: str = "unverified"
     trace_support_status: str = "not_evaluated"
     trace_support_ids: list[str] = Field(default_factory=list)
     trace_support_gap: float | None = None

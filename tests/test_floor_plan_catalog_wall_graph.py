@@ -221,12 +221,14 @@ def test_derive_floor_plan_wall_graph_falls_back_to_bbox_inference_when_polygons
     assert inferred_wall.orientation == "horizontal"
     assert inferred_wall.start == CatalogPoint(x=0, y=500)
     assert inferred_wall.end == CatalogPoint(x=160, y=500)
-    assert "inferred_from_bbox" in inferred_wall.issues
+    assert inferred_wall.provenance == "bbox_inferred"
+    assert inferred_wall.confidence == "trace_supported"
+    assert inferred_wall.issues == []
     assert inferred_wall.trace_support_status == "snapped_to_trace"
     assert inferred_wall.trace_support_ids == ["trace-room-divider-horizontal"]
     assert inferred_wall.trace_support_gap == 0.495
-    assert wall_graph.wall_graph_readiness.status == "needs_wall_graph_review"
-    assert "inferred_from_bbox" in wall_graph.wall_graph_issues
+    assert wall_graph.wall_graph_readiness.status == "ready_for_wall_graph_review"
+    assert wall_graph.wall_graph_issues == []
 
 
 def test_derive_floor_plan_wall_graph_deduplicates_shared_boundaries():
@@ -271,6 +273,9 @@ def test_derive_floor_plan_wall_graph_merges_multi_trace_support_for_inferred_wa
     assert shared_wall.start == CatalogPoint(x=20, y=103)
     assert shared_wall.end == CatalogPoint(x=120, y=103)
     assert shared_wall.trace_support_gap == 0.0
+    assert shared_wall.provenance == "bbox_inferred"
+    assert shared_wall.confidence == "exact"
+    assert "inferred_from_bbox" not in shared_wall.issues
 
 
 def test_derive_floor_plan_wall_graph_prunes_false_pairs_and_slivers_in_real_seminole():
@@ -292,6 +297,10 @@ def test_derive_floor_plan_wall_graph_prunes_false_pairs_and_slivers_in_real_sem
     closet_wall = shared_pairs[tuple(sorted(("CLOSET", "MASTER BATH")))]
     assert closet_wall.trace_support_status == "snapped_to_trace"
     assert len(closet_wall.trace_support_ids) >= 2
+    assert closet_wall.provenance == "bbox_inferred"
+    assert closet_wall.confidence == "trace_supported"
+    assert "inferred_from_bbox" not in closet_wall.issues
+    assert wall_graph.wall_graph_issues == []
 
 
 

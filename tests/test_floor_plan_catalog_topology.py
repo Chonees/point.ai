@@ -10,7 +10,8 @@ from backend.floor_plan_catalog.contracts import (
     CatalogRoom,
     FloorPlanCatalogSeed,
 )
-from backend.floor_plan_catalog.topology import derive_floor_plan_topology
+from backend.floor_plan_catalog.topology import derive_floor_plan_topology, strengthen_floor_plan_topology
+from backend.floor_plan_catalog.wall_graph import derive_floor_plan_wall_graph
 from scripts.export_seminole_topology_fixture import export_topology_fixture
 
 
@@ -323,3 +324,43 @@ def test_real_seminole_topology_no_longer_flags_missing_category_everywhere():
 
     assert "missing_category" not in topology.topology_issues
     assert sum(len(room.adjacent_room_ids) for room in topology.rooms) // 2 >= 6
+
+
+def test_strengthen_floor_plan_topology_rebuilds_supported_adjacency_from_wall_graph():
+    seed = build_seed()
+    topology = derive_floor_plan_topology(seed)
+    wall_graph = derive_floor_plan_wall_graph(topology)
+
+    strengthened = strengthen_floor_plan_topology(topology, wall_graph)
+    room_by_name = {room.name: room for room in strengthened.rooms}
+
+    assert room_by_name["KITCHEN"].adjacent_room_ids == [room_by_name["BEDROOM 2"].room_id]
+    assert sorted(room_by_name["BEDROOM 2"].adjacent_room_ids) == sorted([room_by_name["KITCHEN"].room_id, room_by_name["HALL"].room_id])
+    assert room_by_name["HALL"].adjacent_room_ids == [room_by_name["BEDROOM 2"].room_id]
+    assert room_by_name["KITCHEN"].isolation_status == "connected"
+    assert strengthened.topology_issues == []
+
+
+def test_strengthen_real_seminole_topology_replaces_false_adjacency_and_expected_isolation():
+    seed_payload = json.loads(Path(r"D:\PointAIData\PLANS\catalog\seminole-2000.json").read_text(encoding="utf-8"))
+    seed = FloorPlanCatalogSeed.model_validate(seed_payload)
+
+    topology = derive_floor_plan_topology(seed)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.wall_traces)
+    strengthened = strengthen_floor_plan_topology(topology, wall_graph)
+    rooms_by_name = {room.name: room for room in strengthened.rooms}
+    names_by_room_id = {room.room_id: room.name for room in strengthened.rooms}
+
+    bedroom_2_adjacency = {names_by_room_id[room_id] for room_id in rooms_by_name["BEDROOM 2"].adjacent_room_ids}
+    living_room_adjacency = {names_by_room_id[room_id] for room_id in rooms_by_name["LIVING ROOM"].adjacent_room_ids}
+
+    assert bedroom_2_adjacency == {"BATH 3"}
+    assert living_room_adjacency == {"BATH 3"}
+    assert rooms_by_name["PATIO"].isolation_status == "expected_isolated"
+    assert "isolated_room" not in rooms_by_name["PATIO"].issues
+    assert rooms_by_name["KITCHEN"].isolation_status == "suspicious_isolated"
+    assert rooms_by_name["MSTR. BEDROOM"].isolation_status == "suspicious_isolated"
+    assert rooms_by_name["KITCHEN"].heuristic_adjacent_room_ids == [rooms_by_name["BEDROOM 2"].room_id]
+    assert rooms_by_name["MSTR. BEDROOM"].heuristic_adjacent_room_ids == [rooms_by_name["LIVING ROOM"].room_id]
+    assert "inferred_adjacency" not in strengthened.topology_issues
+    assert "isolated_room" in strengthened.topology_issues
