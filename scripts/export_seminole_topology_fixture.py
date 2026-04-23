@@ -11,6 +11,7 @@ if str(ROOT) not in sys.path:
 
 from backend.floor_plan_catalog.contracts import FloorPlanCatalogSeed
 from backend.floor_plan_catalog.boundary_graph import derive_floor_plan_boundary_graph
+from backend.floor_plan_catalog.mutability import derive_floor_plan_mutability
 from backend.floor_plan_catalog.opening_graph import derive_floor_plan_opening_graph
 from backend.floor_plan_catalog.topology import derive_floor_plan_topology, strengthen_floor_plan_topology
 from backend.floor_plan_catalog.wall_graph import derive_floor_plan_wall_graph
@@ -22,6 +23,12 @@ def build_inspector_payload(seed: FloorPlanCatalogSeed) -> dict:
     wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces, boundary_graph=boundary_graph)
     opening_graph = derive_floor_plan_opening_graph(topology, wall_graph, seed.cad_traces)
     topology = strengthen_floor_plan_topology(topology, wall_graph, seed.cad_traces, opening_graph)
+    topology, wall_graph, opening_graph, boundary_graph = derive_floor_plan_mutability(
+        topology,
+        wall_graph,
+        opening_graph,
+        boundary_graph,
+    )
     payload = topology.model_dump()
     payload["cad_traces"] = [trace.model_dump() for trace in seed.cad_traces]
     payload["boundary_nodes"] = [node.model_dump() for node in boundary_graph.nodes]
