@@ -34,12 +34,18 @@ def derive_floor_plan_opening_graph(
     for trace in cad_traces or []:
         if trace.trace_kind not in {"door", "window"}:
             continue
-        host = _find_host_wall(trace, candidate_walls, host_tolerance=host_tolerance, minimum_overlap=minimum_overlap)
+        host_candidates = _find_host_candidates(
+            trace,
+            candidate_walls,
+            host_tolerance=host_tolerance,
+            minimum_overlap=minimum_overlap,
+        )
         touching_room_ids = _trace_touching_room_ids(trace, topology.rooms, tolerance=room_tolerance)
         attachments.append(
             {
                 "trace": trace,
-                "host": host,
+                "host": host_candidates[0] if host_candidates else None,
+                "host_candidates": host_candidates,
                 "touching_room_ids": touching_room_ids,
             }
         )
@@ -47,19 +53,23 @@ def derive_floor_plan_opening_graph(
     grouped: dict[tuple, list[dict]] = defaultdict(list)
     for attachment in attachments:
         trace: CatalogCadTrace = attachment["trace"]
-        host = attachment["host"]
-        interval = _project_trace_interval_to_wall(trace, host["wall"] if host else None)
-        center = round(((interval[0] + interval[1]) / 2) / grouping_tolerance) if interval else trace_center(trace)
+        center = _trace_center_point(trace)
         key = (
             trace.trace_kind,
-            host["wall"].wall_id if host else "unhosted",
-            center,
+            round(center.x / grouping_tolerance) if grouping_tolerance else round(center.x),
+            round(center.y / grouping_tolerance) if grouping_tolerance else round(center.y),
         )
         grouped[key].append(attachment)
 
     openings: list[CatalogOpening] = []
     for attachments_for_key in grouped.values():
-        openings.append(_build_opening(attachments_for_key, rooms_by_id))
+        host = _select_group_host(
+            attachments_for_key,
+            candidate_walls,
+            host_tolerance=host_tolerance,
+            minimum_overlap=minimum_overlap,
+        )
+        openings.append(_build_opening(attachments_for_key, rooms_by_id, host))
 
     opening_graph_issues = sorted({issue for opening in openings for issue in opening.issues})
     if not openings:
@@ -79,9 +89,12 @@ def derive_floor_plan_opening_graph(
     )
 
 
-def _build_opening(attachments: list[dict], rooms_by_id: dict[str, CatalogRoomTopology]) -> CatalogOpening:
+def _build_opening(
+    attachments: list[dict],
+    rooms_by_id: dict[str, CatalogRoomTopology],
+    host: dict | None,
+) -> CatalogOpening:
     trace: CatalogCadTrace = attachments[0]["trace"]
-    host = attachments[0]["host"]
     trace_ids = sorted({attachment["trace"].trace_id for attachment in attachments})
     touching_room_ids = sorted({room_id for attachment in attachments for room_id in attachment["touching_room_ids"]})
     host_wall: CatalogWallBoundary | None = host["wall"] if host else None
@@ -146,8 +159,26 @@ def _find_host_wall(
     host_tolerance: float,
     minimum_overlap: float,
 ) -> dict | None:
+    candidates = _find_host_candidates(
+        trace,
+        walls,
+        host_tolerance=host_tolerance,
+        minimum_overlap=minimum_overlap,
+    )
+    if not candidates:
+        return None
+    return {"wall": candidates[0]["wall"]}
+
+
+def _find_host_candidates(
+    trace: CatalogCadTrace,
+    walls: list[CatalogWallBoundary],
+    *,
+    host_tolerance: float,
+    minimum_overlap: float,
+) -> list[dict]:
     trace_bbox = trace.bbox
-    candidates: list[tuple[tuple[float, float, int], CatalogWallBoundary]] = []
+    candidates: list[dict] = []
     for wall in walls:
         if wall.orientation not in {"horizontal", "vertical"}:
             continue
@@ -165,12 +196,116 @@ def _find_host_wall(
         if overlap < minimum_overlap and not center_on_wall:
             continue
         boundary_penalty = 0 if wall.boundary_kind == "shared" and trace.trace_kind == "door" else 1
-        score = (round(axis_gap, 3), -round(max(overlap, 0.0), 3), boundary_penalty)
-        candidates.append((score, wall))
-    if not candidates:
+        score = (
+            round(axis_gap, 3),
+            -round(max(overlap, 0.0), 3),
+            boundary_penalty,
+            *_wall_host_rank(wall, trace.trace_kind),
+        )
+        candidates.append({"wall": wall, "score": score})
+    candidates.sort(key=lambda item: item["score"])
+    return candidates
+
+
+def _select_group_host(
+    attachments: list[dict],
+    walls: list[CatalogWallBoundary],
+    *,
+    host_tolerance: float,
+    minimum_overlap: float,
+) -> dict | None:
+    candidates_by_wall_id: dict[str, dict] = {}
+    for attachment in attachments:
+        for candidate in attachment.get("host_candidates", []):
+            wall = candidate["wall"]
+            entry = candidates_by_wall_id.setdefault(
+                wall.wall_id,
+                {
+                    "wall": wall,
+                    "support_count": 0,
+                    "best_score": candidate["score"],
+                },
+            )
+            entry["support_count"] += 1
+            if candidate["score"] < entry["best_score"]:
+                entry["best_score"] = candidate["score"]
+
+    if candidates_by_wall_id:
+        best = min(
+            candidates_by_wall_id.values(),
+            key=lambda candidate: (-candidate["support_count"], candidate["best_score"]),
+        )
+        return {"wall": best["wall"]}
+
+    return _find_group_host_from_cluster(
+        attachments,
+        walls,
+        host_tolerance=host_tolerance,
+        minimum_overlap=minimum_overlap,
+    )
+
+
+def _find_group_host_from_cluster(
+    attachments: list[dict],
+    walls: list[CatalogWallBoundary],
+    *,
+    host_tolerance: float,
+    minimum_overlap: float,
+) -> dict | None:
+    if not attachments:
         return None
-    candidates.sort(key=lambda item: item[0])
-    return {"wall": candidates[0][1]}
+    x1 = min(attachment["trace"].bbox.x1 for attachment in attachments)
+    y1 = min(attachment["trace"].bbox.y1 for attachment in attachments)
+    x2 = max(attachment["trace"].bbox.x2 for attachment in attachments)
+    y2 = max(attachment["trace"].bbox.y2 for attachment in attachments)
+    center = CatalogPoint(x=(x1 + x2) / 2, y=(y1 + y2) / 2)
+    dominant_orientation = max(
+        ("horizontal", "vertical", "point"),
+        key=lambda orientation: sum(
+            1 for attachment in attachments if _trace_orientation(attachment["trace"]) == orientation
+        ),
+    )
+    if dominant_orientation == "horizontal":
+        start = CatalogPoint(x=x1, y=center.y)
+        end = CatalogPoint(x=x2, y=center.y)
+    elif dominant_orientation == "vertical":
+        start = CatalogPoint(x=center.x, y=y1)
+        end = CatalogPoint(x=center.x, y=y2)
+    else:
+        start = center
+        end = center
+
+    synthetic_trace = CatalogCadTrace(
+        trace_id="synthetic-cluster",
+        trace_kind=attachments[0]["trace"].trace_kind,
+        type="line",
+        layer="SYNTHETIC",
+        start=start,
+        end=end,
+        bbox=trace_bbox(x1, y1, x2, y2),
+    )
+    return _find_host_wall(
+        synthetic_trace,
+        walls,
+        host_tolerance=max(host_tolerance, 18.0),
+        minimum_overlap=minimum_overlap,
+    )
+
+
+def _wall_host_rank(wall: CatalogWallBoundary, opening_kind: str) -> tuple[int, int, int]:
+    if opening_kind == "door":
+        boundary_rank = {"shared": 0, "exterior": 1}.get(wall.boundary_kind, 2)
+    else:
+        boundary_rank = {"exterior": 0, "shared": 1}.get(wall.boundary_kind, 2)
+    confidence_rank = {"exact": 0, "geometric_exact": 0, "trace_supported": 1}.get(wall.confidence, 2)
+    provenance_rank = {
+        "boundary_graph_exterior": 0,
+        "boundary_graph_shared": 0,
+        "exact_room_overlap": 0,
+        "room_exterior_boundary": 1,
+        "bbox_inferred": 2,
+    }.get(wall.provenance, 1)
+    return (boundary_rank, confidence_rank, provenance_rank)
 
 
 def _trace_touching_room_ids(
@@ -295,6 +430,23 @@ def _overlap_1d(a1: float, a2: float, b1: float, b2: float) -> float:
 
 def trace_center(trace: CatalogCadTrace) -> int:
     return round(((trace.bbox.x1 + trace.bbox.x2) + (trace.bbox.y1 + trace.bbox.y2)) / 2)
+
+
+def _trace_center_point(trace: CatalogCadTrace) -> CatalogPoint:
+    return CatalogPoint(x=(trace.bbox.x1 + trace.bbox.x2) / 2, y=(trace.bbox.y1 + trace.bbox.y2) / 2)
+
+
+def trace_bbox(x1: float, y1: float, x2: float, y2: float):
+    from backend.floor_plan_catalog.contracts import CatalogBBox
+
+    return CatalogBBox(
+        x1=min(x1, x2),
+        y1=min(y1, y2),
+        x2=max(x1, x2),
+        y2=max(y1, y2),
+        width=abs(x2 - x1),
+        height=abs(y2 - y1),
+    )
 
 
 def _point_in_or_near_polygon(point: CatalogPoint, polygon: list[CatalogPoint], tolerance: float) -> bool:
