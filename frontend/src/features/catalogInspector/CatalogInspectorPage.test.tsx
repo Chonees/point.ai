@@ -18,6 +18,7 @@ const unsupportedSharedWallCount = fixture.walls.filter(
 ).length
 const supportBoundaryCount = fixture.boundaries.filter((boundary) => boundary.boundary_kind === 'support').length
 const artifactBoundaryCount = fixture.boundaries.filter((boundary) => boundary.boundary_kind === 'artifact').length
+const openingArtifactCount = fixture.openings.filter((opening) => opening.confidence === 'opening_artifact').length
 const firstSupportBoundary = fixture.boundaries.find((boundary) => boundary.boundary_kind === 'support') ?? null
 const duplicateBoundaryCount = fixture.boundaries.filter((boundary) => boundary.family_role === 'duplicate').length
 
@@ -202,6 +203,13 @@ describe('CatalogInspectorPage', () => {
     expect(screen.getByText(/^Duplicate boundaries$/i)).toBeInTheDocument()
     expect(screen.getByText(/^Support boundaries$/i)).toBeInTheDocument()
     expect(screen.getByText(/^Artifact boundaries$/i)).toBeInTheDocument()
+  })
+
+  it('surfaces opening artifacts separately from real unhosted openings', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(openingArtifactCount).toBeGreaterThan(0)
+    expect(screen.getByText(/^Opening artifacts$/i)).toBeInTheDocument()
   })
 
   it('shows boundary family metadata for a selected duplicate or canonical member', () => {

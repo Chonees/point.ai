@@ -72,6 +72,8 @@ function formatConfidence(confidence: string) {
       return 'Hosted'
     case 'unhosted':
       return 'Unhosted'
+    case 'opening_artifact':
+      return 'Opening artifact'
     default:
       return confidence
   }

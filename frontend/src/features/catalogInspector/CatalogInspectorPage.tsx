@@ -153,6 +153,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
   const unknownBoundaryCount = boundaries.filter((boundary) => boundary.boundary_kind === 'unknown').length
   const hostedDoorCount = hostedOpenings.filter((opening) => opening.opening_kind === 'door' && opening.host_wall_id).length
   const hostedWindowCount = hostedOpenings.filter((opening) => opening.opening_kind === 'window' && opening.host_wall_id).length
+  const openingArtifactCount = hostedOpenings.filter((opening) => opening.confidence === 'opening_artifact').length
   const unhostedOpeningCount = hostedOpenings.filter((opening) => !opening.host_wall_id).length
 
   const cycleFocusedWall = (delta: number) => {
@@ -236,6 +237,10 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
               <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Unknown boundaries</p>
               <p className="mt-1 text-lg font-semibold text-orange-200">{unknownBoundaryCount}</p>
             </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Opening artifacts</p>
+              <p className="mt-1 text-lg font-semibold text-orange-300">{openingArtifactCount}</p>
+            </div>
           </div>
         </div>
       </header>
@@ -246,7 +251,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             <div>
               <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Validation</p>
               <p className="mt-1 text-sm text-zinc-300">
-                {roomsWithAdjacency} rooms with wall-backed adjacency, {openingAdjacencyEdges} opening-backed adjacency edges, {heuristicAdjacencyEdges} heuristic adjacency edges, {roomsWithOwnedWalls} rooms with owned walls, {hostedDoorCount} hosted doors, {hostedWindowCount} hosted windows, {unhostedOpeningCount} unhosted openings, {expectedIsolatedRooms} expected isolated rooms, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {cadTraces.length} CAD traces split into {rawWallTraces.length} walls, {doorTraces.length} doors, {windowTraces.length} windows, {unsupportedSharedWalls} unsupported shared walls, {exactBoundarySharedCount} exact-graph shared boundaries, {supportBoundaryCount} support-shell boundaries, {duplicateBoundaryCount} duplicate boundaries, {artifactBoundaryCount} artifact boundaries, {unknownBoundaryCount} unknown boundaries.
+                {roomsWithAdjacency} rooms with wall-backed adjacency, {openingAdjacencyEdges} opening-backed adjacency edges, {heuristicAdjacencyEdges} heuristic adjacency edges, {roomsWithOwnedWalls} rooms with owned walls, {hostedDoorCount} hosted doors, {hostedWindowCount} hosted windows, {openingArtifactCount} opening artifacts, {unhostedOpeningCount} unhosted openings, {expectedIsolatedRooms} expected isolated rooms, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {cadTraces.length} CAD traces split into {rawWallTraces.length} walls, {doorTraces.length} doors, {windowTraces.length} windows, {unsupportedSharedWalls} unsupported shared walls, {exactBoundarySharedCount} exact-graph shared boundaries, {supportBoundaryCount} support-shell boundaries, {duplicateBoundaryCount} duplicate boundaries, {artifactBoundaryCount} artifact boundaries, {unknownBoundaryCount} unknown boundaries.
               </p>
               <p className="mt-1 text-sm text-zinc-500">
                 Readiness: <span className="font-medium text-zinc-200">{topology.topology_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.wall_graph_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.opening_graph_readiness?.status ?? 'opening_graph_unavailable'}</span> / <span className="font-medium text-zinc-200">{topology.boundary_graph_readiness?.status ?? 'boundary_graph_unavailable'}</span>
