@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import asdict
 import json
 from pathlib import Path
 
@@ -50,6 +51,10 @@ def _sorted_by(items: list[dict], key: str) -> list[dict]:
     return sorted(items, key=lambda item: item[key])
 
 
+def _asdict_items(items) -> list[dict]:
+    return [asdict(item) for item in items]
+
+
 def _expected_room_summaries(fixture: dict) -> list[dict]:
     boundary_ids_by_room: dict[str, list[str]] = {}
     for boundary in fixture["boundaries"]:
@@ -91,6 +96,7 @@ def _expected_boundary_segments(fixture: dict) -> list[dict]:
                 "opening_ids": boundary["opening_ids"],
             }
             for boundary in fixture["boundaries"]
+            if boundary.get("boundary_kind") not in {"duplicate", "artifact"}
         ],
         "boundary_id",
     )
@@ -155,10 +161,10 @@ def test_normalize_plan_exposes_v2_assembly_from_catalog_fixture():
     assert normalized.source_kind == "plan"
     assert normalized.canonical_unit == fixture["canonical_unit"]
 
-    assert normalized.room_summaries == expected_room_summaries
-    assert normalized.boundary_segments == expected_boundary_segments
-    assert normalized.wall_segments == expected_wall_segments
-    assert normalized.openings == expected_openings
+    assert _asdict_items(normalized.room_summaries) == expected_room_summaries
+    assert _asdict_items(normalized.boundary_segments) == expected_boundary_segments
+    assert _asdict_items(normalized.wall_segments) == expected_wall_segments
+    assert _asdict_items(normalized.openings) == expected_openings
 
     assert normalized.movable_boundary_count == sum(
         1 for boundary in fixture["boundaries"] if boundary["movable"]
