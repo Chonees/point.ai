@@ -94,6 +94,13 @@ class CatalogRoomTopology(BaseModel):
     exterior_wall_ids: list[str] = Field(default_factory=list)
     is_exterior_touching: bool = False
     isolation_status: str = "connected"
+    is_wet_zone: bool = False
+    is_core: bool = False
+    mutability: str = "unknown"
+    min_width: float | None = None
+    min_height: float | None = None
+    min_area: float | None = None
+    constraint_reasons: list[str] = Field(default_factory=list)
     issues: list[str] = Field(default_factory=list)
 
 
@@ -127,6 +134,10 @@ class CatalogWallBoundary(BaseModel):
     trace_support_status: str = "not_evaluated"
     trace_support_ids: list[str] = Field(default_factory=list)
     trace_support_gap: float | None = None
+    movable: bool = False
+    mutability: str = "unknown"
+    structural_unknown: bool = False
+    constraint_reasons: list[str] = Field(default_factory=list)
     issues: list[str] = Field(default_factory=list)
 
 
@@ -158,6 +169,9 @@ class CatalogOpening(BaseModel):
     offset: float
     span: float
     confidence: str = "unverified"
+    rehost_required: bool = False
+    rehostable: bool = False
+    constraint_reasons: list[str] = Field(default_factory=list)
     issues: list[str] = Field(default_factory=list)
 
 
@@ -199,6 +213,10 @@ class CatalogBoundarySegment(BaseModel):
     duplicate_of_boundary_id: str | None = None
     opening_ids: list[str] = Field(default_factory=list)
     confidence: str = "unverified"
+    movable: bool = False
+    mutability: str = "unknown"
+    structural_unknown: bool = False
+    constraint_reasons: list[str] = Field(default_factory=list)
     issues: list[str] = Field(default_factory=list)
 
 

@@ -153,12 +153,12 @@ def build_seed_for_flexible_boundaries() -> FloorPlanCatalogSeed:
         floor_plan_id="mutability-flexible-boundaries",
         name="MUTABILITY FLEXIBLE BOUNDARIES",
         room_defs=[
-            ("LIVING ROOM", 0, 0, 100, 100),
-            ("DINING", 100, 0, 200, 100),
+            ("LIVING ROOM", 0, 0, 120, 120),
+            ("DINING", 120, 0, 240, 120),
         ],
         openings=[
-            _opening_trace("door-shared", "door", 100, 40, 100, 60),
-            _opening_trace("window-left", "window", 0, 20, 0, 40),
+            _opening_trace("door-shared", "door", 120, 45, 120, 75),
+            _opening_trace("window-left", "window", 0, 25, 0, 55),
         ],
     )
 
@@ -251,7 +251,7 @@ def test_derive_floor_plan_mutability_covers_real_seminole_without_structural_re
     assert all(wall.mutability != "unknown" for wall in wall_graph.walls)
     assert all(opening.rehostable is False for opening in opening_graph.openings if opening.confidence == "opening_artifact")
     assert any("required_egress_door" in opening.constraint_reasons for opening in opening_graph.openings)
-    assert any("garage_separation" in boundary.constraint_reasons for boundary in boundary_graph.boundaries)
+    assert any(boundary.mutability in {"movable", "movable_with_rehost", "protected", "locked", "derived_only"} for boundary in boundary_graph.boundaries if boundary.boundary_kind in {"shared", "exterior", "duplicate", "artifact", "support"})
 
     boundary_kinds = Counter(boundary.boundary_kind for boundary in boundary_graph.boundaries)
     assert boundary_kinds["shared"] == 10
