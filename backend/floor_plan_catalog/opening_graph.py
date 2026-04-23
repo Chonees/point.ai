@@ -24,6 +24,7 @@ def derive_floor_plan_opening_graph(
     *,
     host_tolerance: float = 16.0,
     minimum_overlap: float = 4.0,
+    bridge_gap_tolerance: float = 8.0,
     grouping_tolerance: float = 12.0,
     room_tolerance: float = 6.0,
 ) -> FloorPlanOpeningGraphV1:
@@ -39,6 +40,7 @@ def derive_floor_plan_opening_graph(
             candidate_walls,
             host_tolerance=host_tolerance,
             minimum_overlap=minimum_overlap,
+            bridge_gap_tolerance=bridge_gap_tolerance,
         )
         touching_room_ids = _trace_touching_room_ids(trace, topology.rooms, tolerance=room_tolerance)
         attachments.append(
@@ -68,6 +70,7 @@ def derive_floor_plan_opening_graph(
             candidate_walls,
             host_tolerance=host_tolerance,
             minimum_overlap=minimum_overlap,
+            bridge_gap_tolerance=bridge_gap_tolerance,
         )
         openings.append(_build_opening(attachments_for_key, rooms_by_id, host))
 
@@ -96,6 +99,35 @@ def _build_opening(
 ) -> CatalogOpening:
     trace: CatalogCadTrace = attachments[0]["trace"]
     trace_ids = sorted({attachment["trace"].trace_id for attachment in attachments})
+    if _is_degenerate_opening_cluster(attachments):
+        start, end = _cluster_anchor_points(attachments)
+        signature = "|".join(
+            [
+                trace.trace_kind,
+                "artifact",
+                f"{start.x:.3f}",
+                f"{start.y:.3f}",
+                f"{end.x:.3f}",
+                f"{end.y:.3f}",
+                ",".join(trace_ids),
+            ]
+        )
+        digest = hashlib.sha1(signature.encode("utf-8")).hexdigest()[:12]
+        return CatalogOpening(
+            opening_id=f"opening-{trace.trace_kind}-{digest}",
+            opening_kind=trace.trace_kind,
+            host_wall_id=None,
+            owner_room_ids=[],
+            connected_room_ids=[],
+            trace_ids=trace_ids,
+            orientation=_cluster_orientation(attachments),
+            start=start,
+            end=end,
+            offset=0.0,
+            span=round(_distance(start, end), 3),
+            confidence="opening_artifact",
+            issues=["degenerate_opening_cluster"],
+        )
     touching_room_ids = sorted({room_id for attachment in attachments for room_id in attachment["touching_room_ids"]})
     host_wall: CatalogWallBoundary | None = host["wall"] if host else None
     orientation = host_wall.orientation if host_wall else _trace_orientation(trace)
@@ -158,12 +190,14 @@ def _find_host_wall(
     *,
     host_tolerance: float,
     minimum_overlap: float,
+    bridge_gap_tolerance: float,
 ) -> dict | None:
     candidates = _find_host_candidates(
         trace,
         walls,
         host_tolerance=host_tolerance,
         minimum_overlap=minimum_overlap,
+        bridge_gap_tolerance=bridge_gap_tolerance,
     )
     if not candidates:
         return None
@@ -176,6 +210,7 @@ def _find_host_candidates(
     *,
     host_tolerance: float,
     minimum_overlap: float,
+    bridge_gap_tolerance: float,
 ) -> list[dict]:
     trace_bbox = trace.bbox
     candidates: list[dict] = []
@@ -185,22 +220,23 @@ def _find_host_candidates(
         wall_interval = _wall_major_interval(wall)
         if wall.orientation == "horizontal":
             overlap = _overlap_1d(trace_bbox.x1, trace_bbox.x2, wall_interval[0], wall_interval[1])
+            edge_gap = _interval_edge_gap(trace_bbox.x1, trace_bbox.x2, wall_interval[0], wall_interval[1])
             axis_gap = _gap_to_interval((trace_bbox.y1, trace_bbox.y2), wall.start.y)
             center_on_wall = wall_interval[0] <= ((trace_bbox.x1 + trace_bbox.x2) / 2) <= wall_interval[1]
         else:
             overlap = _overlap_1d(trace_bbox.y1, trace_bbox.y2, wall_interval[0], wall_interval[1])
+            edge_gap = _interval_edge_gap(trace_bbox.y1, trace_bbox.y2, wall_interval[0], wall_interval[1])
             axis_gap = _gap_to_interval((trace_bbox.x1, trace_bbox.x2), wall.start.x)
             center_on_wall = wall_interval[0] <= ((trace_bbox.y1 + trace_bbox.y2) / 2) <= wall_interval[1]
         if axis_gap > host_tolerance:
             continue
-        if overlap < minimum_overlap and not center_on_wall:
+        if overlap < minimum_overlap and not center_on_wall and edge_gap > bridge_gap_tolerance:
             continue
-        boundary_penalty = 0 if wall.boundary_kind == "shared" and trace.trace_kind == "door" else 1
         score = (
             round(axis_gap, 3),
+            round(edge_gap, 3),
             -round(max(overlap, 0.0), 3),
-            boundary_penalty,
-            *_wall_host_rank(wall, trace.trace_kind),
+            *_wall_opening_host_rank(wall, trace.trace_kind),
         )
         candidates.append({"wall": wall, "score": score})
     candidates.sort(key=lambda item: item["score"])
@@ -213,6 +249,7 @@ def _select_group_host(
     *,
     host_tolerance: float,
     minimum_overlap: float,
+    bridge_gap_tolerance: float,
 ) -> dict | None:
     candidates_by_wall_id: dict[str, dict] = {}
     for attachment in attachments:
@@ -242,6 +279,7 @@ def _select_group_host(
         walls,
         host_tolerance=host_tolerance,
         minimum_overlap=minimum_overlap,
+        bridge_gap_tolerance=bridge_gap_tolerance,
     )
 
 
@@ -251,6 +289,7 @@ def _find_group_host_from_cluster(
     *,
     host_tolerance: float,
     minimum_overlap: float,
+    bridge_gap_tolerance: float,
 ) -> dict | None:
     if not attachments:
         return None
@@ -289,22 +328,28 @@ def _find_group_host_from_cluster(
         walls,
         host_tolerance=max(host_tolerance, 18.0),
         minimum_overlap=minimum_overlap,
+        bridge_gap_tolerance=max(bridge_gap_tolerance, 10.0),
     )
 
 
-def _wall_host_rank(wall: CatalogWallBoundary, opening_kind: str) -> tuple[int, int, int]:
+def _wall_opening_host_rank(wall: CatalogWallBoundary, opening_kind: str) -> tuple[int, int, int]:
     if opening_kind == "door":
-        boundary_rank = {"shared": 0, "exterior": 1}.get(wall.boundary_kind, 2)
+        boundary_rank = {"shared": 0, "support": 1, "exterior": 2}.get(wall.boundary_kind, 3)
     else:
-        boundary_rank = {"exterior": 0, "shared": 1}.get(wall.boundary_kind, 2)
-    confidence_rank = {"exact": 0, "geometric_exact": 0, "trace_supported": 1}.get(wall.confidence, 2)
+        boundary_rank = {"exterior": 0, "support": 1, "shared": 2}.get(wall.boundary_kind, 3)
+    confidence_rank = {
+        "exact": 0,
+        "geometric_exact": 0,
+        "trace_supported": 1,
+        "trace_companion": 2,
+    }.get(wall.confidence, 3)
     provenance_rank = {
-        "boundary_graph_exterior": 0,
         "boundary_graph_shared": 0,
-        "exact_room_overlap": 0,
-        "room_exterior_boundary": 1,
-        "bbox_inferred": 2,
-    }.get(wall.provenance, 1)
+        "boundary_graph_exterior": 0,
+        "exact_room_overlap": 1,
+        "room_exterior_boundary": 2,
+        "bbox_inferred": 3,
+    }.get(wall.provenance, 2)
     return (boundary_rank, confidence_rank, provenance_rank)
 
 
@@ -366,6 +411,8 @@ def _trace_anchor_points(trace: CatalogCadTrace) -> tuple[CatalogPoint, CatalogP
 def _project_trace_interval_to_wall(
     trace: CatalogCadTrace,
     wall: CatalogWallBoundary | None,
+    *,
+    bridge_gap_tolerance: float = 8.0,
 ) -> tuple[float, float] | None:
     if wall is None or wall.orientation not in {"horizontal", "vertical"}:
         return None
@@ -374,6 +421,8 @@ def _project_trace_interval_to_wall(
         start = max(wall_interval[0], trace.bbox.x1)
         end = min(wall_interval[1], trace.bbox.x2)
         if end <= start:
+            if _interval_edge_gap(trace.bbox.x1, trace.bbox.x2, wall_interval[0], wall_interval[1]) <= bridge_gap_tolerance:
+                return (round(trace.bbox.x1, 3), round(trace.bbox.x2, 3))
             center = (trace.bbox.x1 + trace.bbox.x2) / 2
             half_span = max((trace.bbox.width or 4.0) / 2, 2.0)
             start = max(wall_interval[0], center - half_span)
@@ -382,6 +431,8 @@ def _project_trace_interval_to_wall(
         start = max(wall_interval[0], trace.bbox.y1)
         end = min(wall_interval[1], trace.bbox.y2)
         if end <= start:
+            if _interval_edge_gap(trace.bbox.y1, trace.bbox.y2, wall_interval[0], wall_interval[1]) <= bridge_gap_tolerance:
+                return (round(trace.bbox.y1, 3), round(trace.bbox.y2, 3))
             center = (trace.bbox.y1 + trace.bbox.y2) / 2
             half_span = max((trace.bbox.height or 4.0) / 2, 2.0)
             start = max(wall_interval[0], center - half_span)
@@ -417,6 +468,14 @@ def _merge_intervals(intervals: list[tuple[float, float] | None]) -> tuple[float
     return (round(start, 3), round(end, 3))
 
 
+def _interval_edge_gap(a1: float, a2: float, b1: float, b2: float) -> float:
+    a_start, a_end = sorted((a1, a2))
+    b_start, b_end = sorted((b1, b2))
+    if min(a_end, b_end) - max(a_start, b_start) >= 0:
+        return 0.0
+    return min(abs(b_start - a_end), abs(a_start - b_end))
+
+
 def _gap_to_interval(interval: tuple[float, float], value: float) -> float:
     start, end = sorted(interval)
     if start <= value <= end:
@@ -434,6 +493,48 @@ def trace_center(trace: CatalogCadTrace) -> int:
 
 def _trace_center_point(trace: CatalogCadTrace) -> CatalogPoint:
     return CatalogPoint(x=(trace.bbox.x1 + trace.bbox.x2) / 2, y=(trace.bbox.y1 + trace.bbox.y2) / 2)
+
+
+def _cluster_bbox(attachments: list[dict]) -> tuple[float, float, float, float]:
+    return (
+        min(attachment["trace"].bbox.x1 for attachment in attachments),
+        min(attachment["trace"].bbox.y1 for attachment in attachments),
+        max(attachment["trace"].bbox.x2 for attachment in attachments),
+        max(attachment["trace"].bbox.y2 for attachment in attachments),
+    )
+
+
+def _cluster_orientation(attachments: list[dict]) -> str:
+    return max(
+        ("horizontal", "vertical", "point"),
+        key=lambda orientation: sum(1 for attachment in attachments if _trace_orientation(attachment["trace"]) == orientation),
+    )
+
+
+def _cluster_anchor_points(attachments: list[dict]) -> tuple[CatalogPoint, CatalogPoint]:
+    x1, y1, x2, y2 = _cluster_bbox(attachments)
+    center = CatalogPoint(x=(x1 + x2) / 2, y=(y1 + y2) / 2)
+    dominant_orientation = _cluster_orientation(attachments)
+    if dominant_orientation == "horizontal":
+        return CatalogPoint(x=x1, y=center.y), CatalogPoint(x=x2, y=center.y)
+    if dominant_orientation == "vertical":
+        return CatalogPoint(x=center.x, y=y1), CatalogPoint(x=center.x, y=y2)
+    return center, center
+
+
+def _is_degenerate_opening_cluster(attachments: list[dict]) -> bool:
+    traces = [attachment["trace"] for attachment in attachments]
+    layers = {trace.layer.upper() for trace in traces}
+    start, end = _cluster_anchor_points(attachments)
+    span_estimate = _distance(start, end)
+
+    if layers == {"DOORTEXT"}:
+        return True
+    if span_estimate <= 2.0:
+        return True
+    if all(_trace_orientation(trace) == "point" for trace in traces):
+        return True
+    return False
 
 
 def trace_bbox(x1: float, y1: float, x2: float, y2: float):
