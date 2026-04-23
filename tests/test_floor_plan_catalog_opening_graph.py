@@ -1,10 +1,17 @@
+import json
+from pathlib import Path
+
+from backend.floor_plan_catalog.boundary_graph import derive_floor_plan_boundary_graph
 from backend.floor_plan_catalog.contracts import (
     CatalogBBox,
     CatalogCadTrace,
+    CatalogWallBoundary,
     CatalogPoint,
     CatalogReadiness,
     CatalogRoom,
     FloorPlanCatalogSeed,
+    FloorPlanWallGraphV1,
+    WallGraphReadiness,
 )
 from backend.floor_plan_catalog.opening_graph import derive_floor_plan_opening_graph
 from backend.floor_plan_catalog.topology import derive_floor_plan_topology
@@ -116,3 +123,106 @@ def test_derive_floor_plan_opening_graph_hosts_door_and_window_traces():
     assert len(window.owner_room_ids) == 1
     assert window.connected_room_ids == []
     assert window.confidence == "hosted"
+
+
+def test_derive_floor_plan_opening_graph_prefers_exact_canonical_wall_when_candidates_tie():
+    seed = build_seed_with_hostable_openings()
+    topology = derive_floor_plan_topology(seed)
+    room_a = topology.rooms[0].room_id
+    room_b = topology.rooms[1].room_id
+
+    inferred_wall = CatalogWallBoundary(
+        wall_id="wall-inferred",
+        start=CatalogPoint(x=100, y=0),
+        end=CatalogPoint(x=100, y=100),
+        orientation="vertical",
+        length=100,
+        is_exterior=False,
+        room_ids=[room_a, room_b],
+        boundary_kind="shared",
+        owner_room_ids=[room_a, room_b],
+        provenance="bbox_inferred",
+        confidence="trace_supported",
+        trace_support_status="snapped_to_trace",
+        trace_support_ids=["shared-wall"],
+        trace_support_gap=2.0,
+    )
+    canonical_wall = inferred_wall.model_copy(
+        update={
+            "wall_id": "wall-canonical",
+            "provenance": "boundary_graph_shared",
+            "confidence": "exact",
+            "trace_support_status": "exact_trace_supported",
+            "trace_support_gap": 0.0,
+        }
+    )
+    wall_graph = FloorPlanWallGraphV1(
+        floor_plan_id=topology.floor_plan_id,
+        name=topology.name,
+        canonical_unit=topology.canonical_unit,
+        footprint_bbox=topology.footprint_bbox,
+        walls=[inferred_wall, canonical_wall],
+        wall_graph_readiness=WallGraphReadiness(status="ready_for_wall_graph_review", issues=[]),
+        wall_graph_issues=[],
+    )
+
+    opening_graph = derive_floor_plan_opening_graph(
+        topology,
+        wall_graph,
+        [trace for trace in seed.cad_traces if trace.trace_id == "door-shared"],
+    )
+
+    door = next(opening for opening in opening_graph.openings if opening.opening_kind == "door")
+
+    assert door.host_wall_id == "wall-canonical"
+    assert door.confidence == "hosted"
+
+
+def test_derive_floor_plan_opening_graph_groups_fragmented_door_traces_before_hosting():
+    seed = build_seed_with_hostable_openings()
+    seed = seed.model_copy(
+        update={
+            "cad_traces": seed.cad_traces
+            + [
+                CatalogCadTrace(
+                    trace_id="door-swing",
+                    trace_kind="door",
+                    type="line",
+                    layer="DOORS",
+                    start=CatalogPoint(x=120, y=60),
+                    end=CatalogPoint(x=140, y=60),
+                    bbox=CatalogBBox(x1=120, y1=60, x2=140, y2=60, width=20, height=0),
+                )
+            ]
+        }
+    )
+    topology = derive_floor_plan_topology(seed)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
+
+    opening_graph = derive_floor_plan_opening_graph(
+        topology,
+        wall_graph,
+        seed.cad_traces,
+        grouping_tolerance=150.0,
+    )
+
+    door_openings = [opening for opening in opening_graph.openings if opening.opening_kind == "door"]
+
+    assert len(door_openings) == 1
+    assert door_openings[0].confidence == "hosted"
+    assert set(door_openings[0].trace_ids) == {"door-shared", "door-swing"}
+
+
+def test_derive_floor_plan_opening_graph_reduces_real_seminole_unhosted_openings():
+    seed_payload = json.loads(Path(r"D:\PointAIData\PLANS\catalog\seminole-2000.json").read_text(encoding="utf-8"))
+    seed = FloorPlanCatalogSeed.model_validate(seed_payload)
+    topology = derive_floor_plan_topology(seed)
+    boundary_graph = derive_floor_plan_boundary_graph(seed)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces, boundary_graph=boundary_graph)
+
+    opening_graph = derive_floor_plan_opening_graph(topology, wall_graph, seed.cad_traces)
+    unhosted = [opening for opening in opening_graph.openings if opening.confidence == "unhosted"]
+    hosted = [opening for opening in opening_graph.openings if opening.confidence == "hosted"]
+
+    assert len(unhosted) < 111
+    assert len(hosted) > 51
