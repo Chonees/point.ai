@@ -55,6 +55,8 @@ def _asdict_items(items) -> list[dict]:
 def _expected_room_summaries(fixture: dict) -> list[dict]:
     boundary_ids_by_room: dict[str, list[str]] = {}
     for boundary in fixture["boundaries"]:
+        if boundary.get("boundary_kind") in {"duplicate", "artifact"}:
+            continue
         for room_id in boundary.get("owner_room_ids") or []:
             boundary_ids_by_room.setdefault(room_id, []).append(boundary["boundary_id"])
 
@@ -170,3 +172,37 @@ def test_normalize_plan_exposes_rich_assembly_in_fixture_order_and_strips_cad_tr
     assert _asdict_items(normalized.openings) == expected_openings
 
     assert "cad_traces" not in normalized.payload
+
+
+def test_normalize_plan_room_boundary_links_only_reference_retained_boundary_segments():
+    normalized = normalize_plan(_build_catalog_job())
+
+    retained_boundary_ids = {segment.boundary_id for segment in normalized.boundary_segments}
+
+    assert retained_boundary_ids
+    for room_summary in normalized.room_summaries:
+        assert set(room_summary.owner_boundary_ids).issubset(retained_boundary_ids)
+
+
+def test_normalize_plan_treats_rich_payload_with_empty_rooms_as_catalog_payload():
+    payload = _load_catalog_payload()
+    payload["rooms"] = []
+    job = build_site_fit_job(
+        plan=payload,
+        structure=None,
+        site_constraints={"buildable_envelope": {"x": 0, "y": 0, "width": 5000, "height": 5000}},
+        design_locks={},
+        jurisdiction=None,
+        ruleset_version="site_fit_contract_v1",
+    )
+
+    normalized = normalize_plan(job)
+
+    assert normalized.source_kind == "plan"
+    assert normalized.room_count == 0
+    assert len(normalized.boundary_segments) > 0
+    assert len(normalized.wall_segments) == len(payload["walls"])
+    assert len(normalized.openings) == len(payload["openings"])
+    assert normalized.wall_count == len(payload["walls"])
+    assert normalized.opening_count == len(payload["openings"])
+    assert normalized.footprint_bbox == payload["footprint_bbox"]

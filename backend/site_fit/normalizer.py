@@ -19,11 +19,16 @@ def normalize_plan(job: SiteFitJob) -> NormalizedPlan:
 
         if _is_catalog_plan_payload(job.payload):
             boundaries = job.payload.get("boundaries") or []
+            retained_boundaries = _retained_catalog_boundaries(boundaries)
             openings_payload = job.payload.get("openings") or []
-            boundary_segments = _normalize_boundary_segments(boundaries, source_unit=source_unit, canonical_unit=canonical_unit)
+            boundary_segments = _normalize_boundary_segments(
+                retained_boundaries,
+                source_unit=source_unit,
+                canonical_unit=canonical_unit,
+            )
             room_summaries = _normalize_room_summaries(
                 rooms,
-                boundaries,
+                retained_boundaries,
                 source_unit=source_unit,
                 canonical_unit=canonical_unit,
             )
@@ -88,7 +93,26 @@ def normalize_plan(job: SiteFitJob) -> NormalizedPlan:
 def _is_catalog_plan_payload(payload: dict) -> bool:
     rooms = payload.get("rooms") or []
     boundaries = payload.get("boundaries") or []
-    return bool(rooms and boundaries and isinstance(rooms[0], dict) and "room_id" in rooms[0])
+    walls = payload.get("walls") or []
+    openings = payload.get("openings") or []
+    boundary_nodes = payload.get("boundary_nodes") or []
+
+    has_catalog_boundaries = any(isinstance(boundary, dict) and boundary.get("boundary_id") for boundary in boundaries)
+    if not has_catalog_boundaries:
+        return False
+
+    if not rooms:
+        return bool(walls or openings or boundary_nodes)
+
+    return any(isinstance(room, dict) and "room_id" in room for room in rooms)
+
+
+def _retained_catalog_boundaries(boundaries: list[dict]) -> list[dict]:
+    return [
+        boundary
+        for boundary in boundaries
+        if boundary.get("boundary_kind") not in {"duplicate", "artifact"}
+    ]
 
 
 def _sanitize_catalog_payload(payload: dict) -> dict:
@@ -148,7 +172,6 @@ def _normalize_boundary_segments(
             opening_ids=tuple(str(opening_id) for opening_id in (boundary.get("opening_ids") or [])),
         )
         for boundary in boundaries
-        if boundary.get("boundary_kind") not in {"duplicate", "artifact"}
     )
 
 
