@@ -31,6 +31,7 @@ def _load_catalog_payload() -> dict:
         "openings": fixture["openings"],
         "boundaries": fixture["boundaries"],
         "boundary_nodes": fixture["boundary_nodes"],
+        "cad_traces": fixture["cad_traces"],
         "footprint_bbox": fixture["footprint_bbox"],
         "structure_meta": {"unit": fixture["canonical_unit"]},
     }
@@ -47,10 +48,6 @@ def _build_catalog_job():
     )
 
 
-def _sorted_by(items: list[dict], key: str) -> list[dict]:
-    return sorted(items, key=lambda item: item[key])
-
-
 def _asdict_items(items) -> list[dict]:
     return [asdict(item) for item in items]
 
@@ -61,45 +58,39 @@ def _expected_room_summaries(fixture: dict) -> list[dict]:
         for room_id in boundary.get("owner_room_ids") or []:
             boundary_ids_by_room.setdefault(room_id, []).append(boundary["boundary_id"])
 
-    return _sorted_by(
-        [
-            {
-                "room_id": room["room_id"],
-                "name": room["name"],
-                "category": room["category"],
-                "mutability": room["mutability"],
-                "min_width": room["min_width"],
-                "min_height": room["min_height"],
-                "min_area": room["min_area"],
-                "bbox": room["bbox"],
-                "owner_boundary_ids": boundary_ids_by_room.get(room["room_id"], []),
-            }
-            for room in fixture["rooms"]
-        ],
-        "room_id",
-    )
+    return [
+        {
+            "room_id": room["room_id"],
+            "name": room["name"],
+            "category": room["category"],
+            "mutability": room["mutability"],
+            "min_width": room["min_width"],
+            "min_height": room["min_height"],
+            "min_area": room["min_area"],
+            "bbox": room["bbox"],
+            "owner_boundary_ids": tuple(boundary_ids_by_room.get(room["room_id"], [])),
+        }
+        for room in fixture["rooms"]
+    ]
 
 
 def _expected_boundary_segments(fixture: dict) -> list[dict]:
-    return _sorted_by(
-        [
-            {
-                "boundary_id": boundary["boundary_id"],
-                "boundary_kind": boundary["boundary_kind"],
-                "owner_room_ids": boundary["owner_room_ids"],
-                "mutability": boundary["mutability"],
-                "movable": boundary["movable"],
-                "constraint_reasons": boundary["constraint_reasons"],
-                "start": boundary["start"],
-                "end": boundary["end"],
-                "length": boundary["length"],
-                "opening_ids": boundary["opening_ids"],
-            }
-            for boundary in fixture["boundaries"]
-            if boundary.get("boundary_kind") not in {"duplicate", "artifact"}
-        ],
-        "boundary_id",
-    )
+    return [
+        {
+            "boundary_id": boundary["boundary_id"],
+            "boundary_kind": boundary["boundary_kind"],
+            "owner_room_ids": tuple(boundary["owner_room_ids"]),
+            "mutability": boundary["mutability"],
+            "movable": boundary["movable"],
+            "constraint_reasons": tuple(boundary["constraint_reasons"]),
+            "start": boundary["start"],
+            "end": boundary["end"],
+            "length": boundary["length"],
+            "opening_ids": tuple(boundary["opening_ids"]),
+        }
+        for boundary in fixture["boundaries"]
+        if boundary.get("boundary_kind") not in {"duplicate", "artifact"}
+    ]
 
 
 def _expected_wall_segments(fixture: dict) -> list[dict]:
@@ -109,47 +100,41 @@ def _expected_wall_segments(fixture: dict) -> list[dict]:
         if host_wall_id:
             opening_ids_by_wall.setdefault(host_wall_id, []).append(opening["opening_id"])
 
-    return _sorted_by(
-        [
-            {
-                "wall_id": wall["wall_id"],
-                "boundary_kind": wall["boundary_kind"],
-                "owner_room_ids": wall["owner_room_ids"],
-                "mutability": wall["mutability"],
-                "movable": wall["movable"],
-                "hosted_opening_ids": opening_ids_by_wall.get(wall["wall_id"], []),
-                "start": wall["start"],
-                "end": wall["end"],
-                "length": wall["length"],
-            }
-            for wall in fixture["walls"]
-        ],
-        "wall_id",
-    )
+    return [
+        {
+            "wall_id": wall["wall_id"],
+            "boundary_kind": wall["boundary_kind"],
+            "owner_room_ids": tuple(wall["owner_room_ids"]),
+            "mutability": wall["mutability"],
+            "movable": wall["movable"],
+            "hosted_opening_ids": tuple(opening_ids_by_wall.get(wall["wall_id"], [])),
+            "start": wall["start"],
+            "end": wall["end"],
+            "length": wall["length"],
+        }
+        for wall in fixture["walls"]
+    ]
 
 
 def _expected_openings(fixture: dict) -> list[dict]:
-    return _sorted_by(
-        [
-            {
-                "opening_id": opening["opening_id"],
-                "opening_kind": opening["opening_kind"],
-                "host_wall_id": opening["host_wall_id"],
-                "owner_room_ids": opening["owner_room_ids"],
-                "confidence": opening["confidence"],
-                "rehost_required": opening["rehost_required"],
-                "rehostable": opening["rehostable"],
-                "constraint_reasons": opening["constraint_reasons"],
-                "offset": opening["offset"],
-                "span": opening["span"],
-            }
-            for opening in fixture["openings"]
-        ],
-        "opening_id",
-    )
+    return [
+        {
+            "opening_id": opening["opening_id"],
+            "opening_kind": opening["opening_kind"],
+            "host_wall_id": opening["host_wall_id"],
+            "owner_room_ids": tuple(opening["owner_room_ids"]),
+            "confidence": opening["confidence"],
+            "rehost_required": opening["rehost_required"],
+            "rehostable": opening["rehostable"],
+            "constraint_reasons": tuple(opening["constraint_reasons"]),
+            "offset": opening["offset"],
+            "span": opening["span"],
+        }
+        for opening in fixture["openings"]
+    ]
 
 
-def test_normalize_plan_exposes_v2_assembly_from_catalog_fixture():
+def test_normalize_plan_exposes_rich_assembly_in_fixture_order_and_strips_cad_traces():
     fixture = _load_fixture()
     normalized = normalize_plan(_build_catalog_job())
 
@@ -162,13 +147,30 @@ def test_normalize_plan_exposes_v2_assembly_from_catalog_fixture():
     assert normalized.canonical_unit == fixture["canonical_unit"]
 
     assert _asdict_items(normalized.room_summaries) == expected_room_summaries
+
+    assert normalized.room_count == len(fixture["rooms"])
+    assert normalized.wall_count == len(fixture["walls"])
+    assert normalized.opening_count == len(fixture["openings"])
+    assert normalized.footprint_bbox == fixture["footprint_bbox"]
+
     assert _asdict_items(normalized.boundary_segments) == expected_boundary_segments
     assert _asdict_items(normalized.wall_segments) == expected_wall_segments
     assert _asdict_items(normalized.openings) == expected_openings
 
-    assert normalized.movable_boundary_count == sum(
-        1 for boundary in fixture["boundaries"] if boundary["movable"]
+    assert "cad_traces" not in normalized.payload
+
+
+def test_normalize_plan_exposes_boundary_state_counts_from_catalog_fixture():
+    fixture = _load_fixture()
+    normalized = normalize_plan(_build_catalog_job())
+
+    assert normalized.protected_boundary_count == sum(
+        1 for boundary in fixture["boundaries"] if boundary["mutability"] == "protected"
     )
-    assert normalized.rehostable_opening_count == sum(
-        1 for opening in fixture["openings"] if opening["rehostable"]
+    assert normalized.locked_boundary_count == sum(
+        1 for boundary in fixture["boundaries"] if boundary["mutability"] == "locked"
     )
+    assert normalized.room_count == len(fixture["rooms"])
+    assert normalized.wall_count == len(fixture["walls"])
+    assert normalized.opening_count == len(fixture["openings"])
+    assert normalized.footprint_bbox == fixture["footprint_bbox"]
