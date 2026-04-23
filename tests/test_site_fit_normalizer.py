@@ -147,7 +147,7 @@ def test_normalize_plan_exposes_rich_assembly_in_fixture_order_and_strips_cad_tr
     assert normalized.canonical_unit == fixture["canonical_unit"]
 
     assert normalized.movable_boundary_count == sum(
-        1 for boundary in fixture["boundaries"] if boundary["movable"]
+        1 for boundary in fixture["boundaries"] if boundary["mutability"] == "movable"
     )
     assert normalized.rehostable_opening_count == sum(
         1 for opening in fixture["openings"] if opening["rehostable"]
