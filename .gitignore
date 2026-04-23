@@ -51,3 +51,6 @@ scraper/
 # AutoCAD/local crash logs
 acadlt.err
 acad*.err
+
+# Local git worktrees
+.worktrees/
