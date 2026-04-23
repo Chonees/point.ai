@@ -146,6 +146,18 @@ def test_normalize_plan_exposes_rich_assembly_in_fixture_order_and_strips_cad_tr
     assert normalized.source_kind == "plan"
     assert normalized.canonical_unit == fixture["canonical_unit"]
 
+    assert normalized.movable_boundary_count == sum(
+        1 for boundary in fixture["boundaries"] if boundary["movable"]
+    )
+    assert normalized.rehostable_opening_count == sum(
+        1 for opening in fixture["openings"] if opening["rehostable"]
+    )
+
+    assert isinstance(normalized.room_summaries, tuple)
+    assert isinstance(normalized.boundary_segments, tuple)
+    assert isinstance(normalized.wall_segments, tuple)
+    assert isinstance(normalized.openings, tuple)
+
     assert _asdict_items(normalized.room_summaries) == expected_room_summaries
 
     assert normalized.room_count == len(fixture["rooms"])
