@@ -6,11 +6,22 @@ from pathlib import Path
 from backend.site_fit.intake import build_site_fit_job
 from backend.site_fit.normalizer import normalize_plan
 
-FIXTURE_PATH = Path("frontend/src/features/catalogInspector/catalogInspector.fixture.json")
+FIXTURE_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "frontend"
+    / "src"
+    / "features"
+    / "catalogInspector"
+    / "catalogInspector.fixture.json"
+)
+
+
+def _load_fixture() -> dict:
+    return json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
 
 
 def _load_catalog_payload() -> dict:
-    fixture = json.loads(FIXTURE_PATH.read_text(encoding="utf-8"))
+    fixture = _load_fixture()
     return {
         "model": fixture["name"],
         "unit": fixture["canonical_unit"],
@@ -36,23 +47,43 @@ def _build_catalog_job():
 
 
 def test_normalize_plan_exports_rich_catalog_assembly_without_raw_traces():
+    fixture = _load_fixture()
     normalized = normalize_plan(_build_catalog_job())
 
     assert normalized.source_kind == "plan"
-    assert normalized.room_count == len(normalized.room_summaries)
-    assert normalized.wall_count == len(normalized.wall_segments)
-    assert normalized.opening_count == len(normalized.openings)
-    assert normalized.boundary_segments
-    assert normalized.wall_segments
-    assert normalized.openings
-    assert "cad_traces" not in normalized.payload
+    assert normalized.room_count == len(fixture["rooms"])
+    assert normalized.wall_count == len(fixture["walls"])
+    assert normalized.opening_count == len(fixture["openings"])
+    assert normalized.footprint_bbox == fixture["footprint_bbox"]
 
 
 def test_normalize_plan_preserves_mutability_and_rehostability_in_rich_payload():
+    fixture = _load_fixture()
     normalized = normalize_plan(_build_catalog_job())
+    payload = normalized.payload
 
-    assert any(room.mutability == "flexible" for room in normalized.room_summaries)
-    assert any(boundary.mutability == "movable" for boundary in normalized.boundary_segments)
-    assert any(opening.rehost_required is True for opening in normalized.openings)
-    assert normalized.movable_boundary_count > 0
-    assert normalized.rehostable_opening_count > 0
+    flexible_room_ids = {
+        room["room_id"]
+        for room in payload["rooms"]
+        if room["mutability"] == "flexible"
+    }
+    movable_boundary_ids = {
+        boundary["boundary_id"]
+        for boundary in payload["boundaries"]
+        if boundary["mutability"] == "movable"
+    }
+    rehost_required_opening_ids = {
+        opening["opening_id"]
+        for opening in payload["openings"]
+        if opening["rehost_required"] is True
+    }
+
+    assert flexible_room_ids == {
+        room["room_id"]
+        for room in fixture["rooms"]
+        if room["mutability"] == "flexible"
+    }
+    assert {"boundary-4aad10008caa", "boundary-e6868d68bf3e"} <= movable_boundary_ids
+    assert len(movable_boundary_ids) == 39
+    assert {"opening-door-3b02e44a8af3", "opening-window-9a93c7f54172"} <= rehost_required_opening_ids
+    assert len(rehost_required_opening_ids) == 12
