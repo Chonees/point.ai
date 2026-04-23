@@ -74,6 +74,39 @@ def test_boundary_graph_marks_parallel_shell_trace_as_support_boundary():
     assert support_boundary.companion_boundary_id is not None
 
 
+def test_boundary_graph_promotes_loose_parallel_shell_trace_as_support_boundary():
+    seed = build_loose_shell_seed()
+
+    graph = derive_floor_plan_boundary_graph(seed)
+    promoted = next(
+        boundary
+        for boundary in graph.boundaries
+        if boundary.start == CatalogPoint(x=15, y=0) and boundary.end == CatalogPoint(x=15, y=60)
+    )
+
+    assert promoted.boundary_kind == "support"
+    assert promoted.confidence == "trace_companion"
+    assert promoted.companion_boundary_id is not None
+    assert len(promoted.owner_room_ids) == 1
+
+
+def test_boundary_graph_marks_tiny_unowned_fragment_as_artifact_boundary():
+    seed = build_loose_shell_seed()
+
+    graph = derive_floor_plan_boundary_graph(seed)
+    artifact = next(
+        boundary
+        for boundary in graph.boundaries
+        if boundary.start == CatalogPoint(x=150, y=10) and boundary.end == CatalogPoint(x=155, y=10)
+    )
+
+    assert artifact.boundary_kind == "artifact"
+    assert artifact.confidence == "trace_artifact"
+    assert artifact.owner_room_ids == []
+    assert artifact.opening_ids == []
+    assert "micro_fragment" in artifact.issues
+
+
 def test_boundary_graph_groups_exact_duplicate_segments_into_one_family():
     seed = build_duplicate_geometry_seed()
 
@@ -123,11 +156,21 @@ def test_seminole_boundary_graph_reduces_unknown_boundary_count():
     graph = derive_floor_plan_boundary_graph(seed)
     unknown = [boundary for boundary in graph.boundaries if boundary.boundary_kind == "unknown"]
     support = [boundary for boundary in graph.boundaries if boundary.boundary_kind == "support"]
+    artifact = [boundary for boundary in graph.boundaries if boundary.boundary_kind == "artifact"]
+    exterior = [boundary for boundary in graph.boundaries if boundary.boundary_kind == "exterior"]
+    shared = [boundary for boundary in graph.boundaries if boundary.boundary_kind == "shared"]
     duplicates = [boundary for boundary in graph.boundaries if boundary.family_role == "duplicate"]
 
     assert support
+    assert artifact
     assert duplicates
-    assert len(unknown) < 286
+    assert len(shared) >= 10
+    assert len(exterior) >= 182
+    assert len(support) > 29
+    assert len(unknown) < 131
+    assert all(boundary.length <= 8 for boundary in artifact)
+    assert all(not boundary.owner_room_ids for boundary in artifact)
+    assert all(not boundary.opening_ids for boundary in artifact)
 
 
 def build_l_shape_seed() -> FloorPlanCatalogSeed:
@@ -266,6 +309,43 @@ def build_double_line_shell_seed() -> FloorPlanCatalogSeed:
             build_trace("wall-top", (0, 60), (100, 60)),
             build_trace("wall-right", (100, 0), (100, 60)),
             build_trace("wall-bottom", (0, 0), (100, 0)),
+        ],
+        source_layers=["WALLS"],
+        block_refs=[],
+        readiness=CatalogReadiness(status="ready_for_catalog", issues=[]),
+    )
+
+
+def build_loose_shell_seed() -> FloorPlanCatalogSeed:
+    room = CatalogRoom(
+        name="LOOSE SHELL ROOM",
+        polygon=[
+            CatalogPoint(x=0, y=0),
+            CatalogPoint(x=100, y=0),
+            CatalogPoint(x=100, y=60),
+            CatalogPoint(x=0, y=60),
+        ],
+        bbox=CatalogBBox(x1=0, y1=0, x2=100, y2=60, width=100, height=60),
+        centroid=CatalogPoint(x=50, y=30),
+        width=100,
+        height=60,
+        area=6000,
+        measurement_source="room_region",
+    )
+    return FloorPlanCatalogSeed(
+        floor_plan_id="loose-shell-seed",
+        name="LOOSE SHELL",
+        source_path="synthetic/loose-shell.dxf",
+        canonical_unit="inch",
+        footprint_bbox=CatalogBBox(x1=0, y1=0, x2=155, y2=60, width=155, height=60),
+        rooms=[room],
+        cad_traces=[
+            build_trace("wall-left-primary", (0, 0), (0, 60)),
+            build_trace("wall-left-loose", (15, 0), (15, 60)),
+            build_trace("wall-top", (0, 60), (100, 60)),
+            build_trace("wall-right", (100, 0), (100, 60)),
+            build_trace("wall-bottom", (0, 0), (100, 0)),
+            build_trace("tiny-fragment", (150, 10), (155, 10)),
         ],
         source_layers=["WALLS"],
         block_refs=[],
