@@ -68960,170 +68960,112 @@
   "wall_graph_issues": [],
   "openings": [
     {
-      "opening_id": "opening-door-01dc5d630edb",
+      "opening_id": "opening-door-00d9b2800739",
       "opening_kind": "door",
-      "host_wall_id": "wall-c5dd37774b48",
+      "host_wall_id": "wall-3191de6224c3",
       "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-04d0175d1318",
-        "trace-7347f5cd7751",
-        "trace-7e8cb67edf42",
-        "trace-8e95a7e839c5",
-        "trace-aaa601f4fbcc",
-        "trace-c162cf52b005"
+        "trace-0c6dbdb1620e",
+        "trace-11b4e026be1b",
+        "trace-168145546bb6",
+        "trace-ee35b8272277"
       ],
       "orientation": "vertical",
       "start": {
-        "x": 249.37422223794346,
-        "y": 224.469
+        "x": 288.0690501604805,
+        "y": 338.569
       },
       "end": {
-        "x": 249.37422223794346,
-        "y": 228.469
+        "x": 288.0690501604805,
+        "y": 358.035
       },
-      "offset": 28.598,
-      "span": 4.0,
+      "offset": 4.737,
+      "span": 19.466,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-05de6fd4fe08",
+      "opening_id": "opening-door-0592b8cbd4aa",
       "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-74f5666e2e47",
-        "trace-ada6f149ce72",
-        "trace-bdf004bed0d9",
-        "trace-d4df2f2df125"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 68.2539045820275,
-        "y": 473.68269494037975
-      },
-      "end": {
-        "x": 82.35888809456128,
-        "y": 488.13406181173127
-      },
-      "offset": 0.0,
-      "span": 20.194,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-door-06770b310b6f",
-      "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-115cd2c5349d",
-        "trace-a639429d4072"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 437.55930953450195,
-        "y": 491.50324113018735
-      },
-      "end": {
-        "x": 439.1305560195666,
-        "y": 496.8549225415695
-      },
-      "offset": 0.0,
-      "span": 5.578,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-door-090e11365aa9",
-      "opening_kind": "door",
-      "host_wall_id": "wall-13a4629fa1e0",
+      "host_wall_id": "wall-df6be7141e07",
       "owner_room_ids": [
-        "room-bedroom-4-04b61e6be876"
+        "room-porch-4997efb61d6a"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-0487bcadcdf3",
-        "trace-2e2b336102f3",
-        "trace-537fbd9e8b27",
-        "trace-98b1bc18cfd1"
+        "trace-593f1a533a44",
+        "trace-edd15caaf714"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 162.311,
-        "y": 120.92899500899426
+        "x": 238.733,
+        "y": 195.8709074089606
       },
       "end": {
-        "x": 166.246,
-        "y": 120.92899500899426
+        "x": 239.304,
+        "y": 195.8709074089606
+      },
+      "offset": -0.0,
+      "span": 0.571,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-08ce18c56a48",
+      "opening_kind": "door",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-4c4b8175715b",
+        "trace-c4ce802bb6b8",
+        "trace-d196dbe9d8ad",
+        "trace-e943d9951073"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 185.93258415349496,
+        "y": 133.7026765258535
+      },
+      "end": {
+        "x": 186.2491805832176,
+        "y": 133.7026765258535
       },
       "offset": 0.0,
-      "span": 3.935,
-      "confidence": "hosted",
-      "issues": []
+      "span": 0.317,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
     },
     {
-      "opening_id": "opening-door-0d2609d78594",
+      "opening_id": "opening-door-0d27d9d7e4fe",
       "opening_kind": "door",
-      "host_wall_id": "wall-0797bf918d6d",
+      "host_wall_id": "wall-05536a791e42",
       "owner_room_ids": [
-        "room-garage-bd6ecee651da"
+        "room-bedroom-2-cf9dbc0716ff"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-27948e05a282",
-        "trace-8438b14a7e03",
-        "trace-e6b6731602c8",
-        "trace-e921af9e9055"
+        "trace-34fdbee9af08",
+        "trace-c6d65a6fa6b1",
+        "trace-cc0425bbb51e",
+        "trace-dbb515827f79"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 255.17844642631508,
-        "y": 79.476
+        "x": 55.816,
+        "y": 335.5353805179294
       },
       "end": {
-        "x": 255.17844642631508,
-        "y": 83.361
+        "x": 85.805,
+        "y": 335.5353805179294
       },
-      "offset": 1.128,
-      "span": 3.885,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-113586ab85b0",
-      "opening_kind": "door",
-      "host_wall_id": "wall-0797bf918d6d",
-      "owner_room_ids": [
-        "room-garage-bd6ecee651da"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-07efb22518ef",
-        "trace-95c7131433df",
-        "trace-d0bf2de2eb79",
-        "trace-fde6b1eb3723"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 255.17844642631508,
-        "y": 81.657
-      },
-      "end": {
-        "x": 255.17844642631508,
-        "y": 83.361
-      },
-      "offset": 3.309,
-      "span": 1.704,
+      "offset": -29.989,
+      "span": 29.989,
       "confidence": "hosted",
       "issues": []
     },
@@ -69156,6 +69098,62 @@
       ]
     },
     {
+      "opening_id": "opening-door-174f4bae2090",
+      "opening_kind": "door",
+      "host_wall_id": "wall-57c7343fca3e",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-26e977366d39",
+        "trace-ee29e26e3cd9"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 166.297,
+        "y": 335.53538051794794
+      },
+      "end": {
+        "x": 166.297,
+        "y": 335.53538051794794
+      },
+      "offset": -0.0,
+      "span": 0.0,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-17cb069fc6a8",
+      "opening_kind": "door",
+      "host_wall_id": "wall-9d30659a6a4d",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2",
+        "room-utility-d426eaa238c3"
+      ],
+      "connected_room_ids": [
+        "room-entry-782df4e2a9f2",
+        "room-utility-d426eaa238c3"
+      ],
+      "trace_ids": [
+        "trace-be60a559b1b1",
+        "trace-ece993442abc"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 285.48939496564407,
+        "y": 364.117
+      },
+      "end": {
+        "x": 285.48939496564407,
+        "y": 366.089
+      },
+      "offset": -0.0,
+      "span": 1.972,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
       "opening_id": "opening-door-1a0147661a2e",
       "opening_kind": "door",
       "host_wall_id": null,
@@ -69184,111 +69182,88 @@
       ]
     },
     {
-      "opening_id": "opening-door-1a7011483de1",
+      "opening_id": "opening-door-1a6332589a9c",
       "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-be60a559b1b1",
-        "trace-ece993442abc"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 310.5120854754517,
-        "y": 357.37798144895424
-      },
-      "end": {
-        "x": 284.19956736830534,
-        "y": 365.8679947748472
-      },
-      "offset": 0.0,
-      "span": 27.648,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-door-1b80133a64cb",
-      "opening_kind": "door",
-      "host_wall_id": "wall-7e587da47281",
-      "owner_room_ids": [
-        "room-garage-bd6ecee651da"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-2acfc3c39a05",
-        "trace-8be7921d1591",
-        "trace-a53114cc17d3",
-        "trace-e8de3ea66628"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 260.261,
-        "y": 263.9999186794097
-      },
-      "end": {
-        "x": 261.632,
-        "y": 263.9999186794097
-      },
-      "offset": 7.017,
-      "span": 1.371,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-1c2b9e81130e",
-      "opening_kind": "door",
-      "host_wall_id": "wall-1547e982112a",
+      "host_wall_id": "wall-52c67dad8150",
       "owner_room_ids": [
         "room-porch-4997efb61d6a"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-593f1a533a44",
-        "trace-edd15caaf714"
+        "trace-01a37ab33ea8",
+        "trace-3b961b39aa91",
+        "trace-78faf39b3d6c",
+        "trace-c840e7c3abd9"
       ],
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "start": {
-        "x": 203.908,
-        "y": 190.76123156349723
+        "x": 185.52775616589463,
+        "y": 133.889
       },
       "end": {
-        "x": 238.733,
-        "y": 190.76123156349723
+        "x": 185.52775616589463,
+        "y": 158.4
       },
-      "offset": 0.0,
-      "span": 34.825,
+      "offset": -24.511,
+      "span": 24.511,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-1fd026dd20b3",
+      "opening_id": "opening-door-1e15abc0aac1",
+      "opening_kind": "door",
+      "host_wall_id": "wall-05536a791e42",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
+      "connected_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff",
+        "room-entry-782df4e2a9f2"
+      ],
+      "trace_ids": [
+        "trace-465418ffa08d",
+        "trace-593b91d29b10"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 102.439,
+        "y": 335.5353805179294
+      },
+      "end": {
+        "x": 131.453,
+        "y": 335.5353805179294
+      },
+      "offset": 16.634,
+      "span": 29.014,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-1eb5b4655578",
       "opening_kind": "door",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-5062309b6061",
-        "trace-a6ab30bf5cc4",
-        "trace-a93b1f75e683",
-        "trace-b409f7e31551"
+        "trace-62e76b2fcc53",
+        "trace-a5ec2a051f3a",
+        "trace-abbaf767fd9e",
+        "trace-e4abd09ec97b"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 257.62434402109164,
-        "y": 398.2020766203281
+        "x": 340.62502396213216,
+        "y": 354.10278951772784
       },
       "end": {
-        "x": 243.46767278579927,
-        "y": 382.2989550612125
+        "x": 341.99586297111125,
+        "y": 354.10278951772784
       },
       "offset": 0.0,
-      "span": 21.291,
-      "confidence": "unhosted",
+      "span": 1.371,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
@@ -69324,47 +69299,41 @@
       "issues": []
     },
     {
-      "opening_id": "opening-door-278b4f454b8d",
+      "opening_id": "opening-door-24d675a241dc",
       "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
+      "host_wall_id": "wall-495ea6fe93e0",
+      "owner_room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-19ac77345f42",
-        "trace-55cfc95fae8a",
-        "trace-7d2809370c34",
-        "trace-de667b8df614",
-        "trace-e5e89ec45241",
-        "trace-f8b2cc23df03"
+        "trace-189d57c08e0e",
+        "trace-43118bbe8d9c",
+        "trace-e33f50bbd58e",
+        "trace-fe8cb7bc59dd"
       ],
       "orientation": "vertical",
       "start": {
-        "x": 406.383153945462,
-        "y": 435.206570509488
+        "x": 260.98267061474655,
+        "y": 458.785
       },
       "end": {
-        "x": 406.383153945462,
-        "y": 436.29915879832333
+        "x": 260.98267061474655,
+        "y": 459.356
       },
-      "offset": 0.0,
-      "span": 1.093,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
+      "offset": -0.571,
+      "span": 0.571,
+      "confidence": "hosted",
+      "issues": []
     },
     {
-      "opening_id": "opening-door-285228577eac",
+      "opening_id": "opening-door-263931fd1fe1",
       "opening_kind": "door",
-      "host_wall_id": "wall-97172cda1be9",
+      "host_wall_id": "wall-c31a942151eb",
       "owner_room_ids": [
-        "room-closet-c59e39a3c606",
-        "room-master-bath-8c1d12c9d850"
+        "room-closet-c59e39a3c606"
       ],
-      "connected_room_ids": [
-        "room-closet-c59e39a3c606",
-        "room-master-bath-8c1d12c9d850"
-      ],
+      "connected_room_ids": [],
       "trace_ids": [
         "trace-15ad76cf93a0",
         "trace-3faecac230e8",
@@ -69373,102 +69342,248 @@
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 385.704,
-        "y": 398.8953610013407
+        "x": 387.704,
+        "y": 396.8514906631615
       },
       "end": {
-        "x": 390.354,
-        "y": 398.8953610013407
+        "x": 388.354,
+        "y": 396.8514906631615
       },
-      "offset": 29.304,
-      "span": 4.65,
+      "offset": 33.854,
+      "span": 0.65,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-2bd43ffe36aa",
-      "opening_kind": "door",
-      "host_wall_id": "wall-587ff6839a56",
-      "owner_room_ids": [
-        "room-bedroom-3-b8f109d99d59"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-116dbc8e5e7e",
-        "trace-462656c6afeb",
-        "trace-5c7a1b6fa136",
-        "trace-64823aba76d9"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 148.7676696395061,
-        "y": 259.928
-      },
-      "end": {
-        "x": 148.7676696395061,
-        "y": 284.439
-      },
-      "offset": 98.122,
-      "span": 24.511,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-330784c7d784",
+      "opening_id": "opening-door-273e3c0e2bcc",
       "opening_kind": "door",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-591ce0e16cc7",
-        "trace-7a91f567f7f8",
-        "trace-7b95922e285b",
-        "trace-800e4fa7b045",
-        "trace-903ae37ce5ef",
-        "trace-af94ef50b3b8",
-        "trace-d3e4c06c7a02",
-        "trace-f6016d8a0a9e"
+        "trace-009a08489556",
+        "trace-071c45163e76",
+        "trace-3c34f5b4c6a5",
+        "trace-4a8baf2d9f51",
+        "trace-807cb38ba8b1",
+        "trace-992c9ccab240",
+        "trace-9cf53d3032da",
+        "trace-b495a932b4df"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 83.24658663781028,
-        "y": 487.3704865702947
+        "x": 306.88084928902225,
+        "y": 552.0674903691139
       },
       "end": {
-        "x": 82.35888809456128,
-        "y": 488.13406181173127
+        "x": 308.2516882979731,
+        "y": 552.0674903691139
       },
       "offset": 0.0,
-      "span": 1.171,
-      "confidence": "unhosted",
+      "span": 1.371,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-door-35d5f2da94d2",
+      "opening_id": "opening-door-2a25ebb231eb",
+      "opening_kind": "door",
+      "host_wall_id": "wall-71fb8493182f",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-5a5c1cd4fd55",
+        "trace-89a84509652b"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 260.578,
+        "y": 294.6579737482306
+      },
+      "end": {
+        "x": 284.2,
+        "y": 294.6579737482306
+      },
+      "offset": -23.622,
+      "span": 23.622,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-2c9f83a9b594",
       "opening_kind": "door",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-30b53423b391",
-        "trace-7cc6a0150a2f"
+        "trace-0a0020c0d91b",
+        "trace-16117b52f965",
+        "trace-1f96f090a6cc",
+        "trace-336124571ff7",
+        "trace-39a7b9979d65",
+        "trace-6ddd354c5b51",
+        "trace-9a422cc37b01",
+        "trace-ac2c4e7b9ef1"
       ],
-      "orientation": "point",
+      "orientation": "horizontal",
       "start": {
-        "x": 379.486294253976,
-        "y": 435.1740595042422
+        "x": 218.8437079446988,
+        "y": 263.85686183430323
       },
       "end": {
-        "x": 379.486294253976,
-        "y": 435.1740595042422
+        "x": 219.40284388615234,
+        "y": 263.85686183430323
       },
       "offset": 0.0,
-      "span": 0.0,
-      "confidence": "unhosted",
+      "span": 0.559,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-door-33212ec7915a",
+      "opening_kind": "door",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-2acfc3c39a05",
+        "trace-8be7921d1591",
+        "trace-a53114cc17d3",
+        "trace-e8de3ea66628"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 260.26124619774725,
+        "y": 274.3873394591362
+      },
+      "end": {
+        "x": 261.63208520669815,
+        "y": 274.3873394591362
+      },
+      "offset": 0.0,
+      "span": 1.371,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-door-334fd2242eb3",
+      "opening_kind": "door",
+      "host_wall_id": "wall-495ea6fe93e0",
+      "owner_room_ids": [
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "connected_room_ids": [
+        "room-living-room-f08c7113b7e9",
+        "room-pwdr-f2cbb3be1766"
+      ],
+      "trace_ids": [
+        "trace-c17dc4a67b51",
+        "trace-cfe3a1484673"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 260.98267061474655,
+        "y": 459.356
+      },
+      "end": {
+        "x": 260.98267061474655,
+        "y": 459.99
+      },
+      "offset": -0.0,
+      "span": 0.634,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-3911a3f75364",
+      "opening_kind": "door",
+      "host_wall_id": "wall-c31a942151eb",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "connected_room_ids": [
+        "room-closet-c59e39a3c606",
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "trace_ids": [
+        "trace-688249acfbdf",
+        "trace-d6655f736a3d"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 387.299,
+        "y": 396.8514906631615
+      },
+      "end": {
+        "x": 387.708,
+        "y": 396.8514906631615
+      },
+      "offset": 33.449,
+      "span": 0.409,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-3b02e44a8af3",
+      "opening_kind": "door",
+      "host_wall_id": "wall-4d8f2fe76871",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-5062309b6061",
+        "trace-a6ab30bf5cc4",
+        "trace-a93b1f75e683",
+        "trace-b409f7e31551"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 257.1131878224424,
+        "y": 382.299
+      },
+      "end": {
+        "x": 257.1131878224424,
+        "y": 398.555
+      },
+      "offset": -16.256,
+      "span": 16.256,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-3b11256ebb32",
+      "opening_kind": "door",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-2910d7a0adce",
+        "trace-537f9aba1ab5",
+        "trace-8b3e5a4a2ac5",
+        "trace-9d427dbbdef8"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 242.2972948090598,
+        "y": 382.6480837666194
+      },
+      "end": {
+        "x": 243.46767278579927,
+        "y": 382.6480837666194
+      },
+      "offset": 0.0,
+      "span": 1.17,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
       ]
     },
     {
@@ -69504,6 +69619,60 @@
       ]
     },
     {
+      "opening_id": "opening-door-3c6213a59e70",
+      "opening_kind": "door",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-151ca92adc4c",
+        "trace-5515f01818e1",
+        "trace-d509d089cac7",
+        "trace-e3b651fb1854"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 283.8284086070576,
+        "y": 459.3881632438291
+      },
+      "end": {
+        "x": 283.9783727090911,
+        "y": 459.3881632438291
+      },
+      "offset": 0.0,
+      "span": 0.15,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-door-43c19b0fe41f",
+      "opening_kind": "door",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-81a9761084e2",
+        "trace-dad1bd292c66"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 461.715881062202,
+        "y": 485.9598507217979
+      },
+      "end": {
+        "x": 461.715881062202,
+        "y": 490.24886938187916
+      },
+      "offset": 0.0,
+      "span": 4.289,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
       "opening_id": "opening-door-44d7fcf71875",
       "opening_kind": "door",
       "host_wall_id": null,
@@ -69532,172 +69701,199 @@
       ]
     },
     {
-      "opening_id": "opening-door-4e56b4dc6b4b",
+      "opening_id": "opening-door-452b134f876b",
       "opening_kind": "door",
-      "host_wall_id": "wall-b41dea20f8c5",
+      "host_wall_id": "wall-4930c369e8b0",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-78f887a86aca",
+        "trace-895676bc3eac"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 143.08027927038012,
+        "y": 361.631
+      },
+      "end": {
+        "x": 143.08027927038012,
+        "y": 381.522
+      },
+      "offset": -19.891,
+      "span": 19.891,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-4af426dd8d2a",
+      "opening_kind": "door",
+      "host_wall_id": "wall-a0e4a33c1a5a",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-74f5666e2e47",
+        "trace-ada6f149ce72",
+        "trace-bdf004bed0d9",
+        "trace-d4df2f2df125"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 72.3453844926133,
+        "y": 473.283
+      },
+      "end": {
+        "x": 72.3453844926133,
+        "y": 488.134
+      },
+      "offset": 28.741,
+      "span": 14.851,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-4d16af5b837d",
+      "opening_kind": "door",
+      "host_wall_id": "wall-38e0715445fc",
       "owner_room_ids": [
         "room-bedroom-2-cf9dbc0716ff"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-56b0f68a45f7",
-        "trace-78b9fe8c599a",
-        "trace-97e3455490ba",
-        "trace-fa14b48f9cd0"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 135.04105410171113,
-        "y": 335.535
-      },
-      "end": {
-        "x": 135.04105410171113,
-        "y": 355.154
-      },
-      "offset": -0.0,
-      "span": 19.619,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-4f2437f6790d",
-      "opening_kind": "door",
-      "host_wall_id": "wall-2bfea465733e",
-      "owner_room_ids": [
-        "room-living-room-f08c7113b7e9",
-        "room-patio-baedb76676bf"
-      ],
-      "connected_room_ids": [
-        "room-living-room-f08c7113b7e9",
-        "room-patio-baedb76676bf"
-      ],
-      "trace_ids": [
-        "trace-165fc1de2e38",
-        "trace-4ee2163f9c34",
-        "trace-5f6fc85faf34",
-        "trace-88127f7e87c3"
+        "trace-9ca5dbde6e61",
+        "trace-bd73121d62d6",
+        "trace-c238886c4e36",
+        "trace-f215a9b17bde"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 128.506,
-        "y": 708.5417172358513
+        "x": 27.763,
+        "y": 332.12892995430167
       },
       "end": {
-        "x": 133.355,
-        "y": 708.5417172358513
+        "x": 55.816,
+        "y": 332.12892995430167
       },
-      "offset": 8.221,
-      "span": 4.849,
+      "offset": 6.688,
+      "span": 28.053,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-50c22eab48db",
+      "opening_id": "opening-door-526988e43066",
       "opening_kind": "door",
-      "host_wall_id": "wall-9e25d051b0e3",
+      "host_wall_id": "wall-c5dd37774b48",
       "owner_room_ids": [
-        "room-mstr--bedroom-f807fea0d33b"
+        "room-entry-782df4e2a9f2"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-71581a976d26",
-        "trace-7a0faa8537b0"
+        "trace-342b291c6c27",
+        "trace-44f1e729f707",
+        "trace-ce34fbd0212c",
+        "trace-e1fd984d78c5"
       ],
       "orientation": "vertical",
       "start": {
-        "x": 301.6122399332913,
-        "y": 526.297
+        "x": 249.37422223794346,
+        "y": 264.0
       },
       "end": {
-        "x": 301.6122399332913,
-        "y": 552.358
+        "x": 249.37422223794346,
+        "y": 264.747
       },
-      "offset": 0.0,
-      "span": 26.061,
+      "offset": 68.129,
+      "span": 0.747,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-56b1264d0aa1",
+      "opening_id": "opening-door-54b804003221",
       "opening_kind": "door",
-      "host_wall_id": "wall-b41dea20f8c5",
+      "host_wall_id": "wall-3c5895601bb5",
       "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-26e977366d39",
-        "trace-ee29e26e3cd9"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 135.04105410171113,
-        "y": 335.535
-      },
-      "end": {
-        "x": 135.04105410171113,
-        "y": 355.528
-      },
-      "offset": -0.0,
-      "span": 19.993,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-59bcf61328ca",
-      "opening_kind": "door",
-      "host_wall_id": "wall-2bbe73c44345",
-      "owner_room_ids": [
-        "room-bedroom-4-04b61e6be876",
         "room-porch-4997efb61d6a"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-07efb22518ef",
+        "trace-95c7131433df",
+        "trace-d0bf2de2eb79",
+        "trace-fde6b1eb3723"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 265.8195241049999,
+        "y": 81.657
+      },
+      "end": {
+        "x": 265.8195241049999,
+        "y": 83.361
+      },
+      "offset": 6.715,
+      "span": 1.704,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-67dff5ccccde",
+      "opening_kind": "door",
+      "host_wall_id": "wall-89c1f436a375",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
       ],
       "connected_room_ids": [
-        "room-bedroom-4-04b61e6be876",
-        "room-porch-4997efb61d6a"
+        "room-living-room-f08c7113b7e9",
+        "room-mstr-bedroom-f807fea0d33b"
       ],
       "trace_ids": [
-        "trace-69501bd20011",
-        "trace-bab7b0d95f59"
+        "trace-15c6d1ae86dc",
+        "trace-97636e8f66c0",
+        "trace-9bc6bd45a9a2",
+        "trace-f9ee1ee96b9e"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 189.39723895811778,
-        "y": 131.889
+        "x": 307.602,
+        "y": 522.890161517805
       },
       "end": {
-        "x": 189.39723895811778,
-        "y": 135.889
+        "x": 308.252,
+        "y": 522.890161517805
       },
-      "offset": 85.359,
-      "span": 4.0,
+      "offset": 9.859,
+      "span": 0.65,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-63d00f2dcb99",
+      "opening_id": "opening-door-69b91fc249f4",
       "opening_kind": "door",
-      "host_wall_id": "wall-4f8797258d7a",
+      "host_wall_id": "wall-1c0cb1842509",
       "owner_room_ids": [
-        "room-utility-d426eaa238c3"
+        "room-bedroom-4-04b61e6be876"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-62e76b2fcc53",
-        "trace-a5ec2a051f3a",
-        "trace-abbaf767fd9e",
-        "trace-e4abd09ec97b"
+        "trace-22c843b67201",
+        "trace-7a0f22af6d93",
+        "trace-d544b9361eae",
+        "trace-f147591d10d1"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 349.9807748364301,
-        "y": 352.037
+        "x": 164.246,
+        "y": 44.283857327217035
       },
       "end": {
-        "x": 349.9807748364301,
-        "y": 356.037
+        "x": 166.18,
+        "y": 44.283857327217035
       },
-      "offset": 18.205,
-      "span": 4.0,
+      "offset": 1.935,
+      "span": 1.934,
       "confidence": "hosted",
       "issues": []
     },
@@ -69730,66 +69926,106 @@
       "issues": []
     },
     {
-      "opening_id": "opening-door-768039c41aed",
+      "opening_id": "opening-door-6ff29721a98b",
       "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-8c56efe1d790",
-        "trace-a3e93aa61f89",
-        "trace-a5ef7753ea04",
-        "trace-b688bce6a60d"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 85.80493448355497,
-        "y": 284.438622063401
-      },
-      "end": {
-        "x": 55.81644284369138,
-        "y": 284.438622063401
-      },
-      "offset": 0.0,
-      "span": 29.988,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-door-7b7e54656f81",
-      "opening_kind": "door",
-      "host_wall_id": "wall-d4aa981447a8",
+      "host_wall_id": "wall-015b15fb5414",
       "owner_room_ids": [
-        "room-living-room-f08c7113b7e9"
+        "room-entry-782df4e2a9f2"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-189d57c08e0e",
-        "trace-43118bbe8d9c",
-        "trace-e33f50bbd58e",
-        "trace-fe8cb7bc59dd"
+        "trace-cb1bdad77be9",
+        "trace-d62729b0a2b3"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 260.983,
-        "y": 464.9805019360397
+        "x": 242.376,
+        "y": 374.7095619997389
       },
       "end": {
-        "x": 283.828,
-        "y": 464.9805019360397
+        "x": 257.113,
+        "y": 374.7095619997389
       },
-      "offset": 0.0,
-      "span": 22.845,
+      "offset": -18.607,
+      "span": 14.737,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-7f46e1b74417",
+      "opening_id": "opening-door-76896c57715c",
       "opening_kind": "door",
       "host_wall_id": null,
       "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-30cdf2de3dc5",
+        "trace-34fb457f9e32",
+        "trace-3acf21b808f2",
+        "trace-564fdab84b62",
+        "trace-6c161f138228",
+        "trace-7b6f6480a32a",
+        "trace-976362f1e84a",
+        "trace-cd636bdd2713",
+        "trace-cf391a163b14",
+        "trace-df8fefdf9bfd",
+        "trace-e22ed9e490b6",
+        "trace-e4446808e001"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 444.61737342702315,
+        "y": 454.1929527145408
+      },
+      "end": {
+        "x": 444.61737342702315,
+        "y": 455.3985069190681
+      },
+      "offset": 0.0,
+      "span": 1.206,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-door-799212369a3d",
+      "opening_kind": "door",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-7b34f7e1edd5",
+        "trace-82b881a0766e",
+        "trace-876f166e0902",
+        "trace-c1f43bda64e0",
+        "trace-c9d446061b48",
+        "trace-f62a3616e274",
+        "trace-fb886d614a8e",
+        "trace-fc9accf7c924"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 386.9828245728781,
+        "y": 375.60459268617683
+      },
+      "end": {
+        "x": 388.3536635818571,
+        "y": 375.60459268617683
+      },
+      "offset": 0.0,
+      "span": 1.371,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-door-7dad36b82e64",
+      "opening_kind": "door",
+      "host_wall_id": "wall-33fcb3bb85c0",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "connected_room_ids": [],
       "trace_ids": [
         "trace-0f7c9259398c",
@@ -69797,47 +70033,47 @@
         "trace-e90a939f2fc2",
         "trace-f6d16d67c747"
       ],
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "start": {
-        "x": 379.486294253976,
-        "y": 436.29915879832333
+        "x": 417.69672370092024,
+        "y": 435.727
       },
       "end": {
-        "x": 406.383153945462,
-        "y": 436.29915879832333
+        "x": 417.69672370092024,
+        "y": 436.299
       },
-      "offset": 0.0,
-      "span": 26.897,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
+      "offset": 35.469,
+      "span": 0.572,
+      "confidence": "hosted",
+      "issues": []
     },
     {
-      "opening_id": "opening-door-849255f55b01",
+      "opening_id": "opening-door-7eb8d1dd602e",
       "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
+      "host_wall_id": "wall-2d4091149e13",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-58bc0dccaae7",
-        "trace-ef6493881b34"
+        "trace-165fc1de2e38",
+        "trace-4ee2163f9c34",
+        "trace-5f6fc85faf34",
+        "trace-88127f7e87c3"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 83.4095490510313,
-        "y": 487.7526906326343
+        "x": 130.506,
+        "y": 705.1352666722235
       },
       "end": {
-        "x": 51.996611922026446,
-        "y": 487.666796032734
+        "x": 131.355,
+        "y": 705.1352666722235
       },
-      "offset": 0.0,
-      "span": 31.413,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
+      "offset": -0.849,
+      "span": 0.849,
+      "confidence": "hosted",
+      "issues": []
     },
     {
       "opening_id": "opening-door-84dd03f0dbe7",
@@ -69866,235 +70102,84 @@
       "issues": []
     },
     {
-      "opening_id": "opening-door-88da9195420e",
+      "opening_id": "opening-door-8b5ee0b51ce5",
       "opening_kind": "door",
-      "host_wall_id": "wall-587ff6839a56",
+      "host_wall_id": "wall-3c5895601bb5",
       "owner_room_ids": [
-        "room-bedroom-3-b8f109d99d59"
+        "room-porch-4997efb61d6a"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-042b308d03e1",
-        "trace-1ed2ad0ed47b",
-        "trace-51698a82d763",
-        "trace-6b7a3a8d18f2",
-        "trace-d4c93a6e2670",
-        "trace-f0d99227d140",
-        "trace-f5c6f1619376",
-        "trace-f629c9bfcbdd"
+        "trace-27948e05a282",
+        "trace-8438b14a7e03",
+        "trace-e6b6731602c8",
+        "trace-e921af9e9055"
       ],
       "orientation": "vertical",
       "start": {
-        "x": 148.7676696395061,
-        "y": 257.928
+        "x": 265.8195241049999,
+        "y": 79.476
       },
       "end": {
-        "x": 148.7676696395061,
-        "y": 261.928
+        "x": 265.8195241049999,
+        "y": 83.361
       },
-      "offset": 96.122,
-      "span": 4.0,
+      "offset": 4.534,
+      "span": 3.885,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-8a13c90802e0",
+      "opening_id": "opening-door-97e2c6f22d7c",
       "opening_kind": "door",
-      "host_wall_id": "wall-7e587da47281",
+      "host_wall_id": "wall-01a5e71af7ba",
       "owner_room_ids": [
-        "room-garage-bd6ecee651da"
+        "room-kitchen-30c3548c559f"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-5a5c1cd4fd55",
-        "trace-89a84509652b"
+        "trace-58bc0dccaae7",
+        "trace-ef6493881b34"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 260.578,
-        "y": 263.9999186794097
+        "x": 51.997,
+        "y": 491.35542466868253
       },
       "end": {
-        "x": 284.2,
-        "y": 263.9999186794097
+        "x": 83.41,
+        "y": 491.35542466868253
       },
-      "offset": 7.334,
-      "span": 23.622,
+      "offset": 30.922,
+      "span": 31.413,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-8b71093a3491",
+      "opening_id": "opening-door-984db820a0b3",
       "opening_kind": "door",
-      "host_wall_id": "wall-587ff6839a56",
-      "owner_room_ids": [
-        "room-bedroom-3-b8f109d99d59"
-      ],
-      "connected_room_ids": [
-        "room-bedroom-3-b8f109d99d59",
-        "room-entry-782df4e2a9f2"
-      ],
-      "trace_ids": [
-        "trace-1fdfd9f71370",
-        "trace-e4cabf00a739"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 148.7676696395061,
-        "y": 259.449
-      },
-      "end": {
-        "x": 148.7676696395061,
-        "y": 284.439
-      },
-      "offset": 97.643,
-      "span": 24.99,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-8b82fcfa1edf",
-      "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-0e7d9711485e",
-        "trace-7a266e3cfd0f"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 249.82581066935842,
-        "y": 291.2515231766547
-      },
-      "end": {
-        "x": 218.84828798001928,
-        "y": 263.3293460694901
-      },
-      "offset": 0.0,
-      "span": 41.704,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-door-8bc350231399",
-      "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-7b34f7e1edd5",
-        "trace-82b881a0766e",
-        "trace-876f166e0902",
-        "trace-c1f43bda64e0",
-        "trace-c9d446061b48",
-        "trace-f62a3616e274",
-        "trace-fb886d614a8e",
-        "trace-fc9accf7c924"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 387.1125618826887,
-        "y": 375.792951887346
-      },
-      "end": {
-        "x": 388.3536635818571,
-        "y": 375.792951887346
-      },
-      "offset": 0.0,
-      "span": 1.241,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-door-8e9d4106032e",
-      "opening_kind": "door",
-      "host_wall_id": "wall-62bb1dc77ab7",
+      "host_wall_id": "wall-17b83baf5e61",
       "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-0c6dbdb1620e",
-        "trace-11b4e026be1b",
-        "trace-168145546bb6",
-        "trace-ee35b8272277"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 287.469,
-        "y": 330.4257046725032
-      },
-      "end": {
-        "x": 305.482,
-        "y": 330.4257046725032
-      },
-      "offset": 34.225,
-      "span": 18.013,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-918ffc3ec9f1",
-      "opening_kind": "door",
-      "host_wall_id": "wall-c5dd37774b48",
-      "owner_room_ids": [
-        "room-entry-782df4e2a9f2"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-342b291c6c27",
-        "trace-44f1e729f707",
-        "trace-ce34fbd0212c",
-        "trace-e1fd984d78c5"
+        "trace-40253103d154",
+        "trace-d9495f0616ed",
+        "trace-e29d957b8652",
+        "trace-ea14d691de48"
       ],
       "orientation": "vertical",
       "start": {
-        "x": 249.37422223794346,
-        "y": 262.747
+        "x": 253.243705030237,
+        "y": 274.453
       },
       "end": {
-        "x": 249.37422223794346,
-        "y": 264.0
+        "x": 253.243705030237,
+        "y": 294.658
       },
-      "offset": 66.876,
-      "span": 1.253,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-98c55920c325",
-      "opening_kind": "door",
-      "host_wall_id": "wall-b41dea20f8c5",
-      "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-107b8d51e3d8",
-        "trace-186f50931954",
-        "trace-214c67cc478f",
-        "trace-3e6842eec7d0",
-        "trace-6563b48fadd7",
-        "trace-8ba9f1e66208",
-        "trace-b01da00631c1",
-        "trace-dc1092baf259"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 135.04105410171113,
-        "y": 358.046
-      },
-      "end": {
-        "x": 135.04105410171113,
-        "y": 362.046
-      },
-      "offset": 22.511,
-      "span": 4.0,
+      "offset": -25.315,
+      "span": 20.205,
       "confidence": "hosted",
       "issues": []
     },
@@ -70125,125 +70210,138 @@
       "issues": []
     },
     {
-      "opening_id": "opening-door-9dbdace80d8a",
+      "opening_id": "opening-door-9dc96585c218",
       "opening_kind": "door",
-      "host_wall_id": "wall-2bfea465733e",
-      "owner_room_ids": [
-        "room-living-room-f08c7113b7e9",
-        "room-patio-baedb76676bf"
-      ],
-      "connected_room_ids": [
-        "room-living-room-f08c7113b7e9",
-        "room-patio-baedb76676bf"
-      ],
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
       "trace_ids": [
-        "trace-baaef359031d",
-        "trace-ce8f20b1137e"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 120.285,
-        "y": 708.5417172358513
-      },
-      "end": {
-        "x": 132.368,
-        "y": 708.5417172358513
-      },
-      "offset": 0.0,
-      "span": 12.083,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-a4135f61a3de",
-      "opening_kind": "door",
-      "host_wall_id": "wall-9e25d051b0e3",
-      "owner_room_ids": [
-        "room-mstr--bedroom-f807fea0d33b"
-      ],
-      "connected_room_ids": [
-        "room-living-room-f08c7113b7e9",
-        "room-mstr-bedroom-f807fea0d33b"
-      ],
-      "trace_ids": [
-        "trace-15c6d1ae86dc",
-        "trace-97636e8f66c0",
-        "trace-9bc6bd45a9a2",
-        "trace-f9ee1ee96b9e"
+        "trace-115cd2c5349d",
+        "trace-a639429d4072"
       ],
       "orientation": "vertical",
       "start": {
-        "x": 301.6122399332913,
-        "y": 526.297
+        "x": 439.62793041145056,
+        "y": 491.37221473412785
       },
       "end": {
-        "x": 301.6122399332913,
-        "y": 551.879
+        "x": 439.62793041145056,
+        "y": 496.8549225415695
       },
       "offset": 0.0,
-      "span": 25.582,
+      "span": 5.483,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-door-a178107de893",
+      "opening_kind": "door",
+      "host_wall_id": "wall-df6be7141e07",
+      "owner_room_ids": [
+        "room-porch-4997efb61d6a"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-3245c6220c40",
+        "trace-61841f6fb9cd",
+        "trace-9201c4ff51f0",
+        "trace-dff06d9fb3d5"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 238.249,
+        "y": 195.8709074089606
+      },
+      "end": {
+        "x": 238.733,
+        "y": 195.8709074089606
+      },
+      "offset": -0.484,
+      "span": 0.484,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-a47e7fdd3747",
+      "opening_id": "opening-door-ac4619399cc8",
+      "opening_kind": "door",
+      "host_wall_id": "wall-0fdeab529dc6",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-0487bcadcdf3",
+        "trace-2e2b336102f3",
+        "trace-537fbd9e8b27",
+        "trace-98b1bc18cfd1"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 162.31085941237313,
+        "y": 83.545
+      },
+      "end": {
+        "x": 162.31085941237313,
+        "y": 107.303
+      },
+      "offset": -23.758,
+      "span": 23.758,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-af30fa890d4c",
       "opening_kind": "door",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-12141da0e389",
-        "trace-153666a94bde",
-        "trace-56cea1aeebbc",
-        "trace-d5ece8ce50c3"
+        "trace-30b53423b391",
+        "trace-7cc6a0150a2f"
       ],
-      "orientation": "horizontal",
+      "orientation": "point",
       "start": {
-        "x": 27.76269260000793,
-        "y": 287.84507262510175
+        "x": 379.00189577825995,
+        "y": 435.45951605133746
       },
       "end": {
-        "x": 55.81644284369138,
-        "y": 287.845072627035
+        "x": 379.00189577825995,
+        "y": 435.45951605133746
       },
       "offset": 0.0,
-      "span": 28.054,
-      "confidence": "unhosted",
+      "span": 0.0,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-door-ad58bfddd8dc",
+      "opening_id": "opening-door-b2aef2c0d636",
       "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
+      "host_wall_id": "wall-0ab0ec79d7af",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-0a0020c0d91b",
-        "trace-16117b52f965",
-        "trace-1f96f090a6cc",
-        "trace-336124571ff7",
-        "trace-39a7b9979d65",
-        "trace-6ddd354c5b51",
-        "trace-9a422cc37b01",
-        "trace-ac2c4e7b9ef1"
+        "trace-71581a976d26",
+        "trace-7a0faa8537b0"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 219.1483777364325,
-        "y": 264.7469192802268
+        "x": 307.505,
+        "y": 526.2966120814452
       },
       "end": {
-        "x": 219.13659019885296,
-        "y": 264.74691928026397
+        "x": 336.519,
+        "y": 526.2966120814452
       },
-      "offset": 0.0,
-      "span": 0.012,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
+      "offset": -29.118,
+      "span": 29.014,
+      "confidence": "hosted",
+      "issues": []
     },
     {
       "opening_id": "opening-door-b2bb897fe0ca",
@@ -70274,390 +70372,153 @@
       "issues": []
     },
     {
-      "opening_id": "opening-door-b49c52a45eb3",
+      "opening_id": "opening-door-bcbce4abd7bb",
       "opening_kind": "door",
-      "host_wall_id": "wall-4aad10008caa",
-      "owner_room_ids": [
-        "room-bedroom-4-04b61e6be876"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-01a37ab33ea8",
-        "trace-3b961b39aa91",
-        "trace-78faf39b3d6c",
-        "trace-c840e7c3abd9"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 189.39723895812483,
-        "y": 133.889
-      },
-      "end": {
-        "x": 189.39723895812483,
-        "y": 158.4
-      },
-      "offset": 12.96,
-      "span": 24.511,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-bb2942966fcd",
-      "opening_kind": "door",
-      "host_wall_id": "wall-96dfacc4044c",
-      "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53",
-        "room-bedroom-2-cf9dbc0716ff"
-      ],
-      "connected_room_ids": [
-        "room-bath-3-dc0b2895fe53",
-        "room-bedroom-2-cf9dbc0716ff"
-      ],
-      "trace_ids": [
-        "trace-5ef6e308791a",
-        "trace-654a51671e9a",
-        "trace-b1e24b731427",
-        "trace-e3bf86769d9f"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 138.970588810802,
-        "y": 371.745
-      },
-      "end": {
-        "x": 138.970588810802,
-        "y": 381.522
-      },
-      "offset": 0.0,
-      "span": 9.777,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-bfa33e345fbd",
-      "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-cb1bdad77be9",
-        "trace-d62729b0a2b3"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 242.37608400309048,
-        "y": 382.5773331187168
-      },
-      "end": {
-        "x": 257.1131878221845,
-        "y": 377.9636517998001
-      },
-      "offset": 0.0,
-      "span": 15.442,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-door-ca1d549079d2",
-      "opening_kind": "door",
-      "host_wall_id": "wall-c5dd37774b48",
+      "host_wall_id": "wall-66eb2a5d6bce",
       "owner_room_ids": [
         "room-entry-782df4e2a9f2"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-3245c6220c40",
-        "trace-61841f6fb9cd",
-        "trace-9201c4ff51f0",
-        "trace-dff06d9fb3d5"
+        "trace-56b0f68a45f7",
+        "trace-78b9fe8c599a",
+        "trace-97e3455490ba",
+        "trace-fa14b48f9cd0"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 249.37422223794346,
-        "y": 195.871
+        "x": 143.08,
+        "y": 332.1289299542954
       },
       "end": {
-        "x": 249.37422223794346,
-        "y": 226.469
+        "x": 143.73,
+        "y": 332.1289299542954
       },
-      "offset": 0.0,
-      "span": 30.598,
+      "offset": 11.725,
+      "span": 0.65,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-ca71f7760352",
+      "opening_id": "opening-door-c04969fd4459",
       "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-2910d7a0adce",
-        "trace-537f9aba1ab5",
-        "trace-8b3e5a4a2ac5",
-        "trace-9d427dbbdef8"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 242.49079786687665,
-        "y": 382.97288704682967
-      },
-      "end": {
-        "x": 243.46767278579927,
-        "y": 382.2989550612125
-      },
-      "offset": 0.0,
-      "span": 1.187,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-door-ce542dec5938",
-      "opening_kind": "door",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-0546e5bedf04",
-        "trace-5d49214b84ec"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 406.8075737000588,
-        "y": 435.3710695875959
-      },
-      "end": {
-        "x": 380.88204097949784,
-        "y": 458.167600808767
-      },
-      "offset": 0.0,
-      "span": 34.523,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-door-d07034b3b09b",
-      "opening_kind": "door",
-      "host_wall_id": "wall-17c24ad326ca",
+      "host_wall_id": "wall-66eb2a5d6bce",
       "owner_room_ids": [
-        "room-master-bath-8c1d12c9d850"
+        "room-entry-782df4e2a9f2"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-30cdf2de3dc5",
-        "trace-34fb457f9e32",
-        "trace-3acf21b808f2",
-        "trace-564fdab84b62",
-        "trace-6c161f138228",
-        "trace-7b6f6480a32a",
-        "trace-976362f1e84a",
-        "trace-cd636bdd2713",
-        "trace-cf391a163b14",
-        "trace-df8fefdf9bfd",
-        "trace-e22ed9e490b6",
-        "trace-e4446808e001"
+        "trace-1ded87311aa0",
+        "trace-2450f44005d4",
+        "trace-3ac8fc8c7744",
+        "trace-d8d7156d9400"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 442.403,
-        "y": 458.16760080867874
+        "x": 130.706,
+        "y": 332.1289299542954
       },
       "end": {
-        "x": 446.403,
-        "y": 458.16760080867874
+        "x": 131.355,
+        "y": 332.1289299542954
       },
-      "offset": 20.837,
-      "span": 4.0,
+      "offset": -0.649,
+      "span": 0.649,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-d18591712812",
+      "opening_id": "opening-door-c57ca196653d",
       "opening_kind": "door",
-      "host_wall_id": "wall-d4aa981447a8",
+      "host_wall_id": "wall-52c0c08248d9",
       "owner_room_ids": [
-        "room-living-room-f08c7113b7e9"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-151ca92adc4c",
-        "trace-5515f01818e1",
-        "trace-d509d089cac7",
-        "trace-e3b651fb1854"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 281.828,
-        "y": 464.9805019360397
-      },
-      "end": {
-        "x": 285.828,
-        "y": 464.9805019360397
-      },
-      "offset": 20.845,
-      "span": 4.0,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-d316df6326c1",
-      "opening_kind": "door",
-      "host_wall_id": "wall-9efef5fe0752",
-      "owner_room_ids": [
-        "room-bedroom-4-04b61e6be876"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-22c843b67201",
-        "trace-7a0f22af6d93",
-        "trace-d544b9361eae",
-        "trace-f147591d10d1"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 166.18,
-        "y": 44.283857327217035
-      },
-      "end": {
-        "x": 166.246,
-        "y": 44.283857327217035
-      },
-      "offset": 0.0,
-      "span": 0.066,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-d4e199da09c0",
-      "opening_kind": "door",
-      "host_wall_id": "wall-9e25d051b0e3",
-      "owner_room_ids": [
-        "room-mstr--bedroom-f807fea0d33b"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-009a08489556",
-        "trace-071c45163e76",
-        "trace-3c34f5b4c6a5",
-        "trace-4a8baf2d9f51",
-        "trace-807cb38ba8b1",
-        "trace-992c9ccab240",
-        "trace-9cf53d3032da",
-        "trace-b495a932b4df"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 301.6122399332913,
-        "y": 549.879
-      },
-      "end": {
-        "x": 301.6122399332913,
-        "y": 553.879
-      },
-      "offset": 23.582,
-      "span": 4.0,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-da6a2f85b0dd",
-      "opening_kind": "door",
-      "host_wall_id": "wall-4aad10008caa",
-      "owner_room_ids": [
-        "room-bedroom-4-04b61e6be876"
+        "room-bedroom-3-b8f109d99d59"
       ],
       "connected_room_ids": [
-        "room-bedroom-4-04b61e6be876",
+        "room-bedroom-3-b8f109d99d59",
         "room-entry-782df4e2a9f2"
       ],
       "trace_ids": [
-        "trace-2e3c3412e842",
-        "trace-d57cdee5ed02"
+        "trace-1fdfd9f71370",
+        "trace-e4cabf00a739"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 189.39723895812483,
-        "y": 133.516
+        "x": 115.982,
+        "y": 284.4386220633823
       },
       "end": {
-        "x": 189.39723895812483,
-        "y": 158.4
+        "x": 144.996,
+        "y": 284.4386220633823
       },
-      "offset": 12.587,
-      "span": 24.884,
+      "offset": 30.177,
+      "span": 29.014,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-dd35fc7dba9f",
+      "opening_id": "opening-door-ce3e0fc7b2ee",
       "opening_kind": "door",
-      "host_wall_id": "wall-7e587da47281",
+      "host_wall_id": "wall-1a1297adf7e8",
       "owner_room_ids": [
-        "room-garage-bd6ecee651da"
+        "room-entry-782df4e2a9f2"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-40253103d154",
-        "trace-d9495f0616ed",
-        "trace-e29d957b8652",
-        "trace-ea14d691de48"
+        "trace-116dbc8e5e7e",
+        "trace-462656c6afeb",
+        "trace-5c7a1b6fa136",
+        "trace-64823aba76d9"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 258.983,
-        "y": 263.9999186794097
+        "x": 144.249,
+        "y": 287.8450726270535
       },
       "end": {
-        "x": 263.632,
-        "y": 263.9999186794097
+        "x": 144.898,
+        "y": 287.8450726270535
       },
-      "offset": 5.739,
-      "span": 4.649,
+      "offset": -0.649,
+      "span": 0.649,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-dfb3226fd4dd",
+      "opening_id": "opening-door-cf27c5af16f8",
       "opening_kind": "door",
-      "host_wall_id": "wall-d4aa981447a8",
-      "owner_room_ids": [
-        "room-living-room-f08c7113b7e9"
-      ],
-      "connected_room_ids": [
-        "room-living-room-f08c7113b7e9",
-        "room-pwdr-f2cbb3be1766"
-      ],
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
       "trace_ids": [
-        "trace-c17dc4a67b51",
-        "trace-cfe3a1484673"
+        "trace-19ac77345f42",
+        "trace-55cfc95fae8a",
+        "trace-7d2809370c34",
+        "trace-de667b8df614",
+        "trace-e5e89ec45241",
+        "trace-f8b2cc23df03"
       ],
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "start": {
-        "x": 260.983,
-        "y": 464.9805019360397
+        "x": 406.5971164480935,
+        "y": 435.0936045937959
       },
       "end": {
-        "x": 283.996,
-        "y": 464.9805019360397
+        "x": 406.5971164480935,
+        "y": 436.29915879832333
       },
       "offset": 0.0,
-      "span": 23.013,
-      "confidence": "hosted",
-      "issues": []
+      "span": 1.206,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
     },
     {
-      "opening_id": "opening-door-e2dea09346b1",
+      "opening_id": "opening-door-cfec004319f2",
       "opening_kind": "door",
-      "host_wall_id": "wall-b41dea20f8c5",
-      "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff"
-      ],
+      "host_wall_id": null,
+      "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
         "trace-01566aae2694",
@@ -70669,253 +70530,258 @@
         "trace-ca630f4ba522",
         "trace-d60b8e273d35"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 135.04105410171113,
-        "y": 353.154
+        "x": 142.32999111098522,
+        "y": 358.57925545454907
       },
       "end": {
-        "x": 135.04105410171113,
-        "y": 364.005
+        "x": 143.72969386203613,
+        "y": 358.57925545454907
       },
-      "offset": 17.619,
-      "span": 10.851,
-      "confidence": "hosted",
-      "issues": []
+      "offset": 0.0,
+      "span": 1.4,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
     },
     {
-      "opening_id": "opening-door-e4ba16092343",
+      "opening_id": "opening-door-d246abaf4203",
       "opening_kind": "door",
-      "host_wall_id": "wall-2bbe73c44345",
+      "host_wall_id": "wall-52c0c08248d9",
       "owner_room_ids": [
-        "room-bedroom-4-04b61e6be876",
-        "room-porch-4997efb61d6a"
-      ],
-      "connected_room_ids": [
-        "room-bedroom-4-04b61e6be876",
-        "room-porch-4997efb61d6a"
-      ],
-      "trace_ids": [
-        "trace-4c4b8175715b",
-        "trace-c4ce802bb6b8",
-        "trace-d196dbe9d8ad",
-        "trace-e943d9951073"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 189.39723895811778,
-        "y": 133.516
-      },
-      "end": {
-        "x": 189.39723895811778,
-        "y": 133.889
-      },
-      "offset": 86.986,
-      "span": 0.373,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-e59f33b4d369",
-      "opening_kind": "door",
-      "host_wall_id": "wall-b41dea20f8c5",
-      "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff"
+        "room-bedroom-3-b8f109d99d59"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-1ded87311aa0",
-        "trace-2450f44005d4",
-        "trace-3ac8fc8c7744",
-        "trace-d8d7156d9400"
+        "trace-8c56efe1d790",
+        "trace-a3e93aa61f89",
+        "trace-a5ef7753ea04",
+        "trace-b688bce6a60d"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 135.04105410171113,
-        "y": 335.535
+        "x": 55.816,
+        "y": 284.4386220633823
       },
       "end": {
-        "x": 135.04105410171113,
-        "y": 360.046
+        "x": 85.805,
+        "y": 284.4386220633823
       },
-      "offset": -0.0,
-      "span": 24.511,
+      "offset": -29.989,
+      "span": 29.989,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-e848c2004e09",
+      "opening_id": "opening-door-d28e441eb98d",
       "opening_kind": "door",
-      "host_wall_id": "wall-b41dea20f8c5",
+      "host_wall_id": "wall-52c67dad8150",
       "owner_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff"
+        "room-porch-4997efb61d6a"
       ],
       "connected_room_ids": [
-        "room-bedroom-2-cf9dbc0716ff",
+        "room-bedroom-4-04b61e6be876",
         "room-entry-782df4e2a9f2"
       ],
       "trace_ids": [
-        "trace-465418ffa08d",
-        "trace-593b91d29b10"
+        "trace-2e3c3412e842",
+        "trace-d57cdee5ed02"
       ],
       "orientation": "vertical",
       "start": {
-        "x": 135.04105410171113,
-        "y": 335.535
+        "x": 185.52775616589463,
+        "y": 158.4
       },
       "end": {
-        "x": 135.04105410171113,
-        "y": 360.525
-      },
-      "offset": -0.0,
-      "span": 24.99,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-ec0f985e39ed",
-      "opening_kind": "door",
-      "host_wall_id": "wall-96dfacc4044c",
-      "owner_room_ids": [
-        "room-bath-3-dc0b2895fe53",
-        "room-bedroom-2-cf9dbc0716ff"
-      ],
-      "connected_room_ids": [
-        "room-bath-3-dc0b2895fe53",
-        "room-bedroom-2-cf9dbc0716ff"
-      ],
-      "trace_ids": [
-        "trace-78f887a86aca",
-        "trace-895676bc3eac"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 138.970588810802,
-        "y": 371.745
-      },
-      "end": {
-        "x": 138.970588810802,
-        "y": 381.522
+        "x": 185.52775616589463,
+        "y": 158.506
       },
       "offset": 0.0,
-      "span": 9.777,
+      "span": 0.106,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-door-f100b44d56bf",
+      "opening_id": "opening-door-d318281e0f10",
       "opening_kind": "door",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-81a9761084e2",
-        "trace-dad1bd292c66"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 460.0682469654752,
-        "y": 486.09022216029126
-      },
-      "end": {
-        "x": 461.0027758476701,
-        "y": 490.24886938187916
-      },
-      "offset": 0.0,
-      "span": 4.262,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-door-f1ed47663977",
-      "opening_kind": "door",
-      "host_wall_id": "wall-97172cda1be9",
-      "owner_room_ids": [
-        "room-closet-c59e39a3c606",
-        "room-master-bath-8c1d12c9d850"
-      ],
-      "connected_room_ids": [
-        "room-closet-c59e39a3c606",
-        "room-master-bath-8c1d12c9d850"
-      ],
-      "trace_ids": [
-        "trace-688249acfbdf",
-        "trace-d6655f736a3d"
+        "trace-042b308d03e1",
+        "trace-1ed2ad0ed47b",
+        "trace-51698a82d763",
+        "trace-6b7a3a8d18f2",
+        "trace-d4c93a6e2670",
+        "trace-f0d99227d140",
+        "trace-f5c6f1619376",
+        "trace-f629c9bfcbdd"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 387.299,
-        "y": 398.8953610013407
+        "x": 144.24877225558814,
+        "y": 259.7398044785845
       },
       "end": {
-        "x": 411.083,
-        "y": 398.8953610013407
-      },
-      "offset": 30.899,
-      "span": 23.784,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-door-f4ef8b2f023a",
-      "opening_kind": "door",
-      "host_wall_id": "wall-0b9158c322e5",
-      "owner_room_ids": [
-        "room-entry-782df4e2a9f2"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-34fdbee9af08",
-        "trace-c6d65a6fa6b1",
-        "trace-cc0425bbb51e",
-        "trace-dbb515827f79"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 102.33387613253332,
-        "y": 332.129
-      },
-      "end": {
-        "x": 102.33387613253332,
-        "y": 335.535
+        "x": 145.61961126459533,
+        "y": 259.7398044785845
       },
       "offset": 0.0,
-      "span": 3.406,
-      "confidence": "hosted",
-      "issues": []
+      "span": 1.371,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
     },
     {
-      "opening_id": "opening-door-fa151ede247d",
+      "opening_id": "opening-door-d49a6e006192",
       "opening_kind": "door",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-9ca5dbde6e61",
-        "trace-bd73121d62d6",
-        "trace-c238886c4e36",
-        "trace-f215a9b17bde"
+        "trace-04d0175d1318",
+        "trace-7347f5cd7751",
+        "trace-7e8cb67edf42",
+        "trace-8e95a7e839c5",
+        "trace-aaa601f4fbcc",
+        "trace-c162cf52b005"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 27.76269260000793,
-        "y": 332.12892995621013
+        "x": 238.24945921023482,
+        "y": 226.65608991124293
       },
       "end": {
-        "x": 55.81644284369138,
-        "y": 332.1289299542769
+        "x": 239.62029821924204,
+        "y": 226.65608991124293
       },
       "offset": 0.0,
-      "span": 28.054,
-      "confidence": "unhosted",
+      "span": 1.371,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-door-ff530e93e928",
+      "opening_id": "opening-door-d77011772f3c",
+      "opening_kind": "door",
+      "host_wall_id": "wall-2d4091149e13",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
+      "connected_room_ids": [
+        "room-dining-4a09d8e5e599",
+        "room-patio-baedb76676bf"
+      ],
+      "trace_ids": [
+        "trace-baaef359031d",
+        "trace-ce8f20b1137e"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 131.355,
+        "y": 705.1352666722235
+      },
+      "end": {
+        "x": 132.368,
+        "y": 705.1352666722235
+      },
+      "offset": 0.0,
+      "span": 1.013,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-dd59a30f9b14",
+      "opening_kind": "door",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-107b8d51e3d8",
+        "trace-186f50931954",
+        "trace-214c67cc478f",
+        "trace-3e6842eec7d0",
+        "trace-6563b48fadd7",
+        "trace-8ba9f1e66208",
+        "trace-b01da00631c1",
+        "trace-dc1092baf259"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 130.7055824827211,
+        "y": 360.23419810276437
+      },
+      "end": {
+        "x": 132.07642149172827,
+        "y": 360.23419810276437
+      },
+      "offset": 0.0,
+      "span": 1.371,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-door-ddeee734335c",
+      "opening_kind": "door",
+      "host_wall_id": "wall-c5dd37774b48",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-0e7d9711485e",
+        "trace-7a266e3cfd0f"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 249.37422223794346,
+        "y": 263.329
+      },
+      "end": {
+        "x": 249.37422223794346,
+        "y": 264.0
+      },
+      "offset": 67.458,
+      "span": 0.671,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-de4689c7cd82",
+      "opening_kind": "door",
+      "host_wall_id": "wall-11af7d7c86ee",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-12141da0e389",
+        "trace-153666a94bde",
+        "trace-56cea1aeebbc",
+        "trace-d5ece8ce50c3"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 27.763,
+        "y": 287.8450726269792
+      },
+      "end": {
+        "x": 55.816,
+        "y": 287.8450726269792
+      },
+      "offset": 6.688,
+      "span": 28.053,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-deed0a5884a6",
       "opening_kind": "door",
       "host_wall_id": null,
       "owner_room_ids": [],
@@ -70926,412 +70792,242 @@
         "trace-9c577c5d1aa6",
         "trace-de626ccef69b"
       ],
-      "orientation": "vertical",
-      "start": {
-        "x": 310.5497118001271,
-        "y": 356.89839394893403
-      },
-      "end": {
-        "x": 310.5120854752995,
-        "y": 357.37798144914575
-      },
-      "offset": 0.0,
-      "span": 0.481,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-00f3b7aeef25",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-028380be0b15",
-        "trace-139efe876de9",
-        "trace-29e1eeef0041",
-        "trace-31698116a774",
-        "trace-42cd119d1cb4",
-        "trace-44b0d64996a4",
-        "trace-664f0bcf4bb2",
-        "trace-67b0e79902a2",
-        "trace-7771f0a98041",
-        "trace-884ef494b9fa",
-        "trace-d019604a35d4",
-        "trace-f81f236ffff3"
-      ],
       "orientation": "horizontal",
       "start": {
-        "x": 114.42600985829334,
-        "y": 39.174181481741314
+        "x": 308.98132862515274,
+        "y": 357.45797027150957
       },
       "end": {
-        "x": 79.60066472809193,
-        "y": 39.174181481741314
+        "x": 310.63112918937753,
+        "y": 357.45797027150957
       },
       "offset": 0.0,
-      "span": 34.825,
-      "confidence": "unhosted",
+      "span": 1.65,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-01187a15681e",
-      "opening_kind": "window",
-      "host_wall_id": "wall-17c24ad326ca",
+      "opening_id": "opening-door-e7a1aedc5d0a",
+      "opening_kind": "door",
+      "host_wall_id": "wall-1cfd71f82589",
       "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-2ec9ce0b7cf5",
-        "trace-4b0f9fb7244f",
-        "trace-6c60d6e5adf8",
-        "trace-71c4e5e50320",
-        "trace-8d4f4be6e4df",
-        "trace-9942258619c2",
-        "trace-ab54b8c5058f",
-        "trace-b22e9beaaa75",
-        "trace-c21adf64cb7a",
-        "trace-f90dbc295179"
+        "trace-0546e5bedf04",
+        "trace-5d49214b84ec"
       ],
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "start": {
-        "x": 460.196,
-        "y": 458.16760080867874
+        "x": 417.6967237007513,
+        "y": 454.761
       },
       "end": {
-        "x": 462.196,
-        "y": 458.16760080867874
+        "x": 417.6967237007513,
+        "y": 458.168
       },
-      "offset": 38.63,
-      "span": 2.0,
+      "offset": -0.0,
+      "span": 3.407,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-046f5204b4b3",
-      "opening_kind": "window",
+      "opening_id": "opening-door-eb47edee5a15",
+      "opening_kind": "door",
+      "host_wall_id": "wall-4930c369e8b0",
+      "owner_room_ids": [
+        "room-bath-3-dc0b2895fe53"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-5ef6e308791a",
+        "trace-654a51671e9a",
+        "trace-b1e24b731427",
+        "trace-e3bf86769d9f"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 143.08027927038012,
+        "y": 362.005
+      },
+      "end": {
+        "x": 143.08027927038012,
+        "y": 381.522
+      },
+      "offset": -19.517,
+      "span": 19.517,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-door-eb9ab9173517",
+      "opening_kind": "door",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-34228bc42717",
-        "trace-3f47dd0aefa1"
+        "trace-591ce0e16cc7",
+        "trace-7a91f567f7f8",
+        "trace-7b95922e285b",
+        "trace-800e4fa7b045",
+        "trace-903ae37ce5ef",
+        "trace-af94ef50b3b8",
+        "trace-d3e4c06c7a02",
+        "trace-f6016d8a0a9e"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 466.93985729799556,
-        "y": 451.35469968157804
+        "x": 82.35888809456128,
+        "y": 487.8707289186176
       },
       "end": {
-        "x": 468.96737069800565,
-        "y": 451.35469968157804
+        "x": 83.50333356873864,
+        "y": 487.8707289186176
       },
       "offset": 0.0,
-      "span": 2.028,
-      "confidence": "unhosted",
+      "span": 1.144,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-047218016048",
-      "opening_kind": "window",
-      "host_wall_id": "wall-62f3c53f0125",
-      "owner_room_ids": [
-        "room-master-bath-8c1d12c9d850"
-      ],
+      "opening_id": "opening-door-fdbaeb2c4cce",
+      "opening_kind": "door",
+      "host_wall_id": null,
+      "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-17185b5cb7d5",
-        "trace-a7f7d526869e"
+        "trace-69501bd20011",
+        "trace-bab7b0d95f59"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 462.1957758116284,
-        "y": 428.916
+        "x": 184.87834157423853,
+        "y": 133.8894928253333
       },
       "end": {
-        "x": 462.1957758116284,
-        "y": 430.916
+        "x": 186.11944327340697,
+        "y": 133.8894928253333
       },
-      "offset": 26.955,
-      "span": 2.0,
-      "confidence": "hosted",
-      "issues": []
+      "offset": 0.0,
+      "span": 1.241,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
     },
     {
-      "opening_id": "opening-window-0af59594fbf1",
+      "opening_id": "opening-window-02c77c9f1369",
       "opening_kind": "window",
-      "host_wall_id": "wall-164bd97ee6dd",
+      "host_wall_id": "wall-2d5309098ec8",
       "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-1f4a8b4861e2",
-        "trace-3f44fea91a2d",
-        "trace-74bbab7bac55",
-        "trace-8991e62ef2f8"
+        "trace-5c2e123966ff",
+        "trace-799656609e96",
+        "trace-89287107856e",
+        "trace-cb8618f892cb"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 77.601,
-        "y": 39.17418148171653
+        "x": 35.5,
+        "y": 44.28385732716752
       },
       "end": {
-        "x": 79.601,
-        "y": 39.17418148171653
+        "x": 70.326,
+        "y": 44.28385732716752
       },
-      "offset": 7.275,
-      "span": 2.0,
+      "offset": -34.826,
+      "span": 34.826,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-11ec5efc69db",
+      "opening_id": "opening-window-047edec32ce3",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-4440214907dc",
-        "trace-55bf8238760f",
-        "trace-696e1adc1d95",
-        "trace-7a48fa387279",
-        "trace-8caa911a38f3",
-        "trace-9d3e4c04a981",
-        "trace-ae3a33aba774",
-        "trace-bfcaf4a6dfde",
-        "trace-c2fb59395c30",
-        "trace-c58dfc32a06a"
+        "trace-3aa1eb5c741f",
+        "trace-75e5f0a8219a"
       ],
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "start": {
-        "x": 342.2418092520614,
-        "y": 709.3524945426682
+        "x": 307.41646412186003,
+        "y": 710.2245248506193
       },
       "end": {
         "x": 307.41646412186003,
-        "y": 709.3524945426682
+        "y": 711.0965551585831
       },
       "offset": 0.0,
-      "span": 34.825,
-      "confidence": "unhosted",
+      "span": 0.872,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-144219696f12",
+      "opening_id": "opening-window-0a3c3a4440dd",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-68d891d4d1b2",
-        "trace-6dbc4d7eef6e"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 15.293706308015397,
-        "y": 373.00633671784755
-      },
-      "end": {
-        "x": 14.303142608953756,
-        "y": 373.00633671784755
-      },
-      "offset": 0.0,
-      "span": 0.991,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-14a159195c45",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-73b2d80fcc0c",
-        "trace-dc9eee5b9036"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 15.270513306959382,
-        "y": 625.9352910677333
-      },
-      "end": {
-        "x": 14.30314260889745,
-        "y": 625.9352910677333
-      },
-      "offset": 0.0,
-      "span": 0.967,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-16159752899a",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-31ac0af62428",
-        "trace-64b899429377",
-        "trace-6e1255cdea1f",
-        "trace-76f46fcde0e4",
-        "trace-d0b0a65367dd",
-        "trace-d85456afd1f4",
-        "trace-e98fe710d63b",
-        "trace-f3af5a65826b"
+        "trace-3b837485f792",
+        "trace-e41745abe77d"
       ],
       "orientation": "vertical",
       "start": {
-        "x": 15.270513307015689,
-        "y": 342.3482816451664
+        "x": 280.3300845758444,
+        "y": 710.2245248506689
       },
       "end": {
-        "x": 15.270513307015689,
-        "y": 373.00633671784755
+        "x": 280.3300845758444,
+        "y": 711.0965551586203
       },
       "offset": 0.0,
-      "span": 30.658,
-      "confidence": "unhosted",
+      "span": 0.872,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-27604a096ff4",
+      "opening_id": "opening-window-0dc059fa5d1c",
       "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-634127f7eb2b",
-        "trace-88db08b1d3b1"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 35.50023846534128,
-        "y": 39.17418148175366
-      },
-      "end": {
-        "x": 35.50023846534128,
-        "y": 38.32256884082038
-      },
-      "offset": 0.0,
-      "span": 0.852,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-2d8ce535204d",
-      "opening_kind": "window",
-      "host_wall_id": "wall-b2266b39e6be",
+      "host_wall_id": "wall-03cd4dd24feb",
       "owner_room_ids": [
-        "room-patio-baedb76676bf"
+        "room-bedroom-4-04b61e6be876"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-1821d63116e9",
-        "trace-189b08b35ec2",
-        "trace-288460cd2e56",
-        "trace-40326099d280",
-        "trace-481550a5191f",
-        "trace-6fe96348842c",
-        "trace-8dff35461b56",
-        "trace-bae7dc3c4f26",
-        "trace-dde0ee6f9d6c",
-        "trace-e5acf7acedfe"
+        "trace-6c09047e65f9",
+        "trace-6ff56f4d6bb7"
       ],
       "orientation": "vertical",
       "start": {
-        "x": 148.76766963944976,
-        "y": 710.245
+        "x": 21.074737495330908,
+        "y": 52.8
       },
       "end": {
-        "x": 148.76766963944976,
-        "y": 712.245
+        "x": 21.074737495330908,
+        "y": 52.8
       },
-      "offset": -0.0,
-      "span": 2.0,
+      "offset": 8.516,
+      "span": 0.0,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-300961cd9d83",
-      "opening_kind": "window",
-      "host_wall_id": "wall-730413f91a82",
-      "owner_room_ids": [
-        "room-living-room-f08c7113b7e9"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-00627fdb5c81",
-        "trace-dd4dc975cdbb"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 243.505,
-        "y": 710.2449425176808
-      },
-      "end": {
-        "x": 245.505,
-        "y": 710.2449425176808
-      },
-      "offset": 9.609,
-      "span": 2.0,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-window-3043e897b3cf",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-006443a7fb06",
-        "trace-11d38abc6410",
-        "trace-2bf90bbf5336",
-        "trace-674d48755a54",
-        "trace-718aad727cb1",
-        "trace-89789c178cf7",
-        "trace-951892928bef",
-        "trace-b2c75ec35cc7",
-        "trace-cd430f0973be",
-        "trace-e95241c73531"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 199.07094593867015,
-        "y": 710.2449425176993
-      },
-      "end": {
-        "x": 233.89629106887168,
-        "y": 710.2449425176993
-      },
-      "offset": 0.0,
-      "span": 34.825,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-3c2f09204bfb",
+      "opening_id": "opening-window-172f376c612c",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
@@ -71351,71 +71047,185 @@
       },
       "offset": 0.0,
       "span": 1.744,
-      "confidence": "unhosted",
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-412bd72abb78",
+      "opening_id": "opening-window-1b39796fd03e",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-081eb0e77b7f",
-        "trace-560619ee5c45",
-        "trace-cd894fcd7cb4",
-        "trace-d0e22773f854"
+        "trace-14e98cb5fe0c",
+        "trace-31e39d108675"
       ],
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "start": {
-        "x": 114.42600985829334,
-        "y": 42.5806320453753
+        "x": 199.07094593867015,
+        "y": 710.2449425176993
       },
       "end": {
-        "x": 79.60066472809193,
-        "y": 42.58063204538765
+        "x": 199.07094593867015,
+        "y": 711.0965551586079
       },
       "offset": 0.0,
-      "span": 34.825,
-      "confidence": "unhosted",
+      "span": 0.852,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-415557711c8c",
+      "opening_id": "opening-window-1fea589ad861",
       "opening_kind": "window",
-      "host_wall_id": "wall-746626e03cf2",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-63949406b0a2",
+        "trace-f2325716e926"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 158.526436121044,
+        "y": 38.32256884082038
+      },
+      "end": {
+        "x": 158.526436121044,
+        "y": 39.17418148175366
+      },
+      "offset": 0.0,
+      "span": 0.852,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-2060601fc10e",
+      "opening_kind": "window",
+      "host_wall_id": "wall-502767b8d0ef",
       "owner_room_ids": [
-        "room-bedroom-4-04b61e6be876"
+        "room-mstr--bedroom-f807fea0d33b"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-02970020aacb",
-        "trace-3121816721f5",
-        "trace-46472fc83536",
-        "trace-de563442f617"
+        "trace-18772080d284",
+        "trace-201888440e16",
+        "trace-2b5dcb20be8b",
+        "trace-5c2b64a1ac32",
+        "trace-7361b6c3d7f1",
+        "trace-7a208c818a7a",
+        "trace-b236a70e12fb",
+        "trace-d60ba4e7f94b",
+        "trace-f9b3a771a465",
+        "trace-fa358c496ba8"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 114.426,
-        "y": 39.17418148174127
+        "x": 421.566,
+        "y": 710.2449425176683
       },
       "end": {
-        "x": 123.701,
-        "y": 39.17418148174127
+        "x": 456.392,
+        "y": 710.2449425176683
       },
-      "offset": -0.0,
-      "span": 9.275,
+      "offset": 79.324,
+      "span": 34.826,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-4503d270baab",
+      "opening_id": "opening-window-26b0560fe0ce",
       "opening_kind": "window",
-      "host_wall_id": "wall-062682f932ca",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-b0616ec8cbd7",
+        "trace-be8977744c40"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 342.2418092520614,
+        "y": 710.2449425176745
+      },
+      "end": {
+        "x": 342.2418092520614,
+        "y": 711.0965551585707
+      },
+      "offset": 0.0,
+      "span": 0.852,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-2a5e45f890ae",
+      "opening_kind": "window",
+      "host_wall_id": "wall-2e4fd88351a8",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-31ac0af62428",
+        "trace-64b899429377",
+        "trace-6e1255cdea1f",
+        "trace-76f46fcde0e4",
+        "trace-d0b0a65367dd",
+        "trace-d85456afd1f4",
+        "trace-e98fe710d63b",
+        "trace-f3af5a65826b"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 21.074737495330908,
+        "y": 342.348
+      },
+      "end": {
+        "x": 21.074737495330908,
+        "y": 373.006
+      },
+      "offset": -30.658,
+      "span": 30.658,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-window-34fcd011f4c8",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-6f58910701df",
+        "trace-9aeff5dea634"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 14.303142608953756,
+        "y": 342.3482816451664
+      },
+      "end": {
+        "x": 15.270513307015689,
+        "y": 342.3482816451664
+      },
+      "offset": 0.0,
+      "span": 0.967,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-371a030e5034",
+      "opening_kind": "window",
+      "host_wall_id": "wall-197fc46fbbf7",
       "owner_room_ids": [
         "room-master-bath-8c1d12c9d850"
       ],
@@ -71428,100 +71238,108 @@
         "trace-92be5a4eaccf",
         "trace-b5bcc85b6b71"
       ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 460.196,
-        "y": 521.1869362359696
-      },
-      "end": {
-        "x": 462.196,
-        "y": 521.1869362359696
-      },
-      "offset": 42.499,
-      "span": 2.0,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-window-46e3a29249f4",
-      "opening_kind": "window",
-      "host_wall_id": "wall-80bd6ad4f04c",
-      "owner_room_ids": [
-        "room-bedroom-3-b8f109d99d59"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-8cab7048f42e",
-        "trace-a44c6c1d321a"
-      ],
       "orientation": "vertical",
       "start": {
-        "x": 21.074737495274604,
-        "y": 244.968
+        "x": 462.1957758115721,
+        "y": 470.942
       },
       "end": {
-        "x": 21.074737495274604,
-        "y": 246.968
+        "x": 462.1957758115721,
+        "y": 511.819
       },
-      "offset": 83.162,
-      "span": 2.0,
+      "offset": -40.877,
+      "span": 40.877,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-4905f49bfc31",
+      "opening_id": "opening-window-39faff17545e",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-4caeb4bee02d",
-        "trace-bc5e7a9b1b84"
+        "trace-8cab7048f42e",
+        "trace-a44c6c1d321a"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 15.270513306959382,
-        "y": 83.45803880889642
+        "x": 14.30314260884114,
+        "y": 246.96766586335275
       },
       "end": {
-        "x": 14.30314260889745,
-        "y": 83.45803880889642
+        "x": 15.270513306903073,
+        "y": 246.96766586335275
       },
       "offset": 0.0,
       "span": 0.967,
-      "confidence": "unhosted",
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-569b142bcff6",
+      "opening_id": "opening-window-3f012e99218e",
       "opening_kind": "window",
-      "host_wall_id": "wall-3c380d93580f",
+      "host_wall_id": "wall-502767b8d0ef",
       "owner_room_ids": [
-        "room-patio-baedb76676bf"
+        "room-mstr--bedroom-f807fea0d33b"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-45735b93ff1f",
-        "trace-7ec734e594ce"
+        "trace-4440214907dc",
+        "trace-55bf8238760f",
+        "trace-696e1adc1d95",
+        "trace-7a48fa387279",
+        "trace-8caa911a38f3",
+        "trace-9d3e4c04a981",
+        "trace-ae3a33aba774",
+        "trace-bfcaf4a6dfde",
+        "trace-c2fb59395c30",
+        "trace-c58dfc32a06a"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 15.270513306959382,
-        "y": 710.245
+        "x": 307.416,
+        "y": 710.2449425176683
       },
       "end": {
-        "x": 15.270513306959382,
-        "y": 711.097
+        "x": 342.242,
+        "y": 710.2449425176683
       },
-      "offset": 0.0,
-      "span": 0.852,
+      "offset": -34.826,
+      "span": 34.826,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-6234dd3d9774",
+      "opening_id": "opening-window-403a3f446268",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-2b2346fd9c08",
+        "trace-526235eb7ca1"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 70.32558359554271,
+        "y": 38.322568840832815
+      },
+      "end": {
+        "x": 70.32558359554271,
+        "y": 39.17418148171653
+      },
+      "offset": 0.0,
+      "span": 0.852,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-40f3eab50294",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
@@ -71541,35 +71359,269 @@
       },
       "offset": 0.0,
       "span": 0.852,
-      "confidence": "unhosted",
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-66d74af929d2",
+      "opening_id": "opening-window-445273813de2",
+      "opening_kind": "window",
+      "host_wall_id": "wall-164bd97ee6dd",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-028380be0b15",
+        "trace-139efe876de9",
+        "trace-29e1eeef0041",
+        "trace-31698116a774",
+        "trace-42cd119d1cb4",
+        "trace-44b0d64996a4",
+        "trace-664f0bcf4bb2",
+        "trace-67b0e79902a2",
+        "trace-7771f0a98041",
+        "trace-884ef494b9fa",
+        "trace-d019604a35d4",
+        "trace-f81f236ffff3"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 79.601,
+        "y": 39.17418148171653
+      },
+      "end": {
+        "x": 114.426,
+        "y": 39.17418148171653
+      },
+      "offset": 9.275,
+      "span": 34.825,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-window-50a1343fd2a1",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-092b8e4e0799",
-        "trace-59547949d388"
+        "trace-45735b93ff1f",
+        "trace-7ec734e594ce"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 30.748444475950325,
+        "y": 710.2449425176745
+      },
+      "end": {
+        "x": 30.748444475950325,
+        "y": 711.0965551585831
+      },
+      "offset": 0.0,
+      "span": 0.852,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-512eb1654f92",
+      "opening_kind": "window",
+      "host_wall_id": "wall-0030030e8cb5",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-081eb0e77b7f",
+        "trace-560619ee5c45",
+        "trace-cd894fcd7cb4",
+        "trace-d0e22773f854"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 15.293706307930933,
-        "y": 677.032049522243
+        "x": 114.426,
+        "y": 44.28385732719225
       },
       "end": {
-        "x": 14.30314260889745,
-        "y": 677.032049522243
+        "x": 114.426,
+        "y": 44.28385732719225
+      },
+      "offset": -0.0,
+      "span": 0.0,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-window-53a8b5f33d9c",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-7165ce66bf78",
+        "trace-cdcb8b2ff5b7"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 456.3915516232005,
+        "y": 710.2245248506193
+      },
+      "end": {
+        "x": 456.3915516232005,
+        "y": 711.0965551585831
+      },
+      "offset": 0.0,
+      "span": 0.872,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-55a4c4b1015b",
+      "opening_kind": "window",
+      "host_wall_id": "wall-164bd97ee6dd",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-009dabda14e2",
+        "trace-0caf446c6723",
+        "trace-114415695b59",
+        "trace-244bc03ccea6",
+        "trace-564f47cbf159",
+        "trace-6d1135ed4141",
+        "trace-a4129a4c1abf",
+        "trace-a6c606fd31b6",
+        "trace-c39ae57b3992",
+        "trace-cc8abd995320"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 35.5,
+        "y": 39.17418148171653
+      },
+      "end": {
+        "x": 70.326,
+        "y": 39.17418148171653
+      },
+      "offset": -34.826,
+      "span": 34.826,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-window-58413262df4d",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-261b40744aca",
+        "trace-5501567615ba"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 467.9536139980006,
+        "y": 511.8191971859946
+      },
+      "end": {
+        "x": 468.96737069800565,
+        "y": 511.8191971859946
+      },
+      "offset": 0.0,
+      "span": 1.014,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-5ab77e490b29",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-68d891d4d1b2",
+        "trace-6dbc4d7eef6e"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 14.303142608953756,
+        "y": 373.00633671784755
+      },
+      "end": {
+        "x": 15.293706308015397,
+        "y": 373.00633671784755
       },
       "offset": 0.0,
       "span": 0.991,
-      "confidence": "unhosted",
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-62b6529dd977",
+      "opening_kind": "window",
+      "host_wall_id": "wall-6f0cb67af362",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-072850760f52",
+        "trace-29c5747fb0bb",
+        "trace-5ce41c7b58f2",
+        "trace-612016600b44",
+        "trace-6f87ca1f669b",
+        "trace-797662971cdb",
+        "trace-c44ae61fdede",
+        "trace-f5493281c852"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 21.074737495330908,
+        "y": 625.935
+      },
+      "end": {
+        "x": 21.074737495330908,
+        "y": 677.032
+      },
+      "offset": 134.58,
+      "span": 51.097,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-window-698d33f2c6eb",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-00627fdb5c81",
+        "trace-dd4dc975cdbb"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 245.504739445643,
+        "y": 710.2449425176248
+      },
+      "end": {
+        "x": 245.504739445643,
+        "y": 711.0965551586079
+      },
+      "offset": 0.0,
+      "span": 0.852,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
       ]
     },
     {
@@ -71603,395 +71655,41 @@
       "issues": []
     },
     {
-      "opening_id": "opening-window-6e10ec273304",
+      "opening_id": "opening-window-748076546762",
       "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
+      "host_wall_id": "wall-4b50ccc717f2",
+      "owner_room_ids": [
+        "room-patio-baedb76676bf"
+      ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-1ad65824a98d",
-        "trace-e9b464a21397"
+        "trace-1821d63116e9",
+        "trace-189b08b35ec2",
+        "trace-288460cd2e56",
+        "trace-40326099d280",
+        "trace-481550a5191f",
+        "trace-6fe96348842c",
+        "trace-8dff35461b56",
+        "trace-bae7dc3c4f26",
+        "trace-dde0ee6f9d6c",
+        "trace-e5acf7acedfe"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 21.074737495330908,
-        "y": 342.3482816452036
-      },
-      "end": {
-        "x": 21.074737495330908,
-        "y": 373.0063367178847
-      },
-      "offset": 0.0,
-      "span": 30.658,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-78d80e510373",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-9cf2dcf1d49d",
-        "trace-a8086c59c0e9"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 233.89629106887168,
-        "y": 710.2245248506689
-      },
-      "end": {
-        "x": 233.89629106887168,
-        "y": 711.0965551586203
-      },
-      "offset": 0.0,
-      "span": 0.872,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-82c780d53b1b",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-13ba0af767c5",
-        "trace-14dae1887a8b",
-        "trace-30167cc605f3",
-        "trace-39aefca1e96b",
-        "trace-413fbd083961",
-        "trace-49b81f04ea5a",
-        "trace-67555b5d6de9",
-        "trace-d2503198f4d9"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 15.270513306903073,
-        "y": 246.96766586335275
-      },
-      "end": {
-        "x": 15.270513306903073,
-        "y": 277.62572093603376
-      },
-      "offset": 0.0,
-      "span": 30.658,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-8dc3339a930d",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-b0616ec8cbd7",
-        "trace-be8977744c40"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 342.2418092520614,
+        "x": 152.637,
         "y": 710.2449425176745
       },
       "end": {
-        "x": 342.2418092520614,
-        "y": 711.0965551585707
+        "x": 187.462,
+        "y": 710.2449425176745
       },
-      "offset": 0.0,
-      "span": 0.852,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-91334af2443d",
-      "opening_kind": "window",
-      "host_wall_id": "wall-522b75a50a88",
-      "owner_room_ids": [
-        "room-living-room-f08c7113b7e9"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-14e98cb5fe0c",
-        "trace-31e39d108675"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 197.071,
-        "y": 710.2449425176808
-      },
-      "end": {
-        "x": 199.071,
-        "y": 710.2449425176808
-      },
-      "offset": 9.609,
-      "span": 2.0,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-window-913ee83fb401",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-49639e551ba5",
-        "trace-59b699b197ec",
-        "trace-5c03068dc1c0",
-        "trace-5c097899e082",
-        "trace-5fb712fab5a0",
-        "trace-6a3047e8b9bf",
-        "trace-7b36a17ee524",
-        "trace-83ef824cb78f",
-        "trace-ae472543491f",
-        "trace-f55dd7522aaa"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 245.504739445643,
-        "y": 710.2449425176993
-      },
-      "end": {
-        "x": 280.3300845758444,
-        "y": 710.2449425176993
-      },
-      "offset": 0.0,
+      "offset": 21.282,
       "span": 34.825,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-92970423c55f",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-3aa1eb5c741f",
-        "trace-75e5f0a8219a"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 307.41646412186003,
-        "y": 710.2245248506193
-      },
-      "end": {
-        "x": 307.41646412186003,
-        "y": 711.0965551585831
-      },
-      "offset": 0.0,
-      "span": 0.872,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-9990f2674d84",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-7165ce66bf78",
-        "trace-cdcb8b2ff5b7"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 456.3915516232005,
-        "y": 710.2245248506193
-      },
-      "end": {
-        "x": 456.3915516232005,
-        "y": 711.0965551585831
-      },
-      "offset": 0.0,
-      "span": 0.872,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-9e32cd81620f",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-0d1ca283c41d",
-        "trace-0eb06d505cf5",
-        "trace-0fffea883f13",
-        "trace-354d093ad0f2",
-        "trace-6fe3dc5dcddf",
-        "trace-71b31d10472a",
-        "trace-72746b307433",
-        "trace-9eef1540fc52",
-        "trace-b42e0104255f",
-        "trace-caf0e015e296",
-        "trace-d88a0b4192bb",
-        "trace-f059a1e38e87"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 123.70109099084256,
-        "y": 39.174181481741314
-      },
-      "end": {
-        "x": 158.526436121044,
-        "y": 39.174181481741314
-      },
-      "offset": 0.0,
-      "span": 34.825,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-9e93a348a3b0",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-1a032fcbbfbc",
-        "trace-68de2ee5700a"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 21.074737495218304,
-        "y": 246.96766586336514
-      },
-      "end": {
-        "x": 21.074737495218304,
-        "y": 277.62572093604615
-      },
-      "offset": 0.0,
-      "span": 30.658,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-9fb45c8ed969",
-      "opening_kind": "window",
-      "host_wall_id": "wall-03cd4dd24feb",
-      "owner_room_ids": [
-        "room-bedroom-4-04b61e6be876"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-669dcaeecbde",
-        "trace-ddc7d8eaa4a1"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 21.074737495330908,
-        "y": 50.8
-      },
-      "end": {
-        "x": 21.074737495330908,
-        "y": 52.8
-      },
-      "offset": 6.516,
-      "span": 2.0,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-a2fba4c00afc",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-2b2346fd9c08",
-        "trace-526235eb7ca1"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 70.32558359554271,
-        "y": 39.17418148171653
-      },
-      "end": {
-        "x": 70.32558359554271,
-        "y": 38.322568840832815
-      },
-      "offset": 0.0,
-      "span": 0.852,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-a4f365fd106f",
-      "opening_kind": "window",
-      "host_wall_id": "wall-197fc46fbbf7",
-      "owner_room_ids": [
-        "room-master-bath-8c1d12c9d850"
-      ],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-261b40744aca",
-        "trace-5501567615ba"
-      ],
-      "orientation": "vertical",
-      "start": {
-        "x": 462.1957758115721,
-        "y": 511.819
-      },
-      "end": {
-        "x": 462.1957758115721,
-        "y": 513.819
-      },
-      "offset": -0.0,
-      "span": 2.0,
-      "confidence": "hosted",
-      "issues": []
-    },
-    {
-      "opening_id": "opening-window-b722f8bd62c8",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-a7764b82186d",
-        "trace-d1a3836d8ca0"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 15.293706307902793,
-        "y": 277.62572093603376
-      },
-      "end": {
-        "x": 14.30314260884114,
-        "y": 277.62572093603376
-      },
-      "offset": 0.0,
-      "span": 0.991,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-bf63d39c119e",
+      "opening_id": "opening-window-7c7c549ac83b",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
@@ -72011,43 +71709,127 @@
       },
       "offset": 0.0,
       "span": 0.872,
-      "confidence": "unhosted",
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-c4a65de84216",
+      "opening_id": "opening-window-862f6a41a9c4",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-08ff8cd95c35",
-        "trace-0e153028c74b",
-        "trace-975a471c80a4",
-        "trace-b5b8694868f0"
+        "trace-634127f7eb2b",
+        "trace-88db08b1d3b1"
       ],
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "start": {
-        "x": 123.70109099084256,
-        "y": 42.5806320453753
+        "x": 35.50023846534128,
+        "y": 38.32256884082038
       },
       "end": {
-        "x": 158.526436121044,
-        "y": 42.58063204538765
+        "x": 35.50023846534128,
+        "y": 39.17418148175366
       },
       "offset": 0.0,
-      "span": 34.825,
-      "confidence": "unhosted",
+      "span": 0.852,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-c6a77ad9b768",
+      "opening_id": "opening-window-92594552afa1",
       "opening_kind": "window",
-      "host_wall_id": "wall-6c874c307fd2",
+      "host_wall_id": "wall-8b95c83e8549",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-34228bc42717",
+        "trace-3f47dd0aefa1"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 462.1957758115721,
+        "y": 451.355
+      },
+      "end": {
+        "x": 462.1957758115721,
+        "y": 451.355
+      },
+      "offset": 0.0,
+      "span": 0.0,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-window-93a0c14c6bfb",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-21778a259eec",
+        "trace-c0051b938e36"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 152.6371524316975,
+        "y": 710.244942517687
+      },
+      "end": {
+        "x": 152.6371524316975,
+        "y": 711.0965551586079
+      },
+      "offset": 0.0,
+      "span": 0.852,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-9a93c7f54172",
+      "opening_kind": "window",
+      "host_wall_id": "wall-13905ec186a8",
+      "owner_room_ids": [
+        "room-living-room-f08c7113b7e9"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-49639e551ba5",
+        "trace-59b699b197ec",
+        "trace-5c03068dc1c0",
+        "trace-5c097899e082",
+        "trace-5fb712fab5a0",
+        "trace-6a3047e8b9bf",
+        "trace-7b36a17ee524",
+        "trace-83ef824cb78f",
+        "trace-ae472543491f",
+        "trace-f55dd7522aaa"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 277.355,
+        "y": 710.2449425176808
+      },
+      "end": {
+        "x": 280.33,
+        "y": 710.2449425176808
+      },
+      "offset": -0.0,
+      "span": 2.975,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-window-a6103b09a6fe",
+      "opening_kind": "window",
+      "host_wall_id": "wall-03cd4dd24feb",
       "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
@@ -72062,24 +71844,52 @@
         "trace-eb3aa539cf3c",
         "trace-f1096680fcc3"
       ],
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "start": {
-        "x": 15.271,
-        "y": 39.174181481673145
+        "x": 21.074737495330908,
+        "y": 52.8
       },
       "end": {
-        "x": 18.284,
-        "y": 39.174181481673145
+        "x": 21.074737495330908,
+        "y": 83.458
       },
-      "offset": 0.0,
-      "span": 3.013,
+      "offset": 8.516,
+      "span": 30.658,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-cacf758f62a5",
+      "opening_id": "opening-window-ad5f67240789",
       "opening_kind": "window",
-      "host_wall_id": "wall-3c380d93580f",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-1f4a8b4861e2",
+        "trace-3f44fea91a2d",
+        "trace-74bbab7bac55",
+        "trace-8991e62ef2f8"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 79.60066472809193,
+        "y": 38.32256884082038
+      },
+      "end": {
+        "x": 79.60066472809193,
+        "y": 39.19459914878404
+      },
+      "offset": 0.0,
+      "span": 0.872,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-b3ef982c4333",
+      "opening_kind": "window",
+      "host_wall_id": "wall-7a725425dcb7",
       "owner_room_ids": [
         "room-patio-baedb76676bf"
       ],
@@ -72096,202 +71906,170 @@
         "trace-cb1edec580ad",
         "trace-ee75254e007f"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 15.270513306959382,
-        "y": 710.245
+        "x": 30.748,
+        "y": 710.244942517656
       },
       "end": {
-        "x": 15.270513306959382,
-        "y": 712.245
+        "x": 65.574,
+        "y": 710.244942517656
       },
-      "offset": 0.0,
-      "span": 2.0,
+      "offset": -34.826,
+      "span": 34.826,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-d380c929f369",
+      "opening_id": "opening-window-b60a624478a4",
       "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
+      "host_wall_id": "wall-133fad4cfd6e",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-5c2e123966ff",
-        "trace-799656609e96",
-        "trace-89287107856e",
-        "trace-cb8618f892cb"
+        "trace-1a032fcbbfbc",
+        "trace-68de2ee5700a"
       ],
-      "orientation": "horizontal",
+      "orientation": "vertical",
       "start": {
-        "x": 70.32558359554271,
-        "y": 42.5806320453753
+        "x": 21.074737495274604,
+        "y": 246.968
       },
       "end": {
-        "x": 35.50023846534128,
-        "y": 42.58063204538765
+        "x": 21.074737495274604,
+        "y": 277.626
       },
-      "offset": 0.0,
-      "span": 34.825,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
+      "offset": -30.658,
+      "span": 30.658,
+      "confidence": "hosted",
+      "issues": []
     },
     {
-      "opening_id": "opening-window-d685f5c68882",
+      "opening_id": "opening-window-c2007afc5f62",
       "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-009dabda14e2",
-        "trace-0caf446c6723",
-        "trace-114415695b59",
-        "trace-244bc03ccea6",
-        "trace-564f47cbf159",
-        "trace-6d1135ed4141",
-        "trace-a4129a4c1abf",
-        "trace-a6c606fd31b6",
-        "trace-c39ae57b3992",
-        "trace-cc8abd995320"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 70.32558359554271,
-        "y": 39.174181481741314
-      },
-      "end": {
-        "x": 35.50023846534128,
-        "y": 39.174181481741314
-      },
-      "offset": 0.0,
-      "span": 34.825,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-d7e7b7c30c54",
-      "opening_kind": "window",
-      "host_wall_id": null,
-      "owner_room_ids": [],
-      "connected_room_ids": [],
-      "trace_ids": [
-        "trace-18772080d284",
-        "trace-201888440e16",
-        "trace-2b5dcb20be8b",
-        "trace-5c2b64a1ac32",
-        "trace-7361b6c3d7f1",
-        "trace-7a208c818a7a",
-        "trace-b236a70e12fb",
-        "trace-d60ba4e7f94b",
-        "trace-f9b3a771a465",
-        "trace-fa358c496ba8"
-      ],
-      "orientation": "horizontal",
-      "start": {
-        "x": 421.56620649302727,
-        "y": 709.3524945426682
-      },
-      "end": {
-        "x": 456.3915516232005,
-        "y": 709.3524945426682
-      },
-      "offset": 0.0,
-      "span": 34.825,
-      "confidence": "unhosted",
-      "issues": [
-        "unhosted_opening"
-      ]
-    },
-    {
-      "opening_id": "opening-window-e39d3f1c0631",
-      "opening_kind": "window",
-      "host_wall_id": "wall-6c874c307fd2",
+      "host_wall_id": "wall-0b541b05affa",
       "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-6c09047e65f9",
-        "trace-6ff56f4d6bb7"
+        "trace-0d1ca283c41d",
+        "trace-0eb06d505cf5",
+        "trace-0fffea883f13",
+        "trace-354d093ad0f2",
+        "trace-6fe3dc5dcddf",
+        "trace-71b31d10472a",
+        "trace-72746b307433",
+        "trace-9eef1540fc52",
+        "trace-b42e0104255f",
+        "trace-caf0e015e296",
+        "trace-d88a0b4192bb",
+        "trace-f059a1e38e87"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 19.075,
-        "y": 39.174181481673145
+        "x": 123.701,
+        "y": 39.17418148177228
       },
       "end": {
-        "x": 23.075,
-        "y": 39.174181481673145
+        "x": 158.526,
+        "y": 39.17418148177228
       },
-      "offset": 3.804,
-      "span": 4.0,
+      "offset": -34.825,
+      "span": 34.825,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-e49fcc2c8f9c",
+      "opening_id": "opening-window-c4b31ff5aad7",
       "opening_kind": "window",
-      "host_wall_id": "wall-57de61837492",
+      "host_wall_id": "wall-522b75a50a88",
       "owner_room_ids": [
         "room-living-room-f08c7113b7e9"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-3b837485f792",
-        "trace-e41745abe77d"
+        "trace-006443a7fb06",
+        "trace-11d38abc6410",
+        "trace-2bf90bbf5336",
+        "trace-674d48755a54",
+        "trace-718aad727cb1",
+        "trace-89789c178cf7",
+        "trace-951892928bef",
+        "trace-b2c75ec35cc7",
+        "trace-cd430f0973be",
+        "trace-e95241c73531"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 280.33,
+        "x": 199.071,
         "y": 710.2449425176808
       },
       "end": {
-        "x": 282.33,
+        "x": 233.896,
         "y": 710.2449425176808
       },
-      "offset": 0.0,
-      "span": 2.0,
+      "offset": 11.609,
+      "span": 34.825,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-ea7de68c0cc6",
+      "opening_id": "opening-window-c562c9b724ac",
+      "opening_kind": "window",
+      "host_wall_id": "wall-6f0cb67af362",
+      "owner_room_ids": [
+        "room-kitchen-30c3548c559f"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-05e9eae8b93b",
+        "trace-e0c23618f692"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 21.074737495330908,
+        "y": 625.935
+      },
+      "end": {
+        "x": 21.074737495330908,
+        "y": 677.032
+      },
+      "offset": 134.58,
+      "span": 51.097,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-window-c59a1f6b6c1e",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-072850760f52",
-        "trace-29c5747fb0bb",
-        "trace-5ce41c7b58f2",
-        "trace-612016600b44",
-        "trace-6f87ca1f669b",
-        "trace-797662971cdb",
-        "trace-c44ae61fdede",
-        "trace-f5493281c852"
+        "trace-73b2d80fcc0c",
+        "trace-dc9eee5b9036"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 15.270513306959382,
+        "x": 14.30314260889745,
         "y": 625.9352910677333
       },
       "end": {
         "x": 15.270513306959382,
-        "y": 677.032049522243
+        "y": 625.9352910677333
       },
       "offset": 0.0,
-      "span": 51.097,
-      "confidence": "unhosted",
+      "span": 0.967,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-eeb6d3b04440",
+      "opening_id": "opening-window-c7983dee1ae9",
       "opening_kind": "window",
       "host_wall_id": "wall-3539a56e7153",
       "owner_room_ids": [
@@ -72307,129 +72085,331 @@
       "orientation": "vertical",
       "start": {
         "x": 462.1957758115721,
-        "y": 468.942
+        "y": 470.942
       },
       "end": {
         "x": 462.1957758115721,
         "y": 470.942
       },
-      "offset": 7.368,
-      "span": 2.0,
+      "offset": 9.368,
+      "span": 0.0,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-eee2dc996412",
+      "opening_id": "opening-window-c96aae438bf5",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-05e9eae8b93b",
-        "trace-e0c23618f692"
+        "trace-a7764b82186d",
+        "trace-d1a3836d8ca0"
       ],
-      "orientation": "vertical",
+      "orientation": "horizontal",
       "start": {
-        "x": 21.074737495330908,
-        "y": 625.9352910677209
+        "x": 14.30314260884114,
+        "y": 277.62572093603376
       },
       "end": {
-        "x": 21.074737495330908,
-        "y": 677.0320495222307
+        "x": 15.293706307902793,
+        "y": 277.62572093603376
       },
       "offset": 0.0,
-      "span": 51.097,
-      "confidence": "unhosted",
+      "span": 0.991,
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
       ]
     },
     {
-      "opening_id": "opening-window-eeff2a1e72ab",
+      "opening_id": "opening-window-ca6e214d45c3",
       "opening_kind": "window",
-      "host_wall_id": "wall-0b541b05affa",
+      "host_wall_id": "wall-0030030e8cb5",
       "owner_room_ids": [
         "room-bedroom-4-04b61e6be876"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-63949406b0a2",
-        "trace-f2325716e926"
+        "trace-08ff8cd95c35",
+        "trace-0e153028c74b",
+        "trace-975a471c80a4",
+        "trace-b5b8694868f0"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 158.526,
-        "y": 39.17418148177228
+        "x": 123.701,
+        "y": 44.28385732719225
       },
       "end": {
-        "x": 160.526,
-        "y": 39.17418148177228
+        "x": 158.526,
+        "y": 44.28385732719225
       },
-      "offset": -0.0,
-      "span": 2.0,
+      "offset": 9.275,
+      "span": 34.825,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-f01a82654a49",
+      "opening_id": "opening-window-cbc226d69ed1",
       "opening_kind": "window",
-      "host_wall_id": "wall-b2266b39e6be",
+      "host_wall_id": "wall-133fad4cfd6e",
       "owner_room_ids": [
-        "room-patio-baedb76676bf"
+        "room-bedroom-3-b8f109d99d59"
       ],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-21778a259eec",
-        "trace-c0051b938e36"
+        "trace-13ba0af767c5",
+        "trace-14dae1887a8b",
+        "trace-30167cc605f3",
+        "trace-39aefca1e96b",
+        "trace-413fbd083961",
+        "trace-49b81f04ea5a",
+        "trace-67555b5d6de9",
+        "trace-d2503198f4d9"
       ],
       "orientation": "vertical",
       "start": {
-        "x": 148.76766963944976,
-        "y": 710.245
+        "x": 21.074737495274604,
+        "y": 246.968
       },
       "end": {
-        "x": 148.76766963944976,
-        "y": 711.097
+        "x": 21.074737495274604,
+        "y": 277.626
       },
-      "offset": -0.0,
-      "span": 0.852,
+      "offset": -30.658,
+      "span": 30.658,
       "confidence": "hosted",
       "issues": []
     },
     {
-      "opening_id": "opening-window-fb1a18269612",
+      "opening_id": "opening-window-cc492bb1b4e8",
       "opening_kind": "window",
       "host_wall_id": null,
       "owner_room_ids": [],
       "connected_room_ids": [],
       "trace_ids": [
-        "trace-6f58910701df",
-        "trace-9aeff5dea634"
+        "trace-02970020aacb",
+        "trace-3121816721f5",
+        "trace-46472fc83536",
+        "trace-de563442f617"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 119.06355042456795,
+        "y": 38.322568840832815
+      },
+      "end": {
+        "x": 119.06355042456795,
+        "y": 39.174181481741314
+      },
+      "offset": 0.0,
+      "span": 0.852,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-ce0704e59f06",
+      "opening_kind": "window",
+      "host_wall_id": "wall-2e4fd88351a8",
+      "owner_room_ids": [
+        "room-bedroom-2-cf9dbc0716ff"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-1ad65824a98d",
+        "trace-e9b464a21397"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 21.074737495330908,
+        "y": 342.348
+      },
+      "end": {
+        "x": 21.074737495330908,
+        "y": 373.006
+      },
+      "offset": -30.658,
+      "span": 30.658,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-window-ec75a14ef725",
+      "opening_kind": "window",
+      "host_wall_id": "wall-62f3c53f0125",
+      "owner_room_ids": [
+        "room-master-bath-8c1d12c9d850"
+      ],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-2ec9ce0b7cf5",
+        "trace-4b0f9fb7244f",
+        "trace-6c60d6e5adf8",
+        "trace-71c4e5e50320",
+        "trace-8d4f4be6e4df",
+        "trace-9942258619c2",
+        "trace-ab54b8c5058f",
+        "trace-b22e9beaaa75",
+        "trace-c21adf64cb7a",
+        "trace-f90dbc295179"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 462.1957758116284,
+        "y": 430.916
+      },
+      "end": {
+        "x": 462.1957758116284,
+        "y": 430.916
+      },
+      "offset": 28.955,
+      "span": 0.0,
+      "confidence": "hosted",
+      "issues": []
+    },
+    {
+      "opening_id": "opening-window-ee522fc8a2c8",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-9cf2dcf1d49d",
+        "trace-a8086c59c0e9"
+      ],
+      "orientation": "vertical",
+      "start": {
+        "x": 233.89629106887168,
+        "y": 710.2245248506689
+      },
+      "end": {
+        "x": 233.89629106887168,
+        "y": 711.0965551586203
+      },
+      "offset": 0.0,
+      "span": 0.872,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-f5d58789ccb6",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-669dcaeecbde",
+        "trace-ddc7d8eaa4a1"
       ],
       "orientation": "horizontal",
       "start": {
-        "x": 15.270513307015689,
-        "y": 342.3482816451664
+        "x": 14.30314260889745,
+        "y": 52.79998373621529
       },
       "end": {
-        "x": 14.303142608953756,
-        "y": 342.3482816451664
+        "x": 15.270513306959382,
+        "y": 52.79998373621529
       },
       "offset": 0.0,
       "span": 0.967,
-      "confidence": "unhosted",
+      "confidence": "opening_artifact",
       "issues": [
-        "unhosted_opening"
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-f8c48d2533fb",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-17185b5cb7d5",
+        "trace-a7f7d526869e"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 467.0326293019381,
+        "y": 430.9159962997741
+      },
+      "end": {
+        "x": 468.9673706980619,
+        "y": 430.9159962997741
+      },
+      "offset": 0.0,
+      "span": 1.935,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-fd8cbeb35dff",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-092b8e4e0799",
+        "trace-59547949d388"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 14.30314260889745,
+        "y": 677.032049522243
+      },
+      "end": {
+        "x": 15.293706307930933,
+        "y": 677.032049522243
+      },
+      "offset": 0.0,
+      "span": 0.991,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
+      ]
+    },
+    {
+      "opening_id": "opening-window-ffb7a8747125",
+      "opening_kind": "window",
+      "host_wall_id": null,
+      "owner_room_ids": [],
+      "connected_room_ids": [],
+      "trace_ids": [
+        "trace-4caeb4bee02d",
+        "trace-bc5e7a9b1b84"
+      ],
+      "orientation": "horizontal",
+      "start": {
+        "x": 14.30314260889745,
+        "y": 83.45803880889642
+      },
+      "end": {
+        "x": 15.270513306959382,
+        "y": 83.45803880889642
+      },
+      "offset": 0.0,
+      "span": 0.967,
+      "confidence": "opening_artifact",
+      "issues": [
+        "degenerate_opening_cluster"
       ]
     }
   ],
   "opening_graph_readiness": {
     "status": "needs_opening_review",
     "issues": [
+      "degenerate_opening_cluster",
       "unhosted_opening"
     ]
   },
   "opening_graph_issues": [
+    "degenerate_opening_cluster",
     "unhosted_opening"
   ]
 }
