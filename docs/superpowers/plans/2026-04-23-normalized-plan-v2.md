@@ -1,6 +1,6 @@
 # NormalizedPlan v2 Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox syntax for tracking and execution status.
 
 **Goal:** Expand `site_fit` normalization so it consumes a reduced mutable assembly (rooms, boundaries, walls, openings) instead of only counts + bbox, while preserving the current site-fit API behavior.
 
@@ -30,7 +30,7 @@
 - Read: `backend/site_fit/models.py`
 - Read: `frontend/src/features/catalogInspector/catalogInspector.fixture.json`
 
-- [ ] **Step 1: Write the failing unit tests for catalog-style payload normalization**
+- [x] **Step 1: Write the failing unit tests for catalog-style payload normalization**
 
 ```python
 import json
@@ -102,7 +102,7 @@ def test_normalize_plan_preserves_mutability_and_rehostability_in_rich_payload()
     assert normalized.rehostable_opening_count > 0
 ```
 
-- [ ] **Step 2: Run the new unit tests to verify they fail first**
+- [x] **Step 2: Run the new unit tests to verify they fail first**
 
 Run:
 
@@ -112,7 +112,7 @@ Run:
 
 Expected: FAIL because `NormalizedPlan` does not yet expose `room_summaries`, `boundary_segments`, `wall_segments`, `openings`, or the new count fields.
 
-- [ ] **Step 3: Commit the RED test scaffolding**
+- [x] **Step 3: Commit the RED test scaffolding**
 
 ```powershell
 git add tests/test_site_fit_normalizer.py
@@ -128,7 +128,7 @@ git commit -m "test: cover normalized plan v2"
 - Test: `tests/test_site_fit_normalizer.py`
 - Test: `tests/test_site_fit_api.py`
 
-- [ ] **Step 1: Add the failing API assertion for the new summary counters**
+- [x] **Step 1: Add the failing API assertion for the new summary counters**
 
 Append this test to `tests/test_site_fit_api.py`:
 
@@ -217,7 +217,7 @@ def test_site_fit_analyze_exposes_mutable_assembly_counts_for_catalog_payload():
     assert payload["plan_summary"]["rehostable_opening_count"] == 1
 ```
 
-- [ ] **Step 2: Run the focused API test and confirm it fails**
+- [x] **Step 2: Run the focused API test and confirm it fails**
 
 Run:
 
@@ -227,7 +227,7 @@ Run:
 
 Expected: FAIL because `SiteFitPlanSummaryResponse` and `build_plan_summary(...)` do not yet expose the new counters.
 
-- [ ] **Step 3: Enrich `backend/site_fit/models.py` with reduced-assembly dataclasses**
+- [x] **Step 3: Enrich `backend/site_fit/models.py` with reduced-assembly dataclasses**
 
 Add focused dataclasses above `NormalizedPlan`:
 
@@ -308,7 +308,7 @@ class NormalizedPlan:
     rehostable_opening_count: int = 0
 ```
 
-- [ ] **Step 4: Extend the public site-fit summary contracts**
+- [x] **Step 4: Extend the public site-fit summary contracts**
 
 Update `backend/site_fit/contracts.py`:
 
@@ -344,7 +344,7 @@ def build_plan_summary(plan: NormalizedPlan) -> dict:
     }
 ```
 
-- [ ] **Step 5: Run the focused tests and confirm the contract layer is green**
+- [x] **Step 5: Run the focused tests and confirm the contract layer is green**
 
 Run:
 
@@ -354,7 +354,7 @@ Run:
 
 Expected: still FAIL until `normalize_plan(...)` starts populating the new dataclasses and counters.
 
-- [ ] **Step 6: Commit the model/contract scaffolding**
+- [x] **Step 6: Commit the model/contract scaffolding**
 
 ```powershell
 git add backend/site_fit/models.py backend/site_fit/contracts.py backend/site_fit/reporter.py tests/test_site_fit_api.py
@@ -368,7 +368,7 @@ git commit -m "feat: add normalized plan v2 contracts"
 - Test: `tests/test_site_fit_normalizer.py`
 - Read: `backend/floor_plan_catalog/contracts.py`
 
-- [ ] **Step 1: Add detection helpers for catalog-like plan payloads**
+- [x] **Step 1: Add detection helpers for catalog-like plan payloads**
 
 Insert these helpers near the top of `backend/site_fit/normalizer.py`:
 
@@ -385,7 +385,7 @@ def _point_dict(point: dict | None) -> dict[str, float] | None:
     return {"x": float(point.get("x", 0.0)), "y": float(point.get("y", 0.0))}
 ```
 
-- [ ] **Step 2: Add rich projection helpers for rooms, boundaries, walls, and openings**
+- [x] **Step 2: Add rich projection helpers for rooms, boundaries, walls, and openings**
 
 Add focused helper functions:
 
@@ -436,7 +436,7 @@ def _normalize_boundary_segments(boundaries: list[dict]) -> tuple[NormalizedBoun
 
 Repeat the same style for `_normalize_wall_segments(...)` and `_normalize_openings(...)`, preserving only executor-relevant fields and filtering out raw CAD-only noise.
 
-- [ ] **Step 3: Route catalog-like plans through the rich normalization branch**
+- [x] **Step 3: Route catalog-like plans through the rich normalization branch**
 
 Update `normalize_plan(job)`:
 
@@ -475,7 +475,7 @@ if job.source_kind == "plan":
 
 Keep the existing simple-room and structure branches intact for backward compatibility.
 
-- [ ] **Step 4: Run the unit and focused API tests until green**
+- [x] **Step 4: Run the unit and focused API tests until green**
 
 Run:
 
@@ -485,7 +485,7 @@ Run:
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit the normalizer implementation**
+- [x] **Step 5: Commit the normalizer implementation**
 
 ```powershell
 git add backend/site_fit/normalizer.py tests/test_site_fit_normalizer.py
@@ -499,7 +499,7 @@ git commit -m "feat: normalize catalog plans into mutable assemblies"
 - Modify: `backend/services/site_fit_service.py` (only if response wiring needs adjustment)
 - Test: `tests/test_site_fit_normalizer.py`
 
-- [ ] **Step 1: Add a realistic Seminole regression to the unit test file**
+- [x] **Step 1: Add a realistic Seminole regression to the unit test file**
 
 Append this test to `tests/test_site_fit_normalizer.py`:
 
@@ -523,7 +523,7 @@ def test_normalize_plan_seminole_fixture_keeps_rich_counts_stable():
     assert normalized.rehostable_opening_count == 12
 ```
 
-- [ ] **Step 2: Re-run all site-fit tests to confirm no regression in the legacy bbox-first flow**
+- [x] **Step 2: Re-run all site-fit tests to confirm no regression in the legacy bbox-first flow**
 
 Run:
 
@@ -533,7 +533,7 @@ Run:
 
 Expected: PASS, including the existing legacy API tests for plain plans and structures.
 
-- [ ] **Step 3: If needed, keep `backend/services/site_fit_service.py` unchanged except for type-compatible summary plumbing**
+- [x] **Step 3: If needed, keep `backend/services/site_fit_service.py` unchanged except for type-compatible summary plumbing**
 
 The goal is to preserve the current orchestration shape:
 
@@ -552,7 +552,7 @@ return {
 
 Only adjust this file if richer summary data requires an explicit compatibility fix.
 
-- [ ] **Step 4: Commit the regression lock-in**
+- [x] **Step 4: Commit the regression lock-in**
 
 ```powershell
 git add tests/test_site_fit_api.py tests/test_site_fit_normalizer.py backend/services/site_fit_service.py
@@ -566,7 +566,7 @@ git commit -m "test: lock normalized plan v2 regressions"
 - Modify: `D:\obsidian\vault\01 - Projects\Point.ai\Current State.md`
 - Create/Modify: `D:\obsidian\vault\01 - Projects\Point.ai\Implementation\2026-04-23 - NormalizedPlan v2 implementation.md`
 
-- [ ] **Step 1: Run the full site-fit verification suite**
+- [x] **Step 1: Run the full site-fit verification suite**
 
 Run:
 
@@ -576,7 +576,7 @@ Run:
 
 Expected: PASS.
 
-- [ ] **Step 2: Refresh Obsidian with the new current truth**
+- [x] **Step 2: Refresh Obsidian with the new current truth**
 
 Add/update notes with:
 
@@ -586,7 +586,7 @@ Add/update notes with:
 - Next bridge becomes `Constraint Evaluation v2` over mutable boundaries instead of bbox-only fit logic.
 ```
 
-- [ ] **Step 3: Verify git state before claiming completion**
+- [x] **Step 3: Verify git state before claiming completion**
 
 Run:
 
@@ -596,7 +596,7 @@ git status --short
 
 Expected: clean working tree after the final commit.
 
-- [ ] **Step 4: Final documentation commit**
+- [x] **Step 4: Final documentation commit**
 
 ```powershell
 git add docs/superpowers/plans/2026-04-23-normalized-plan-v2.md "D:\obsidian\vault\01 - Projects\Point.ai\Current State.md" "D:\obsidian\vault\01 - Projects\Point.ai\Implementation\2026-04-23 - NormalizedPlan v2 implementation.md"
