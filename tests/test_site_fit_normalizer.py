@@ -175,6 +175,25 @@ def test_normalize_plan_exposes_rich_assembly_in_fixture_order_and_strips_cad_tr
     assert "boundary_nodes" not in normalized.payload
 
 
+def test_normalize_plan_seminole_fixture_keeps_rich_counts_stable():
+    job = build_site_fit_job(
+        plan=_load_catalog_payload(),
+        structure=None,
+        site_constraints={"buildable_envelope": {"x": -1000, "y": -1000, "width": 10000, "height": 10000}},
+        design_locks={},
+        jurisdiction=None,
+        ruleset_version="site_fit_contract_v1",
+    )
+
+    normalized = normalize_plan(job)
+
+    assert normalized.room_count == 16
+    assert normalized.movable_boundary_count == 39
+    assert normalized.protected_boundary_count == 93
+    assert normalized.locked_boundary_count == 59
+    assert normalized.rehostable_opening_count == 12
+
+
 def test_normalize_plan_room_boundary_links_only_reference_retained_boundary_segments():
     normalized = normalize_plan(_build_catalog_job())
 
