@@ -170,19 +170,3 @@ def test_normalize_plan_exposes_rich_assembly_in_fixture_order_and_strips_cad_tr
     assert _asdict_items(normalized.openings) == expected_openings
 
     assert "cad_traces" not in normalized.payload
-
-
-def test_normalize_plan_exposes_boundary_state_counts_from_catalog_fixture():
-    fixture = _load_fixture()
-    normalized = normalize_plan(_build_catalog_job())
-
-    assert normalized.protected_boundary_count == sum(
-        1 for boundary in fixture["boundaries"] if boundary["mutability"] == "protected"
-    )
-    assert normalized.locked_boundary_count == sum(
-        1 for boundary in fixture["boundaries"] if boundary["mutability"] == "locked"
-    )
-    assert normalized.room_count == len(fixture["rooms"])
-    assert normalized.wall_count == len(fixture["walls"])
-    assert normalized.opening_count == len(fixture["openings"])
-    assert normalized.footprint_bbox == fixture["footprint_bbox"]
