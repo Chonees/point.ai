@@ -207,3 +207,86 @@ def test_normalize_plan_treats_rich_payload_with_empty_rooms_as_catalog_payload(
     assert normalized.wall_count == len(payload["walls"])
     assert normalized.opening_count == len(payload["openings"])
     assert normalized.footprint_bbox == payload["footprint_bbox"]
+
+
+def test_normalize_plan_does_not_double_normalize_bbox_derived_from_catalog_boundaries():
+    payload = {
+        "model": "catalog-like-ft",
+        "unit": "ft",
+        "rooms": [],
+        "walls": [],
+        "openings": [],
+        "boundaries": [
+            {
+                "boundary_id": "boundary-1",
+                "boundary_kind": "exterior",
+                "owner_room_ids": [],
+                "mutability": "protected",
+                "movable": False,
+                "constraint_reasons": [],
+                "start": {"x": 0.0, "y": 0.0},
+                "end": {"x": 12.0, "y": 0.0},
+                "length": 12.0,
+                "opening_ids": [],
+            },
+            {
+                "boundary_id": "boundary-2",
+                "boundary_kind": "exterior",
+                "owner_room_ids": [],
+                "mutability": "protected",
+                "movable": False,
+                "constraint_reasons": [],
+                "start": {"x": 12.0, "y": 0.0},
+                "end": {"x": 12.0, "y": 12.0},
+                "length": 12.0,
+                "opening_ids": [],
+            },
+            {
+                "boundary_id": "boundary-3",
+                "boundary_kind": "exterior",
+                "owner_room_ids": [],
+                "mutability": "protected",
+                "movable": False,
+                "constraint_reasons": [],
+                "start": {"x": 12.0, "y": 12.0},
+                "end": {"x": 0.0, "y": 12.0},
+                "length": 12.0,
+                "opening_ids": [],
+            },
+            {
+                "boundary_id": "boundary-4",
+                "boundary_kind": "exterior",
+                "owner_room_ids": [],
+                "mutability": "protected",
+                "movable": False,
+                "constraint_reasons": [],
+                "start": {"x": 0.0, "y": 12.0},
+                "end": {"x": 0.0, "y": 0.0},
+                "length": 12.0,
+                "opening_ids": [],
+            },
+        ],
+        "boundary_nodes": [{"node_id": "node-1"}],
+        "cad_traces": [],
+        "structure_meta": {"unit": "ft"},
+    }
+    job = build_site_fit_job(
+        plan=payload,
+        structure=None,
+        site_constraints={"buildable_envelope": {"x": 0, "y": 0, "width": 5000, "height": 5000}},
+        design_locks={},
+        jurisdiction=None,
+        ruleset_version="site_fit_contract_v1",
+    )
+
+    normalized = normalize_plan(job)
+
+    assert normalized.source_kind == "plan"
+    assert normalized.footprint_bbox == {
+        "x1": 0.0,
+        "y1": 0.0,
+        "x2": 144.0,
+        "y2": 144.0,
+        "width": 144.0,
+        "height": 144.0,
+    }

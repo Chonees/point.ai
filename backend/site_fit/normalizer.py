@@ -43,8 +43,15 @@ def normalize_plan(job: SiteFitJob) -> NormalizedPlan:
                 source_unit=source_unit,
                 canonical_unit=canonical_unit,
             )
-            raw_bbox = job.payload.get("footprint_bbox") or _bbox_from_catalog_boundaries(boundary_segments)
-            footprint_bbox = _normalize_bbox_if_needed(raw_bbox, source_unit=source_unit, canonical_unit=canonical_unit)
+            raw_bbox = job.payload.get("footprint_bbox")
+            if raw_bbox is not None:
+                footprint_bbox = _normalize_bbox_if_needed(
+                    raw_bbox,
+                    source_unit=source_unit,
+                    canonical_unit=canonical_unit,
+                )
+            else:
+                footprint_bbox = _bbox_from_catalog_boundaries(boundary_segments)
             return NormalizedPlan(
                 source_kind="plan",
                 payload=_sanitize_catalog_payload(job.payload),
