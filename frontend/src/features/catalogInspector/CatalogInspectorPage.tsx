@@ -151,6 +151,13 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
   const artifactBoundaryCount = boundaries.filter((boundary) => boundary.boundary_kind === 'artifact').length
   const duplicateBoundaryCount = boundaries.filter((boundary) => boundary.family_role === 'duplicate').length
   const unknownBoundaryCount = boundaries.filter((boundary) => boundary.boundary_kind === 'unknown').length
+  const flexibleRoomCount = topology.rooms.filter((room) => room.mutability === 'flexible').length
+  const protectedRoomCount = topology.rooms.filter((room) => room.mutability === 'protected').length
+  const lockedRoomCount = topology.rooms.filter((room) => room.mutability === 'locked').length
+  const movableBoundaryCount = boundaries.filter((boundary) => boundary.mutability === 'movable').length
+  const movableWithRehostBoundaryCount = boundaries.filter((boundary) => boundary.mutability === 'movable_with_rehost').length
+  const protectedBoundaryCount = boundaries.filter((boundary) => boundary.mutability === 'protected').length
+  const lockedBoundaryCount = boundaries.filter((boundary) => boundary.mutability === 'locked').length
   const hostedDoorCount = hostedOpenings.filter((opening) => opening.opening_kind === 'door' && opening.host_wall_id).length
   const hostedWindowCount = hostedOpenings.filter((opening) => opening.opening_kind === 'window' && opening.host_wall_id).length
   const openingArtifactCount = hostedOpenings.filter((opening) => opening.confidence === 'opening_artifact').length
@@ -238,6 +245,34 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
               <p className="mt-1 text-lg font-semibold text-orange-200">{unknownBoundaryCount}</p>
             </div>
             <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Flexible rooms</p>
+              <p className="mt-1 text-lg font-semibold text-emerald-200">{flexibleRoomCount}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Protected rooms</p>
+              <p className="mt-1 text-lg font-semibold text-amber-200">{protectedRoomCount}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Locked rooms</p>
+              <p className="mt-1 text-lg font-semibold text-rose-200">{lockedRoomCount}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Movable boundaries</p>
+              <p className="mt-1 text-lg font-semibold text-emerald-200">{movableBoundaryCount}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Movable with rehost</p>
+              <p className="mt-1 text-lg font-semibold text-cyan-200">{movableWithRehostBoundaryCount}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Protected boundaries</p>
+              <p className="mt-1 text-lg font-semibold text-amber-200">{protectedBoundaryCount}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Locked boundaries</p>
+              <p className="mt-1 text-lg font-semibold text-rose-200">{lockedBoundaryCount}</p>
+            </div>
+            <div className="rounded-2xl border border-white/6 bg-white/[0.03] px-4 py-3">
               <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Opening artifacts</p>
               <p className="mt-1 text-lg font-semibold text-orange-300">{openingArtifactCount}</p>
             </div>
@@ -251,7 +286,7 @@ export function CatalogInspectorPage({ topology }: CatalogInspectorPageProps) {
             <div>
               <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Validation</p>
               <p className="mt-1 text-sm text-zinc-300">
-                {roomsWithAdjacency} rooms with wall-backed adjacency, {openingAdjacencyEdges} opening-backed adjacency edges, {heuristicAdjacencyEdges} heuristic adjacency edges, {roomsWithOwnedWalls} rooms with owned walls, {hostedDoorCount} hosted doors, {hostedWindowCount} hosted windows, {openingArtifactCount} opening artifacts, {unhostedOpeningCount} unhosted openings, {expectedIsolatedRooms} expected isolated rooms, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {cadTraces.length} CAD traces split into {rawWallTraces.length} walls, {doorTraces.length} doors, {windowTraces.length} windows, {unsupportedSharedWalls} unsupported shared walls, {exactBoundarySharedCount} exact-graph shared boundaries, {supportBoundaryCount} support-shell boundaries, {duplicateBoundaryCount} duplicate boundaries, {artifactBoundaryCount} artifact boundaries, {unknownBoundaryCount} unknown boundaries.
+                {roomsWithAdjacency} rooms with wall-backed adjacency, {openingAdjacencyEdges} opening-backed adjacency edges, {heuristicAdjacencyEdges} heuristic adjacency edges, {roomsWithOwnedWalls} rooms with owned walls, {flexibleRoomCount} flexible rooms, {protectedRoomCount} protected rooms, {lockedRoomCount} locked rooms, {movableBoundaryCount} movable boundaries, {movableWithRehostBoundaryCount} movable-with-rehost boundaries, {protectedBoundaryCount} protected boundaries, {lockedBoundaryCount} locked boundaries, {hostedDoorCount} hosted doors, {hostedWindowCount} hosted windows, {openingArtifactCount} opening artifacts, {unhostedOpeningCount} unhosted openings, {expectedIsolatedRooms} expected isolated rooms, {topology.topology_issues.length} topology issues, {topology.wall_graph_issues.length} wall graph issues, {cadTraces.length} CAD traces split into {rawWallTraces.length} walls, {doorTraces.length} doors, {windowTraces.length} windows, {unsupportedSharedWalls} unsupported shared walls, {exactBoundarySharedCount} exact-graph shared boundaries, {supportBoundaryCount} support-shell boundaries, {duplicateBoundaryCount} duplicate boundaries, {artifactBoundaryCount} artifact boundaries, {unknownBoundaryCount} unknown boundaries.
               </p>
               <p className="mt-1 text-sm text-zinc-500">
                 Readiness: <span className="font-medium text-zinc-200">{topology.topology_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.wall_graph_readiness.status}</span> / <span className="font-medium text-zinc-200">{topology.opening_graph_readiness?.status ?? 'opening_graph_unavailable'}</span> / <span className="font-medium text-zinc-200">{topology.boundary_graph_readiness?.status ?? 'boundary_graph_unavailable'}</span>

@@ -26,6 +26,11 @@ function formatIssueList(issues: string[]) {
   return issues.join(', ')
 }
 
+function formatConstraintReasons(reasons: string[]) {
+  if (reasons.length === 0) return 'None'
+  return reasons.join(', ')
+}
+
 function formatTraceSupportStatus(status: string) {
   switch (status) {
     case 'exact_trace_supported':
@@ -106,6 +111,25 @@ function formatIsolationStatus(status: string) {
       return 'Suspicious isolated'
     default:
       return status
+  }
+}
+
+function formatMutability(mutability: string) {
+  switch (mutability) {
+    case 'flexible':
+      return 'Flexible'
+    case 'protected':
+      return 'Protected'
+    case 'locked':
+      return 'Locked'
+    case 'movable':
+      return 'Movable'
+    case 'movable_with_rehost':
+      return 'Movable with rehost'
+    case 'derived_only':
+      return 'Derived only'
+    default:
+      return mutability
   }
 }
 
@@ -194,9 +218,17 @@ export function CatalogInspectorSidebar({
                 <p className="mt-1 text-zinc-100">{formatBoundaryKind(selectedWall.boundary_kind)}</p>
               </div>
               <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Mutability</p>
+                <p className="mt-1 text-zinc-100">{formatMutability(selectedWall.mutability)}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
                 <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Owner rooms</p>
                 <p className="mt-1 text-zinc-100">{roomNames(topology, selectedWall.owner_room_ids)}</p>
               </div>
+            </div>
+            <div className="mt-3 rounded-xl bg-black/20 p-3 text-sm">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Constraint reasons</p>
+              <p className="mt-1 text-zinc-100">{formatConstraintReasons(selectedWall.constraint_reasons)}</p>
             </div>
             {selectedWall.trace_support_ids.length > 0 ? (
               <p className="mt-3 text-xs text-zinc-500">{selectedWall.trace_support_ids.join(', ')}</p>
@@ -218,6 +250,10 @@ export function CatalogInspectorSidebar({
               <div className="rounded-xl bg-black/20 p-3">
                 <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Confidence</p>
                 <p className="mt-1 text-zinc-100">{formatConfidence(selectedBoundary.confidence)}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Mutability</p>
+                <p className="mt-1 text-zinc-100">{formatMutability(selectedBoundary.mutability)}</p>
               </div>
               <div className="rounded-xl bg-black/20 p-3">
                 <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Source traces</p>
@@ -248,6 +284,10 @@ export function CatalogInspectorSidebar({
                 <p className="mt-1 text-zinc-100">{selectedBoundary.duplicate_of_boundary_id ?? 'None'}</p>
               </div>
             </div>
+            <div className="mt-3 rounded-xl bg-black/20 p-3 text-sm">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Constraint reasons</p>
+              <p className="mt-1 text-zinc-100">{formatConstraintReasons(selectedBoundary.constraint_reasons)}</p>
+            </div>
             <p className="mt-3 text-xs text-zinc-500">
               {selectedBoundary.orientation} ? {selectedBoundary.length.toFixed(2)} in ? openings {selectedBoundary.opening_ids.length}
             </p>
@@ -277,6 +317,18 @@ export function CatalogInspectorSidebar({
                 <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Connected rooms</p>
                 <p className="mt-1 text-zinc-100">{roomNames(topology, selectedOpening.connected_room_ids)}</p>
               </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Rehost required</p>
+                <p className="mt-1 text-zinc-100">{selectedOpening.rehost_required ? 'Yes' : 'No'}</p>
+              </div>
+              <div className="rounded-xl bg-black/20 p-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Rehostable</p>
+                <p className="mt-1 text-zinc-100">{selectedOpening.rehostable ? 'Yes' : 'No'}</p>
+              </div>
+            </div>
+            <div className="mt-3 rounded-xl bg-black/20 p-3 text-sm">
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Constraint reasons</p>
+              <p className="mt-1 text-zinc-100">{formatConstraintReasons(selectedOpening.constraint_reasons)}</p>
             </div>
             <p className="mt-3 text-xs text-zinc-500">span {selectedOpening.span.toFixed(2)} · offset {selectedOpening.offset.toFixed(2)}</p>
             <p className="mt-2 text-xs text-amber-300">{formatIssueList(selectedOpening.issues)}</p>
@@ -348,6 +400,10 @@ export function CatalogInspectorSidebar({
                   <p className="mt-1 text-zinc-100">{formatIsolationStatus(selectedRoom.isolation_status)}</p>
                 </div>
                 <div className="rounded-xl bg-white/[0.02] p-3">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Mutability</p>
+                  <p className="mt-1 text-zinc-100">{formatMutability(selectedRoom.mutability)}</p>
+                </div>
+                <div className="rounded-xl bg-white/[0.02] p-3">
                   <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Adjacency</p>
                   <p className="mt-1 text-zinc-100">{selectedRoom.adjacent_room_ids.length}</p>
                 </div>
@@ -363,6 +419,17 @@ export function CatalogInspectorSidebar({
                   <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Exterior walls</p>
                   <p className="mt-1 text-zinc-100">{selectedRoom.exterior_wall_ids.length}</p>
                 </div>
+                <div className="rounded-xl bg-white/[0.02] p-3">
+                  <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-500">Minimums</p>
+                  <p className="mt-1 text-zinc-100">
+                    {selectedRoom.min_width?.toFixed(1) ?? '—'} x {selectedRoom.min_height?.toFixed(1) ?? '—'} · {selectedRoom.min_area?.toFixed(1) ?? '—'} sq in
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-semibold uppercase tracking-[0.22em] text-zinc-400">Constraint reasons</h4>
+                <p className="mt-2 text-sm text-zinc-200">{formatConstraintReasons(selectedRoom.constraint_reasons)}</p>
               </div>
 
               <div>
@@ -398,11 +465,12 @@ export function CatalogInspectorSidebar({
                           {wall.trace_support_gap != null ? ` · gap ${wall.trace_support_gap.toFixed(3)}` : ''}
                         </p>
                         <p className="mt-1 text-xs text-zinc-500">
-                          Provenance: {formatProvenance(wall.provenance)} · Confidence: {formatConfidence(wall.confidence)}
+                          Provenance: {formatProvenance(wall.provenance)} · Confidence: {formatConfidence(wall.confidence)} · Mutability: {formatMutability(wall.mutability)}
                         </p>
                         {wall.trace_support_ids.length > 0 ? (
                           <p className="mt-1 text-xs text-zinc-500">{wall.trace_support_ids.join(', ')}</p>
                         ) : null}
+                        <p className="mt-1 text-xs text-zinc-500">Constraint reasons: {formatConstraintReasons(wall.constraint_reasons)}</p>
                         <p className="mt-1 text-xs text-amber-300">{formatIssueList(wall.issues)}</p>
                       </div>
                     ))

@@ -21,6 +21,10 @@ const artifactBoundaryCount = fixture.boundaries.filter((boundary) => boundary.b
 const openingArtifactCount = fixture.openings.filter((opening) => opening.confidence === 'opening_artifact').length
 const firstSupportBoundary = fixture.boundaries.find((boundary) => boundary.boundary_kind === 'support') ?? null
 const duplicateBoundaryCount = fixture.boundaries.filter((boundary) => boundary.family_role === 'duplicate').length
+const flexibleRoomCount = fixture.rooms.filter((room) => room.mutability === 'flexible').length
+const protectedRoomCount = fixture.rooms.filter((room) => room.mutability === 'protected').length
+const lockedRoomCount = fixture.rooms.filter((room) => room.mutability === 'locked').length
+const movableBoundaryCount = fixture.boundaries.filter((boundary) => boundary.mutability === 'movable').length
 
 const topologyWithoutKitchen = {
   ...fixture,
@@ -212,6 +216,19 @@ describe('CatalogInspectorPage', () => {
     expect(screen.getByText(/^Opening artifacts$/i)).toBeInTheDocument()
   })
 
+  it('renders mutability metrics from the fixture', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(flexibleRoomCount).toBeGreaterThan(0)
+    expect(protectedRoomCount).toBeGreaterThan(0)
+    expect(lockedRoomCount).toBeGreaterThan(0)
+    expect(movableBoundaryCount).toBeGreaterThan(0)
+    expect(screen.getByText(/^Flexible rooms$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Protected rooms$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Locked rooms$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Movable boundaries$/i)).toBeInTheDocument()
+  })
+
   it('shows boundary family metadata for a selected duplicate or canonical member', () => {
     render(<CatalogInspectorPage topology={fixture} />)
 
@@ -253,5 +270,22 @@ describe('CatalogInspectorPage', () => {
     } else {
       expect(screen.getByTestId('selected-wall-panel')).toBeInTheDocument()
     }
+  })
+
+  it('shows mutability and constraint reasons for selected room, wall, boundary, and opening', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /select kitchen/i }))
+    expect(screen.getAllByText(/mutability/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/constraint reasons/i).length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /exact boundaries/i }))
+    fireEvent.click(screen.getAllByTestId(/^boundary-/)[0])
+    expect(screen.getAllByText(/mutability/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/constraint reasons/i).length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getAllByTestId(/^opening-/)[0])
+    expect(screen.getAllByText(/rehost required/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/constraint reasons/i).length).toBeGreaterThan(0)
   })
 })

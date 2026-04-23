@@ -31,6 +31,13 @@ export interface CatalogInspectorRoom {
   exterior_wall_ids: string[]
   is_exterior_touching: boolean
   isolation_status: string
+  is_wet_zone: boolean
+  is_core: boolean
+  mutability: string
+  min_width?: number | null
+  min_height?: number | null
+  min_area?: number | null
+  constraint_reasons: string[]
   issues: string[]
 }
 
@@ -49,6 +56,10 @@ export interface CatalogInspectorWall {
   trace_support_status: 'not_evaluated' | 'exact_trace_supported' | 'snapped_to_trace' | 'unsupported' | string
   trace_support_ids: string[]
   trace_support_gap?: number | null
+  movable: boolean
+  mutability: string
+  structural_unknown?: boolean
+  constraint_reasons: string[]
   issues: string[]
 }
 
@@ -76,6 +87,9 @@ export interface CatalogInspectorOpening {
   offset: number
   span: number
   confidence: string
+  rehost_required: boolean
+  rehostable: boolean
+  constraint_reasons: string[]
   issues: string[]
 }
 
@@ -103,6 +117,10 @@ export interface CatalogInspectorBoundary {
   duplicate_of_boundary_id?: string | null
   opening_ids: string[]
   confidence: string
+  movable: boolean
+  mutability: string
+  structural_unknown?: boolean
+  constraint_reasons: string[]
   issues: string[]
 }
 
