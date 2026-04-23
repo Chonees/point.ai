@@ -18,7 +18,8 @@ _BOUNDARY_KIND_PRIORITY = {
     "shared": 0,
     "exterior": 1,
     "support": 2,
-    "unknown": 3,
+    "artifact": 3,
+    "unknown": 4,
 }
 
 _CONFIDENCE_PRIORITY = {
@@ -83,6 +84,8 @@ def derive_floor_plan_boundary_graph(seed: FloorPlanCatalogSeed) -> FloorPlanBou
 
     boundaries = _promote_support_boundaries(boundaries)
     boundaries = _cluster_exact_duplicate_boundaries(boundaries)
+    boundaries = _promote_loose_support_boundaries(boundaries)
+    boundaries = _classify_artifact_boundaries(boundaries)
 
     nodes = []
     opening_point_keys = {
@@ -358,6 +361,79 @@ def _promote_support_boundaries(
             )
         )
     return promoted
+
+
+def _promote_loose_support_boundaries(
+    boundaries: list[CatalogBoundarySegment],
+    *,
+    axis_gap_tolerance: float = 20.0,
+    minimum_overlap: float = 4.0,
+    minimum_overlap_ratio: float = 0.4,
+) -> list[CatalogBoundarySegment]:
+    candidates = [
+        boundary
+        for boundary in boundaries
+        if boundary.boundary_kind in {"shared", "exterior", "support"}
+        and boundary.owner_room_ids
+        and boundary.family_role != "duplicate"
+    ]
+    promoted: list[CatalogBoundarySegment] = []
+    for boundary in boundaries:
+        if boundary.boundary_kind != "unknown":
+            promoted.append(boundary)
+            continue
+        companion = _find_boundary_companion(
+            boundary,
+            candidates,
+            axis_gap_tolerance=axis_gap_tolerance,
+            minimum_overlap=minimum_overlap,
+            minimum_overlap_ratio=minimum_overlap_ratio,
+        )
+        if companion is None:
+            promoted.append(boundary)
+            continue
+        promoted.append(
+            boundary.model_copy(
+                update={
+                    "boundary_kind": "support",
+                    "owner_room_ids": list(companion.owner_room_ids),
+                    "companion_boundary_id": companion.boundary_id,
+                    "confidence": "trace_companion",
+                    "family_role": "support",
+                    "issues": sorted({*boundary.issues, "secondary_shell_loose"}),
+                }
+            )
+        )
+    return promoted
+
+
+def _classify_artifact_boundaries(
+    boundaries: list[CatalogBoundarySegment],
+    *,
+    maximum_length: float = 8.0,
+) -> list[CatalogBoundarySegment]:
+    classified: list[CatalogBoundarySegment] = []
+    for boundary in boundaries:
+        if (
+            boundary.boundary_kind == "unknown"
+            and boundary.length <= maximum_length
+            and not boundary.owner_room_ids
+            and not boundary.opening_ids
+            and boundary.confidence == "unverified"
+        ):
+            classified.append(
+                boundary.model_copy(
+                    update={
+                        "boundary_kind": "artifact",
+                        "confidence": "trace_artifact",
+                        "family_role": "artifact",
+                        "issues": sorted({*boundary.issues, "micro_fragment"}),
+                    }
+                )
+            )
+            continue
+        classified.append(boundary)
+    return classified
 
 
 def _cluster_exact_duplicate_boundaries(

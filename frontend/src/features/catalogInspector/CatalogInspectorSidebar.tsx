@@ -62,6 +62,8 @@ function formatConfidence(confidence: string) {
       return 'Trace supported'
     case 'trace_companion':
       return 'Companion shell'
+    case 'trace_artifact':
+      return 'Trace artifact'
     case 'heuristic':
       return 'Heuristic'
     case 'unsupported':
@@ -85,6 +87,8 @@ function formatBoundaryKind(boundaryKind: string) {
       return 'Support'
     case 'duplicate':
       return 'Duplicate'
+    case 'artifact':
+      return 'Artifact'
     default:
       return boundaryKind
   }

@@ -40500,15 +40500,17 @@
       "source_trace_ids": [
         "trace-085b39564a37"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-768d84cc73ea",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-008f1b9fcb48",
@@ -40527,15 +40529,17 @@
       "source_trace_ids": [
         "trace-472011dddfa7"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-5e1389e5973d",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-00a7ee031826",
@@ -40583,15 +40587,17 @@
       "source_trace_ids": [
         "trace-85e8bd7d3e2f"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-ffed5a2e3f82",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-015b15fb5414",
@@ -40699,15 +40705,17 @@
       "source_trace_ids": [
         "trace-b1658394832e"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-8f99ce10f973",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-02b0738f925d",
@@ -40726,15 +40734,17 @@
       "source_trace_ids": [
         "trace-f3ef5d5ef664"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-9348754e37e0",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-031bb46c7d15",
@@ -40840,15 +40850,17 @@
       "source_trace_ids": [
         "trace-63035dc89417"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-82b24270a9bb",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-043efcc9afdd",
@@ -40867,15 +40879,17 @@
       "source_trace_ids": [
         "trace-db42e2635c9b"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-9cb508bbbbbc",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-05254b5f65fb",
@@ -41095,15 +41109,17 @@
       "source_trace_ids": [
         "trace-b00228a07961"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-7fdca1df3521",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-0a761bb38de4",
@@ -41153,15 +41169,17 @@
       "source_trace_ids": [
         "trace-2ce91f91f77f"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-cd061ea70adf",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-0ab0ec79d7af",
@@ -41296,15 +41314,17 @@
       "source_trace_ids": [
         "trace-2d65aec281f0"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-f2165744a5e3",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-0c2d4871ee94",
@@ -41323,15 +41343,17 @@
       "source_trace_ids": [
         "trace-c3699fd2993b"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-daaffad684c8",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-0cd6bf6193f5",
@@ -41379,15 +41401,19 @@
       "source_trace_ids": [
         "trace-e8289369cb18"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
-      "companion_boundary_id": null,
+      "boundary_kind": "support",
+      "owner_room_ids": [
+        "room-garage-bd6ecee651da"
+      ],
+      "companion_boundary_id": "boundary-0797bf918d6d",
       "boundary_family_id": "family-fb29d871dab7",
-      "family_role": "canonical",
+      "family_role": "support",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_companion",
+      "issues": [
+        "secondary_shell_loose"
+      ]
     },
     {
       "boundary_id": "boundary-0d6f50b2b540",
@@ -41437,15 +41463,17 @@
       "source_trace_ids": [
         "trace-726f9434e129"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-94ed5a95c23f",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-0deac98dac64",
@@ -41493,15 +41521,17 @@
       "source_trace_ids": [
         "trace-31fe65d35501"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-672f499cc367",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-0f26e9f4bb52",
@@ -41634,15 +41664,17 @@
       "source_trace_ids": [
         "trace-30412e297e3a"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-49119cc39fa6",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-111cfb449dff",
@@ -41748,15 +41780,17 @@
       "source_trace_ids": [
         "trace-76fb70373f7e"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-4d1e301969a7",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-120ffa29ded5",
@@ -41775,15 +41809,17 @@
       "source_trace_ids": [
         "trace-60258a1d3075"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-76f9ae13f1f6",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-1228a239a0ac",
@@ -41978,15 +42014,17 @@
       "source_trace_ids": [
         "trace-153259fba9f5"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-8140d53ed4e9",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-13f105d18637",
@@ -42005,15 +42043,17 @@
       "source_trace_ids": [
         "trace-0fada4717fcc"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-3a14cd9bf0f6",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-143ff6fa42bb",
@@ -42032,15 +42072,17 @@
       "source_trace_ids": [
         "trace-46ae736a6784"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-fa2577f14653",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-14899e015743",
@@ -42359,15 +42401,17 @@
       "source_trace_ids": [
         "trace-70cad0f11ffa"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-bd656343224a",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-17b83baf5e61",
@@ -42473,15 +42517,17 @@
       "source_trace_ids": [
         "trace-4b4c891f8dc3"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-a72040ae003c",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-197fc46fbbf7",
@@ -42558,15 +42604,17 @@
       "source_trace_ids": [
         "trace-0ad08b5cae33"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-260eee7a0185",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-1b62ebc820cf",
@@ -42614,15 +42662,19 @@
       "source_trace_ids": [
         "trace-b956eeb97b26"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
-      "companion_boundary_id": null,
+      "boundary_kind": "support",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "companion_boundary_id": "boundary-159067948a30",
       "boundary_family_id": "family-d26e01b6c6b4",
-      "family_role": "canonical",
+      "family_role": "support",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_companion",
+      "issues": [
+        "secondary_shell_loose"
+      ]
     },
     {
       "boundary_id": "boundary-1bdbea677f7f",
@@ -42641,15 +42693,17 @@
       "source_trace_ids": [
         "trace-20faecde95d2"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-7e3a592e9f18",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-1c0cb1842509",
@@ -42697,15 +42751,17 @@
       "source_trace_ids": [
         "trace-63179e2b85cf"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-939ae79e9de2",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-1c6836a47113",
@@ -42784,15 +42840,17 @@
       "source_trace_ids": [
         "trace-3017b134d361"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-5fc07a3e483c",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-1ceebeb23e88",
@@ -42897,15 +42955,17 @@
       "source_trace_ids": [
         "trace-d996377b961e"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-691662098a16",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-1da0a6a41972",
@@ -42986,15 +43046,17 @@
       "source_trace_ids": [
         "trace-43b946c72e91"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-2a4ef12301c6",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-1e4f683564ce",
@@ -43258,15 +43320,17 @@
       "source_trace_ids": [
         "trace-d050609f142f"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-be61abdd93d0",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-213762b85f70",
@@ -43312,15 +43376,17 @@
       "source_trace_ids": [
         "trace-9c66a1a7c0d3"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-ee2374e233f7",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-21fd2d00c461",
@@ -43339,15 +43405,17 @@
       "source_trace_ids": [
         "trace-4344a9c4e3e7"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-626d1c562b44",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-220abe8cde09",
@@ -43484,15 +43552,17 @@
       "source_trace_ids": [
         "trace-f40279d0ec93"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-cdb33be59c87",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-26f71da2a5a3",
@@ -43687,15 +43757,17 @@
       "source_trace_ids": [
         "trace-33549380d0b2"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-245161140b6e",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-28c50a011cb1",
@@ -43837,15 +43909,17 @@
       "source_trace_ids": [
         "trace-9d92db9108ea"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-f82e45fb4ad6",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-2a9d75662f37",
@@ -43922,15 +43996,17 @@
       "source_trace_ids": [
         "trace-e97283c582ee"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-7c45a4e1df5f",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-2cc1069af5f7",
@@ -43949,15 +44025,17 @@
       "source_trace_ids": [
         "trace-c957328d754f"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-b00df6530256",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-2d16c3dde0a0",
@@ -44034,15 +44112,17 @@
       "source_trace_ids": [
         "trace-3449e9fc7924"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-6b3afd5d4acb",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-2d4c595480b7",
@@ -44061,15 +44141,17 @@
       "source_trace_ids": [
         "trace-75e1522b1530"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-ceb2ed88f3b9",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-2d5309098ec8",
@@ -44206,15 +44288,17 @@
       "source_trace_ids": [
         "trace-f8f3133ab9c5"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-44b75c84ae41",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-2e4fd88351a8",
@@ -44322,15 +44406,17 @@
       "source_trace_ids": [
         "trace-33549380d0b2"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-e88325cd9ca0",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-306b3d574cb3",
@@ -44349,15 +44435,17 @@
       "source_trace_ids": [
         "trace-10a5f570ba70"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-80b0fbd11cca",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-30915fbe1e96",
@@ -44376,15 +44464,17 @@
       "source_trace_ids": [
         "trace-dc55022a0f74"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-bbdee07a054a",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-31815895087a",
@@ -44641,15 +44731,17 @@
       "source_trace_ids": [
         "trace-1b4c44dccb10"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-80d796660cfc",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-3539a56e7153",
@@ -44757,15 +44849,17 @@
       "source_trace_ids": [
         "trace-800ff819f026"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-72a5efed6f2e",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-37eded74e4b8",
@@ -44871,15 +44965,19 @@
       "source_trace_ids": [
         "trace-bb378c83f10d"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
-      "companion_boundary_id": null,
+      "boundary_kind": "support",
+      "owner_room_ids": [
+        "room-mstr--bedroom-f807fea0d33b"
+      ],
+      "companion_boundary_id": "boundary-59e0217b9a7f",
       "boundary_family_id": "family-8821c9cb0dc2",
-      "family_role": "canonical",
+      "family_role": "support",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_companion",
+      "issues": [
+        "secondary_shell_loose"
+      ]
     },
     {
       "boundary_id": "boundary-38e0715445fc",
@@ -45108,15 +45206,17 @@
       "source_trace_ids": [
         "trace-6e4dfb3aaac7"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-f28df43fe338",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-3c2d96058c97",
@@ -45281,15 +45381,19 @@
       "source_trace_ids": [
         "trace-c7e3fddfd69a"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
-      "companion_boundary_id": null,
+      "boundary_kind": "support",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
+      "companion_boundary_id": "boundary-541886c8c76d",
       "boundary_family_id": "family-bd274e56db90",
-      "family_role": "canonical",
+      "family_role": "support",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_companion",
+      "issues": [
+        "secondary_shell_loose"
+      ]
     },
     {
       "boundary_id": "boundary-3dc42699e4f0",
@@ -45337,15 +45441,17 @@
       "source_trace_ids": [
         "trace-0466da63d460"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-94577e7bfcbe",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-3f0524f61b62",
@@ -45480,15 +45586,17 @@
       "source_trace_ids": [
         "trace-769e4c950a97"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-ab9c76804159",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-40f1bcb5ced1",
@@ -45685,15 +45793,17 @@
       "source_trace_ids": [
         "trace-39b4e6e87196"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-a176e71d99a2",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-43f4f619b37f",
@@ -45770,15 +45880,17 @@
       "source_trace_ids": [
         "trace-87b530e8d319"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-84cac8e41ab0",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-44d7f3defa73",
@@ -45884,15 +45996,17 @@
       "source_trace_ids": [
         "trace-cfdc5cf96ae3"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-3a6ae31c7332",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-4658fbf8d3f3",
@@ -45998,15 +46112,17 @@
       "source_trace_ids": [
         "trace-94f14dcc3c19"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-a93827bd3623",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-4889bd1335db",
@@ -46025,15 +46141,17 @@
       "source_trace_ids": [
         "trace-d8f6ec60c493"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-935518476c8c",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-48a15358ffaf",
@@ -46170,15 +46288,17 @@
       "source_trace_ids": [
         "trace-b8f04063ef48"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-3b334942a43d",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-495ea6fe93e0",
@@ -46316,15 +46436,17 @@
       "source_trace_ids": [
         "trace-3b38826a3125"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-511d8047440b",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-4b50ccc717f2",
@@ -46401,15 +46523,17 @@
       "source_trace_ids": [
         "trace-66e1f390df2b"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-e458703b104c",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-4c110d62ac93",
@@ -46428,15 +46552,17 @@
       "source_trace_ids": [
         "trace-4e1b9e43f71c"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-3d5545624e6b",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-4c42bb4ac56a",
@@ -46455,15 +46581,17 @@
       "source_trace_ids": [
         "trace-a416ce29a604"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-202caac90b97",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-4cc023237fb1",
@@ -46482,15 +46610,17 @@
       "source_trace_ids": [
         "trace-de23cbd5f6a0"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-0ea3653c4be5",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-4cd6f12d6035",
@@ -46567,15 +46697,17 @@
       "source_trace_ids": [
         "trace-9f79a8b68806"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-44cd7bf77cf0",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-4d629fb50923",
@@ -46594,15 +46726,17 @@
       "source_trace_ids": [
         "trace-8f4c37215a0c"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-7883baad7fee",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-4d8f2fe76871",
@@ -46679,15 +46813,17 @@
       "source_trace_ids": [
         "trace-831bf84d73a1"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-6cca321f776c",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-4f6eacdbab8b",
@@ -46706,15 +46842,17 @@
       "source_trace_ids": [
         "trace-a485f4454729"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-5f2771888254",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-4f8797258d7a",
@@ -46762,15 +46900,19 @@
       "source_trace_ids": [
         "trace-b73369266ba0"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
-      "companion_boundary_id": null,
+      "boundary_kind": "support",
+      "owner_room_ids": [
+        "room-dining-4a09d8e5e599"
+      ],
+      "companion_boundary_id": "boundary-541886c8c76d",
       "boundary_family_id": "family-d5517fdbb8a2",
-      "family_role": "canonical",
+      "family_role": "support",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_companion",
+      "issues": [
+        "secondary_shell_loose"
+      ]
     },
     {
       "boundary_id": "boundary-50185d0e38b6",
@@ -46789,15 +46931,19 @@
       "source_trace_ids": [
         "trace-800ff819f026"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
-      "companion_boundary_id": null,
+      "boundary_kind": "support",
+      "owner_room_ids": [
+        "room-closet-c59e39a3c606"
+      ],
+      "companion_boundary_id": "boundary-159067948a30",
       "boundary_family_id": "family-0e52fe6c638e",
-      "family_role": "canonical",
+      "family_role": "support",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_companion",
+      "issues": [
+        "secondary_shell_loose"
+      ]
     },
     {
       "boundary_id": "boundary-502767b8d0ef",
@@ -46961,15 +47107,17 @@
       "source_trace_ids": [
         "trace-684daed21b12"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-d98ff82f6e47",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-51d542c14d6d",
@@ -47314,15 +47462,17 @@
       "source_trace_ids": [
         "trace-bfa7d88d7c5a"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-ba498912c82c",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-553259004475",
@@ -47585,15 +47735,17 @@
       "source_trace_ids": [
         "trace-778dada9d326"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-9e5f8a525b8d",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-572bb172e1da",
@@ -47786,15 +47938,17 @@
       "source_trace_ids": [
         "trace-7abc139527f0"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-1ad18f553b21",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-587ff6839a56",
@@ -48086,15 +48240,19 @@
       "source_trace_ids": [
         "trace-1f34696835de"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
-      "companion_boundary_id": null,
+      "boundary_kind": "support",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
+      "companion_boundary_id": "boundary-1cab88727420",
       "boundary_family_id": "family-972201f506f4",
-      "family_role": "canonical",
+      "family_role": "support",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_companion",
+      "issues": [
+        "secondary_shell_loose"
+      ]
     },
     {
       "boundary_id": "boundary-5bbadbfc1e93",
@@ -48113,15 +48271,17 @@
       "source_trace_ids": [
         "trace-2cff8cf16457"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-fdc5e58feee7",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-5bf2d0f63cc7",
@@ -48256,15 +48416,19 @@
       "source_trace_ids": [
         "trace-d1ff0a33c56c"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
-      "companion_boundary_id": null,
+      "boundary_kind": "support",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "companion_boundary_id": "boundary-cd49f08cc8a4",
       "boundary_family_id": "family-3b7f9e3b695a",
-      "family_role": "canonical",
+      "family_role": "support",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_companion",
+      "issues": [
+        "secondary_shell_loose"
+      ]
     },
     {
       "boundary_id": "boundary-5e577dd47541",
@@ -48376,15 +48540,17 @@
       "source_trace_ids": [
         "trace-0b39114ef7e0"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-915a1de8af29",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-60c89d798a9c",
@@ -48606,15 +48772,17 @@
       "source_trace_ids": [
         "trace-46b16493c099"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-3a02e2d8f23a",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-635621f98338",
@@ -48778,15 +48946,17 @@
       "source_trace_ids": [
         "trace-1c31ec4b1679"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-f08e02101ff0",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-67e75a46e87c",
@@ -48865,15 +49035,17 @@
       "source_trace_ids": [
         "trace-c20df3f5fe31"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-338cf5113ed2",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-6850d18bec46",
@@ -49070,15 +49242,17 @@
       "source_trace_ids": [
         "trace-2f8bb2c29293"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-964f85c3e953",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-6a7a4e9a56e8",
@@ -49097,15 +49271,17 @@
       "source_trace_ids": [
         "trace-c8bf929e6a54"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-fb81142c33fb",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-6b1d8454c76d",
@@ -49244,15 +49420,17 @@
       "source_trace_ids": [
         "trace-098dae4f5b08"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-d5eec24f25cc",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-6c874c307fd2",
@@ -49906,15 +50084,17 @@
       "source_trace_ids": [
         "trace-936e3b46784c"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-8c61b6dde8fe",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-7429a7fdd9ae",
@@ -50113,15 +50293,17 @@
       "source_trace_ids": [
         "trace-ef4731c948da"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-3d62e90fc6e6",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-763d62265474",
@@ -50470,15 +50652,17 @@
       "source_trace_ids": [
         "trace-1f34696835de"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-794eb9e24008",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-7a5caa26d46d",
@@ -50497,15 +50681,17 @@
       "source_trace_ids": [
         "trace-323200495c4a"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-488cccc13900",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-7a725425dcb7",
@@ -50582,15 +50768,17 @@
       "source_trace_ids": [
         "trace-cf32ea8d8c4c"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-e357794970d6",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-7cc5081f98e2",
@@ -50789,15 +50977,17 @@
       "source_trace_ids": [
         "trace-3439bd1a1465"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-8a51b5e9e948",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-7fec41dfa708",
@@ -50939,15 +51129,17 @@
       "source_trace_ids": [
         "trace-d9593f42cf11"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-5e63f973bcc1",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-817fb52eaf1e",
@@ -51269,15 +51461,17 @@
       "source_trace_ids": [
         "trace-29d05958b78b"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-0351843559da",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-877009d45e45",
@@ -51416,15 +51610,17 @@
       "source_trace_ids": [
         "trace-8f4c1ed5344b"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-0e999c377509",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-8971e2a1cdd5",
@@ -51470,15 +51666,17 @@
       "source_trace_ids": [
         "trace-70d23206e542"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-02c2be41c10b",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-89c1f436a375",
@@ -51526,15 +51724,17 @@
       "source_trace_ids": [
         "trace-33549380d0b2"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-a9335d2630ac",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-8a9c09395989",
@@ -51878,15 +52078,17 @@
       "source_trace_ids": [
         "trace-a38f5648324f"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-ec24b08a7f40",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-8e9c5f0bcb27",
@@ -51963,15 +52165,17 @@
       "source_trace_ids": [
         "trace-b7d23064caec"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-aa65af26281c",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-90f7f4b875c0",
@@ -51990,15 +52194,17 @@
       "source_trace_ids": [
         "trace-8aed00cc3097"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-ad5ce07e7d20",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-9102288364f6",
@@ -52077,15 +52283,17 @@
       "source_trace_ids": [
         "trace-f2f2ea10df25"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-1b577018fc84",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-92116078927e",
@@ -52165,15 +52373,17 @@
       "source_trace_ids": [
         "trace-b7b31faf1d17"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-d5bef41bdb7b",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-93661aa72d94",
@@ -52310,15 +52520,17 @@
       "source_trace_ids": [
         "trace-1f34696835de"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-7131975f9816",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-95371db6cb56",
@@ -52366,15 +52578,17 @@
       "source_trace_ids": [
         "trace-772fea0d8493"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-7313c5b7a87b",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-961f0aed4daf",
@@ -52610,15 +52824,19 @@
       "source_trace_ids": [
         "trace-a6a97fd1c41c"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
-      "companion_boundary_id": null,
+      "boundary_kind": "support",
+      "owner_room_ids": [
+        "room-bedroom-3-b8f109d99d59"
+      ],
+      "companion_boundary_id": "boundary-1cab88727420",
       "boundary_family_id": "family-265fb6fd9ab0",
-      "family_role": "canonical",
+      "family_role": "support",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_companion",
+      "issues": [
+        "secondary_shell_loose"
+      ]
     },
     {
       "boundary_id": "boundary-979cd23b5ad1",
@@ -52728,15 +52946,17 @@
       "source_trace_ids": [
         "trace-4fe00d4ac14e"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-e6efc86f681a",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-988ebf4b5700",
@@ -52786,15 +53006,17 @@
       "source_trace_ids": [
         "trace-3bf286eb7038"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-972b8e79e0b0",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-98a3445ac75b",
@@ -53626,15 +53848,17 @@
       "source_trace_ids": [
         "trace-1149e823c6f3"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-0ccc0eee07fc",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-9fd4c43e3798",
@@ -54564,15 +54788,17 @@
       "source_trace_ids": [
         "trace-d619efab9442"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-21c8fa38d59d",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-a95d64039a1e",
@@ -54863,15 +55089,17 @@
       "source_trace_ids": [
         "trace-a609a7bde568"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-2bdc9d63b45f",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-abcf620971d2",
@@ -54919,15 +55147,17 @@
       "source_trace_ids": [
         "trace-900cd886cbc4"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-00b13bb952fd",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-acbfd0504cc3",
@@ -55217,15 +55447,17 @@
       "source_trace_ids": [
         "trace-754768f5f22f"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-725ea4b13716",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-b03742c616be",
@@ -56588,15 +56820,17 @@
       "source_trace_ids": [
         "trace-81d28394425e"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-274256afb680",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-bfc80c3b0334",
@@ -57091,15 +57325,19 @@
       "source_trace_ids": [
         "trace-7369d8c9da4b"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
-      "companion_boundary_id": null,
+      "boundary_kind": "support",
+      "owner_room_ids": [
+        "room-entry-782df4e2a9f2"
+      ],
+      "companion_boundary_id": "boundary-62bb1dc77ab7",
       "boundary_family_id": "family-78a6e6d717b3",
-      "family_role": "canonical",
+      "family_role": "support",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_companion",
+      "issues": [
+        "secondary_shell_loose"
+      ]
     },
     {
       "boundary_id": "boundary-c58dd990206d",
@@ -57118,15 +57356,17 @@
       "source_trace_ids": [
         "trace-1f34696835de"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-ab6298b3591a",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-c5dd37774b48",
@@ -57296,15 +57536,17 @@
       "source_trace_ids": [
         "trace-afbeb141eb56"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-d3c7f39bac05",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-c790f0b680d1",
@@ -57960,15 +58202,19 @@
       "source_trace_ids": [
         "trace-167e885c5359"
       ],
-      "boundary_kind": "unknown",
-      "owner_room_ids": [],
-      "companion_boundary_id": null,
+      "boundary_kind": "support",
+      "owner_room_ids": [
+        "room-bedroom-4-04b61e6be876"
+      ],
+      "companion_boundary_id": "boundary-6c874c307fd2",
       "boundary_family_id": "family-b0677bcb3500",
-      "family_role": "canonical",
+      "family_role": "support",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_companion",
+      "issues": [
+        "secondary_shell_loose"
+      ]
     },
     {
       "boundary_id": "boundary-cd49f08cc8a4",
@@ -58045,15 +58291,17 @@
       "source_trace_ids": [
         "trace-c79ba3677532"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-de346e7010e9",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-cebb2cbde9c6",
@@ -58527,15 +58775,17 @@
       "source_trace_ids": [
         "trace-627740cee2ef"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-6f2d63722feb",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-d4aa981447a8",
@@ -58915,15 +59165,17 @@
       "source_trace_ids": [
         "trace-bddb7bf2882f"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-d0a9113baca4",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-d7cdc236935a",
@@ -59499,15 +59751,17 @@
       "source_trace_ids": [
         "trace-e94331a9b2c6"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-5a4d65897500",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-de2bad4a9852",
@@ -59526,15 +59780,17 @@
       "source_trace_ids": [
         "trace-f6e7fe43d752"
       ],
-      "boundary_kind": "unknown",
+      "boundary_kind": "artifact",
       "owner_room_ids": [],
       "companion_boundary_id": null,
       "boundary_family_id": "family-ec4c7cd81be0",
-      "family_role": "canonical",
+      "family_role": "artifact",
       "duplicate_of_boundary_id": null,
       "opening_ids": [],
-      "confidence": "unverified",
-      "issues": []
+      "confidence": "trace_artifact",
+      "issues": [
+        "micro_fragment"
+      ]
     },
     {
       "boundary_id": "boundary-de9338d2312d",
