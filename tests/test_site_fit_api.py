@@ -149,6 +149,90 @@ def test_site_fit_analyze_normalizes_mixed_cad_units_before_registration():
     assert payload["registration_summary"]["transform"]["translate_y"] == 240.0
 
 
+def test_site_fit_analyze_exposes_mutable_assembly_counts_for_catalog_payload():
+    catalog_payload = {
+        "model": "Catalog Sample",
+        "unit": "inch",
+        "rooms": [
+            {
+                "room_id": "room-living",
+                "name": "LIVING ROOM",
+                "category": "living_room",
+                "bbox": {"x1": 0, "y1": 0, "x2": 120, "y2": 80, "width": 120, "height": 80},
+                "centroid": {"x": 60, "y": 40},
+                "width": 120,
+                "height": 80,
+                "area": 9600,
+                "measurement_source": "catalog",
+                "mutability": "flexible",
+                "min_width": 84,
+                "min_height": 84,
+                "min_area": 10080,
+                "constraint_reasons": [],
+            }
+        ],
+        "boundaries": [
+            {
+                "boundary_id": "boundary-1",
+                "boundary_kind": "exterior",
+                "owner_room_ids": ["room-living"],
+                "mutability": "movable",
+                "movable": True,
+                "constraint_reasons": [],
+                "start": {"x": 0, "y": 0},
+                "end": {"x": 120, "y": 0},
+                "length": 120,
+                "opening_ids": ["opening-1"],
+            }
+        ],
+        "walls": [
+            {
+                "wall_id": "wall-1",
+                "boundary_kind": "exterior",
+                "owner_room_ids": ["room-living"],
+                "mutability": "movable_with_rehost",
+                "movable": True,
+                "start": {"x": 0, "y": 0},
+                "end": {"x": 120, "y": 0},
+                "length": 120,
+                "hosted_opening_ids": ["opening-1"],
+            }
+        ],
+        "openings": [
+            {
+                "opening_id": "opening-1",
+                "opening_kind": "window",
+                "host_wall_id": "wall-1",
+                "owner_room_ids": ["room-living"],
+                "confidence": "hosted",
+                "rehost_required": True,
+                "rehostable": True,
+                "constraint_reasons": ["opening_on_movable_wall"],
+                "offset": 24,
+                "span": 36,
+                "start": {"x": 24, "y": 0},
+                "end": {"x": 60, "y": 0},
+            }
+        ],
+        "footprint_bbox": {"x1": 0, "y1": 0, "x2": 120, "y2": 80, "width": 120, "height": 80},
+    }
+
+    response = client.post(
+        "/api/v2/site-fit/analyze",
+        json={
+            "plan": catalog_payload,
+            "site_constraints": {"buildable_envelope": {"x": -10, "y": -10, "width": 260, "height": 160}},
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["plan_summary"]["movable_boundary_count"] == 1
+    assert payload["plan_summary"]["protected_boundary_count"] == 0
+    assert payload["plan_summary"]["locked_boundary_count"] == 0
+    assert payload["plan_summary"]["rehostable_opening_count"] == 1
+
+
 def test_site_fit_analyze_reads_structure_meta_unit_for_structure_payload():
     response = client.post(
         "/api/v2/site-fit/analyze",

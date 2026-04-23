@@ -38,6 +38,10 @@ class SiteFitPlanSummaryResponse(BaseModel):
     wall_count: int = 0
     opening_count: int = 0
     footprint_bbox: Optional[dict] = None
+    movable_boundary_count: int = 0
+    protected_boundary_count: int = 0
+    locked_boundary_count: int = 0
+    rehostable_opening_count: int = 0
 
 
 class SiteFitRegistrationTransformResponse(BaseModel):

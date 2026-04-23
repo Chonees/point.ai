@@ -11,6 +11,10 @@ def build_plan_summary(plan: NormalizedPlan) -> dict:
         "wall_count": plan.wall_count,
         "opening_count": plan.opening_count,
         "footprint_bbox": plan.footprint_bbox,
+        "movable_boundary_count": plan.movable_boundary_count,
+        "protected_boundary_count": plan.protected_boundary_count,
+        "locked_boundary_count": plan.locked_boundary_count,
+        "rehostable_opening_count": plan.rehostable_opening_count,
     }
 
 

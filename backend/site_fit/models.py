@@ -22,6 +22,60 @@ class SiteFitJob:
 
 
 @dataclass(frozen=True)
+class NormalizedRoomSummary:
+    room_id: str
+    name: str
+    category: str
+    mutability: str
+    min_width: float | None
+    min_height: float | None
+    min_area: float | None
+    bbox: dict[str, float] | None
+    owner_boundary_ids: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class NormalizedBoundarySegment:
+    boundary_id: str
+    boundary_kind: str
+    owner_room_ids: tuple[str, ...] = ()
+    mutability: str = "unknown"
+    movable: bool = False
+    constraint_reasons: tuple[str, ...] = ()
+    start: dict[str, float] | None = None
+    end: dict[str, float] | None = None
+    length: float = 0.0
+    opening_ids: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True)
+class NormalizedWallSegment:
+    wall_id: str
+    boundary_kind: str
+    owner_room_ids: tuple[str, ...] = ()
+    mutability: str = "unknown"
+    movable: bool = False
+    hosted_opening_ids: tuple[str, ...] = ()
+    start: dict[str, float] | None = None
+    end: dict[str, float] | None = None
+    length: float = 0.0
+
+
+@dataclass(frozen=True)
+class NormalizedOpeningSummary:
+    opening_id: str
+    opening_kind: str
+    host_wall_id: str | None = None
+    owner_room_ids: tuple[str, ...] = ()
+    confidence: str = "unverified"
+    rehost_required: bool = False
+    rehostable: bool = False
+    constraint_reasons: tuple[str, ...] = ()
+    offset: float = 0.0
+    span: float = 0.0
+
+
+@dataclass(frozen=True)
 class NormalizedPlan:
     source_kind: str
     payload: dict[str, Any]
@@ -30,6 +84,14 @@ class NormalizedPlan:
     wall_count: int = 0
     opening_count: int = 0
     footprint_bbox: dict[str, float] | None = None
+    room_summaries: tuple[NormalizedRoomSummary, ...] = ()
+    boundary_segments: tuple[NormalizedBoundarySegment, ...] = ()
+    wall_segments: tuple[NormalizedWallSegment, ...] = ()
+    openings: tuple[NormalizedOpeningSummary, ...] = ()
+    movable_boundary_count: int = 0
+    protected_boundary_count: int = 0
+    locked_boundary_count: int = 0
+    rehostable_opening_count: int = 0
 
 
 @dataclass(frozen=True)
