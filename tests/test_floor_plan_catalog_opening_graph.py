@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 from pathlib import Path
 
 from backend.floor_plan_catalog.boundary_graph import derive_floor_plan_boundary_graph
@@ -226,3 +227,110 @@ def test_derive_floor_plan_opening_graph_reduces_real_seminole_unhosted_openings
 
     assert len(unhosted) < 111
     assert len(hosted) > 51
+
+
+def test_derive_floor_plan_opening_graph_reduces_real_seminole_unhosted_openings_without_boundary_regression():
+    seed_payload = json.loads(Path(r"D:\PointAIData\PLANS\catalog\seminole-2000.json").read_text(encoding="utf-8"))
+    seed = FloorPlanCatalogSeed.model_validate(seed_payload)
+    topology = derive_floor_plan_topology(seed)
+    boundary_graph = derive_floor_plan_boundary_graph(seed)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces, boundary_graph=boundary_graph)
+
+    opening_graph = derive_floor_plan_opening_graph(topology, wall_graph, seed.cad_traces)
+
+    unhosted = [opening for opening in opening_graph.openings if opening.confidence == "unhosted"]
+    hosted = [opening for opening in opening_graph.openings if opening.confidence == "hosted"]
+    boundary_kinds = Counter(boundary.boundary_kind for boundary in boundary_graph.boundaries)
+
+    assert len(unhosted) < 56
+    assert len(hosted) > 65
+    assert boundary_kinds["shared"] == 10
+    assert boundary_kinds["exterior"] == 182
+    assert boundary_kinds["support"] == 40
+    assert boundary_kinds["unknown"] == 14
+
+
+def test_derive_floor_plan_opening_graph_prefers_boundary_backed_host_when_wall_candidates_overlap():
+    seed = build_seed_with_hostable_openings()
+    topology = derive_floor_plan_topology(seed)
+    room_a = topology.rooms[0].room_id
+    room_b = topology.rooms[1].room_id
+
+    weaker_wall = CatalogWallBoundary(
+        wall_id="wall-weaker",
+        start=CatalogPoint(x=100, y=0),
+        end=CatalogPoint(x=100, y=100),
+        orientation="vertical",
+        length=100,
+        is_exterior=False,
+        room_ids=[room_a, room_b],
+        boundary_kind="shared",
+        owner_room_ids=[room_a, room_b],
+        provenance="bbox_inferred",
+        confidence="trace_supported",
+        trace_support_status="snapped_to_trace",
+        trace_support_ids=["shared-wall"],
+        trace_support_gap=2.0,
+    )
+    stronger_wall = weaker_wall.model_copy(
+        update={
+            "wall_id": "wall-stronger",
+            "provenance": "boundary_graph_shared",
+            "confidence": "exact",
+            "trace_support_status": "exact_trace_supported",
+            "trace_support_gap": 0.0,
+        }
+    )
+    wall_graph = FloorPlanWallGraphV1(
+        floor_plan_id=topology.floor_plan_id,
+        name=topology.name,
+        canonical_unit=topology.canonical_unit,
+        footprint_bbox=topology.footprint_bbox,
+        walls=[weaker_wall, stronger_wall],
+        wall_graph_readiness=WallGraphReadiness(status="ready_for_wall_graph_review", issues=[]),
+        wall_graph_issues=[],
+    )
+
+    opening_graph = derive_floor_plan_opening_graph(
+        topology,
+        wall_graph,
+        [trace for trace in seed.cad_traces if trace.trace_id == "door-shared"],
+    )
+
+    opening = next(item for item in opening_graph.openings if item.opening_kind == "door")
+
+    assert opening.host_wall_id == "wall-stronger"
+
+
+def test_derive_floor_plan_opening_graph_marks_degenerate_cluster_as_opening_artifact():
+    seed = build_seed_with_hostable_openings().model_copy(
+        update={
+            "cad_traces": [
+                CatalogCadTrace(
+                    trace_id="doortext-fragment-a",
+                    trace_kind="door",
+                    type="polyline",
+                    layer="DOORTEXT",
+                    points=[CatalogPoint(x=220, y=10), CatalogPoint(x=220.4, y=10.4)],
+                    bbox=CatalogBBox(x1=220, y1=10, x2=220.4, y2=10.4, width=0.4, height=0.4),
+                ),
+                CatalogCadTrace(
+                    trace_id="doortext-fragment-b",
+                    trace_kind="door",
+                    type="polyline",
+                    layer="DOORTEXT",
+                    points=[CatalogPoint(x=220.5, y=10.2), CatalogPoint(x=220.9, y=10.6)],
+                    bbox=CatalogBBox(x1=220.5, y1=10.2, x2=220.9, y2=10.6, width=0.4, height=0.4),
+                ),
+            ]
+        }
+    )
+    topology = derive_floor_plan_topology(seed)
+    wall_graph = derive_floor_plan_wall_graph(topology, seed.cad_traces)
+
+    opening_graph = derive_floor_plan_opening_graph(topology, wall_graph, seed.cad_traces)
+
+    artifact = opening_graph.openings[0]
+    assert artifact.confidence == "opening_artifact"
+    assert artifact.host_wall_id is None
+    assert "degenerate_opening_cluster" in artifact.issues
