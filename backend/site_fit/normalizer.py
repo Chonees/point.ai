@@ -118,6 +118,7 @@ def _retained_catalog_boundaries(boundaries: list[dict]) -> list[dict]:
 def _sanitize_catalog_payload(payload: dict) -> dict:
     sanitized = dict(payload)
     sanitized.pop("cad_traces", None)
+    sanitized.pop("boundary_nodes", None)
     return sanitized
 
 

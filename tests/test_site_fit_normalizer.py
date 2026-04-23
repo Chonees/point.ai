@@ -172,6 +172,7 @@ def test_normalize_plan_exposes_rich_assembly_in_fixture_order_and_strips_cad_tr
     assert _asdict_items(normalized.openings) == expected_openings
 
     assert "cad_traces" not in normalized.payload
+    assert "boundary_nodes" not in normalized.payload
 
 
 def test_normalize_plan_room_boundary_links_only_reference_retained_boundary_segments():

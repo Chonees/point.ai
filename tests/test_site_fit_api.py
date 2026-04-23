@@ -185,6 +185,13 @@ def test_site_fit_analyze_exposes_mutable_assembly_counts_for_catalog_payload():
                 "opening_ids": ["opening-1"],
             }
         ],
+        "boundary_nodes": [
+            {
+                "node_id": "boundary-node-1",
+                "boundary_id": "boundary-1",
+                "point": {"x": 0, "y": 0},
+            }
+        ],
         "walls": [
             {
                 "wall_id": "wall-1",
