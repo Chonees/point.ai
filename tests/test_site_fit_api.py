@@ -328,3 +328,121 @@ def test_site_fit_analyze_requires_exactly_one_plan_input():
 
     assert response.status_code == 422, response.text
     assert "Exactly one of plan or structure must be provided" in response.json()["detail"]
+
+RICH_OVERFLOW_PLAN = {
+    "model": "Rich Overflow Sample",
+    "unit": "inch",
+    "rooms": [
+        {
+            "room_id": "room-1",
+            "name": "LIVING",
+            "category": "living_room",
+            "mutability": "flexible",
+            "min_width": 60,
+            "min_height": 40,
+            "min_area": 2400,
+            "bbox": {"x1": 0, "y1": 0, "x2": 120, "y2": 80, "width": 120, "height": 80},
+        }
+    ],
+    "boundaries": [
+        {
+            "boundary_id": "west-boundary",
+            "boundary_kind": "exterior",
+            "owner_room_ids": ["room-1"],
+            "mutability": "protected",
+            "movable": False,
+            "constraint_reasons": [],
+            "start": {"x": 0, "y": 0},
+            "end": {"x": 0, "y": 80},
+            "length": 80,
+            "opening_ids": [],
+        },
+        {
+            "boundary_id": "east-boundary",
+            "boundary_kind": "exterior",
+            "owner_room_ids": ["room-1"],
+            "mutability": "movable_with_rehost",
+            "movable": True,
+            "constraint_reasons": [],
+            "start": {"x": 120, "y": 0},
+            "end": {"x": 120, "y": 80},
+            "length": 80,
+            "opening_ids": ["opening-1"],
+        },
+    ],
+    "walls": [
+        {
+            "wall_id": "wall-east",
+            "boundary_kind": "exterior",
+            "owner_room_ids": ["room-1"],
+            "mutability": "movable_with_rehost",
+            "movable": True,
+            "start": {"x": 120, "y": 0},
+            "end": {"x": 120, "y": 80},
+            "length": 80,
+            "hosted_opening_ids": ["opening-1"],
+        }
+    ],
+    "openings": [
+        {
+            "opening_id": "opening-1",
+            "opening_kind": "window",
+            "host_wall_id": "wall-east",
+            "owner_room_ids": ["room-1"],
+            "confidence": "hosted",
+            "rehost_required": True,
+            "rehostable": True,
+            "constraint_reasons": [],
+            "offset": 20,
+            "span": 20,
+            "start": {"x": 120, "y": 20},
+            "end": {"x": 120, "y": 40},
+        }
+    ],
+    "footprint_bbox": {"x1": 0, "y1": 0, "x2": 120, "y2": 80, "width": 120, "height": 80},
+}
+
+RICH_OVERFLOW_SITE = {
+    "buildable_envelope": {"x": 0, "y": 0, "width": 100, "height": 80},
+}
+
+
+def test_site_fit_propose_returns_shrink_candidate_for_single_side_rich_overflow():
+    response = client.post(
+        "/api/v2/site-fit/propose",
+        json={
+            "plan": RICH_OVERFLOW_PLAN,
+            "site_constraints": RICH_OVERFLOW_SITE,
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["status"] == "buildable_conflict"
+    assert payload["compliance_summary"]["mutation_hints"][0]["boundary_id"] == "east-boundary"
+    assert payload["candidates"][0]["candidate_id"] == "shrink_boundary::east-boundary"
+    assert payload["candidates"][0]["change_count"] == 1
+    assert payload["candidates"][0]["changes"][0]["delta_x"] == -20.0
+
+
+def test_site_fit_apply_applies_shrink_boundary_candidate_to_rich_plan_payload():
+    response = client.post(
+        "/api/v2/site-fit/apply",
+        json={
+            "plan": RICH_OVERFLOW_PLAN,
+            "site_constraints": RICH_OVERFLOW_SITE,
+            "candidate_id": "shrink_boundary::east-boundary",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    applied_plan = payload["applied_plan"]["plan"]
+    assert payload["candidate_id"] == "shrink_boundary::east-boundary"
+    assert payload["change_set"][0]["boundary_id"] == "east-boundary"
+    assert applied_plan["footprint_bbox"]["x2"] == 100.0
+    assert applied_plan["boundaries"][1]["start"]["x"] == 100.0
+    assert applied_plan["boundaries"][1]["end"]["x"] == 100.0
+    assert applied_plan["walls"][0]["start"]["x"] == 100.0
+    assert applied_plan["openings"][0]["start"]["x"] == 100.0
+    assert applied_plan["rooms"][0]["bbox"]["x2"] == 100.0
