@@ -61,10 +61,11 @@ def propose_site_fit(req) -> dict:
 
 def apply_site_fit(req) -> dict:
     proposal = propose_site_fit(req)
-    if req.candidate_id != "baseline_preserved":
+    candidate = next((item for item in proposal["candidates"] if item["candidate_id"] == req.candidate_id), None)
+    if candidate is None:
         raise ValueError("Unknown site-fit candidate_id.")
-    if proposal["status"] != "fit_ready":
-        raise ValueError("The selected candidate cannot be applied because the plan does not fit yet.")
+    if candidate["fit_status"] != "fit_ready":
+        raise ValueError("The selected candidate cannot be applied because it does not resolve fit yet.")
 
     job = build_site_fit_job(
         plan=req.plan,
@@ -82,8 +83,12 @@ def apply_site_fit(req) -> dict:
         "isolation": proposal["isolation"],
         "registration_summary": proposal["registration_summary"],
         "compliance_summary": proposal["compliance_summary"],
-        "applied_plan": export_applied_plan(job, candidate_id=req.candidate_id),
-        "change_set": [],
+        "applied_plan": export_applied_plan(
+            job,
+            candidate_id=req.candidate_id,
+            change_set=candidate.get("changes") or [],
+        ),
+        "change_set": candidate.get("changes") or [],
         "warnings": proposal["warnings"],
     }
 

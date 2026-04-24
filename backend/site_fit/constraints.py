@@ -1,12 +1,28 @@
 from __future__ import annotations
 
 from .cad_units import normalize_bbox, normalize_polygon, normalize_unit_name
-from .models import ConstraintEvaluation, NormalizedPlan, SiteFitJob
+from .models import (
+    BoundaryDiagnostic,
+    ConstraintEvaluation,
+    MutationHint,
+    NormalizedBoundarySegment,
+    NormalizedOpeningSummary,
+    NormalizedPlan,
+    NormalizedRoomSummary,
+    RoomDiagnostic,
+    SiteFitJob,
+)
 from .registration import register_plan_1to1
 
 
 BUILDABLE_ENVELOPE_RULE_ID = "buildable_envelope.bbox_contains_plan_bbox"
 REGISTRATION_SCALE_LOCK_RULE_ID = "registration.scale_locked_1to1"
+SIDE_TO_VECTOR = {
+    "west": ("x", 1.0),
+    "east": ("x", -1.0),
+    "north": ("y", 1.0),
+    "south": ("y", -1.0),
+}
 
 
 def evaluate_hard_constraints(plan: NormalizedPlan, job: SiteFitJob) -> ConstraintEvaluation:
@@ -61,6 +77,149 @@ def evaluate_hard_constraints(plan: NormalizedPlan, job: SiteFitJob) -> Constrai
             registration=registration,
         )
 
+    overflow_by_side = _overflow_by_side(plan_bbox_for_fit, buildable_bbox)
+    rooms_by_id = {room.room_id: room for room in plan.room_summaries}
+    openings_by_id = {opening.opening_id: opening for opening in plan.openings}
+    locked_room_ids = {str(room_id) for room_id in (job.design_locks.get("locked_rooms") or [])}
+    boundary_diagnostics: list[BoundaryDiagnostic] = []
+    room_diagnostics: list[RoomDiagnostic] = []
+    mutation_hints: list[MutationHint] = []
+
+    if len(overflow_by_side) == 1:
+        active_side, overflow_delta = next(iter(overflow_by_side.items()))
+        axis, direction = SIDE_TO_VECTOR[active_side]
+        for boundary in plan.boundary_segments:
+            side, boundary_axis = _boundary_side(boundary, plan_bbox_for_fit)
+            if side != active_side or boundary_axis != axis or boundary.boundary_kind != "exterior":
+                continue
+
+            blocked_opening, requires_rehost = _opening_block_status(boundary, openings_by_id)
+            owner_room_ids = tuple(boundary.owner_room_ids)
+            if boundary.mutability == "protected":
+                boundary_diagnostics.append(
+                    BoundaryDiagnostic(
+                        boundary_id=boundary.boundary_id,
+                        side=side,
+                        axis=axis,
+                        overflow_delta=overflow_delta,
+                        status="blocked_protected",
+                        reason="boundary is protected",
+                        owner_room_ids=owner_room_ids,
+                        opening_ids=boundary.opening_ids,
+                        requires_rehost=requires_rehost,
+                    )
+                )
+                continue
+            if boundary.mutability == "locked" or not boundary.movable:
+                boundary_diagnostics.append(
+                    BoundaryDiagnostic(
+                        boundary_id=boundary.boundary_id,
+                        side=side,
+                        axis=axis,
+                        overflow_delta=overflow_delta,
+                        status="blocked_locked",
+                        reason="boundary is locked",
+                        owner_room_ids=owner_room_ids,
+                        opening_ids=boundary.opening_ids,
+                        requires_rehost=requires_rehost,
+                    )
+                )
+                continue
+            if blocked_opening:
+                boundary_diagnostics.append(
+                    BoundaryDiagnostic(
+                        boundary_id=boundary.boundary_id,
+                        side=side,
+                        axis=axis,
+                        overflow_delta=overflow_delta,
+                        status="blocked_non_rehostable_opening",
+                        reason="hosted opening cannot be rehosted",
+                        owner_room_ids=owner_room_ids,
+                        opening_ids=boundary.opening_ids,
+                        requires_rehost=requires_rehost,
+                    )
+                )
+                continue
+
+            delta = overflow_delta * direction
+            any_blocked = False
+            blocked_status = "blocked_room_minimum"
+            blocked_reason = "owner room cannot absorb the shrink"
+            for room_id in owner_room_ids:
+                room = rooms_by_id.get(room_id)
+                if room is None:
+                    continue
+
+                current_width = float(((room.bbox or {}).get("width")) or 0.0)
+                current_height = float(((room.bbox or {}).get("height")) or 0.0)
+                blocked, reason, projected = _room_is_blocked(room, axis=axis, delta=delta)
+                room_status = "blocked_room_minimum" if blocked else "eligible"
+                if room_id in locked_room_ids:
+                    room_status = "blocked_design_lock"
+                    blocked = True
+                    reason = "room is design-locked"
+                room_diagnostics.append(
+                    RoomDiagnostic(
+                        room_id=room.room_id,
+                        boundary_id=boundary.boundary_id,
+                        axis=axis,
+                        current_width=current_width,
+                        current_height=current_height,
+                        projected_width=projected[0],
+                        projected_height=projected[1],
+                        projected_area=projected[2],
+                        status=room_status,
+                        reason=reason,
+                    )
+                )
+                if blocked:
+                    any_blocked = True
+                    if room_status == "blocked_design_lock":
+                        blocked_status = "blocked_design_lock"
+                        blocked_reason = "owner room is design-locked"
+
+            if any_blocked:
+                boundary_diagnostics.append(
+                    BoundaryDiagnostic(
+                        boundary_id=boundary.boundary_id,
+                        side=side,
+                        axis=axis,
+                        overflow_delta=overflow_delta,
+                        status=blocked_status,
+                        reason=blocked_reason,
+                        owner_room_ids=owner_room_ids,
+                        opening_ids=boundary.opening_ids,
+                        requires_rehost=requires_rehost,
+                    )
+                )
+                continue
+
+            boundary_diagnostics.append(
+                BoundaryDiagnostic(
+                    boundary_id=boundary.boundary_id,
+                    side=side,
+                    axis=axis,
+                    overflow_delta=overflow_delta,
+                    status="eligible",
+                    owner_room_ids=owner_room_ids,
+                    opening_ids=boundary.opening_ids,
+                    requires_rehost=requires_rehost,
+                    projected_fit_status="fit_ready",
+                )
+            )
+            mutation_hints.append(
+                MutationHint(
+                    boundary_id=boundary.boundary_id,
+                    side=side,
+                    axis=axis,
+                    delta_x=delta if axis == "x" else 0.0,
+                    delta_y=delta if axis == "y" else 0.0,
+                    owner_room_ids=owner_room_ids,
+                    opening_ids=boundary.opening_ids,
+                    requires_rehost=requires_rehost,
+                )
+            )
+
     return ConstraintEvaluation(
         status="buildable_conflict",
         checked_rule_ids=(BUILDABLE_ENVELOPE_RULE_ID,),
@@ -74,6 +233,9 @@ def evaluate_hard_constraints(plan: NormalizedPlan, job: SiteFitJob) -> Constrai
         ),
         site_summary=site_summary,
         registration=registration,
+        boundary_diagnostics=tuple(boundary_diagnostics),
+        room_diagnostics=tuple(room_diagnostics),
+        mutation_hints=tuple(mutation_hints),
     )
 
 
@@ -154,3 +316,81 @@ def _bbox_fits(*, inner: dict[str, float], outer: dict[str, float]) -> bool:
         and inner["x2"] <= outer["x2"]
         and inner["y2"] <= outer["y2"]
     )
+
+
+def _overflow_by_side(plan_bbox: dict[str, float], buildable_bbox: dict[str, float]) -> dict[str, float]:
+    overflow: dict[str, float] = {}
+    if plan_bbox["x1"] < buildable_bbox["x1"]:
+        overflow["west"] = buildable_bbox["x1"] - plan_bbox["x1"]
+    if plan_bbox["x2"] > buildable_bbox["x2"]:
+        overflow["east"] = plan_bbox["x2"] - buildable_bbox["x2"]
+    if plan_bbox["y1"] < buildable_bbox["y1"]:
+        overflow["north"] = buildable_bbox["y1"] - plan_bbox["y1"]
+    if plan_bbox["y2"] > buildable_bbox["y2"]:
+        overflow["south"] = plan_bbox["y2"] - buildable_bbox["y2"]
+    return overflow
+
+
+def _boundary_side(
+    boundary: NormalizedBoundarySegment,
+    plan_bbox: dict[str, float],
+    *,
+    tolerance: float = 1e-6,
+) -> tuple[str | None, str | None]:
+    start = boundary.start or {}
+    end = boundary.end or {}
+    if abs(start.get("x", 0.0) - end.get("x", 0.0)) <= tolerance:
+        x = start.get("x", 0.0)
+        if abs(x - plan_bbox["x1"]) <= tolerance:
+            return "west", "x"
+        if abs(x - plan_bbox["x2"]) <= tolerance:
+            return "east", "x"
+    if abs(start.get("y", 0.0) - end.get("y", 0.0)) <= tolerance:
+        y = start.get("y", 0.0)
+        if abs(y - plan_bbox["y1"]) <= tolerance:
+            return "north", "y"
+        if abs(y - plan_bbox["y2"]) <= tolerance:
+            return "south", "y"
+    return None, None
+
+
+def _project_room(room: NormalizedRoomSummary, *, axis: str, delta: float) -> tuple[float, float, float]:
+    bbox = room.bbox or {}
+    current_width = float(bbox.get("width") or 0.0)
+    current_height = float(bbox.get("height") or 0.0)
+    projected_width = current_width - abs(delta) if axis == "x" else current_width
+    projected_height = current_height - abs(delta) if axis == "y" else current_height
+    projected_area = projected_width * projected_height
+    return projected_width, projected_height, projected_area
+
+
+def _room_is_blocked(
+    room: NormalizedRoomSummary,
+    *,
+    axis: str,
+    delta: float,
+) -> tuple[bool, str | None, tuple[float, float, float]]:
+    projected_width, projected_height, projected_area = _project_room(room, axis=axis, delta=delta)
+    if room.min_width is not None and projected_width < room.min_width:
+        return True, "projected width violates room minimum", (projected_width, projected_height, projected_area)
+    if room.min_height is not None and projected_height < room.min_height:
+        return True, "projected height violates room minimum", (projected_width, projected_height, projected_area)
+    if room.min_area is not None and projected_area < room.min_area:
+        return True, "projected area violates room minimum", (projected_width, projected_height, projected_area)
+    return False, None, (projected_width, projected_height, projected_area)
+
+
+def _opening_block_status(
+    boundary: NormalizedBoundarySegment,
+    openings_by_id: dict[str, NormalizedOpeningSummary],
+) -> tuple[bool, bool]:
+    requires_rehost = False
+    for opening_id in boundary.opening_ids:
+        opening = openings_by_id.get(opening_id)
+        if opening is None:
+            continue
+        if opening.rehost_required:
+            requires_rehost = True
+        if opening.rehost_required and not opening.rehostable:
+            return True, requires_rehost
+    return False, requires_rehost
