@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 
+from .cad_units import convert_value, is_physical_unit, normalize_unit_name
 from .models import SiteFitIsolation, SiteFitJob
 
 
@@ -29,10 +30,71 @@ def _segment_matches_side(segment: dict, *, active_side: str, footprint_bbox: di
     return abs(float(start.get("y", 0.0)) - target_y) <= tolerance
 
 
-def _apply_boundary_shrink(payload: dict, *, change: dict) -> dict:
+def _resolve_payload_unit(payload: dict, *, source_kind: str) -> str:
+    fallback = "inch" if source_kind == "plan" else "pixel"
+    unit = payload.get("unit")
+    if not unit:
+        unit = (payload.get("structure_meta") or {}).get("unit")
+    return normalize_unit_name(unit, fallback=fallback) or fallback
+
+
+def _to_payload_delta(delta: float, *, payload_unit: str) -> float:
+    if not is_physical_unit(payload_unit) or payload_unit == "inch":
+        return float(delta)
+    return convert_value(float(delta), from_unit="inch", to_unit=payload_unit)
+
+
+def _recompute_bbox(bbox: dict | None) -> dict | None:
+    if not isinstance(bbox, dict):
+        return bbox
+    x1 = float(bbox.get("x1", 0.0))
+    y1 = float(bbox.get("y1", 0.0))
+    x2 = float(bbox.get("x2", 0.0))
+    y2 = float(bbox.get("y2", 0.0))
+    return {
+        **bbox,
+        "x1": x1,
+        "y1": y1,
+        "x2": x2,
+        "y2": y2,
+        "width": x2 - x1,
+        "height": y2 - y1,
+    }
+
+
+def _sync_room_derived_fields(room: dict) -> None:
+    bbox = room.get("bbox")
+    if not isinstance(bbox, dict):
+        return
+
+    width = float(bbox.get("width", 0.0))
+    height = float(bbox.get("height", 0.0))
+    x1 = float(bbox.get("x1", 0.0))
+    y1 = float(bbox.get("y1", 0.0))
+    centroid = room.get("centroid")
+
+    if "width" in room:
+        room["width"] = width
+    if "height" in room:
+        room["height"] = height
+    if "area" in room:
+        room["area"] = width * height
+    if "centroid" in room:
+        room["centroid"] = {
+            **centroid,
+            "x": x1 + (width / 2.0),
+            "y": y1 + (height / 2.0),
+        } if isinstance(centroid, dict) else {
+            "x": x1 + (width / 2.0),
+            "y": y1 + (height / 2.0),
+        }
+
+
+def _apply_boundary_shrink(payload: dict, *, change: dict, source_kind: str) -> dict:
     applied = deepcopy(payload)
-    delta_x = float(change.get("delta_x") or 0.0)
-    delta_y = float(change.get("delta_y") or 0.0)
+    payload_unit = _resolve_payload_unit(applied, source_kind=source_kind)
+    delta_x = _to_payload_delta(float(change.get("delta_x") or 0.0), payload_unit=payload_unit)
+    delta_y = _to_payload_delta(float(change.get("delta_y") or 0.0), payload_unit=payload_unit)
     boundary_id = change["boundary_id"]
     owner_room_ids = set(change.get("owner_room_ids") or [])
     opening_ids = set(change.get("opening_ids") or [])
@@ -74,9 +136,8 @@ def _apply_boundary_shrink(payload: dict, *, change: dict) -> dict:
             bbox["y2"] = float(bbox.get("y2", 0.0)) + delta_y
         elif delta_y > 0:
             bbox["y1"] = float(bbox.get("y1", 0.0)) + delta_y
-        bbox["width"] = float(bbox.get("x2", 0.0)) - float(bbox.get("x1", 0.0))
-        bbox["height"] = float(bbox.get("y2", 0.0)) - float(bbox.get("y1", 0.0))
-        room["bbox"] = bbox
+        room["bbox"] = _recompute_bbox(bbox)
+        _sync_room_derived_fields(room)
 
     if footprint_bbox:
         if delta_x < 0:
@@ -87,9 +148,7 @@ def _apply_boundary_shrink(payload: dict, *, change: dict) -> dict:
             footprint_bbox["y2"] = float(footprint_bbox.get("y2", 0.0)) + delta_y
         elif delta_y > 0:
             footprint_bbox["y1"] = float(footprint_bbox.get("y1", 0.0)) + delta_y
-        footprint_bbox["width"] = float(footprint_bbox.get("x2", 0.0)) - float(footprint_bbox.get("x1", 0.0))
-        footprint_bbox["height"] = float(footprint_bbox.get("y2", 0.0)) - float(footprint_bbox.get("y1", 0.0))
-        applied["footprint_bbox"] = footprint_bbox
+        applied["footprint_bbox"] = _recompute_bbox(footprint_bbox)
 
     return applied
 
@@ -97,7 +156,7 @@ def _apply_boundary_shrink(payload: dict, *, change: dict) -> dict:
 def export_applied_plan(job: SiteFitJob, *, candidate_id: str, change_set: list[dict] | None = None) -> dict:
     payload = deepcopy(job.payload)
     if candidate_id.startswith("shrink_boundary::") and change_set:
-        payload = _apply_boundary_shrink(payload, change=change_set[0])
+        payload = _apply_boundary_shrink(payload, change=change_set[0], source_kind=job.source_kind)
     return {
         job.source_kind: payload,
         "site_fit_meta": {

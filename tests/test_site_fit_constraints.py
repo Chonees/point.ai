@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 from backend.site_fit.constraints import evaluate_hard_constraints
 from backend.site_fit.intake import build_site_fit_job
 from backend.site_fit.normalizer import normalize_plan
@@ -125,4 +127,32 @@ def test_evaluate_hard_constraints_blocks_boundary_with_non_rehostable_opening()
     assert evaluation.status == "buildable_conflict"
     assert evaluation.boundary_diagnostics[0].status == "blocked_non_rehostable_opening"
     assert evaluation.boundary_diagnostics[0].requires_rehost is True
+    assert evaluation.mutation_hints == ()
+
+
+def test_evaluate_hard_constraints_marks_non_axis_aligned_boundary_as_blocked():
+    plan = deepcopy(_rich_plan(boundary_mutability="movable"))
+    east_boundary = plan["boundaries"][1]
+    east_boundary["start"] = {"x": 120, "y": 0}
+    east_boundary["end"] = {"x": 110, "y": 80}
+    east_boundary["opening_ids"] = []
+    plan["walls"][0]["hosted_opening_ids"] = []
+    plan["openings"] = []
+
+    job = build_site_fit_job(
+        plan=plan,
+        structure=None,
+        site_constraints={"buildable_envelope": {"x": 0, "y": 0, "width": 100, "height": 80}},
+        design_locks={},
+        jurisdiction=None,
+        ruleset_version="site_fit_contract_v1",
+    )
+    normalized = normalize_plan(job)
+    evaluation = evaluate_hard_constraints(normalized, job)
+
+    assert evaluation.status == "buildable_conflict"
+    assert len(evaluation.boundary_diagnostics) == 1
+    assert evaluation.boundary_diagnostics[0].boundary_id == "east-boundary"
+    assert evaluation.boundary_diagnostics[0].status == "blocked_non_axis_aligned"
+    assert evaluation.boundary_diagnostics[0].reason == "boundary is not axis-aligned"
     assert evaluation.mutation_hints == ()

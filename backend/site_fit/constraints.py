@@ -88,18 +88,45 @@ def evaluate_hard_constraints(plan: NormalizedPlan, job: SiteFitJob) -> Constrai
     if len(overflow_by_side) == 1:
         active_side, overflow_delta = next(iter(overflow_by_side.items()))
         axis, direction = SIDE_TO_VECTOR[active_side]
+        registration_transform = (registration.transform if registration is not None else {}) or {}
+        translate_x = float(registration_transform.get("translate_x") or 0.0)
+        translate_y = float(registration_transform.get("translate_y") or 0.0)
+        pending_mutation_hints: list[MutationHint] = []
+        has_non_axis_blocker = False
         for boundary in plan.boundary_segments:
-            side, boundary_axis = _boundary_side(boundary, plan_bbox_for_fit)
-            if side != active_side or boundary_axis != axis or boundary.boundary_kind != "exterior":
+            relation = _boundary_relation_for_side(
+                boundary,
+                side=active_side,
+                plan_bbox=plan_bbox_for_fit,
+                translate_x=translate_x,
+                translate_y=translate_y,
+            )
+            if relation is None or boundary.boundary_kind != "exterior":
                 continue
 
             blocked_opening, requires_rehost = _opening_block_status(boundary, openings_by_id)
             owner_room_ids = tuple(boundary.owner_room_ids)
+            if relation == "touching_non_axis":
+                has_non_axis_blocker = True
+                boundary_diagnostics.append(
+                    BoundaryDiagnostic(
+                        boundary_id=boundary.boundary_id,
+                        side=active_side,
+                        axis=axis,
+                        overflow_delta=overflow_delta,
+                        status="blocked_non_axis_aligned",
+                        reason="boundary is not axis-aligned",
+                        owner_room_ids=owner_room_ids,
+                        opening_ids=boundary.opening_ids,
+                        requires_rehost=requires_rehost,
+                    )
+                )
+                continue
             if boundary.mutability == "protected":
                 boundary_diagnostics.append(
                     BoundaryDiagnostic(
                         boundary_id=boundary.boundary_id,
-                        side=side,
+                        side=active_side,
                         axis=axis,
                         overflow_delta=overflow_delta,
                         status="blocked_protected",
@@ -114,7 +141,7 @@ def evaluate_hard_constraints(plan: NormalizedPlan, job: SiteFitJob) -> Constrai
                 boundary_diagnostics.append(
                     BoundaryDiagnostic(
                         boundary_id=boundary.boundary_id,
-                        side=side,
+                        side=active_side,
                         axis=axis,
                         overflow_delta=overflow_delta,
                         status="blocked_locked",
@@ -129,7 +156,7 @@ def evaluate_hard_constraints(plan: NormalizedPlan, job: SiteFitJob) -> Constrai
                 boundary_diagnostics.append(
                     BoundaryDiagnostic(
                         boundary_id=boundary.boundary_id,
-                        side=side,
+                        side=active_side,
                         axis=axis,
                         overflow_delta=overflow_delta,
                         status="blocked_non_rehostable_opening",
@@ -182,7 +209,7 @@ def evaluate_hard_constraints(plan: NormalizedPlan, job: SiteFitJob) -> Constrai
                 boundary_diagnostics.append(
                     BoundaryDiagnostic(
                         boundary_id=boundary.boundary_id,
-                        side=side,
+                        side=active_side,
                         axis=axis,
                         overflow_delta=overflow_delta,
                         status=blocked_status,
@@ -197,7 +224,7 @@ def evaluate_hard_constraints(plan: NormalizedPlan, job: SiteFitJob) -> Constrai
             boundary_diagnostics.append(
                 BoundaryDiagnostic(
                     boundary_id=boundary.boundary_id,
-                    side=side,
+                    side=active_side,
                     axis=axis,
                     overflow_delta=overflow_delta,
                     status="eligible",
@@ -207,10 +234,10 @@ def evaluate_hard_constraints(plan: NormalizedPlan, job: SiteFitJob) -> Constrai
                     projected_fit_status="fit_ready",
                 )
             )
-            mutation_hints.append(
+            pending_mutation_hints.append(
                 MutationHint(
                     boundary_id=boundary.boundary_id,
-                    side=side,
+                    side=active_side,
                     axis=axis,
                     delta_x=delta if axis == "x" else 0.0,
                     delta_y=delta if axis == "y" else 0.0,
@@ -219,6 +246,8 @@ def evaluate_hard_constraints(plan: NormalizedPlan, job: SiteFitJob) -> Constrai
                     requires_rehost=requires_rehost,
                 )
             )
+        if not has_non_axis_blocker:
+            mutation_hints.extend(pending_mutation_hints)
 
     return ConstraintEvaluation(
         status="buildable_conflict",
@@ -331,27 +360,84 @@ def _overflow_by_side(plan_bbox: dict[str, float], buildable_bbox: dict[str, flo
     return overflow
 
 
-def _boundary_side(
+def _boundary_relation_for_side(
     boundary: NormalizedBoundarySegment,
-    plan_bbox: dict[str, float],
     *,
+    side: str,
+    plan_bbox: dict[str, float],
+    translate_x: float = 0.0,
+    translate_y: float = 0.0,
     tolerance: float = 1e-6,
-) -> tuple[str | None, str | None]:
-    start = boundary.start or {}
-    end = boundary.end or {}
-    if abs(start.get("x", 0.0) - end.get("x", 0.0)) <= tolerance:
-        x = start.get("x", 0.0)
-        if abs(x - plan_bbox["x1"]) <= tolerance:
-            return "west", "x"
-        if abs(x - plan_bbox["x2"]) <= tolerance:
-            return "east", "x"
-    if abs(start.get("y", 0.0) - end.get("y", 0.0)) <= tolerance:
-        y = start.get("y", 0.0)
-        if abs(y - plan_bbox["y1"]) <= tolerance:
-            return "north", "y"
-        if abs(y - plan_bbox["y2"]) <= tolerance:
-            return "south", "y"
-    return None, None
+) -> str | None:
+    start = _translated_point(boundary.start, translate_x=translate_x, translate_y=translate_y)
+    end = _translated_point(boundary.end, translate_x=translate_x, translate_y=translate_y)
+    if side == "west":
+        return _axis_relation(
+            start.get("x", 0.0),
+            end.get("x", 0.0),
+            start.get("y", 0.0),
+            end.get("y", 0.0),
+            target=plan_bbox["x1"],
+            tolerance=tolerance,
+        )
+    if side == "east":
+        return _axis_relation(
+            start.get("x", 0.0),
+            end.get("x", 0.0),
+            start.get("y", 0.0),
+            end.get("y", 0.0),
+            target=plan_bbox["x2"],
+            tolerance=tolerance,
+        )
+    if side == "north":
+        return _axis_relation(
+            start.get("y", 0.0),
+            end.get("y", 0.0),
+            start.get("x", 0.0),
+            end.get("x", 0.0),
+            target=plan_bbox["y1"],
+            tolerance=tolerance,
+        )
+    if side == "south":
+        return _axis_relation(
+            start.get("y", 0.0),
+            end.get("y", 0.0),
+            start.get("x", 0.0),
+            end.get("x", 0.0),
+            target=plan_bbox["y2"],
+            tolerance=tolerance,
+        )
+    return None
+
+
+def _translated_point(
+    point: dict[str, float] | None,
+    *,
+    translate_x: float,
+    translate_y: float,
+) -> dict[str, float]:
+    source = point or {}
+    return {
+        "x": float(source.get("x", 0.0)) + translate_x,
+        "y": float(source.get("y", 0.0)) + translate_y,
+    }
+
+
+def _axis_relation(
+    aligned_start: float,
+    aligned_end: float,
+    cross_start: float,
+    cross_end: float,
+    *,
+    target: float,
+    tolerance: float,
+) -> str | None:
+    if abs(aligned_start - aligned_end) <= tolerance and abs(aligned_start - target) <= tolerance:
+        return "aligned"
+    if min(aligned_start, aligned_end) <= target + tolerance and max(aligned_start, aligned_end) >= target - tolerance:
+        if abs(cross_start - cross_end) > tolerance:
+            return "touching_non_axis"
+    return None
 
 
 def _project_room(room: NormalizedRoomSummary, *, axis: str, delta: float) -> tuple[float, float, float]:

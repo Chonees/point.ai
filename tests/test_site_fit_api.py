@@ -406,6 +406,75 @@ RICH_OVERFLOW_SITE = {
     "buildable_envelope": {"x": 0, "y": 0, "width": 100, "height": 80},
 }
 
+REGISTERED_TRANSLATED_RICH_OVERFLOW_SITE = {
+    "unit": "inch",
+    "placed_plan_footprint": {"x": 30, "y": 0, "width": 120, "height": 80},
+    "buildable_envelope": {"x": 0, "y": 0, "width": 130, "height": 80},
+}
+
+RICH_OVERFLOW_PLAN_FEET = {
+    "model": "Rich Overflow Feet Sample",
+    "unit": "ft",
+    "rooms": [
+        {
+            "room_id": "room-1",
+            "name": "LIVING",
+            "category": "living_room",
+            "mutability": "flexible",
+            "min_width": 5,
+            "min_height": 4,
+            "min_area": 40,
+            "bbox": {"x1": 0, "y1": 0, "x2": 10, "y2": 8, "width": 10, "height": 8},
+        }
+    ],
+    "boundaries": [
+        {
+            "boundary_id": "west-boundary",
+            "boundary_kind": "exterior",
+            "owner_room_ids": ["room-1"],
+            "mutability": "protected",
+            "movable": False,
+            "constraint_reasons": [],
+            "start": {"x": 0, "y": 0},
+            "end": {"x": 0, "y": 8},
+            "length": 8,
+            "opening_ids": [],
+        },
+        {
+            "boundary_id": "east-boundary",
+            "boundary_kind": "exterior",
+            "owner_room_ids": ["room-1"],
+            "mutability": "movable",
+            "movable": True,
+            "constraint_reasons": [],
+            "start": {"x": 10, "y": 0},
+            "end": {"x": 10, "y": 8},
+            "length": 8,
+            "opening_ids": [],
+        },
+    ],
+    "walls": [
+        {
+            "wall_id": "wall-east",
+            "boundary_kind": "exterior",
+            "owner_room_ids": ["room-1"],
+            "mutability": "movable",
+            "movable": True,
+            "start": {"x": 10, "y": 0},
+            "end": {"x": 10, "y": 8},
+            "length": 8,
+            "hosted_opening_ids": [],
+        }
+    ],
+    "openings": [],
+    "footprint_bbox": {"x1": 0, "y1": 0, "x2": 10, "y2": 8, "width": 10, "height": 8},
+}
+
+RICH_OVERFLOW_SITE_INCH = {
+    "unit": "inch",
+    "buildable_envelope": {"x": 0, "y": 0, "width": 108, "height": 96},
+}
+
 
 def test_site_fit_propose_returns_shrink_candidate_for_single_side_rich_overflow():
     response = client.post(
@@ -446,3 +515,85 @@ def test_site_fit_apply_applies_shrink_boundary_candidate_to_rich_plan_payload()
     assert applied_plan["walls"][0]["start"]["x"] == 100.0
     assert applied_plan["openings"][0]["start"]["x"] == 100.0
     assert applied_plan["rooms"][0]["bbox"]["x2"] == 100.0
+
+
+def test_site_fit_propose_keeps_mutation_hints_for_registered_1_to_1_translation_overflow():
+    response = client.post(
+        "/api/v2/site-fit/propose",
+        json={
+            "plan": RICH_OVERFLOW_PLAN,
+            "site_constraints": REGISTERED_TRANSLATED_RICH_OVERFLOW_SITE,
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["status"] == "buildable_conflict"
+    assert payload["registration_summary"]["status"] == "registered_1to1"
+    assert payload["compliance_summary"]["mutation_hints"][0]["boundary_id"] == "east-boundary"
+    assert payload["compliance_summary"]["mutation_hints"][0]["delta_x"] == -20.0
+    assert payload["candidates"][0]["candidate_id"] == "shrink_boundary::east-boundary"
+
+
+def test_site_fit_apply_revalidates_mutated_payload_before_returning_truth():
+    response = client.post(
+        "/api/v2/site-fit/apply",
+        json={
+            "plan": RICH_OVERFLOW_PLAN,
+            "site_constraints": RICH_OVERFLOW_SITE,
+            "candidate_id": "shrink_boundary::east-boundary",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["apply_status"] == "applied"
+    assert payload["compliance_summary"]["status"] == "pass"
+    assert payload["compliance_summary"]["violations"] == []
+    assert payload["compliance_summary"]["mutation_hints"] == []
+
+
+def test_site_fit_apply_converts_canonical_delta_back_to_raw_plan_units():
+    response = client.post(
+        "/api/v2/site-fit/apply",
+        json={
+            "plan": RICH_OVERFLOW_PLAN_FEET,
+            "site_constraints": RICH_OVERFLOW_SITE_INCH,
+            "candidate_id": "shrink_boundary::east-boundary",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    applied_plan = payload["applied_plan"]["plan"]
+    assert payload["change_set"][0]["delta_x"] == -12.0
+    assert applied_plan["footprint_bbox"]["x2"] == 9.0
+    assert applied_plan["boundaries"][1]["start"]["x"] == 9.0
+    assert applied_plan["boundaries"][1]["end"]["x"] == 9.0
+    assert applied_plan["walls"][0]["start"]["x"] == 9.0
+    assert applied_plan["rooms"][0]["bbox"]["x2"] == 9.0
+
+
+def test_site_fit_apply_keeps_room_derived_geometry_consistent_after_shrink():
+    rich_plan_with_derived_geometry = deepcopy(RICH_OVERFLOW_PLAN)
+    rich_plan_with_derived_geometry["rooms"][0]["width"] = 120
+    rich_plan_with_derived_geometry["rooms"][0]["height"] = 80
+    rich_plan_with_derived_geometry["rooms"][0]["area"] = 9600
+    rich_plan_with_derived_geometry["rooms"][0]["centroid"] = {"x": 60, "y": 40}
+
+    response = client.post(
+        "/api/v2/site-fit/apply",
+        json={
+            "plan": rich_plan_with_derived_geometry,
+            "site_constraints": RICH_OVERFLOW_SITE,
+            "candidate_id": "shrink_boundary::east-boundary",
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    room = response.json()["applied_plan"]["plan"]["rooms"][0]
+    assert room["bbox"]["width"] == 100.0
+    assert room["width"] == 100.0
+    assert room["height"] == 80.0
+    assert room["area"] == 8000.0
+    assert room["centroid"] == {"x": 50.0, "y": 40.0}
