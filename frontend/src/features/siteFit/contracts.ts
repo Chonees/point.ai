@@ -26,6 +26,8 @@ export interface SiteFitBridgeApplyResult {
   scope: 'seminole-2000-only'
   plan_id: string
   plan_name: string
+  apply_id: string
+  export_url: string
   apply: {
     candidate_id: string
     apply_status: string
@@ -39,6 +41,7 @@ export interface SiteFitProposalArtifactData {
   planId: string
   planName: string
   candidateId: string | null
+  cadAnalysisId: string | null
   siteConstraints: Record<string, unknown>
   summary: string
   fitStatus: string
@@ -49,7 +52,10 @@ export interface SiteFitApplyArtifactData {
   planId: string
   planName: string
   candidateId: string
+  applyId: string
   applyStatus: string
   complianceStatus: string
+  href?: string
+  exportUrl?: string
   warnings: string[]
 }

@@ -36,7 +36,7 @@ export function SiteFitProposalArtifactCard({
         </ul>
       )}
 
-      {proposal.candidateId && (
+      {proposal.candidateId && proposal.cadAnalysisId && (
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button
             type="button"

@@ -53,7 +53,7 @@ from .services.site_fit_service import (
     validate_site_fit_request,
 )
 from .services.cad_workspace_service import extract_cad_workspace, export_cad_workspace_overlay
-from .services.site_fit_bridge_service import apply_mvp_site_fit, propose_mvp_site_fit
+from .services.site_fit_bridge_service import apply_mvp_site_fit, export_bridge_apply_snapshot, propose_mvp_site_fit
 
 
 # ─── LIFESPAN ────────────────────────────────────────────────────────────────
@@ -240,6 +240,17 @@ async def api_site_fit_bridge_apply(req: SiteFitBridgeApplyRequest):
         return SiteFitBridgeApplyResponse(**apply_mvp_site_fit(req))
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.get("/api/v2/site-fit/bridge/export/{apply_id}")
+async def api_site_fit_bridge_export(apply_id: str):
+    try:
+        path, filename = export_bridge_apply_snapshot(apply_id=apply_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Bridge apply snapshot not found")
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    return FileResponse(str(path), media_type="application/dxf", filename=filename)
 
 
 @app.post("/api/v2/site-fit/validate", response_model=SiteFitValidateResponse)

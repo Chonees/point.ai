@@ -160,7 +160,7 @@ function MainAppShell() {
   }
 
   const handleApplySiteFitProposal = async (proposal: SiteFitProposalArtifactData) => {
-    if (!activeThread || !proposal.candidateId) return
+    if (!activeThread || !proposal.candidateId || !proposal.cadAnalysisId) return
     const threadId = activeThread.id
 
     try {
@@ -168,6 +168,7 @@ function MainAppShell() {
         planId: proposal.planId,
         planName: proposal.planName,
         candidateId: proposal.candidateId,
+        cadAnalysisId: proposal.cadAnalysisId,
         siteConstraints: proposal.siteConstraints,
       })
 

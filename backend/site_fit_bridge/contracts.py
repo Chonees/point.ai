@@ -8,6 +8,7 @@ class SiteFitBridgeApplyRequest(BaseModel):
     plan_id: str
     site_constraints: dict
     candidate_id: str
+    cad_analysis_id: str
 
 
 class SiteFitBridgeProposeResponse(BaseModel):
@@ -26,5 +27,7 @@ class SiteFitBridgeApplyResponse(BaseModel):
     scope: str = "seminole-2000-only"
     plan_id: str
     plan_name: str
+    apply_id: str
+    export_url: str
     apply: SiteFitApplyResponse
     warnings: list[str] = Field(default_factory=list)

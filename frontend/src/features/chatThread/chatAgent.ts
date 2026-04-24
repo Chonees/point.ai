@@ -32,6 +32,7 @@ interface RunSiteFitApplyToolArgs {
   planId: string
   planName: string
   candidateId: string
+  cadAnalysisId: string
   siteConstraints: Record<string, unknown>
 }
 
@@ -170,6 +171,7 @@ function buildSiteFitProposalArtifactData(payload: SiteFitBridgeProposalResult):
     planId: payload.plan_id,
     planName: payload.plan_name,
     candidateId: candidate?.candidate_id ?? null,
+    cadAnalysisId: payload.cad_analysis.analysis_id,
     siteConstraints: payload.site_constraints,
     summary: candidate?.summary ?? 'No vino ningun candidate baseline desde el bridge.',
     fitStatus: candidate?.fit_status ?? payload.proposal.status,
@@ -178,12 +180,17 @@ function buildSiteFitProposalArtifactData(payload: SiteFitBridgeProposalResult):
 }
 
 function buildSiteFitApplyArtifactData(payload: SiteFitBridgeApplyResult): SiteFitApplyArtifactData {
+  const href = payload.export_url ? apiUrl(payload.export_url) : undefined
+
   return {
     planId: payload.plan_id,
     planName: payload.plan_name,
     candidateId: payload.apply.candidate_id,
+    applyId: payload.apply_id,
     applyStatus: payload.apply.apply_status,
     complianceStatus: payload.apply.compliance_summary.status,
+    href,
+    exportUrl: href,
     warnings: [...payload.warnings, ...(payload.apply.warnings ?? [])],
   }
 }
@@ -203,13 +210,15 @@ async function runSiteFitBridgeTool(file: File, prompt: string): Promise<RunChat
     {
       id: newMessageId('artifact'),
       kind: 'cad-review',
-      title: 'CAD fit review',
-      description: 'Review human-in-the-loop del floor plan sobre el site/buildable dentro del chat.',
+      title: 'CAD diagnostic review',
+      description: 'Diagnostico human-in-the-loop del floor plan sobre el site/buildable dentro del chat.',
       review: {
         ...cadReview,
-        export: cadReview.export.ready && cadReview.export.href
-          ? { ...cadReview.export, href: apiUrl(cadReview.export.href) }
-          : cadReview.export,
+        export: {
+          ready: false,
+          href: undefined,
+          reason: 'Diagnostico solamente. Exporta el resultado real desde el apply.',
+        },
       },
     },
     {
@@ -232,6 +241,7 @@ export async function runSiteFitApplyTool({
   planId,
   planName,
   candidateId,
+  cadAnalysisId,
   siteConstraints,
 }: RunSiteFitApplyToolArgs): Promise<RunChatAgentToolResult> {
   const response = await fetch(apiUrl('/api/v2/site-fit/bridge/apply'), {
@@ -241,6 +251,7 @@ export async function runSiteFitApplyTool({
       plan_id: planId,
       site_constraints: siteConstraints,
       candidate_id: candidateId,
+      cad_analysis_id: cadAnalysisId,
     }),
   })
   const payload = await parseJsonOrThrow(response) as SiteFitBridgeApplyResult

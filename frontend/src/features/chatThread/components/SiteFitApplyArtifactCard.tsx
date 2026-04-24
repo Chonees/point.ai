@@ -25,7 +25,25 @@ export function SiteFitApplyArtifactCard({ artifact }: SiteFitApplyArtifactCardP
           <dd className="mt-1 text-sm text-zinc-100">{apply.complianceStatus}</dd>
         </div>
       </dl>
-      <p className="mt-3 text-xs text-zinc-500">Candidate: {apply.candidateId}</p>
+      <div className="mt-3 space-y-1 text-xs text-zinc-500">
+        <p>Candidate: {apply.candidateId}</p>
+        <p>Apply ID: {apply.applyId}</p>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {apply.href ? (
+          <a
+            href={apply.href}
+            className="inline-flex rounded-xl border border-sky-400/30 bg-sky-400/10 px-3 py-2 text-xs font-medium text-sky-100 transition-colors hover:bg-sky-400/15"
+          >
+            Open applied result
+          </a>
+        ) : (
+          <span className="inline-flex rounded-xl border border-white/10 px-3 py-2 text-xs text-zinc-500">
+            Export pendiente
+          </span>
+        )}
+      </div>
 
       {apply.warnings.length > 0 && (
         <ul className="mt-3 space-y-1 text-xs text-amber-300">

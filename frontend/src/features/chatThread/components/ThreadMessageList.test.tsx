@@ -107,6 +107,7 @@ describe('ThreadMessageList', () => {
           planId: 'seminole-2000',
           planName: 'SEMINOLE2000',
           candidateId: 'baseline_preserved',
+          cadAnalysisId: 'cad-123',
           siteConstraints: { unit: 'inch' },
           summary: 'Keep the current plan unchanged.',
           fitStatus: 'fit_ready',
@@ -136,8 +137,11 @@ describe('ThreadMessageList', () => {
           planId: 'seminole-2000',
           planName: 'SEMINOLE2000',
           candidateId: 'baseline_preserved',
+          applyId: 'apply-123',
           applyStatus: 'applied',
           complianceStatus: 'pass',
+          href: '/api/v2/site-fit/bridge/export/apply-123',
+          exportUrl: '/api/v2/site-fit/bridge/export/apply-123',
           warnings: [],
         },
       }],
@@ -147,5 +151,9 @@ describe('ThreadMessageList', () => {
 
     expect(container.querySelector('[data-artifact-kind="site-fit-apply"]')).toHaveClass('md:col-span-2')
     expect(screen.getByText('Applied site-fit result')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /open applied result/i })).toHaveAttribute(
+      'href',
+      '/api/v2/site-fit/bridge/export/apply-123',
+    )
   })
 })

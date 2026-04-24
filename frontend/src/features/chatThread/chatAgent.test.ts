@@ -225,13 +225,15 @@ describe('runChatAgentTool', () => {
           side_by_side: {
             canonical_unit: 'inch',
             gap: 0,
-            floor_width: 0,
-            site_width: 0,
-            max_height: 0,
+            floor_width: 468,
+            site_width: 765.77,
+            max_height: 1010.71,
           },
           fit_summary: {
             comparison_unit: 'inch',
             basis: 'buildable_polygon',
+            footprint_bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+            buildable_bbox: { x1: 100, y1: 100, x2: 865.77, y2: 1110.71, width: 765.77, height: 1010.71 },
             fits_within_buildable_polygon: true,
             fits_within_buildable_bbox: true,
           },
@@ -265,12 +267,27 @@ describe('runChatAgentTool', () => {
       body: expect.any(FormData),
     }))
     expect(result.assistantMessage.artifacts).toEqual(expect.arrayContaining([
-      expect.objectContaining({ kind: 'cad-review' }),
-      expect.objectContaining({ kind: 'site-fit-proposal' }),
+      expect.objectContaining({
+        kind: 'cad-review',
+        title: expect.stringMatching(/diagnostic/i),
+        review: expect.objectContaining({
+          export: expect.objectContaining({
+            ready: false,
+            href: undefined,
+            reason: expect.stringMatching(/diagnostic|apply|resultado/i),
+          }),
+        }),
+      }),
+      expect.objectContaining({
+        kind: 'site-fit-proposal',
+        proposal: expect.objectContaining({
+          cadAnalysisId: 'cad-123',
+        }),
+      }),
     ]))
   })
 
-  it('calls the bridge apply endpoint and returns an apply artifact', async () => {
+  it('calls the bridge apply endpoint with cad analysis id and returns the real export artifact href', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
@@ -278,6 +295,8 @@ describe('runChatAgentTool', () => {
         scope: 'seminole-2000-only',
         plan_id: 'seminole-2000',
         plan_name: 'SEMINOLE2000',
+        apply_id: 'apply-123',
+        export_url: '/api/v2/site-fit/bridge/export/apply-123',
         apply: {
           candidate_id: 'baseline_preserved',
           apply_status: 'applied',
@@ -292,14 +311,29 @@ describe('runChatAgentTool', () => {
       planId: 'seminole-2000',
       planName: 'SEMINOLE2000',
       candidateId: 'baseline_preserved',
+      cadAnalysisId: 'cad-123',
       siteConstraints: { unit: 'inch' },
     })
 
     expect(mockFetch).toHaveBeenCalledWith('/api/v2/site-fit/bridge/apply', expect.objectContaining({
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        plan_id: 'seminole-2000',
+        site_constraints: { unit: 'inch' },
+        candidate_id: 'baseline_preserved',
+        cad_analysis_id: 'cad-123',
+      }),
     }))
     expect(result.assistantMessage.artifacts).toEqual(expect.arrayContaining([
-      expect.objectContaining({ kind: 'site-fit-apply' }),
+      expect.objectContaining({
+        kind: 'site-fit-apply',
+        apply: expect.objectContaining({
+          applyId: 'apply-123',
+          href: '/api/v2/site-fit/bridge/export/apply-123',
+          exportUrl: '/api/v2/site-fit/bridge/export/apply-123',
+        }),
+      }),
     ]))
   })
 })
