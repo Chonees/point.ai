@@ -70,6 +70,7 @@ class CadWorkspaceFitSummaryResponse(BaseModel):
     comparison_unit: str
     basis: str
     footprint_bbox: Optional[CadWorkspaceBBoxResponse] = None
+    registered_footprint_bbox: Optional[CadWorkspaceBBoxResponse] = None
     property_bbox: Optional[CadWorkspaceBBoxResponse] = None
     buildable_bbox: Optional[CadWorkspaceBBoxResponse] = None
     buildable_polygon: Optional[list[dict]] = None

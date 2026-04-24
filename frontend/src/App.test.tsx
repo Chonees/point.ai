@@ -195,7 +195,7 @@ describe('App chat shell', () => {
     })
     expect(await screen.findByText(/aplique la propuesta baseline/i)).toBeInTheDocument()
     expect(screen.getByText('Applied site-fit result')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /open applied result/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /download applied dxf/i })).toHaveAttribute(
       'href',
       '/api/v2/site-fit/bridge/export/apply-123',
     )

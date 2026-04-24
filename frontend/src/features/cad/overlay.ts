@@ -72,6 +72,9 @@ export function getFitVerdictText(fit: CadWorkspaceFitSummary | null) {
 }
 
 export function resolveOverlayBBox(review: CadReviewArtifactData): CadWorkspaceBBox | null {
+  const registeredFloorBox = review.fitSummary?.registered_footprint_bbox
+  if (registeredFloorBox) return registeredFloorBox
+
   const floorBox = review.fitSummary?.footprint_bbox ?? review.floorPlan.bbox
   const buildableBox = review.fitSummary?.buildable_bbox
   if (!floorBox || !buildableBox) return null

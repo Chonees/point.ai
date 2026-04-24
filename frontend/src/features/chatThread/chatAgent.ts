@@ -1,6 +1,6 @@
 import { apiUrl } from '../../lib/api'
 import { buildCadReviewArtifactData } from '../cad/review'
-import type { CadWorkspaceExtractResult } from '../cad/contracts'
+import type { CadReviewArtifactData, CadWorkspaceExtractResult } from '../cad/contracts'
 import type {
   SiteFitApplyArtifactData,
   SiteFitBridgeApplyResult,
@@ -124,6 +124,19 @@ function buildSiteFitProposalArtifactData(payload: SiteFitBridgeProposalResult):
 
 function buildSiteFitApplyArtifactData(payload: SiteFitBridgeApplyResult): SiteFitApplyArtifactData {
   const href = payload.export_url ? apiUrl(payload.export_url) : undefined
+  const preview: CadReviewArtifactData = {
+    analysisId: payload.applied_review.analysis_id,
+    sourceName: payload.applied_review.source_name,
+    canonicalUnit: payload.applied_review.canonical_unit,
+    floorPlan: payload.applied_review.floor_plan,
+    sitePlan: payload.applied_review.site_plan,
+    fitSummary: payload.applied_review.fit_summary ?? null,
+    warnings: payload.applied_review.warnings,
+    export: {
+      ready: false,
+      reason: 'Usa el DXF aplicado de esta tarjeta.',
+    },
+  }
 
   return {
     planId: payload.plan_id,
@@ -134,6 +147,7 @@ function buildSiteFitApplyArtifactData(payload: SiteFitBridgeApplyResult): SiteF
     complianceStatus: payload.apply.compliance_summary.status,
     href,
     exportUrl: href,
+    preview,
     warnings: [...payload.warnings, ...(payload.apply.warnings ?? [])],
   }
 }
@@ -147,23 +161,8 @@ async function runSiteFitBridgeTool(file: File, prompt: string): Promise<RunChat
     body: formData,
   })
   const payload = await parseJsonOrThrow(response) as SiteFitBridgeProposalResult
-  const cadReview = buildCadReviewArtifactData(payload.cad_analysis)
   const proposal = buildSiteFitProposalArtifactData(payload)
   const artifacts: ThreadArtifact[] = [
-    {
-      id: newMessageId('artifact'),
-      kind: 'cad-review',
-      title: 'CAD diagnostic review',
-      description: 'Diagnostico human-in-the-loop del floor plan sobre el site/buildable dentro del chat.',
-      review: {
-        ...cadReview,
-        export: {
-          ready: false,
-          href: undefined,
-          reason: 'Diagnostico solamente. Exporta el resultado real desde el apply.',
-        },
-      },
-    },
     {
       id: newMessageId('artifact'),
       kind: 'site-fit-proposal',

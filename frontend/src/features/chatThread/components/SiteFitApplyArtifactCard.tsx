@@ -1,3 +1,4 @@
+import { CadReviewPreview } from '../../cad/CadReviewPreview'
 import type { ThreadSiteFitApplyArtifact } from '../thread.types'
 
 interface SiteFitApplyArtifactCardProps {
@@ -36,7 +37,7 @@ export function SiteFitApplyArtifactCard({ artifact }: SiteFitApplyArtifactCardP
             href={apply.href}
             className="inline-flex rounded-xl border border-sky-400/30 bg-sky-400/10 px-3 py-2 text-xs font-medium text-sky-100 transition-colors hover:bg-sky-400/15"
           >
-            Open applied result
+            Download applied DXF
           </a>
         ) : (
           <span className="inline-flex rounded-xl border border-white/10 px-3 py-2 text-xs text-zinc-500">
@@ -44,6 +45,8 @@ export function SiteFitApplyArtifactCard({ artifact }: SiteFitApplyArtifactCardP
           </span>
         )}
       </div>
+
+      {apply.preview && <CadReviewPreview review={apply.preview} />}
 
       {apply.warnings.length > 0 && (
         <ul className="mt-3 space-y-1 text-xs text-amber-300">

@@ -60,6 +60,12 @@ def test_bridge_apply_reuses_site_constraints_and_applies_selected_candidate(tmp
     assert payload["apply"]["apply_status"] == "applied"
     assert payload["apply"]["candidate_id"] == "baseline_preserved"
     assert payload["apply"]["compliance_summary"]["status"] == "pass"
+    assert payload["applied_review"]["analysis_id"] == payload["apply_id"]
+    assert payload["applied_review"]["source_format"] == "site_fit_apply"
+    assert payload["applied_review"]["fit_summary"]["registered_footprint_bbox"]["x1"] == proposal["site_constraints"]["placed_plan_footprint"]["x"]
+    assert payload["applied_review"]["fit_summary"]["registered_footprint_bbox"]["y1"] == proposal["site_constraints"]["placed_plan_footprint"]["y"]
+    assert payload["applied_review"]["fit_summary"]["registered_footprint_bbox"]["width"] == 468.0
+    assert payload["applied_review"]["fit_summary"]["registered_footprint_bbox"]["height"] == 792.0
 
 
 def test_bridge_export_returns_applied_dxf_using_registered_plan_dimensions(tmp_path: Path):

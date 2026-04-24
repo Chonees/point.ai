@@ -236,25 +236,13 @@ describe('runChatAgentTool', () => {
     }))
     expect(result.assistantMessage.content).toMatch(/site-fit.*SEMINOLE2000/i)
     expect(result.assistantMessage.content).not.toMatch(/bridge/i)
-    expect(result.assistantMessage.artifacts).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        kind: 'cad-review',
-        title: expect.stringMatching(/diagnostic/i),
-        review: expect.objectContaining({
-          export: expect.objectContaining({
-            ready: false,
-            href: undefined,
-            reason: expect.stringMatching(/diagnostic|apply|resultado/i),
-          }),
-        }),
+    expect(result.assistantMessage.artifacts).toHaveLength(1)
+    expect(result.assistantMessage.artifacts[0]).toEqual(expect.objectContaining({
+      kind: 'site-fit-proposal',
+      proposal: expect.objectContaining({
+        cadAnalysisId: 'cad-123',
       }),
-      expect.objectContaining({
-        kind: 'site-fit-proposal',
-        proposal: expect.objectContaining({
-          cadAnalysisId: 'cad-123',
-        }),
-      }),
-    ]))
+    }))
   })
 
   it('calls the bridge apply endpoint with cad analysis id and returns the real export artifact href', async () => {
@@ -267,6 +255,80 @@ describe('runChatAgentTool', () => {
         plan_name: 'SEMINOLE2000',
         apply_id: 'apply-123',
         export_url: '/api/v2/site-fit/bridge/export/apply-123',
+        applied_review: {
+          analysis_id: 'apply-123',
+          source_name: 'SEMINOLE2000 applied',
+          source_format: 'site_fit_apply',
+          canonical_unit: 'inch',
+          conversion_status: 'site_fit_apply',
+          floor_plan: {
+            role: 'floor_plan',
+            bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+            summary: { entity_count: 1, line_count: 1, polyline_count: 0, text_count: 0 },
+            entities: [{
+              type: 'line',
+              layer: 'BRIDGE_APPLY_PLAN',
+              start: { x: 0, y: 0 },
+              end: { x: 468, y: 0 },
+              points: [],
+              bbox: { x1: 0, y1: 0, x2: 468, y2: 0, width: 468, height: 0 },
+            }],
+            rooms: [{
+              name: 'BEDROOM 2',
+              polygon: [
+                { x: 0, y: 0 },
+                { x: 120, y: 0 },
+                { x: 120, y: 120 },
+                { x: 0, y: 120 },
+                { x: 0, y: 0 },
+              ],
+              bbox: { x1: 0, y1: 0, x2: 120, y2: 120, width: 120, height: 120 },
+              centroid: { x: 60, y: 60 },
+              width: 120,
+              height: 120,
+              area: 14400,
+              measurement_source: 'catalog',
+            }],
+            measurements: { width: 468, height: 792, source: 'dimensions' },
+          },
+          site_plan: {
+            role: 'site_plan',
+            bbox: { x1: 3180, y1: 180, x2: 3900, y2: 1260, width: 720, height: 1080 },
+            summary: { entity_count: 1, line_count: 0, polyline_count: 1, text_count: 0 },
+            entities: [{
+              type: 'polyline',
+              layer: 'SETBACKS',
+              points: [
+                { x: 3180, y: 180 },
+                { x: 3900, y: 180 },
+                { x: 3900, y: 1260 },
+                { x: 3180, y: 1260 },
+                { x: 3180, y: 180 },
+              ],
+              bbox: { x1: 3180, y1: 180, x2: 3900, y2: 1260, width: 720, height: 1080 },
+            }],
+            rooms: [],
+            measurements: { width: 720, height: 1080, source: 'buildable_bbox' },
+          },
+          side_by_side: { canonical_unit: 'inch', gap: 0, floor_width: 468, site_width: 720, max_height: 1080 },
+          fit_summary: {
+            comparison_unit: 'inch',
+            basis: 'buildable_polygon',
+            footprint_bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+            registered_footprint_bbox: { x1: 3180, y1: 180, x2: 3648, y2: 972, width: 468, height: 792 },
+            buildable_bbox: { x1: 3180, y1: 180, x2: 3900, y2: 1260, width: 720, height: 1080 },
+            buildable_polygon: [
+              { x: 3180, y: 180 },
+              { x: 3900, y: 180 },
+              { x: 3900, y: 1260 },
+              { x: 3180, y: 1260 },
+              { x: 3180, y: 180 },
+            ],
+            fits_within_buildable_polygon: true,
+            fits_within_buildable_bbox: true,
+          },
+          warnings: [],
+        },
         apply: {
           candidate_id: 'baseline_preserved',
           apply_status: 'applied',
@@ -302,6 +364,14 @@ describe('runChatAgentTool', () => {
           applyId: 'apply-123',
           href: '/api/v2/site-fit/bridge/export/apply-123',
           exportUrl: '/api/v2/site-fit/bridge/export/apply-123',
+          preview: expect.objectContaining({
+            fitSummary: expect.objectContaining({
+              registered_footprint_bbox: expect.objectContaining({
+                x1: 3180,
+                y1: 180,
+              }),
+            }),
+          }),
         }),
       }),
     ]))

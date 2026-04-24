@@ -142,6 +142,78 @@ describe('ThreadMessageList', () => {
           complianceStatus: 'pass',
           href: '/api/v2/site-fit/bridge/export/apply-123',
           exportUrl: '/api/v2/site-fit/bridge/export/apply-123',
+          preview: {
+            analysisId: 'apply-123',
+            sourceName: 'SEMINOLE2000 applied',
+            canonicalUnit: 'inch',
+            floorPlan: {
+              role: 'floor_plan',
+              bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+              summary: { entity_count: 1, line_count: 1, polyline_count: 0, text_count: 0 },
+              entities: [{
+                type: 'line',
+                layer: 'BRIDGE_APPLY_PLAN',
+                start: { x: 0, y: 0 },
+                end: { x: 468, y: 0 },
+                points: [],
+                bbox: { x1: 0, y1: 0, x2: 468, y2: 0, width: 468, height: 0 },
+              }],
+              rooms: [{
+                name: 'BEDROOM 2',
+                polygon: [
+                  { x: 0, y: 0 },
+                  { x: 120, y: 0 },
+                  { x: 120, y: 120 },
+                  { x: 0, y: 120 },
+                  { x: 0, y: 0 },
+                ],
+                bbox: { x1: 0, y1: 0, x2: 120, y2: 120, width: 120, height: 120 },
+                centroid: { x: 60, y: 60 },
+                width: 120,
+                height: 120,
+                area: 14400,
+                measurement_source: 'catalog',
+              }],
+              measurements: { width: 468, height: 792, source: 'dimensions' },
+            },
+            sitePlan: {
+              role: 'site_plan',
+              bbox: { x1: 3180, y1: 180, x2: 3900, y2: 1260, width: 720, height: 1080 },
+              summary: { entity_count: 1, line_count: 0, polyline_count: 1, text_count: 0 },
+              entities: [{
+                type: 'polyline',
+                layer: 'SETBACKS',
+                points: [
+                  { x: 3180, y: 180 },
+                  { x: 3900, y: 180 },
+                  { x: 3900, y: 1260 },
+                  { x: 3180, y: 1260 },
+                  { x: 3180, y: 180 },
+                ],
+                bbox: { x1: 3180, y1: 180, x2: 3900, y2: 1260, width: 720, height: 1080 },
+              }],
+              rooms: [],
+              measurements: { width: 720, height: 1080, source: 'buildable_bbox' },
+            },
+            fitSummary: {
+              comparison_unit: 'inch',
+              basis: 'buildable_polygon',
+              footprint_bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+              registered_footprint_bbox: { x1: 3180, y1: 180, x2: 3648, y2: 972, width: 468, height: 792 },
+              buildable_bbox: { x1: 3180, y1: 180, x2: 3900, y2: 1260, width: 720, height: 1080 },
+              buildable_polygon: [
+                { x: 3180, y: 180 },
+                { x: 3900, y: 180 },
+                { x: 3900, y: 1260 },
+                { x: 3180, y: 1260 },
+                { x: 3180, y: 180 },
+              ],
+              fits_within_buildable_bbox: true,
+              fits_within_buildable_polygon: true,
+            },
+            warnings: [],
+            export: { ready: false, reason: 'preview only' },
+          },
           warnings: [],
         },
       }],
@@ -151,9 +223,10 @@ describe('ThreadMessageList', () => {
 
     expect(container.querySelector('[data-artifact-kind="site-fit-apply"]')).toHaveClass('md:col-span-2')
     expect(screen.getByText('Applied site-fit result')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /open applied result/i })).toHaveAttribute(
+    expect(screen.getByRole('link', { name: /download applied dxf/i })).toHaveAttribute(
       'href',
       '/api/v2/site-fit/bridge/export/apply-123',
     )
+    expect(screen.getByRole('img', { name: /cad overlay comparison/i })).toBeInTheDocument()
   })
 })

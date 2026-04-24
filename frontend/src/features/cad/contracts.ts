@@ -58,6 +58,7 @@ export interface CadWorkspaceFitSummary {
   comparison_unit: string
   basis: string
   footprint_bbox?: CadWorkspaceBBox | null
+  registered_footprint_bbox?: CadWorkspaceBBox | null
   property_bbox?: CadWorkspaceBBox | null
   buildable_bbox?: CadWorkspaceBBox | null
   buildable_polygon?: CadWorkspacePoint[]

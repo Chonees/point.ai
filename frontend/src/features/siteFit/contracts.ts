@@ -1,4 +1,4 @@
-import type { CadWorkspaceExtractResult } from '../cad/contracts'
+import type { CadReviewArtifactData, CadWorkspaceExtractResult } from '../cad/contracts'
 
 export interface SiteFitBridgeProposalResult {
   pipeline: 'site_fit_bridge_mvp_v1'
@@ -28,6 +28,7 @@ export interface SiteFitBridgeApplyResult {
   plan_name: string
   apply_id: string
   export_url: string
+  applied_review: CadWorkspaceExtractResult
   apply: {
     candidate_id: string
     apply_status: string
@@ -57,5 +58,6 @@ export interface SiteFitApplyArtifactData {
   complianceStatus: string
   href?: string
   exportUrl?: string
+  preview?: CadReviewArtifactData
   warnings: string[]
 }

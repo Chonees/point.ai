@@ -29,5 +29,6 @@ class SiteFitBridgeApplyResponse(BaseModel):
     plan_name: str
     apply_id: str
     export_url: str
+    applied_review: CadWorkspaceExtractResponse
     apply: SiteFitApplyResponse
     warnings: list[str] = Field(default_factory=list)
