@@ -1,43 +1,180 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from './hooks/useAuth'
-import { useProjectList, usePlanList, usePlanSave } from './hooks/useProject'
+import { useProjectList } from './hooks/useProject'
 import { isSupabaseConfigured } from './lib/supabase'
 import { LoginPage } from './components/Auth/LoginPage'
 import { ProjectList } from './components/ProjectList/ProjectList'
-import type { PlanData, ProjectScene } from './hooks/useProject'
+import type { ProjectScene } from './hooks/useProject'
+import { runChatAgentTool, runSiteFitApplyTool } from './features/chatThread/chatAgent'
+import type { SiteFitProposalArtifactData } from './features/siteFit/contracts'
+import type { ThreadComposerSubmission, ThreadMessage } from './features/chatThread/thread.types'
+import {
+  threadToInitialMessages,
+  threadToThreadSummary,
+  useThreadList,
+  useThreadSave,
+  type ThreadData,
+} from './features/threads'
 
-const UploadPanel = lazy(() =>
-  import('./components/UploadPanel').then((m) => ({ default: m.UploadPanel })),
+const ThreadWorkspacePage = lazy(() =>
+  import('./features/chatThread/ThreadWorkspacePage').then((m) => ({ default: m.ThreadWorkspacePage })),
+)
+const SeminoleTopologyInspectorEntry = lazy(() =>
+  import('./features/catalogInspector/SeminoleTopologyInspectorEntry').then((m) => ({
+    default: m.SeminoleTopologyInspectorEntry,
+  })),
 )
 
 type Page = 'login' | 'projects' | 'editor'
 
+function isSeminoleTopologyInspectorRoute() {
+  if (typeof window === 'undefined') return false
+  return new URLSearchParams(window.location.search).get('debug') === 'seminole-topology'
+}
+
+function AppRouteLoading() {
+  return (
+    <div
+      data-testid="app-route-loading"
+      className="flex min-h-screen items-center justify-center bg-zinc-950"
+    >
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-zinc-700 border-t-zinc-400" />
+    </div>
+  )
+}
+
 export default function App() {
+  return isSeminoleTopologyInspectorRoute()
+    ? (
+      <Suspense fallback={<AppRouteLoading />}>
+        <SeminoleTopologyInspectorEntry />
+      </Suspense>
+    )
+    : <MainAppShell />
+}
+
+function MainAppShell() {
   const auth = useAuth()
   const projectList = useProjectList(auth.user?.id)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
-  const planList = usePlanList(selectedProjectId)
-  const [currentPlan, setCurrentPlan] = useState<PlanData | null>(null)
-  const [page, setPage] = useState<Page>(isSupabaseConfigured ? 'login' : 'editor')
-  const { saving, lastSaved, saveNow, debouncedSave } = usePlanSave(currentPlan?.id ?? null)
+  const threadList = useThreadList(selectedProjectId)
+  const [currentThread, setCurrentThread] = useState<ThreadData | null>(null)
+  const [page, setPage] = useState<Page>(isSupabaseConfigured ? 'login' : 'projects')
+  const { saving, lastSaved, saveNow } = useThreadSave(currentThread?.id ?? null)
   const pendingSceneRef = useRef<ProjectScene | null>(null)
   const pendingStructureRef = useRef<Record<string, unknown> | null>(null)
   const pendingTotalSqftRef = useRef<number | null | undefined>(undefined)
+  const [threadMessagesByThreadId, setThreadMessagesByThreadId] = useState<Record<string, ThreadMessage[]>>({})
+  const [submittingThreadId, setSubmittingThreadId] = useState<string | null>(null)
+  const activeThread = currentThread ?? (selectedProjectId ? threadList.threads[0] ?? null : null)
+  const workspaceTitle = 'Chat workspace'
+  const threadSummaries = useMemo(() => threadList.threads.map(threadToThreadSummary), [threadList.threads])
+  const seededThreadMessages = useMemo(() => (
+    activeThread ? threadToInitialMessages(activeThread) : []
+  ), [activeThread])
+  const threadMessages = useMemo(() => {
+    if (!activeThread) return []
+    return threadMessagesByThreadId[activeThread.id] ?? seededThreadMessages
+  }, [activeThread, seededThreadMessages, threadMessagesByThreadId])
   const saveState = useMemo(() => {
-    if (!currentPlan) return 'Not saved yet'
+    if (!currentThread) return 'Not saved yet'
     if (saving) return 'Saving...'
     if (lastSaved) return `Saved ${lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`
     return 'Autosave ready'
-  }, [currentPlan, lastSaved, saving])
+  }, [currentThread, lastSaved, saving])
 
   const handleSave = async () => {
-    if (!currentPlan) return
+    if (!currentThread) return
     const updates: Record<string, unknown> = {}
     if (pendingSceneRef.current) updates.scene = pendingSceneRef.current
     if (pendingStructureRef.current) updates.structure = pendingStructureRef.current
     if (pendingTotalSqftRef.current !== undefined) updates.totalSqft = pendingTotalSqftRef.current
     await saveNow(updates)
+  }
+
+  const appendThreadMessages = (threadId: string, messages: ThreadMessage[]) => {
+    setThreadMessagesByThreadId((prev) => {
+      const base = prev[threadId] ?? (threadList.threads.find((thread) => thread.id === threadId)
+        ? threadToInitialMessages(threadList.threads.find((thread) => thread.id === threadId)!)
+        : [])
+      return {
+        ...prev,
+        [threadId]: [...base, ...messages],
+      }
+    })
+  }
+
+  const buildUserMessage = (submission: ThreadComposerSubmission): ThreadMessage => ({
+    id: `user-${Math.random().toString(36).slice(2, 10)}`,
+    role: 'user',
+    content: submission.message || submission.attachment?.name || 'Adjunto enviado',
+    createdAtIso: new Date().toISOString(),
+    artifacts: submission.attachment ? [{
+      id: `artifact-${Math.random().toString(36).slice(2, 10)}`,
+      kind: 'cad-source',
+      title: submission.attachment.name,
+      description: 'Adjunto enviado al agente desde el chat.',
+    }] : [],
+  })
+
+  const buildAssistantErrorMessage = (error: unknown): ThreadMessage => ({
+    id: `assistant-${Math.random().toString(36).slice(2, 10)}`,
+    role: 'assistant',
+    content: error instanceof Error ? error.message : 'No pude ejecutar la herramienta del chat.',
+    createdAtIso: new Date().toISOString(),
+    artifacts: [],
+  })
+
+  const handleThreadSubmit = async (submission: ThreadComposerSubmission) => {
+    if (!activeThread) return
+    const threadId = activeThread.id
+    appendThreadMessages(threadId, [buildUserMessage(submission)])
+    setSubmittingThreadId(threadId)
+
+    try {
+      const result = await runChatAgentTool({
+        prompt: submission.message,
+        attachment: submission.attachment,
+      })
+
+      appendThreadMessages(threadId, [result.assistantMessage])
+
+      if (result.planUpdates) {
+        setCurrentThread((prev) => {
+          if (!prev || prev.id !== threadId) return prev
+          return {
+            ...prev,
+            ...result.planUpdates,
+            updatedAt: new Date().toISOString(),
+          }
+        })
+        await saveNow(result.planUpdates)
+      }
+    } catch (error) {
+      appendThreadMessages(threadId, [buildAssistantErrorMessage(error)])
+    } finally {
+      setSubmittingThreadId((prev) => (prev === threadId ? null : prev))
+    }
+  }
+
+  const handleApplySiteFitProposal = async (proposal: SiteFitProposalArtifactData) => {
+    if (!activeThread || !proposal.candidateId || !proposal.cadAnalysisId) return
+    const threadId = activeThread.id
+
+    try {
+      const result = await runSiteFitApplyTool({
+        planId: proposal.planId,
+        planName: proposal.planName,
+        candidateId: proposal.candidateId,
+        cadAnalysisId: proposal.cadAnalysisId,
+        siteConstraints: proposal.siteConstraints,
+      })
+
+      appendThreadMessages(threadId, [result.assistantMessage])
+    } catch (error) {
+      appendThreadMessages(threadId, [buildAssistantErrorMessage(error)])
+    }
   }
 
   // Loading
@@ -50,19 +187,19 @@ export default function App() {
   }
 
   // Login
-  if (page === 'login' && !auth.user) {
+  if (page === 'login' && !auth.user && isSupabaseConfigured) {
     return (
       <LoginPage
         onSignIn={async (e, p) => { await auth.signIn(e, p); setPage('projects') }}
         onSignUp={auth.signUp}
         onGoogleSignIn={async () => { await auth.signInWithGoogle(); setPage('projects') }}
-        onSkip={() => setPage('editor')}
+        onSkip={() => setPage('projects')}
       />
     )
   }
 
   // Project + Plan list
-  if (auth.user && (page === 'login' || page === 'projects')) {
+  if ((auth.user || !isSupabaseConfigured) && (page === 'login' || page === 'projects')) {
     return (
       <div className="min-h-screen bg-zinc-950">
         <ProjectList
@@ -77,37 +214,37 @@ export default function App() {
             if (selectedProjectId === id) setSelectedProjectId(null)
           }}
           onRenameProject={projectList.renameProject}
-          plans={planList.plans}
-          plansLoading={planList.loading}
+          plans={threadList.threads}
+          plansLoading={threadList.loading}
           selectedProjectId={selectedProjectId}
           onSelectProject={setSelectedProjectId}
           onOpenPlan={(plan) => {
-            setCurrentPlan(plan)
+            setCurrentThread(plan)
             setPage('editor')
           }}
           onCreatePlan={async (name) => {
-            const plan = await planList.createPlan(name)
-            if (plan) {
-              setCurrentPlan(plan)
+            const thread = await threadList.createThread(name)
+            if (thread) {
+              setCurrentThread(thread)
               setPage('editor')
             }
           }}
-          onDeletePlan={planList.deletePlan}
-          onRenamePlan={planList.renamePlan}
+          onDeletePlan={threadList.deleteThread}
+          onRenamePlan={threadList.renameThread}
           onSignOut={async () => {
             await auth.signOut()
-            setCurrentPlan(null)
+            setCurrentThread(null)
             setSelectedProjectId(null)
             setPage('login')
           }}
-          userEmail={auth.user.email}
+          userEmail={auth.user?.email}
         />
       </div>
     )
   }
 
-  // Editor
-  const projectName = projectList.projects.find((p) => p.id === currentPlan?.projectId)?.name
+  // Workspace
+  const projectName = projectList.projects.find((p) => p.id === activeThread?.projectId)?.name ?? 'Point.ai'
   return (
     <div className="min-h-screen bg-[#090909] text-zinc-100 safe-area-inset">
       <div className="border-b border-white/6 bg-zinc-950/85 backdrop-blur">
@@ -116,10 +253,10 @@ export default function App() {
             {auth.user && (
               <button
                 onClick={() => {
-                  setCurrentPlan(null)
+                  setCurrentThread(null)
                   setPage('projects')
                   projectList.refresh()
-                  planList.refresh()
+                  threadList.refresh()
                 }}
                 className="rounded-2xl border border-white/8 bg-white/[0.03] px-4 py-2 text-sm text-zinc-300 transition-colors hover:border-white/14 hover:bg-white/[0.05]"
               >
@@ -133,22 +270,24 @@ export default function App() {
               <h1 className="text-xl font-semibold tracking-tight text-zinc-100">
                 Pointe<span className="text-white/30">.ai</span>
               </h1>
-              <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">Floor plan workspace</p>
+              <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-600">{workspaceTitle}</p>
             </div>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            {currentPlan && (
+            {activeThread && (
               <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">
-                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Current plan</p>
-                <p className="mt-1 text-sm text-zinc-200">{projectName} / {currentPlan.name}</p>
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Current thread</p>
+                <p className="mt-1 text-sm text-zinc-200">{projectName} / {activeThread.name}</p>
               </div>
             )}
-            <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Save status</p>
-              <p className="mt-1 text-sm text-zinc-200">{saveState}</p>
-            </div>
-            {currentPlan && auth.user && (
+            {activeThread && (
+              <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">
+                <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Save status</p>
+                <p className="mt-1 text-sm text-zinc-200">{saveState}</p>
+              </div>
+            )}
+            {activeThread && auth.user && (
               <button
                 onClick={handleSave}
                 disabled={saving}
@@ -174,26 +313,19 @@ export default function App() {
               </div>
             }
           >
-            <UploadPanel
-              project={currentPlan}
-              onSceneChange={(scene) => {
-                pendingSceneRef.current = scene
-                debouncedSave({ scene })
+            <ThreadWorkspacePage
+              projectName={projectName}
+              threads={threadSummaries}
+              selectedThreadId={activeThread?.id ?? null}
+              messages={threadMessages}
+              onSelectThread={(threadId) => {
+                const nextThread = threadList.threads.find((thread) => thread.id === threadId) ?? null
+                setCurrentThread(nextThread)
+                if (nextThread?.projectId) setSelectedProjectId(nextThread.projectId)
               }}
-              onStructureChange={(structure) => {
-                pendingStructureRef.current = structure
-                debouncedSave({ structure })
-              }}
-              onTotalSqftChange={(value) => {
-                pendingTotalSqftRef.current = value
-                debouncedSave({ totalSqft: value })
-              }}
-              onSaveNow={(updates) => {
-                if (updates.imageData) saveNow({ imageData: updates.imageData })
-                if (updates.structure) pendingStructureRef.current = updates.structure
-                if (updates.scene) pendingSceneRef.current = updates.scene
-                if (updates.totalSqft !== undefined) pendingTotalSqftRef.current = updates.totalSqft
-              }}
+              onSubmitMessage={handleThreadSubmit}
+              onApplySiteFitProposal={handleApplySiteFitProposal}
+              isSubmittingMessage={submittingThreadId === activeThread?.id}
             />
           </Suspense>
         </motion.div>

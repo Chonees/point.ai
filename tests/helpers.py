@@ -3,6 +3,8 @@ import base64
 import cv2
 import numpy as np
 
+from backend.coordinate_space import IMAGE_COORDINATE_SPACE
+
 
 def build_synthetic_structure_image() -> str:
     image = np.full((160, 220, 3), 255, dtype=np.uint8)
@@ -106,6 +108,7 @@ def build_manual_structure(*, source: str = "fixture/manual", with_openings: boo
             "image_size": {"width": 220, "height": 160},
             "scale_status": "unverified",
             "unit": "pixel",
+            "coordinate_space": IMAGE_COORDINATE_SPACE,
         },
         "inference_debug": {
             "backend": source,

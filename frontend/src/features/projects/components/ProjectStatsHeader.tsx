@@ -39,7 +39,7 @@ export function ProjectStatsHeader({ projects, totalPlans, userEmail, onSignOut 
               <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-100">{projects.length}</p>
             </div>
             <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">
-              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Plans</p>
+              <p className="text-[11px] uppercase tracking-[0.22em] text-zinc-600">Threads</p>
               <p className="mt-2 text-2xl font-semibold tracking-tight text-zinc-100">{totalPlans}</p>
             </div>
             <div className="rounded-2xl border border-white/6 bg-white/[0.02] px-4 py-3">

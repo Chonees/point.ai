@@ -31,6 +31,7 @@ from typing import Any
 import cv2
 import numpy as np
 
+from .coordinate_space import IMAGE_COORDINATE_SPACE
 from .image_utils import decode_image
 
 # ---------------------------------------------------------------------------
@@ -212,6 +213,7 @@ def infer_r2v(image_b64: str) -> dict[str, Any]:
             "image_size": {"width": orig_w, "height": orig_h},
             "scale_status": "unverified",
             "unit": "pixel",
+            "coordinate_space": IMAGE_COORDINATE_SPACE,
         },
         "inference_debug": {
             "backend": R2V_BACKEND,

@@ -9,7 +9,7 @@ import tempfile
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
@@ -26,12 +26,34 @@ from .models import (
     ParseStructureRequest,
     ParseStructureResponse,
 )
+from .site_fit.contracts import (
+    SiteFitAnalysisResponse,
+    SiteFitAnalyzeRequest,
+    SiteFitApplyRequest,
+    SiteFitApplyResponse,
+    SiteFitProposeResponse,
+    SiteFitValidateResponse,
+)
+from .cad_workspace.contracts import CadWorkspaceExtractResponse
+from .site_fit_bridge.contracts import (
+    SiteFitBridgeApplyRequest,
+    SiteFitBridgeApplyResponse,
+    SiteFitBridgeProposeResponse,
+)
 from .artifacts import ARTIFACT_DIR, save_structure_artifacts
 from .cubicasa_inference import warmup_models
 from .observability import log_event
 from .worker_contract import WorkerError
 from .services.parse_service import parse_v2_input, resolve_dxf_mode
 from .services.generate_dxf_service import generate_dxf
+from .services.site_fit_service import (
+    analyze_site_fit,
+    apply_site_fit,
+    propose_site_fit,
+    validate_site_fit_request,
+)
+from .services.cad_workspace_service import extract_cad_workspace, export_cad_workspace_overlay
+from .services.site_fit_bridge_service import apply_mvp_site_fit, export_bridge_apply_snapshot, propose_mvp_site_fit
 
 
 # ─── LIFESPAN ────────────────────────────────────────────────────────────────
@@ -172,6 +194,96 @@ async def api_generate_v2(req: GenerateStructureRequest):
         region_overlay=dxf_result["region_overlay"],
         scale_ipp=dxf_result.get("scale_ipp"),
     )
+
+
+@app.post("/api/v2/site-fit/analyze", response_model=SiteFitAnalysisResponse)
+async def api_site_fit_analyze(req: SiteFitAnalyzeRequest):
+    try:
+        return SiteFitAnalysisResponse(**analyze_site_fit(req))
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/v2/site-fit/propose", response_model=SiteFitProposeResponse)
+async def api_site_fit_propose(req: SiteFitAnalyzeRequest):
+    try:
+        return SiteFitProposeResponse(**propose_site_fit(req))
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/v2/site-fit/apply", response_model=SiteFitApplyResponse)
+async def api_site_fit_apply(req: SiteFitApplyRequest):
+    try:
+        return SiteFitApplyResponse(**apply_site_fit(req))
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/v2/site-fit/bridge/propose", response_model=SiteFitBridgeProposeResponse)
+async def api_site_fit_bridge_propose(file: UploadFile = File(...)):
+    try:
+        data = await file.read()
+        return SiteFitBridgeProposeResponse(
+            **propose_mvp_site_fit(
+                filename=file.filename or "upload.dxf",
+                data=data,
+            )
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/v2/site-fit/bridge/apply", response_model=SiteFitBridgeApplyResponse)
+async def api_site_fit_bridge_apply(req: SiteFitBridgeApplyRequest):
+    try:
+        return SiteFitBridgeApplyResponse(**apply_mvp_site_fit(req))
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.get("/api/v2/site-fit/bridge/export/{apply_id}")
+async def api_site_fit_bridge_export(apply_id: str):
+    try:
+        path, filename = export_bridge_apply_snapshot(apply_id=apply_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="Bridge apply snapshot not found")
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    return FileResponse(str(path), media_type="application/dxf", filename=filename)
+
+
+@app.post("/api/v2/site-fit/validate", response_model=SiteFitValidateResponse)
+async def api_site_fit_validate(req: SiteFitAnalyzeRequest):
+    try:
+        return SiteFitValidateResponse(**validate_site_fit_request(req))
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/cad-workspace/extract", response_model=CadWorkspaceExtractResponse)
+async def api_cad_workspace_extract(file: UploadFile = File(...)):
+    try:
+        data = await file.read()
+        return CadWorkspaceExtractResponse(
+            **extract_cad_workspace(
+                filename=file.filename or "upload.dxf",
+                data=data,
+            )
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.get("/api/cad-workspace/export-overlay/{analysis_id}")
+async def api_cad_workspace_export_overlay(analysis_id: str):
+    try:
+        path, filename = export_cad_workspace_overlay(analysis_id=analysis_id)
+    except FileNotFoundError:
+        raise HTTPException(status_code=404, detail="CAD analysis not found")
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    return FileResponse(str(path), media_type="application/dxf", filename=filename)
 
 
 @app.get("/downloads/{filename}")

@@ -13,6 +13,7 @@ from collections import defaultdict
 from typing import Any
 
 from .components.walls import THICKNESS
+from .coordinate_space import DXF_COORDINATE_SPACE
 from .quality_gate import apply_quality_gate
 from .structure_postprocess import build_junction_graph, postprocess_structure
 
@@ -136,6 +137,9 @@ def _normalize_structure(
     review_flags: list[str] = []
     wall_counter = 0
     walls = []
+    raw_meta = structure.get("structure_meta") or {}
+    coordinate_space = raw_meta.get("coordinate_space")
+    image_height = _raw_structure_image_height(structure, raw_meta)
 
     for raw_wall in structure.get("walls") or []:
         wall_counter += 1
@@ -146,15 +150,21 @@ def _normalize_structure(
 
     opening_counter = 0
     openings = []
+    raw_openings = list(structure.get("openings") or [])
+    if not raw_openings:
+        raw_openings = _openings_from_auto_annotations(
+            structure.get("_auto_annotations") or [],
+            coordinate_space=coordinate_space,
+            image_height=image_height,
+        )
 
-    for raw_opening in structure.get("openings") or []:
+    for raw_opening in raw_openings:
         opening_counter += 1
         try:
             openings.append(_normalize_raw_opening(raw_opening, opening_counter))
         except ValueError as exc:
             review_flags.append(f"Skipped opening #{opening_counter}: {exc}")
 
-    raw_meta = structure.get("structure_meta") or {}
     if scale_hint is None:
         scale_hint = raw_meta.get("scale_hint")
 
@@ -169,6 +179,9 @@ def _normalize_structure(
         "scale_status": scale_status,
         "unit": unit,
     }
+    coordinate_space = raw_meta.get("coordinate_space")
+    if coordinate_space is not None:
+        structure_meta["coordinate_space"] = coordinate_space
     if scale_hint is not None:
         structure_meta["scale_hint"] = float(scale_hint)
 
@@ -546,6 +559,71 @@ def _normalize_raw_opening(raw_opening: dict[str, Any], counter: int) -> dict[st
 
     return opening
 
+
+def _openings_from_auto_annotations(
+    annotations: list[dict[str, Any]],
+    *,
+    coordinate_space: str | None,
+    image_height: int | None,
+) -> list[dict[str, Any]]:
+    openings: list[dict[str, Any]] = []
+    for index, annotation in enumerate(annotations, start=1):
+        opening = _opening_from_auto_annotation(
+            annotation,
+            counter=index,
+            coordinate_space=coordinate_space,
+            image_height=image_height,
+        )
+        if opening is not None:
+            openings.append(opening)
+    return openings
+
+
+def _opening_from_auto_annotation(
+    annotation: dict[str, Any],
+    *,
+    counter: int,
+    coordinate_space: str | None,
+    image_height: int | None,
+) -> dict[str, Any] | None:
+    kind = str(annotation.get("type") or "").strip().lower()
+    if kind not in ("door", "window"):
+        return None
+
+    try:
+        x1 = float(annotation["x1"])
+        y1 = float(annotation["y1"])
+        x2 = float(annotation["x2"])
+        y2 = float(annotation["y2"])
+    except (KeyError, TypeError, ValueError):
+        return None
+
+    if coordinate_space == DXF_COORDINATE_SPACE and image_height is not None and image_height > 0:
+        y1 = float(image_height) - y1
+        y2 = float(image_height) - y2
+
+    dx = x2 - x1
+    dy = y2 - y1
+    span = max(abs(dx), abs(dy))
+    if span <= 0:
+        return None
+
+    orientation = "horizontal" if abs(dx) >= abs(dy) else "vertical"
+    opening = {
+        "id": annotation.get("id") or f"opening-{counter:04d}",
+        "kind": kind,
+        "wall_id": annotation.get("wall_id"),
+        "position": _point((x1 + x2) / 2.0, (y1 + y2) / 2.0),
+        "span": span,
+        "orientation": orientation,
+        "side": annotation.get("side"),
+        "confidence": float(annotation.get("confidence", 1.0)),
+    }
+    if kind == "door":
+        opening["door_type"] = annotation.get("door_type", annotation.get("type", "normal"))
+        opening["swing"] = annotation.get("swing") or _door_swing_for_side(opening.get("side"))
+    return opening
+
 def _wall_span(wall: dict[str, Any]) -> tuple[float, float, float]:
     start = wall["polyline"][0]
     end = wall["polyline"][1]
@@ -595,6 +673,21 @@ def _normalize_point(raw_point: dict[str, Any] | list[Any] | tuple[Any, Any]) ->
 
 def _point(x: Any, y: Any) -> dict[str, float]:
     return {"x": float(x), "y": float(y)}
+
+
+def _raw_structure_image_height(
+    structure: dict[str, Any],
+    raw_meta: dict[str, Any],
+) -> int | None:
+    image_size = raw_meta.get("image_size")
+    if isinstance(image_size, dict) and image_size.get("height") is not None:
+        return int(image_size["height"])
+
+    image_shape = structure.get("_image_shape")
+    if isinstance(image_shape, (list, tuple)) and len(image_shape) >= 1:
+        return int(image_shape[0])
+
+    return None
 
 
 def _door_swing_for_side(side: str | None) -> str | None:

@@ -1,0 +1,380 @@
+import { apiUrl } from '../../lib/api'
+import { buildCadReviewArtifactData } from '../cad/review'
+import type { CadReviewArtifactData, CadWorkspaceBBox, CadWorkspaceExtractResult } from '../cad/contracts'
+import type {
+  SiteFitApplyArtifactData,
+  SiteFitCandidateChange,
+  SiteFitBridgeApplyResult,
+  SiteFitBridgeProposalResult,
+  SiteFitProposalArtifactData,
+} from '../siteFit/contracts'
+import type { ThreadArtifact, ThreadMessage } from './thread.types'
+
+interface RunChatAgentToolArgs {
+  prompt: string
+  attachment: File | null
+}
+
+interface ChatPlanUpdates {
+  structure?: Record<string, unknown> | null
+  totalSqft?: number | null
+}
+
+interface RunChatAgentToolResult {
+  assistantMessage: ThreadMessage
+  planUpdates?: ChatPlanUpdates
+}
+
+interface RunSiteFitApplyToolArgs {
+  planId: string
+  planName: string
+  candidateId: string
+  cadAnalysisId: string
+  siteConstraints: Record<string, unknown>
+}
+
+function newMessageId(prefix: string) {
+  return `${prefix}-${Math.random().toString(36).slice(2, 10)}`
+}
+
+function isCadFile(file: File | null) {
+  if (!file) return false
+  return /\.(dxf|dwg)$/i.test(file.name)
+}
+
+function wantsSeminoleSiteFit(prompt: string) {
+  return /seminole|site-fit|fit\s+.*seminole/i.test(prompt)
+}
+
+function buildAssistantMessage(content: string, artifacts: ThreadArtifact[] = []): ThreadMessage {
+  return {
+    id: newMessageId('assistant'),
+    role: 'assistant',
+    content,
+    createdAtIso: new Date().toISOString(),
+    artifacts,
+  }
+}
+
+async function parseJsonOrThrow(response: Response) {
+  const payload = await response.json()
+  if (!response.ok) {
+    throw new Error(payload?.detail || 'No se pudo completar la herramienta.')
+  }
+  return payload
+}
+
+function buildCadFitText(result: CadWorkspaceExtractResult) {
+  const fit = result.fit_summary
+  if (!fit) return 'No encontre un resumen de encaje todavia.'
+  if (fit.basis === 'buildable_polygon') {
+    return fit.fits_within_buildable_polygon
+      ? 'El footprint entra dentro del poligono construible.'
+      : 'El footprint NO entra dentro del poligono construible.'
+  }
+  if (fit.fits_within_buildable_bbox === true) return 'El footprint entra por bbox.'
+  if (fit.fits_within_buildable_bbox === false) return 'El footprint NO entra por bbox.'
+  return 'El encaje quedo sin veredicto fuerte.'
+}
+
+function buildPreviewArtifact(result: CadWorkspaceExtractResult, reason: string): CadReviewArtifactData {
+  const review = buildCadReviewArtifactData(result)
+  return {
+    ...review,
+    export: {
+      ready: false,
+      reason,
+    },
+  }
+}
+
+function toUniqueStrings(values: Array<string | null | undefined>) {
+  return [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))]
+}
+
+function projectFootprintBBox(
+  current: CadWorkspaceBBox | null | undefined,
+  change: SiteFitCandidateChange | null | undefined,
+): CadWorkspaceBBox | null {
+  if (!current) return null
+  if (!change) return current
+  const deltaX = Number(change.delta_x ?? 0)
+  const deltaY = Number(change.delta_y ?? 0)
+  return {
+    ...current,
+    width: current.width - Math.abs(deltaX),
+    height: current.height - Math.abs(deltaY),
+    x2: current.x1 + (current.width - Math.abs(deltaX)),
+    y2: current.y1 + (current.height - Math.abs(deltaY)),
+  }
+}
+
+function reverseProjectedFootprintBBox(
+  after: CadWorkspaceBBox | null | undefined,
+  change: SiteFitCandidateChange | null | undefined,
+): CadWorkspaceBBox | null {
+  if (!after) return null
+  if (!change) return after
+  const deltaX = Math.abs(Number(change.delta_x ?? 0))
+  const deltaY = Math.abs(Number(change.delta_y ?? 0))
+  return {
+    ...after,
+    width: after.width + deltaX,
+    height: after.height + deltaY,
+    x2: after.x1 + after.width + deltaX,
+    y2: after.y1 + after.height + deltaY,
+  }
+}
+
+function buildNoCandidateSummary(payload: SiteFitBridgeProposalResult) {
+  const complianceStatus = payload.proposal.compliance_summary?.status
+  if (complianceStatus === 'buildable_conflict') {
+    return 'No generamos una adaptación todavía: la Seminole 2000 sigue en conflicto con el buildable area y el solver no encontró una mutación segura para resolverlo.'
+  }
+  return 'No vino ningún candidate accionable desde site-fit todavía.'
+}
+
+function buildProposalBlockerMessages(payload: SiteFitBridgeProposalResult) {
+  const compliance = payload.proposal.compliance_summary
+  const messages = toUniqueStrings([
+    ...(compliance?.violations ?? []).map((item) => item.message ?? item.reason),
+    ...(compliance?.boundary_diagnostics ?? []).map((item) => {
+      if (item.reason) return item.reason
+      if (item.status === 'blocked_design_lock') return 'Hay rooms o boundaries bloqueadas por design lock.'
+      if (item.status === 'blocked_room_minimum') return 'Al menos un room caería por debajo de sus mínimos.'
+      if (item.status === 'blocked_non_rehostable_opening') return 'Hay openings que no se pueden rehostear de forma segura.'
+      if (item.status === 'blocked_non_axis_aligned') return 'La boundary candidata no es axis-aligned.'
+      return null
+    }),
+  ])
+
+  if ((payload.proposal.candidates?.length ?? 0) === 0) {
+    if ((compliance?.mutation_hints?.length ?? 0) === 0) {
+      messages.unshift('No apareció ningún candidate porque el solver no encontró mutation hints seguras para tocar la Seminole 2000.')
+    }
+    if (!messages.length) {
+      messages.push('El encaje 1:1 quedó en conflicto, pero la UI todavía no tiene un candidate ejecutable para mostrar.')
+    }
+  }
+
+  return messages.slice(0, 4)
+}
+
+async function runCadAnalyzeTool(file: File, prompt: string): Promise<RunChatAgentToolResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(apiUrl('/api/cad-workspace/extract'), {
+    method: 'POST',
+    body: formData,
+  })
+  const payload = await parseJsonOrThrow(response) as CadWorkspaceExtractResult
+  const cadReview = buildCadReviewArtifactData(payload)
+  const artifacts: ThreadArtifact[] = [{
+    id: newMessageId('artifact'),
+    kind: 'cad-review',
+    title: 'CAD diagnostic review',
+    description: 'Diagnostico del CAD cargado para inspeccionar encaje y geometria. No es salida final de producto.',
+    review: {
+      ...cadReview,
+      export: cadReview.export.ready && cadReview.export.href
+        ? { ...cadReview.export, href: apiUrl(cadReview.export.href) }
+        : cadReview.export,
+    },
+  }]
+
+  return {
+    assistantMessage: buildAssistantMessage(
+      `Listo, corri el diagnostico CAD de ${file.name}. ${buildCadFitText(payload)} Unidad comun: ${payload.canonical_unit}. Esto es diagnostico inline, no salida final de producto.${prompt ? ` Pedido: ${prompt}.` : ''}`,
+      artifacts,
+    ),
+  }
+}
+
+function buildSiteFitProposalArtifactData(payload: SiteFitBridgeProposalResult): SiteFitProposalArtifactData {
+  const candidate = payload.proposal.candidates?.[0] ?? null
+  const firstChange = candidate?.changes?.[0] ?? null
+  const reviewSource = payload.proposal_review ?? payload.cad_analysis
+  const currentFootprint = payload.proposal.plan_summary?.footprint_bbox
+    ?? reviewSource.fit_summary?.footprint_bbox
+    ?? reviewSource.floor_plan.bbox
+    ?? null
+  const buildable = payload.proposal.site_summary?.buildable_bbox
+    ?? reviewSource.fit_summary?.buildable_bbox
+    ?? payload.cad_analysis.fit_summary?.buildable_bbox
+    ?? null
+  const preview = buildPreviewArtifact(
+    reviewSource,
+    'Preview 1:1 solamente. Aplicá la propuesta para descargar el DXF final.',
+  )
+  const blockerMessages = buildProposalBlockerMessages(payload)
+  const changedRoomIds = toUniqueStrings(
+    (candidate?.changes ?? []).flatMap((change) => change.owner_room_ids ?? []),
+  )
+
+  return {
+    planId: payload.plan_id,
+    planName: payload.plan_name,
+    candidateId: candidate?.candidate_id ?? null,
+    cadAnalysisId: payload.cad_analysis.analysis_id,
+    siteConstraints: payload.site_constraints,
+    summary: candidate?.summary ?? buildNoCandidateSummary(payload),
+    fitStatus: candidate?.fit_status ?? payload.proposal.status,
+    candidateStrategy: candidate?.strategy ?? null,
+    changeCount: candidate?.change_count ?? 0,
+    preview,
+    footprint: {
+      current: currentFootprint,
+      projected: projectFootprintBBox(currentFootprint, firstChange),
+      buildable,
+      widthDelta: reviewSource.fit_summary?.width_delta ?? null,
+      heightDelta: reviewSource.fit_summary?.height_delta ?? null,
+    },
+    violationMessages: toUniqueStrings(
+      (payload.proposal.compliance_summary?.violations ?? []).map((item) => item.message ?? item.reason),
+    ),
+    blockerMessages,
+    mutationHintCount: payload.proposal.compliance_summary?.mutation_hints?.length ?? 0,
+    changedRoomIds,
+    warnings: [...payload.warnings, ...(payload.proposal.warnings ?? [])],
+  }
+}
+
+function buildSiteFitApplyArtifactData(payload: SiteFitBridgeApplyResult): SiteFitApplyArtifactData {
+  const href = payload.export_url ? apiUrl(payload.export_url) : undefined
+  const firstChange = payload.apply.change_set?.[0] ?? null
+  const preview: CadReviewArtifactData = {
+    ...buildPreviewArtifact(payload.applied_review, 'Usá el DXF aplicado de esta tarjeta para exportar el resultado final.'),
+  }
+  const afterFootprint = payload.applied_review.fit_summary?.footprint_bbox
+    ?? payload.applied_review.floor_plan.bbox
+    ?? null
+  const beforeFootprint = reverseProjectedFootprintBBox(afterFootprint, firstChange)
+  const changedRoomIds = toUniqueStrings(
+    (payload.apply.change_set ?? []).flatMap((change) => change.owner_room_ids ?? []),
+  )
+  const rooms = [...payload.applied_review.floor_plan.rooms]
+    .sort((left, right) => right.area - left.area)
+    .slice(0, 6)
+    .map((room) => ({
+      name: room.name,
+      width: room.width,
+      height: room.height,
+      area: room.area,
+    }))
+
+  return {
+    planId: payload.plan_id,
+    planName: payload.plan_name,
+    candidateId: payload.apply.candidate_id,
+    applyId: payload.apply_id,
+    applyStatus: payload.apply.apply_status,
+    complianceStatus: payload.apply.compliance_summary.status,
+    href,
+    exportUrl: href,
+    preview,
+    changeCount: payload.apply.change_set?.length ?? 0,
+    changedRoomIds,
+    beforeFootprint,
+    afterFootprint,
+    rooms,
+    warnings: [...payload.warnings, ...(payload.apply.warnings ?? [])],
+  }
+}
+
+async function runSiteFitBridgeTool(file: File, prompt: string): Promise<RunChatAgentToolResult> {
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const response = await fetch(apiUrl('/api/v2/site-fit/bridge/propose'), {
+    method: 'POST',
+    body: formData,
+  })
+  const payload = await parseJsonOrThrow(response) as SiteFitBridgeProposalResult
+  const proposal = buildSiteFitProposalArtifactData(payload)
+  const artifacts: ThreadArtifact[] = [
+    {
+      id: newMessageId('artifact'),
+      kind: 'site-fit-proposal',
+      title: `${payload.plan_name} proposal`,
+      proposal,
+    },
+  ]
+
+  return {
+    assistantMessage: buildAssistantMessage(
+      `Listo, corri site-fit de ${payload.plan_name} sobre ${file.name}. Estado: ${proposal.fitStatus}.${prompt ? ` Pedido: ${prompt}.` : ''}`,
+      artifacts,
+    ),
+  }
+}
+
+export async function runSiteFitApplyTool({
+  planId,
+  planName,
+  candidateId,
+  cadAnalysisId,
+  siteConstraints,
+}: RunSiteFitApplyToolArgs): Promise<RunChatAgentToolResult> {
+  const response = await fetch(apiUrl('/api/v2/site-fit/bridge/apply'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      plan_id: planId,
+      site_constraints: siteConstraints,
+      candidate_id: candidateId,
+      cad_analysis_id: cadAnalysisId,
+    }),
+  })
+  const payload = await parseJsonOrThrow(response) as SiteFitBridgeApplyResult
+  const apply = buildSiteFitApplyArtifactData(payload)
+  const artifacts: ThreadArtifact[] = [{
+    id: newMessageId('artifact'),
+    kind: 'site-fit-apply',
+    title: 'Applied site-fit result',
+    apply,
+  }]
+
+  return {
+    assistantMessage: buildAssistantMessage(
+      `Aplique la propuesta ${candidateId} de ${planName}. Compliance: ${apply.complianceStatus}.`,
+      artifacts,
+    ),
+  }
+}
+
+export async function runChatAgentTool({
+  prompt,
+  attachment,
+}: RunChatAgentToolArgs): Promise<RunChatAgentToolResult> {
+  const normalizedPrompt = prompt.trim().toLowerCase()
+
+  if (attachment && isCadFile(attachment)) {
+    if (wantsSeminoleSiteFit(prompt)) {
+      return runSiteFitBridgeTool(attachment, prompt)
+    }
+    return runCadAnalyzeTool(attachment, prompt)
+  }
+
+  if (attachment) {
+    return {
+      assistantMessage: buildAssistantMessage(
+        `No puedo usar ${attachment.name} en esta lane. Solo soportamos site plan .dxf/.dwg para correr site-fit de Seminole 2000 o un diagnostico CAD.`,
+      ),
+    }
+  }
+
+  if (/(dxf|dwg|cad|site|lot|fit)/i.test(normalizedPrompt)) {
+    return {
+      assistantMessage: buildAssistantMessage(
+        'Subime un site plan .dxf o .dwg y corro site-fit de Seminole 2000 o un diagnostico CAD desde este mismo chat.',
+      ),
+    }
+  }
+
+  return {
+    assistantMessage: buildAssistantMessage(
+      'Esta lane trabaja solo con site plan .dxf/.dwg. Con eso puedo correr site-fit de Seminole 2000 o un diagnostico CAD honesto.',
+    ),
+  }
+}

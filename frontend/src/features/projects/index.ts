@@ -2,3 +2,5 @@ export type { ProjectData, PlanData, PlanScene, ProjectScene } from './project.t
 export { useProjectList } from './useProjectList'
 export { usePlanList } from './usePlanList'
 export { usePlanSave, useProjectSave } from './usePlanSave'
+export type { ThreadSummary, ThreadMessage, ThreadArtifact } from '../chatThread/thread.types'
+export { planToThreadSummary, planToInitialMessages } from '../chatThread/thread.mappers'

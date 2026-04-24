@@ -169,6 +169,30 @@ def postprocess_structure(
     }
 
 
+def anchor_openings_to_walls(
+    openings: list[dict[str, Any]],
+    walls: list[dict[str, Any]],
+    *,
+    structure_meta: dict[str, Any] | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    """Deterministically snap raw openings to the best compatible walls."""
+    config = _resolve_postprocess_config(structure_meta or {})
+    normalized_walls = [_normalize_wall_geometry(wall) for wall in walls]
+    review_flags: list[str] = []
+    wall_map = {wall["id"]: wall for wall in normalized_walls}
+    anchored, metrics = _anchor_openings(
+        openings,
+        normalized_walls,
+        wall_map,
+        review_flags,
+        config=config,
+    )
+    return anchored, {
+        **metrics,
+        "review_flags": review_flags,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Junction graph (Phase 3)
 # ---------------------------------------------------------------------------
@@ -807,11 +831,12 @@ def _limit_exterior_wall_windows(
     openings: list[dict[str, Any]],
     walls: list[dict[str, Any]],
 ) -> tuple[list[dict[str, Any]], int]:
-    """Cap the number of windows on any single exterior wall to MAX_WINDOWS_PER_EXTERIOR_WALL.
+    """Prune only clearly overdense exterior-window runs.
 
     CubiCasa often fires many small window detections where a deck or extension
-    attaches to an exterior wall. When a wall has more windows than the cap,
-    keep only the largest ones (by span).
+    attaches to an exterior wall. A hard fixed cap is too destructive for real
+    plans, so we only prune when the combined span of windows on one exterior
+    wall becomes implausibly dense relative to the wall length.
     """
     wall_map = {w["id"]: w for w in walls}
 
@@ -827,12 +852,32 @@ def _limit_exterior_wall_windows(
     kept_windows: list[dict[str, Any]] = []
     removed = 0
     for wall_id, wins in windows_by_wall.items():
+        wall = wall_map.get(wall_id)
+        if wall is None or not wall.get("is_exterior"):
+            kept_windows.extend(wins)
+            continue
+
         if len(wins) <= _MAX_WINDOWS_PER_EXTERIOR_WALL:
             kept_windows.extend(wins)
-        else:
-            wins_sorted = sorted(wins, key=lambda o: o["span"], reverse=True)
-            kept_windows.extend(wins_sorted[:_MAX_WINDOWS_PER_EXTERIOR_WALL])
-            removed += len(wins) - _MAX_WINDOWS_PER_EXTERIOR_WALL
+            continue
+
+        wall_length = max(_wall_length(wall), 1.0)
+        total_span = sum(float(window.get("span", 0.0)) for window in wins)
+        if total_span <= wall_length * 0.75:
+            kept_windows.extend(wins)
+            continue
+
+        wins_sorted = sorted(wins, key=lambda o: float(o.get("span", 0.0)), reverse=True)
+        cumulative = 0.0
+        retained: list[dict[str, Any]] = []
+        for window in wins_sorted:
+            span = float(window.get("span", 0.0))
+            if retained and cumulative + span > wall_length * 0.75:
+                continue
+            retained.append(window)
+            cumulative += span
+        kept_windows.extend(retained)
+        removed += len(wins) - len(retained)
 
     return other_openings + kept_windows, removed
 

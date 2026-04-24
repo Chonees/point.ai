@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "vitest run --config vitest.config.ts",
+    "test:watch": "vitest --config vitest.config.ts"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",
@@ -18,7 +18,7 @@
     "@supabase/supabase-js": "^2.101.1",
     "@tailwindcss/vite": "^4.2.1",
     "@types/three": "^0.183.1",
-    "framer-motion": "^12.36.0",
+    "framer-motion": "^12.38.0",
     "perfect-freehand": "^1.2.3",
     "postprocessing": "^6.39.0",
     "react": "^19.2.4",

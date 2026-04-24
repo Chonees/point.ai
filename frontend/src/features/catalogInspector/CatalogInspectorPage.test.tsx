@@ -1,0 +1,291 @@
+import { fireEvent, render, screen, within } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+
+import fixture from './catalogInspector.fixture.json'
+import { CatalogInspectorPage } from './CatalogInspectorPage'
+
+const kitchenRoom = fixture.rooms.find((room) => room.name === 'KITCHEN')!
+const bedroom2Room = fixture.rooms.find((room) => room.name === 'BEDROOM 2')!
+const rawWallTraceCount = fixture.cad_traces.filter((trace) => trace.trace_kind === 'wall').length
+const rawDoorTraceCount = fixture.cad_traces.filter((trace) => trace.trace_kind === 'door').length
+const rawWindowTraceCount = fixture.cad_traces.filter((trace) => trace.trace_kind === 'window').length
+const hostedOpeningCount = fixture.openings?.length ?? 0
+const snappedSharedWallCount = fixture.walls.filter(
+  (wall) => !wall.is_exterior && wall.trace_support_status === 'snapped_to_trace',
+).length
+const unsupportedSharedWallCount = fixture.walls.filter(
+  (wall) => !wall.is_exterior && wall.trace_support_status === 'unsupported',
+).length
+const supportBoundaryCount = fixture.boundaries.filter((boundary) => boundary.boundary_kind === 'support').length
+const artifactBoundaryCount = fixture.boundaries.filter((boundary) => boundary.boundary_kind === 'artifact').length
+const openingArtifactCount = fixture.openings.filter((opening) => opening.confidence === 'opening_artifact').length
+const firstSupportBoundary = fixture.boundaries.find((boundary) => boundary.boundary_kind === 'support') ?? null
+const duplicateBoundaryCount = fixture.boundaries.filter((boundary) => boundary.family_role === 'duplicate').length
+const flexibleRoomCount = fixture.rooms.filter((room) => room.mutability === 'flexible').length
+const protectedRoomCount = fixture.rooms.filter((room) => room.mutability === 'protected').length
+const lockedRoomCount = fixture.rooms.filter((room) => room.mutability === 'locked').length
+const movableBoundaryCount = fixture.boundaries.filter((boundary) => boundary.mutability === 'movable').length
+
+const topologyWithoutKitchen = {
+  ...fixture,
+  rooms: fixture.rooms.filter((room) => room.room_id !== kitchenRoom.room_id),
+}
+
+describe('CatalogInspectorPage', () => {
+  it('starts with no room preselected so the canvas does not imply a preferred room', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(screen.queryByTestId('selected-room-id')).not.toBeInTheDocument()
+    expect(screen.getByText(/click any room in the canvas to inspect its topology details/i)).toBeInTheDocument()
+    expect(screen.getByTestId(`room-${bedroom2Room.room_id}`)).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('moves selection with keyboard and updates the sidebar for a different room', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /select kitchen/i }))
+    expect(screen.getByRole('heading', { name: 'KITCHEN' })).toBeInTheDocument()
+
+    const bedroom2Button = screen.getByRole('button', { name: /select bedroom 2/i })
+    bedroom2Button.focus()
+    fireEvent.keyDown(bedroom2Button, { key: 'Enter', code: 'Enter' })
+
+    expect(screen.getByRole('heading', { name: 'BEDROOM 2' })).toBeInTheDocument()
+    expect(screen.getByTestId('selected-room-id')).toHaveTextContent(bedroom2Room.room_id)
+  })
+
+  it('drops a stale selected room when the topology changes', () => {
+    const { rerender } = render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /select kitchen/i }))
+    expect(screen.getByRole('heading', { name: 'KITCHEN' })).toBeInTheDocument()
+
+    rerender(<CatalogInspectorPage topology={topologyWithoutKitchen} />)
+
+    expect(screen.queryByRole('heading', { name: 'KITCHEN' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'BEDROOM 2' })).toBeInTheDocument()
+    expect(within(screen.getByTestId('catalog-inspector-canvas')).queryByTestId(`room-${kitchenRoom.room_id}`)).not.toBeInTheDocument()
+  })
+
+  it('renders wall graph metrics and toggles wall overlays', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(screen.getAllByText(/shared walls/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/^inferred walls$/i)).toBeInTheDocument()
+    expect(screen.getAllByTestId(/^wall-/).length).toBeGreaterThan(0)
+
+    const wallsToggle = screen.getByRole('checkbox', { name: /walls/i })
+    fireEvent.click(wallsToggle)
+
+    expect(screen.queryAllByTestId(/^wall-/)).toHaveLength(0)
+  })
+
+  it('shows selected room wall details including provenance and confidence', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /select bedroom 2/i }))
+
+    expect(screen.getByText(/connected walls/i)).toBeInTheDocument()
+    expect(screen.getAllByText(/supported adjacency/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/provenance/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/snapped to trace/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows wall ownership metadata in the selected wall and room panels', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /^Shared$/i }))
+    expect(screen.getByText(/boundary kind/i)).toBeInTheDocument()
+    expect(screen.getByText(/owner rooms/i)).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /select bedroom 2/i }))
+    expect(screen.getAllByText(/owned walls/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/^shared walls$/i).length).toBeGreaterThan(0)
+    expect(screen.getByText(/exterior walls/i)).toBeInTheDocument()
+  })
+
+  it('shows expected isolated status for patio', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /select patio/i }))
+
+    expect(screen.getAllByText(/connected/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/opening adjacency/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/heuristic adjacency/i).length).toBeGreaterThan(0)
+  })
+
+  it('shows opening adjacency for master bedroom and dining without faking wall adjacency', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /select mstr\. bedroom/i }))
+    expect(screen.getAllByText(/opening adjacency/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/^LIVING ROOM$/i).length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('button', { name: /select dining/i }))
+    expect(screen.getAllByText(/opening adjacency/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/^PATIO$/i).length).toBeGreaterThan(0)
+  })
+
+  it('renders raw wall traces and toggles them off', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(screen.getByRole('checkbox', { name: /raw wall traces/i })).toBeChecked()
+    expect(screen.getAllByTestId(/raw-wall-trace-/).length).toBe(rawWallTraceCount)
+
+    const tracesToggle = screen.getByRole('checkbox', { name: /raw wall traces/i })
+    fireEvent.click(tracesToggle)
+
+    expect(screen.queryAllByTestId(/raw-wall-trace-/)).toHaveLength(0)
+  })
+
+  it('renders door and window traces separately from wall traces', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(screen.getAllByText(/^Door traces$/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/^Window traces$/i).length).toBeGreaterThan(0)
+    expect(screen.getByRole('checkbox', { name: /door traces/i })).toBeChecked()
+    expect(screen.getByRole('checkbox', { name: /window traces/i })).toBeChecked()
+    expect(screen.getAllByTestId(/raw-door-trace-/).length).toBe(rawDoorTraceCount)
+    expect(screen.getAllByTestId(/raw-window-trace-/).length).toBe(rawWindowTraceCount)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /door traces/i }))
+    expect(screen.queryAllByTestId(/raw-door-trace-/)).toHaveLength(0)
+    expect(screen.getAllByTestId(/raw-window-trace-/).length).toBe(rawWindowTraceCount)
+    expect(screen.getAllByTestId(/raw-wall-trace-/).length).toBe(rawWallTraceCount)
+  })
+
+  it('renders hosted openings and shows selected opening ownership', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(screen.getByRole('checkbox', { name: /hosted openings/i })).toBeChecked()
+    expect(screen.getAllByTestId(/^opening-/).length).toBe(hostedOpeningCount)
+
+    fireEvent.click(screen.getAllByTestId(/^opening-/)[0])
+
+    expect(screen.getByTestId('selected-opening-panel')).toBeInTheDocument()
+    expect(screen.getByText(/host wall/i)).toBeInTheDocument()
+    expect(screen.getByText(/connected rooms/i)).toBeInTheDocument()
+  })
+
+  it('renders exact boundaries and shows selected boundary details', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(screen.getByText(/^Unknown boundaries$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Support boundaries$/i)).toBeInTheDocument()
+    const exactBoundariesToggle = screen.getByRole('checkbox', { name: /exact boundaries/i })
+    fireEvent.click(exactBoundariesToggle)
+
+    const boundaries = screen.getAllByTestId(/^boundary-/)
+    expect(boundaries.length).toBeGreaterThan(0)
+
+    fireEvent.click(boundaries[0])
+
+    const boundaryPanel = screen.getByTestId('selected-boundary-panel')
+    expect(boundaryPanel).toBeInTheDocument()
+    expect(within(boundaryPanel).getByText(/source traces/i)).toBeInTheDocument()
+    expect(within(boundaryPanel).getByText(/owner rooms/i)).toBeInTheDocument()
+  })
+
+  it('surfaces support boundaries as companion shell pieces in the inspector', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(supportBoundaryCount).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /exact boundaries/i }))
+    fireEvent.click(screen.getByTestId(`boundary-${firstSupportBoundary!.boundary_id}`))
+
+    const boundaryPanel = screen.getByTestId('selected-boundary-panel')
+    expect(within(boundaryPanel).getByText(/^Support$/i)).toBeInTheDocument()
+    expect(within(boundaryPanel).getByText(/companion boundary/i)).toBeInTheDocument()
+  })
+
+  it('renders duplicate boundary metrics from the fixture', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(duplicateBoundaryCount).toBeGreaterThan(0)
+    expect(artifactBoundaryCount).toBeGreaterThan(0)
+    expect(screen.getByText(/^Duplicate boundaries$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Support boundaries$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Artifact boundaries$/i)).toBeInTheDocument()
+  })
+
+  it('surfaces opening artifacts separately from real unhosted openings', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(openingArtifactCount).toBeGreaterThan(0)
+    expect(screen.getByText(/^Opening artifacts$/i)).toBeInTheDocument()
+  })
+
+  it('renders mutability metrics from the fixture', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    expect(flexibleRoomCount).toBeGreaterThan(0)
+    expect(protectedRoomCount).toBeGreaterThan(0)
+    expect(lockedRoomCount).toBeGreaterThan(0)
+    expect(movableBoundaryCount).toBeGreaterThan(0)
+    expect(screen.getByText(/^Flexible rooms$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Protected rooms$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Locked rooms$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Movable boundaries$/i)).toBeInTheDocument()
+  })
+
+  it('shows boundary family metadata for a selected duplicate or canonical member', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /exact boundaries/i }))
+    fireEvent.click(screen.getAllByTestId(/^boundary-/)[0])
+
+    const boundaryPanel = screen.getByTestId('selected-boundary-panel')
+    expect(within(boundaryPanel).getByText(/family id/i)).toBeInTheDocument()
+    expect(within(boundaryPanel).getByText(/family role/i)).toBeInTheDocument()
+    expect(within(boundaryPanel).getByText(/duplicate of/i)).toBeInTheDocument()
+  })
+
+  it('filters snapped walls and lets you navigate the focused issue list', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /^Snapped$/i }))
+
+    expect(screen.getByTestId('focus-mode-value')).toHaveTextContent('snapped')
+    expect(screen.getAllByTestId(/focus-wall-/)).toHaveLength(snappedSharedWallCount)
+    expect(screen.getAllByTestId(/^wall-/)).toHaveLength(snappedSharedWallCount)
+
+    const firstWallId = screen.getByTestId('selected-wall-id').textContent
+    fireEvent.click(screen.getAllByRole('button', { name: /next issue/i })[0])
+
+    expect(screen.getByTestId('selected-wall-id').textContent).not.toEqual(firstWallId)
+  })
+
+  it('shows unsupported focus mode only for unresolved shared walls', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /^Unsupported$/i }))
+
+    expect(screen.getByTestId('focus-mode-value')).toHaveTextContent('unsupported')
+    expect(screen.queryAllByTestId(/focus-wall-/)).toHaveLength(unsupportedSharedWallCount)
+    expect(screen.queryAllByTestId(/^wall-/)).toHaveLength(unsupportedSharedWallCount)
+
+    if (unsupportedSharedWallCount === 0) {
+      expect(screen.queryByTestId('selected-wall-panel')).not.toBeInTheDocument()
+    } else {
+      expect(screen.getByTestId('selected-wall-panel')).toBeInTheDocument()
+    }
+  })
+
+  it('shows mutability and constraint reasons for selected room, wall, boundary, and opening', () => {
+    render(<CatalogInspectorPage topology={fixture} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /select kitchen/i }))
+    expect(screen.getAllByText(/mutability/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/constraint reasons/i).length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getByRole('checkbox', { name: /exact boundaries/i }))
+    fireEvent.click(screen.getAllByTestId(/^boundary-/)[0])
+    expect(screen.getAllByText(/mutability/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/constraint reasons/i).length).toBeGreaterThan(0)
+
+    fireEvent.click(screen.getAllByTestId(/^opening-/)[0])
+    expect(screen.getAllByText(/rehost required/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/constraint reasons/i).length).toBeGreaterThan(0)
+  })
+})
