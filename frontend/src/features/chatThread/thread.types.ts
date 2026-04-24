@@ -1,4 +1,5 @@
 import type { CadReviewArtifactData } from '../cad/contracts'
+import type { SiteFitApplyArtifactData, SiteFitProposalArtifactData } from '../siteFit/contracts'
 
 export type ThreadRole = 'system' | 'user' | 'assistant'
 
@@ -27,11 +28,23 @@ export interface ThreadCadReviewArtifact extends ThreadArtifactBase {
   review: CadReviewArtifactData
 }
 
+export interface ThreadSiteFitProposalArtifact extends ThreadArtifactBase {
+  kind: 'site-fit-proposal'
+  proposal: SiteFitProposalArtifactData
+}
+
+export interface ThreadSiteFitApplyArtifact extends ThreadArtifactBase {
+  kind: 'site-fit-apply'
+  apply: SiteFitApplyArtifactData
+}
+
 export type ThreadArtifact =
   | ThreadSourceArtifact
   | ThreadPreviewArtifact
   | ThreadExportArtifact
   | ThreadCadReviewArtifact
+  | ThreadSiteFitProposalArtifact
+  | ThreadSiteFitApplyArtifact
 
 export interface ThreadMessage {
   id: string

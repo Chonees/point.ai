@@ -57,12 +57,14 @@ vi.mock('./lib/supabase', () => ({
   isSupabaseConfigured: false,
 }))
 
-const { runChatAgentTool } = vi.hoisted(() => ({
+const { runChatAgentTool, runSiteFitApplyTool } = vi.hoisted(() => ({
   runChatAgentTool: vi.fn(),
+  runSiteFitApplyTool: vi.fn(),
 }))
 
 vi.mock('./features/chatThread/chatAgent', () => ({
   runChatAgentTool,
+  runSiteFitApplyTool,
 }))
 
 import App from './App'
@@ -97,7 +99,7 @@ describe('App chat shell', () => {
       assistantMessage: {
         id: 'assistant-1',
         role: 'assistant',
-        content: 'Listo, analicé el site plan y ya dejé el overlay listo.',
+        content: 'Listo, analice el site plan y ya deje el overlay listo.',
         createdAtIso: '2026-04-21T00:00:00.000Z',
         artifacts: [
           {
@@ -120,8 +122,89 @@ describe('App chat shell', () => {
     fireEvent.click(screen.getByRole('button', { name: /enviar/i }))
 
     expect((await screen.findAllByText('Analyze DXF/DWG')).length).toBeGreaterThan(0)
-    expect(await screen.findByText(/analicé el site plan/i)).toBeInTheDocument()
+    expect(await screen.findByText(/analice el site plan/i)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/api/cad-workspace/export-overlay/cad-123')
+  })
+
+  it('lets the user apply a Bridge MVP proposal from inside the chat', async () => {
+    runChatAgentTool.mockResolvedValueOnce({
+      assistantMessage: {
+        id: 'assistant-1',
+        role: 'assistant',
+        content: 'Te dejo la propuesta de site-fit.',
+        createdAtIso: '2026-04-24T00:00:00.000Z',
+        artifacts: [{
+          id: 'proposal-1',
+          kind: 'site-fit-proposal',
+          title: 'SEMINOLE2000 proposal',
+          proposal: {
+            planId: 'seminole-2000',
+            planName: 'SEMINOLE2000',
+            candidateId: 'baseline_preserved',
+            siteConstraints: { unit: 'inch' },
+            summary: 'Keep the current plan unchanged.',
+            fitStatus: 'fit_ready',
+            warnings: [],
+          },
+        }],
+      },
+    })
+    runSiteFitApplyTool.mockResolvedValueOnce({
+      assistantMessage: {
+        id: 'assistant-2',
+        role: 'assistant',
+        content: 'Aplique la propuesta baseline.',
+        createdAtIso: '2026-04-24T00:01:00.000Z',
+        artifacts: [{
+          id: 'apply-1',
+          kind: 'site-fit-apply',
+          title: 'Applied site-fit result',
+          apply: {
+            planId: 'seminole-2000',
+            planName: 'SEMINOLE2000',
+            candidateId: 'baseline_preserved',
+            applyStatus: 'applied',
+            complianceStatus: 'pass',
+            warnings: [],
+          },
+        }],
+      },
+    })
+
+    render(<App />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /open project pointe homes/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /open thread fit dawson/i }))
+    fireEvent.change(screen.getByPlaceholderText(/pedile algo a point/i), {
+      target: { value: 'Fit Seminole 2000 on this site plan' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /enviar/i }))
+
+    fireEvent.click(await screen.findByRole('button', { name: /apply proposal/i }))
+
+    expect(runSiteFitApplyTool).toHaveBeenCalledWith({
+      planId: 'seminole-2000',
+      planName: 'SEMINOLE2000',
+      candidateId: 'baseline_preserved',
+      siteConstraints: { unit: 'inch' },
+    })
+    expect(await screen.findByText(/aplique la propuesta baseline/i)).toBeInTheDocument()
+    expect(screen.getByText('Applied site-fit result')).toBeInTheDocument()
+  })
+
+  it('keeps the assistant error message on the same thread when the chat tool fails', async () => {
+    runChatAgentTool.mockRejectedValueOnce(new Error('Bridge failed hard'))
+
+    render(<App />)
+
+    fireEvent.click(await screen.findByRole('button', { name: /open project pointe homes/i }))
+    fireEvent.click(await screen.findByRole('button', { name: /open thread fit dawson/i }))
+    fireEvent.change(screen.getByPlaceholderText(/pedile algo a point/i), {
+      target: { value: 'Fit Seminole 2000 on this site plan' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: /enviar/i }))
+
+    expect(await screen.findByText('Bridge failed hard')).toBeInTheDocument()
   })
 
   it('renders the temporary seminole topology inspector when the debug query flag is present', async () => {

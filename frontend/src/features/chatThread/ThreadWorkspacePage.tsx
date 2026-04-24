@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import type { SiteFitProposalArtifactData } from '../siteFit/contracts'
 import type { ThreadComposerSubmission, ThreadMessage, ThreadSummary } from './thread.types'
 import { ThreadComposer } from './components/ThreadComposer'
 import { ThreadMessageList } from './components/ThreadMessageList'
@@ -11,6 +12,7 @@ interface ThreadWorkspacePageProps {
   messages: ThreadMessage[]
   onSelectThread: (threadId: string) => void
   onSubmitMessage: (submission: ThreadComposerSubmission) => void | Promise<void>
+  onApplySiteFitProposal?: (proposal: SiteFitProposalArtifactData) => void | Promise<void>
   isSubmittingMessage?: boolean
 }
 
@@ -21,6 +23,7 @@ export function ThreadWorkspacePage({
   messages,
   onSelectThread,
   onSubmitMessage,
+  onApplySiteFitProposal,
   isSubmittingMessage = false,
 }: ThreadWorkspacePageProps) {
   const selectedThread = useMemo(
@@ -43,7 +46,10 @@ export function ThreadWorkspacePage({
           <h3 className="mt-2 text-2xl font-semibold text-zinc-100">{selectedThread?.title ?? 'Nuevo thread'}</h3>
         </div>
 
-        <ThreadMessageList messages={messages} />
+        <ThreadMessageList
+          messages={messages}
+          onApplySiteFitProposal={onApplySiteFitProposal}
+        />
         <ThreadComposer onSubmitMessage={onSubmitMessage} isSubmitting={isSubmittingMessage} />
       </section>
     </div>

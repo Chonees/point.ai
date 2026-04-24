@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { fireEvent, render, screen } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
 import { ThreadMessageList } from './ThreadMessageList'
 import type { ThreadMessage } from '../thread.types'
 
@@ -90,5 +90,62 @@ describe('ThreadMessageList', () => {
     const fullWidthWrapper = container.querySelector('[data-artifact-kind="cad-review"]')
     expect(fullWidthWrapper).toHaveClass('md:col-span-2')
     expect(screen.getByText('CAD fit review')).toBeInTheDocument()
+  })
+
+  it('renders site-fit proposal artifacts full-width and exposes the apply action', () => {
+    const onApply = vi.fn()
+    const messages: ThreadMessage[] = [{
+      id: 'm-1',
+      role: 'assistant',
+      content: 'Te dejo la propuesta.',
+      createdAtIso: '2026-04-24T18:00:00.000Z',
+      artifacts: [{
+        id: 'proposal-1',
+        kind: 'site-fit-proposal',
+        title: 'SEMINOLE2000 proposal',
+        proposal: {
+          planId: 'seminole-2000',
+          planName: 'SEMINOLE2000',
+          candidateId: 'baseline_preserved',
+          siteConstraints: { unit: 'inch' },
+          summary: 'Keep the current plan unchanged.',
+          fitStatus: 'fit_ready',
+          warnings: [],
+        },
+      }],
+    }]
+
+    const { container } = render(<ThreadMessageList messages={messages} onApplySiteFitProposal={onApply} />)
+
+    expect(container.querySelector('[data-artifact-kind="site-fit-proposal"]')).toHaveClass('md:col-span-2')
+    fireEvent.click(screen.getByRole('button', { name: /apply proposal/i }))
+    expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ candidateId: 'baseline_preserved' }))
+  })
+
+  it('renders site-fit apply artifacts full-width', () => {
+    const messages: ThreadMessage[] = [{
+      id: 'm-2',
+      role: 'assistant',
+      content: 'Aplique la propuesta.',
+      createdAtIso: '2026-04-24T18:01:00.000Z',
+      artifacts: [{
+        id: 'apply-1',
+        kind: 'site-fit-apply',
+        title: 'Applied site-fit result',
+        apply: {
+          planId: 'seminole-2000',
+          planName: 'SEMINOLE2000',
+          candidateId: 'baseline_preserved',
+          applyStatus: 'applied',
+          complianceStatus: 'pass',
+          warnings: [],
+        },
+      }],
+    }]
+
+    const { container } = render(<ThreadMessageList messages={messages} />)
+
+    expect(container.querySelector('[data-artifact-kind="site-fit-apply"]')).toHaveClass('md:col-span-2')
+    expect(screen.getByText('Applied site-fit result')).toBeInTheDocument()
   })
 })

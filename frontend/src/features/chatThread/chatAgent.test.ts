@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { runChatAgentTool } from './chatAgent'
+import { runChatAgentTool, runSiteFitApplyTool } from './chatAgent'
 
 const mockFetch = vi.fn()
 globalThis.fetch = mockFetch
@@ -190,5 +190,116 @@ describe('runChatAgentTool', () => {
 
     expect(mockFetch).not.toHaveBeenCalled()
     expect(result.assistantMessage.content).toMatch(/subime un \.dxf o \.dwg/i)
+  })
+
+  it('routes CAD + Seminole prompts through the bridge propose endpoint', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        pipeline: 'site_fit_bridge_mvp_v1',
+        scope: 'seminole-2000-only',
+        plan_id: 'seminole-2000',
+        plan_name: 'SEMINOLE2000',
+        cad_analysis: {
+          analysis_id: 'cad-123',
+          source_name: 'site.dxf',
+          source_format: 'dxf',
+          canonical_unit: 'inch',
+          conversion_status: 'native_dxf',
+          floor_plan: {
+            role: 'floor_plan',
+            bbox: null,
+            summary: { entity_count: 0, line_count: 0, polyline_count: 0, text_count: 0 },
+            entities: [],
+            rooms: [],
+            measurements: null,
+          },
+          site_plan: {
+            role: 'site_plan',
+            bbox: null,
+            summary: { entity_count: 0, line_count: 0, polyline_count: 0, text_count: 0 },
+            entities: [],
+            rooms: [],
+            measurements: null,
+          },
+          side_by_side: {
+            canonical_unit: 'inch',
+            gap: 0,
+            floor_width: 0,
+            site_width: 0,
+            max_height: 0,
+          },
+          fit_summary: {
+            comparison_unit: 'inch',
+            basis: 'buildable_polygon',
+            fits_within_buildable_polygon: true,
+            fits_within_buildable_bbox: true,
+          },
+          warnings: [],
+        },
+        site_constraints: { unit: 'inch' },
+        proposal: {
+          status: 'fit_ready',
+          candidates: [{
+            candidate_id: 'baseline_preserved',
+            strategy: 'preserve_existing_layout',
+            summary: 'Keep the current plan unchanged.',
+            fit_status: 'fit_ready',
+            change_count: 0,
+          }],
+          warnings: [],
+        },
+        warnings: [],
+      }),
+    })
+
+    const file = new File(['cad'], 'site.dxf', { type: 'application/dxf' })
+    const result = await runChatAgentTool({
+      prompt: 'Fit Seminole 2000 on this site plan',
+      attachment: file,
+      planName: 'Fit Dawson',
+    })
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/v2/site-fit/bridge/propose', expect.objectContaining({
+      method: 'POST',
+      body: expect.any(FormData),
+    }))
+    expect(result.assistantMessage.artifacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'cad-review' }),
+      expect.objectContaining({ kind: 'site-fit-proposal' }),
+    ]))
+  })
+
+  it('calls the bridge apply endpoint and returns an apply artifact', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        pipeline: 'site_fit_bridge_mvp_v1',
+        scope: 'seminole-2000-only',
+        plan_id: 'seminole-2000',
+        plan_name: 'SEMINOLE2000',
+        apply: {
+          candidate_id: 'baseline_preserved',
+          apply_status: 'applied',
+          compliance_summary: { status: 'pass' },
+          warnings: [],
+        },
+        warnings: [],
+      }),
+    })
+
+    const result = await runSiteFitApplyTool({
+      planId: 'seminole-2000',
+      planName: 'SEMINOLE2000',
+      candidateId: 'baseline_preserved',
+      siteConstraints: { unit: 'inch' },
+    })
+
+    expect(mockFetch).toHaveBeenCalledWith('/api/v2/site-fit/bridge/apply', expect.objectContaining({
+      method: 'POST',
+    }))
+    expect(result.assistantMessage.artifacts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'site-fit-apply' }),
+    ]))
   })
 })

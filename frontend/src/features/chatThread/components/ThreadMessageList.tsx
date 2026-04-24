@@ -1,11 +1,17 @@
+import type { SiteFitProposalArtifactData } from '../../siteFit/contracts'
 import type { ThreadMessage } from '../thread.types'
 import { ArtifactCard } from './ArtifactCard'
 
 interface ThreadMessageListProps {
   messages: ThreadMessage[]
+  onApplySiteFitProposal?: (proposal: SiteFitProposalArtifactData) => void | Promise<void>
 }
 
-export function ThreadMessageList({ messages }: ThreadMessageListProps) {
+function isFullWidthArtifact(kind: string) {
+  return kind === 'cad-review' || kind === 'site-fit-proposal' || kind === 'site-fit-apply'
+}
+
+export function ThreadMessageList({ messages, onApplySiteFitProposal }: ThreadMessageListProps) {
   return (
     <div className="space-y-4 py-5">
       {messages.map((message) => (
@@ -18,9 +24,12 @@ export function ThreadMessageList({ messages }: ThreadMessageListProps) {
                 <div
                   key={artifact.id}
                   data-artifact-kind={artifact.kind}
-                  className={artifact.kind === 'cad-review' ? 'md:col-span-2' : undefined}
+                  className={isFullWidthArtifact(artifact.kind) ? 'md:col-span-2' : undefined}
                 >
-                  <ArtifactCard artifact={artifact} />
+                  <ArtifactCard
+                    artifact={artifact}
+                    onApplySiteFitProposal={onApplySiteFitProposal}
+                  />
                 </div>
               ))}
             </div>

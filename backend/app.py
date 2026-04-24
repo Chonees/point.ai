@@ -35,6 +35,11 @@ from .site_fit.contracts import (
     SiteFitValidateResponse,
 )
 from .cad_workspace.contracts import CadWorkspaceExtractResponse
+from .site_fit_bridge.contracts import (
+    SiteFitBridgeApplyRequest,
+    SiteFitBridgeApplyResponse,
+    SiteFitBridgeProposeResponse,
+)
 from .artifacts import ARTIFACT_DIR, save_structure_artifacts
 from .cubicasa_inference import warmup_models
 from .observability import log_event
@@ -48,6 +53,7 @@ from .services.site_fit_service import (
     validate_site_fit_request,
 )
 from .services.cad_workspace_service import extract_cad_workspace, export_cad_workspace_overlay
+from .services.site_fit_bridge_service import apply_mvp_site_fit, propose_mvp_site_fit
 
 
 # ─── LIFESPAN ────────────────────────────────────────────────────────────────
@@ -210,6 +216,28 @@ async def api_site_fit_propose(req: SiteFitAnalyzeRequest):
 async def api_site_fit_apply(req: SiteFitApplyRequest):
     try:
         return SiteFitApplyResponse(**apply_site_fit(req))
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/v2/site-fit/bridge/propose", response_model=SiteFitBridgeProposeResponse)
+async def api_site_fit_bridge_propose(file: UploadFile = File(...)):
+    try:
+        data = await file.read()
+        return SiteFitBridgeProposeResponse(
+            **propose_mvp_site_fit(
+                filename=file.filename or "upload.dxf",
+                data=data,
+            )
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+
+
+@app.post("/api/v2/site-fit/bridge/apply", response_model=SiteFitBridgeApplyResponse)
+async def api_site_fit_bridge_apply(req: SiteFitBridgeApplyRequest):
+    try:
+        return SiteFitBridgeApplyResponse(**apply_mvp_site_fit(req))
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
 

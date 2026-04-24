@@ -6,7 +6,8 @@ import { isSupabaseConfigured } from './lib/supabase'
 import { LoginPage } from './components/Auth/LoginPage'
 import { ProjectList } from './components/ProjectList/ProjectList'
 import type { ProjectScene } from './hooks/useProject'
-import { runChatAgentTool } from './features/chatThread/chatAgent'
+import { runChatAgentTool, runSiteFitApplyTool } from './features/chatThread/chatAgent'
+import type { SiteFitProposalArtifactData } from './features/siteFit/contracts'
 import type { ThreadComposerSubmission, ThreadMessage } from './features/chatThread/thread.types'
 import {
   threadToInitialMessages,
@@ -117,6 +118,14 @@ function MainAppShell() {
     }] : [],
   })
 
+  const buildAssistantErrorMessage = (error: unknown): ThreadMessage => ({
+    id: `assistant-${Math.random().toString(36).slice(2, 10)}`,
+    role: 'assistant',
+    content: error instanceof Error ? error.message : 'No pude ejecutar la herramienta del chat.',
+    createdAtIso: new Date().toISOString(),
+    artifacts: [],
+  })
+
   const handleThreadSubmit = async (submission: ThreadComposerSubmission) => {
     if (!activeThread) return
     const threadId = activeThread.id
@@ -144,15 +153,27 @@ function MainAppShell() {
         await saveNow(result.planUpdates)
       }
     } catch (error) {
-      appendThreadMessages(planId, [{
-        id: `assistant-${Math.random().toString(36).slice(2, 10)}`,
-        role: 'assistant',
-        content: error instanceof Error ? error.message : 'No pude ejecutar la herramienta del chat.',
-        createdAtIso: new Date().toISOString(),
-        artifacts: [],
-      }])
+      appendThreadMessages(threadId, [buildAssistantErrorMessage(error)])
     } finally {
       setSubmittingThreadId((prev) => (prev === threadId ? null : prev))
+    }
+  }
+
+  const handleApplySiteFitProposal = async (proposal: SiteFitProposalArtifactData) => {
+    if (!activeThread || !proposal.candidateId) return
+    const threadId = activeThread.id
+
+    try {
+      const result = await runSiteFitApplyTool({
+        planId: proposal.planId,
+        planName: proposal.planName,
+        candidateId: proposal.candidateId,
+        siteConstraints: proposal.siteConstraints,
+      })
+
+      appendThreadMessages(threadId, [result.assistantMessage])
+    } catch (error) {
+      appendThreadMessages(threadId, [buildAssistantErrorMessage(error)])
     }
   }
 
@@ -303,6 +324,7 @@ function MainAppShell() {
                 if (nextThread?.projectId) setSelectedProjectId(nextThread.projectId)
               }}
               onSubmitMessage={handleThreadSubmit}
+              onApplySiteFitProposal={handleApplySiteFitProposal}
               isSubmittingMessage={submittingThreadId === activeThread?.id}
             />
           </Suspense>
