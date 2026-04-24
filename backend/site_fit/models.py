@@ -105,6 +105,47 @@ class RegistrationResult:
 
 
 @dataclass(frozen=True)
+class BoundaryDiagnostic:
+    boundary_id: str
+    side: str
+    axis: str
+    overflow_delta: float
+    status: str
+    reason: str | None = None
+    owner_room_ids: tuple[str, ...] = ()
+    opening_ids: tuple[str, ...] = ()
+    requires_rehost: bool = False
+    projected_fit_status: str = "unknown"
+
+
+@dataclass(frozen=True)
+class RoomDiagnostic:
+    room_id: str
+    boundary_id: str
+    axis: str
+    current_width: float
+    current_height: float
+    projected_width: float
+    projected_height: float
+    projected_area: float
+    status: str
+    reason: str | None = None
+
+
+@dataclass(frozen=True)
+class MutationHint:
+    boundary_id: str
+    side: str
+    axis: str
+    delta_x: float = 0.0
+    delta_y: float = 0.0
+    owner_room_ids: tuple[str, ...] = ()
+    opening_ids: tuple[str, ...] = ()
+    requires_rehost: bool = False
+    strategy: str = "shrink_boundary"
+
+
+@dataclass(frozen=True)
 class ConstraintEvaluation:
     status: str
     checked_rule_ids: tuple[str, ...] = ()
@@ -112,3 +153,6 @@ class ConstraintEvaluation:
     warnings: tuple[str, ...] = ()
     site_summary: dict[str, Any] = field(default_factory=dict)
     registration: RegistrationResult | None = None
+    boundary_diagnostics: tuple[BoundaryDiagnostic, ...] = ()
+    room_diagnostics: tuple[RoomDiagnostic, ...] = ()
+    mutation_hints: tuple[MutationHint, ...] = ()

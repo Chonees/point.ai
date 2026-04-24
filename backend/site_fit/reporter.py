@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from dataclasses import asdict
+
 from .models import ConstraintEvaluation, NormalizedPlan, SiteFitIsolation, RegistrationResult
 
 
@@ -27,6 +29,9 @@ def build_compliance_summary(evaluation: ConstraintEvaluation) -> dict:
         "checked_rule_ids": list(evaluation.checked_rule_ids),
         "violations": [dict(item) for item in evaluation.violations],
         "warnings": list(evaluation.warnings),
+        "boundary_diagnostics": [asdict(item) for item in evaluation.boundary_diagnostics],
+        "room_diagnostics": [asdict(item) for item in evaluation.room_diagnostics],
+        "mutation_hints": [asdict(item) for item in evaluation.mutation_hints],
     }
 
 
