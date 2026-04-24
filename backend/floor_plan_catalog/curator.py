@@ -61,6 +61,7 @@ def _build_readiness(*, rooms: list[CatalogRoom], warnings: list[str]) -> Catalo
         "No separate site-plan cluster was detected",
         "Buildable-fit summary is unavailable because no recognizable buildable envelope layer was extracted.",
         "Floor-plan wall geometry was normalized from dimension annotations before side-by-side comparison.",
+        "Floor and site views were separated by CAD layers and semantic role hints because spatial clustering was ambiguous.",
     )
     issues = [
         warning

@@ -34,7 +34,9 @@ def test_cad_workspace_extract_separates_floor_and_site_views(tmp_path: Path):
     assert payload["site_plan"]["summary"]["text_count"] == 0
     assert payload["floor_plan"]["summary"]["entity_count"] > payload["site_plan"]["summary"]["entity_count"]
     assert payload["side_by_side"]["canonical_unit"] == "inch"
-    assert payload["fit_summary"]["fits_within_buildable_bbox"] is None
+    assert payload["fit_summary"]["basis"] == "buildable_polygon"
+    assert payload["fit_summary"]["fits_within_buildable_bbox"] is False
+    assert payload["fit_summary"]["fits_within_buildable_polygon"] is False
 
 
 def test_cad_workspace_extract_normalizes_floor_walls_from_dimensions(tmp_path: Path):

@@ -446,13 +446,26 @@ def _normalize_site_entities(cluster: list[ExtractedCadEntity]) -> dict:
         measurements = ExtractedMeasurements(width=bbox["width"], height=bbox["height"], source="geometry")
     property_entities = [entity for entity in normalized_entities if _is_property_layer(entity.layer)]
     buildable_entities = [entity for entity in normalized_entities if _is_buildable_layer(entity.layer)]
+    if not buildable_entities:
+        buildable_entities = _fallback_buildable_entities(normalized_entities)
+    buildable_polygon = _extract_buildable_polygon(buildable_entities)
+    if not buildable_polygon and buildable_entities is not normalized_entities:
+        buildable_polygon = _extract_buildable_polygon(normalized_entities)
     return {
         "entities": normalized_entities,
         "measurements": measurements,
         "property_bbox": _entities_bbox(property_entities),
         "buildable_bbox": _entities_bbox(buildable_entities),
-        "buildable_polygon": _extract_buildable_polygon(buildable_entities),
+        "buildable_polygon": buildable_polygon,
     }
+
+
+def _fallback_buildable_entities(entities: list[ExtractedCadEntity]) -> list[ExtractedCadEntity]:
+    if not entities:
+        return []
+    # When layers are not semantic (very common in user site plans), use all planar entities
+    # as a conservative proxy for buildable envelope derivation.
+    return entities
 
 
 def _is_room_label_entity(entity: ExtractedCadEntity) -> bool:
