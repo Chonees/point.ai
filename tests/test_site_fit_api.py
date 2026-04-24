@@ -597,3 +597,52 @@ def test_site_fit_apply_keeps_room_derived_geometry_consistent_after_shrink():
     assert room["height"] == 80.0
     assert room["area"] == 8000.0
     assert room["centroid"] == {"x": 50.0, "y": 40.0}
+
+
+def test_site_fit_analyze_reports_polygon_conflict_when_bbox_would_have_passed():
+    response = client.post(
+        "/api/v2/site-fit/analyze",
+        json={
+            "plan": RICH_OVERFLOW_PLAN,
+            "site_constraints": {
+                "buildable_polygon": [
+                    {"x": 0, "y": 0},
+                    {"x": 100, "y": 0},
+                    {"x": 100, "y": 30},
+                    {"x": 30, "y": 30},
+                    {"x": 30, "y": 80},
+                    {"x": 0, "y": 80},
+                ]
+            },
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["status"] == "buildable_conflict"
+    assert payload["compliance_summary"]["violations"][0]["rule_id"] == "buildable_polygon.contains_plan_footprint"
+
+
+def test_site_fit_analyze_requires_polygon_and_envelope_when_both_are_present():
+    response = client.post(
+        "/api/v2/site-fit/analyze",
+        json={
+            "plan": RICH_OVERFLOW_PLAN,
+            "site_constraints": {
+                "buildable_envelope": {"x": 0, "y": 0, "width": 130, "height": 90},
+                "buildable_polygon": [
+                    {"x": 0, "y": 0},
+                    {"x": 100, "y": 0},
+                    {"x": 100, "y": 30},
+                    {"x": 30, "y": 30},
+                    {"x": 30, "y": 80},
+                    {"x": 0, "y": 80},
+                ],
+            },
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["status"] == "buildable_conflict"
+    assert "buildable_polygon.contains_plan_footprint" in payload["compliance_summary"]["checked_rule_ids"]

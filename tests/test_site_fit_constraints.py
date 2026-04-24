@@ -156,3 +156,58 @@ def test_evaluate_hard_constraints_marks_non_axis_aligned_boundary_as_blocked():
     assert evaluation.boundary_diagnostics[0].status == "blocked_non_axis_aligned"
     assert evaluation.boundary_diagnostics[0].reason == "boundary is not axis-aligned"
     assert evaluation.mutation_hints == ()
+
+
+def test_evaluate_hard_constraints_rejects_footprint_that_spills_outside_buildable_polygon():
+    plan = _rich_plan(boundary_mutability="movable", opening_rehostable=True, room_min_width=60)
+    plan["footprint_bbox"] = {"x1": 0, "y1": 0, "x2": 120, "y2": 80, "width": 120, "height": 80}
+    job = build_site_fit_job(
+        plan=plan,
+        structure=None,
+        site_constraints={
+            "buildable_polygon": [
+                {"x": 0, "y": 0},
+                {"x": 100, "y": 0},
+                {"x": 100, "y": 30},
+                {"x": 30, "y": 30},
+                {"x": 30, "y": 80},
+                {"x": 0, "y": 80},
+            ]
+        },
+        design_locks={},
+        jurisdiction=None,
+        ruleset_version="site_fit_contract_v1",
+    )
+    normalized = normalize_plan(job)
+
+    evaluation = evaluate_hard_constraints(normalized, job)
+
+    assert evaluation.status == "buildable_conflict"
+    assert evaluation.violations[0]["rule_id"] == "buildable_polygon.contains_plan_footprint"
+    assert evaluation.mutation_hints == ()
+
+
+def test_evaluate_hard_constraints_accepts_footprint_inside_buildable_polygon():
+    plan = _rich_plan(boundary_mutability="movable", opening_rehostable=True, room_min_width=60)
+    plan["footprint_bbox"] = {"x1": 10, "y1": 10, "x2": 90, "y2": 70, "width": 80, "height": 60}
+    job = build_site_fit_job(
+        plan=plan,
+        structure=None,
+        site_constraints={
+            "buildable_polygon": [
+                {"x": 0, "y": 0},
+                {"x": 100, "y": 0},
+                {"x": 100, "y": 80},
+                {"x": 0, "y": 80},
+            ]
+        },
+        design_locks={},
+        jurisdiction=None,
+        ruleset_version="site_fit_contract_v1",
+    )
+    normalized = normalize_plan(job)
+
+    evaluation = evaluate_hard_constraints(normalized, job)
+
+    assert evaluation.status == "fit_ready"
+    assert evaluation.checked_rule_ids == ("buildable_polygon.contains_plan_footprint",)
