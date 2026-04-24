@@ -28,6 +28,11 @@ def test_bridge_propose_returns_cad_review_site_constraints_and_baseline_candida
     assert payload["proposal"]["candidates"][0]["candidate_id"] == "baseline_preserved"
     assert payload["site_constraints"]["placed_plan_footprint"]["width"] == 468.0
     assert payload["cad_analysis"]["fit_summary"]["buildable_polygon"]
+    assert payload["proposal_review"]["source_format"] == "site_fit_proposal"
+    assert payload["proposal_review"]["fit_summary"]["registered_footprint_bbox"]["x1"] == payload["site_constraints"]["placed_plan_footprint"]["x"]
+    assert payload["proposal_review"]["fit_summary"]["registered_footprint_bbox"]["y1"] == payload["site_constraints"]["placed_plan_footprint"]["y"]
+    assert payload["proposal_review"]["fit_summary"]["buildable_bbox"]["width"] == 720.0
+    assert payload["proposal_review"]["fit_summary"]["width_delta"] == 252.0
 
 
 def test_bridge_apply_reuses_site_constraints_and_applies_selected_candidate(tmp_path: Path):

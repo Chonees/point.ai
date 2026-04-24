@@ -1,8 +1,9 @@
 import { apiUrl } from '../../lib/api'
 import { buildCadReviewArtifactData } from '../cad/review'
-import type { CadReviewArtifactData, CadWorkspaceExtractResult } from '../cad/contracts'
+import type { CadReviewArtifactData, CadWorkspaceBBox, CadWorkspaceExtractResult } from '../cad/contracts'
 import type {
   SiteFitApplyArtifactData,
+  SiteFitCandidateChange,
   SiteFitBridgeApplyResult,
   SiteFitBridgeProposalResult,
   SiteFitProposalArtifactData,
@@ -76,6 +77,89 @@ function buildCadFitText(result: CadWorkspaceExtractResult) {
   return 'El encaje quedo sin veredicto fuerte.'
 }
 
+function buildPreviewArtifact(result: CadWorkspaceExtractResult, reason: string): CadReviewArtifactData {
+  const review = buildCadReviewArtifactData(result)
+  return {
+    ...review,
+    export: {
+      ready: false,
+      reason,
+    },
+  }
+}
+
+function toUniqueStrings(values: Array<string | null | undefined>) {
+  return [...new Set(values.map((value) => String(value || '').trim()).filter(Boolean))]
+}
+
+function projectFootprintBBox(
+  current: CadWorkspaceBBox | null | undefined,
+  change: SiteFitCandidateChange | null | undefined,
+): CadWorkspaceBBox | null {
+  if (!current) return null
+  if (!change) return current
+  const deltaX = Number(change.delta_x ?? 0)
+  const deltaY = Number(change.delta_y ?? 0)
+  return {
+    ...current,
+    width: current.width - Math.abs(deltaX),
+    height: current.height - Math.abs(deltaY),
+    x2: current.x1 + (current.width - Math.abs(deltaX)),
+    y2: current.y1 + (current.height - Math.abs(deltaY)),
+  }
+}
+
+function reverseProjectedFootprintBBox(
+  after: CadWorkspaceBBox | null | undefined,
+  change: SiteFitCandidateChange | null | undefined,
+): CadWorkspaceBBox | null {
+  if (!after) return null
+  if (!change) return after
+  const deltaX = Math.abs(Number(change.delta_x ?? 0))
+  const deltaY = Math.abs(Number(change.delta_y ?? 0))
+  return {
+    ...after,
+    width: after.width + deltaX,
+    height: after.height + deltaY,
+    x2: after.x1 + after.width + deltaX,
+    y2: after.y1 + after.height + deltaY,
+  }
+}
+
+function buildNoCandidateSummary(payload: SiteFitBridgeProposalResult) {
+  const complianceStatus = payload.proposal.compliance_summary?.status
+  if (complianceStatus === 'buildable_conflict') {
+    return 'No generamos una adaptación todavía: la Seminole 2000 sigue en conflicto con el buildable area y el solver no encontró una mutación segura para resolverlo.'
+  }
+  return 'No vino ningún candidate accionable desde site-fit todavía.'
+}
+
+function buildProposalBlockerMessages(payload: SiteFitBridgeProposalResult) {
+  const compliance = payload.proposal.compliance_summary
+  const messages = toUniqueStrings([
+    ...(compliance?.violations ?? []).map((item) => item.message ?? item.reason),
+    ...(compliance?.boundary_diagnostics ?? []).map((item) => {
+      if (item.reason) return item.reason
+      if (item.status === 'blocked_design_lock') return 'Hay rooms o boundaries bloqueadas por design lock.'
+      if (item.status === 'blocked_room_minimum') return 'Al menos un room caería por debajo de sus mínimos.'
+      if (item.status === 'blocked_non_rehostable_opening') return 'Hay openings que no se pueden rehostear de forma segura.'
+      if (item.status === 'blocked_non_axis_aligned') return 'La boundary candidata no es axis-aligned.'
+      return null
+    }),
+  ])
+
+  if ((payload.proposal.candidates?.length ?? 0) === 0) {
+    if ((compliance?.mutation_hints?.length ?? 0) === 0) {
+      messages.unshift('No apareció ningún candidate porque el solver no encontró mutation hints seguras para tocar la Seminole 2000.')
+    }
+    if (!messages.length) {
+      messages.push('El encaje 1:1 quedó en conflicto, pero la UI todavía no tiene un candidate ejecutable para mostrar.')
+    }
+  }
+
+  return messages.slice(0, 4)
+}
+
 async function runCadAnalyzeTool(file: File, prompt: string): Promise<RunChatAgentToolResult> {
   const formData = new FormData()
   formData.append('file', file)
@@ -109,6 +193,24 @@ async function runCadAnalyzeTool(file: File, prompt: string): Promise<RunChatAge
 
 function buildSiteFitProposalArtifactData(payload: SiteFitBridgeProposalResult): SiteFitProposalArtifactData {
   const candidate = payload.proposal.candidates?.[0] ?? null
+  const firstChange = candidate?.changes?.[0] ?? null
+  const reviewSource = payload.proposal_review ?? payload.cad_analysis
+  const currentFootprint = payload.proposal.plan_summary?.footprint_bbox
+    ?? reviewSource.fit_summary?.footprint_bbox
+    ?? reviewSource.floor_plan.bbox
+    ?? null
+  const buildable = payload.proposal.site_summary?.buildable_bbox
+    ?? reviewSource.fit_summary?.buildable_bbox
+    ?? payload.cad_analysis.fit_summary?.buildable_bbox
+    ?? null
+  const preview = buildPreviewArtifact(
+    reviewSource,
+    'Preview 1:1 solamente. Aplicá la propuesta para descargar el DXF final.',
+  )
+  const blockerMessages = buildProposalBlockerMessages(payload)
+  const changedRoomIds = toUniqueStrings(
+    (candidate?.changes ?? []).flatMap((change) => change.owner_room_ids ?? []),
+  )
 
   return {
     planId: payload.plan_id,
@@ -116,27 +218,50 @@ function buildSiteFitProposalArtifactData(payload: SiteFitBridgeProposalResult):
     candidateId: candidate?.candidate_id ?? null,
     cadAnalysisId: payload.cad_analysis.analysis_id,
     siteConstraints: payload.site_constraints,
-    summary: candidate?.summary ?? 'No vino ningun candidate baseline desde el site-fit.',
+    summary: candidate?.summary ?? buildNoCandidateSummary(payload),
     fitStatus: candidate?.fit_status ?? payload.proposal.status,
+    candidateStrategy: candidate?.strategy ?? null,
+    changeCount: candidate?.change_count ?? 0,
+    preview,
+    footprint: {
+      current: currentFootprint,
+      projected: projectFootprintBBox(currentFootprint, firstChange),
+      buildable,
+      widthDelta: reviewSource.fit_summary?.width_delta ?? null,
+      heightDelta: reviewSource.fit_summary?.height_delta ?? null,
+    },
+    violationMessages: toUniqueStrings(
+      (payload.proposal.compliance_summary?.violations ?? []).map((item) => item.message ?? item.reason),
+    ),
+    blockerMessages,
+    mutationHintCount: payload.proposal.compliance_summary?.mutation_hints?.length ?? 0,
+    changedRoomIds,
     warnings: [...payload.warnings, ...(payload.proposal.warnings ?? [])],
   }
 }
 
 function buildSiteFitApplyArtifactData(payload: SiteFitBridgeApplyResult): SiteFitApplyArtifactData {
   const href = payload.export_url ? apiUrl(payload.export_url) : undefined
+  const firstChange = payload.apply.change_set?.[0] ?? null
   const preview: CadReviewArtifactData = {
-    analysisId: payload.applied_review.analysis_id,
-    sourceName: payload.applied_review.source_name,
-    canonicalUnit: payload.applied_review.canonical_unit,
-    floorPlan: payload.applied_review.floor_plan,
-    sitePlan: payload.applied_review.site_plan,
-    fitSummary: payload.applied_review.fit_summary ?? null,
-    warnings: payload.applied_review.warnings,
-    export: {
-      ready: false,
-      reason: 'Usa el DXF aplicado de esta tarjeta.',
-    },
+    ...buildPreviewArtifact(payload.applied_review, 'Usá el DXF aplicado de esta tarjeta para exportar el resultado final.'),
   }
+  const afterFootprint = payload.applied_review.fit_summary?.footprint_bbox
+    ?? payload.applied_review.floor_plan.bbox
+    ?? null
+  const beforeFootprint = reverseProjectedFootprintBBox(afterFootprint, firstChange)
+  const changedRoomIds = toUniqueStrings(
+    (payload.apply.change_set ?? []).flatMap((change) => change.owner_room_ids ?? []),
+  )
+  const rooms = [...payload.applied_review.floor_plan.rooms]
+    .sort((left, right) => right.area - left.area)
+    .slice(0, 6)
+    .map((room) => ({
+      name: room.name,
+      width: room.width,
+      height: room.height,
+      area: room.area,
+    }))
 
   return {
     planId: payload.plan_id,
@@ -148,6 +273,11 @@ function buildSiteFitApplyArtifactData(payload: SiteFitBridgeApplyResult): SiteF
     href,
     exportUrl: href,
     preview,
+    changeCount: payload.apply.change_set?.length ?? 0,
+    changedRoomIds,
+    beforeFootprint,
+    afterFootprint,
+    rooms,
     warnings: [...payload.warnings, ...(payload.apply.warnings ?? [])],
   }
 }

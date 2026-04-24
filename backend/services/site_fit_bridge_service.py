@@ -87,6 +87,12 @@ def propose_mvp_site_fit(*, filename: str, data: bytes) -> dict:
         "plan_id": CATALOG_PLAN_ID,
         "plan_name": plan_payload["name"],
         "cad_analysis": cad_analysis,
+        "proposal_review": _build_proposal_review(
+            plan_name=plan_payload["name"],
+            cad_analysis=cad_analysis,
+            plan_payload=plan_payload,
+            proposal=proposal,
+        ),
         "site_constraints": site_constraints,
         "proposal": proposal,
         "warnings": warnings + list(cad_analysis.get("warnings") or []),
@@ -195,6 +201,15 @@ def _build_applied_review(*, apply_id: str, plan_name: str, cad_analysis: dict, 
     floor_rooms = _build_plan_rooms(plan_payload)
     site_plan = cad_analysis.get("site_plan") or _empty_view(role="site_plan")
     site_bbox = (site_plan.get("bbox") or {}) if isinstance(site_plan, dict) else {}
+    review_fit_summary = _build_bridge_fit_summary(
+        footprint_bbox=footprint_bbox,
+        registered_footprint_bbox=registered_footprint_bbox,
+        buildable_bbox=fit_summary.get("buildable_bbox"),
+        buildable_polygon=fit_summary.get("buildable_polygon"),
+        canonical_unit=canonical_unit,
+        status=(applied.get("compliance_summary") or {}).get("status"),
+        basis=fit_summary.get("basis") or "buildable_polygon",
+    )
 
     return {
         "analysis_id": apply_id,
@@ -223,25 +238,111 @@ def _build_applied_review(*, apply_id: str, plan_name: str, cad_analysis: dict, 
             ),
         },
         "fit_summary": {
-            "comparison_unit": canonical_unit,
-            "basis": fit_summary.get("basis") or "buildable_polygon",
-            "footprint_bbox": footprint_bbox,
-            "registered_footprint_bbox": registered_footprint_bbox,
+            **review_fit_summary,
             "property_bbox": fit_summary.get("property_bbox"),
-            "buildable_bbox": fit_summary.get("buildable_bbox"),
-            "buildable_polygon": fit_summary.get("buildable_polygon"),
-            "width_delta": fit_summary.get("width_delta"),
-            "height_delta": fit_summary.get("height_delta"),
-            "fits_within_buildable_bbox": _coalesce_fit_flag(
-                fit_summary.get("fits_within_buildable_bbox"),
-                applied=applied,
-            ),
-            "fits_within_buildable_polygon": _coalesce_fit_flag(
-                fit_summary.get("fits_within_buildable_polygon"),
-                applied=applied,
-            ),
         },
         "warnings": list(applied.get("warnings") or []),
+    }
+
+
+def _build_proposal_review(*, plan_name: str, cad_analysis: dict, plan_payload: dict, proposal: dict) -> dict:
+    registration = proposal.get("registration_summary") or {}
+    transform = registration.get("transform") or {}
+    canonical_unit = (
+        registration.get("canonical_unit")
+        or cad_analysis.get("canonical_unit")
+        or "inch"
+    )
+    fit_summary = cad_analysis.get("fit_summary") or {}
+    footprint_bbox = plan_payload.get("footprint_bbox")
+    registered_footprint_bbox = (
+        registration.get("registered_plan_bbox")
+        or _transform_bbox(footprint_bbox, transform=transform)
+    )
+    floor_entities = _build_plan_entities(plan_payload)
+    floor_rooms = _build_plan_rooms(plan_payload)
+    site_plan = cad_analysis.get("site_plan") or _empty_view(role="site_plan")
+    site_bbox = (site_plan.get("bbox") or {}) if isinstance(site_plan, dict) else {}
+    review_fit_summary = _build_bridge_fit_summary(
+        footprint_bbox=footprint_bbox,
+        registered_footprint_bbox=registered_footprint_bbox,
+        buildable_bbox=fit_summary.get("buildable_bbox"),
+        buildable_polygon=fit_summary.get("buildable_polygon"),
+        canonical_unit=canonical_unit,
+        status=(proposal.get("compliance_summary") or {}).get("status"),
+        basis=fit_summary.get("basis") or "buildable_polygon",
+    )
+
+    return {
+        "analysis_id": proposal.get("analysis_id") or uuid.uuid4().hex[:12],
+        "source_name": f"{plan_name} proposed",
+        "source_format": "site_fit_proposal",
+        "canonical_unit": canonical_unit,
+        "conversion_status": "site_fit_proposal",
+        "conversion_note": "Baseline site-fit preview built from the curated plan plus registration.",
+        "floor_plan": {
+            "role": "floor_plan",
+            "bbox": footprint_bbox,
+            "summary": _build_view_summary(floor_entities),
+            "entities": floor_entities,
+            "rooms": floor_rooms,
+            "measurements": _bbox_measurements(footprint_bbox, source="catalog_plan_bbox"),
+        },
+        "site_plan": site_plan,
+        "side_by_side": {
+            "canonical_unit": canonical_unit,
+            "gap": 0.0,
+            "floor_width": float((footprint_bbox or {}).get("width") or 0.0),
+            "site_width": float(site_bbox.get("width") or 0.0),
+            "max_height": max(
+                float((footprint_bbox or {}).get("height") or 0.0),
+                float(site_bbox.get("height") or 0.0),
+            ),
+        },
+        "fit_summary": {
+            **review_fit_summary,
+            "property_bbox": fit_summary.get("property_bbox"),
+        },
+        "warnings": list(proposal.get("warnings") or []),
+    }
+
+
+def _build_bridge_fit_summary(
+    *,
+    footprint_bbox: dict | None,
+    registered_footprint_bbox: dict | None,
+    buildable_bbox: dict | None,
+    buildable_polygon: list[dict] | None,
+    canonical_unit: str,
+    status: str | None,
+    basis: str,
+) -> dict:
+    width_delta = None
+    height_delta = None
+    fits_within_buildable_bbox = None
+    fits_within_buildable_polygon = None
+    if isinstance(footprint_bbox, dict) and isinstance(buildable_bbox, dict):
+        width_delta = float(buildable_bbox.get("width") or 0.0) - float(footprint_bbox.get("width") or 0.0)
+        height_delta = float(buildable_bbox.get("height") or 0.0) - float(footprint_bbox.get("height") or 0.0)
+        fits_within_buildable_bbox = width_delta >= -0.001 and height_delta >= -0.001
+
+    if buildable_polygon:
+        if status == "pass" or status == "fit_ready":
+            fits_within_buildable_polygon = True
+        elif status == "buildable_conflict":
+            fits_within_buildable_polygon = False
+
+    return {
+        "comparison_unit": canonical_unit,
+        "basis": basis,
+        "footprint_bbox": footprint_bbox,
+        "registered_footprint_bbox": registered_footprint_bbox,
+        "buildable_bbox": buildable_bbox,
+        "buildable_polygon": buildable_polygon,
+        "width_delta": width_delta,
+        "height_delta": height_delta,
+        "fits_within_buildable_bbox": fits_within_buildable_bbox,
+        "fits_within_buildable_polygon": fits_within_buildable_polygon,
     }
 
 

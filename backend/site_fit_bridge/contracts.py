@@ -17,6 +17,7 @@ class SiteFitBridgeProposeResponse(BaseModel):
     plan_id: str
     plan_name: str
     cad_analysis: CadWorkspaceExtractResponse
+    proposal_review: CadWorkspaceExtractResponse
     site_constraints: dict = Field(default_factory=dict)
     proposal: SiteFitProposeResponse
     warnings: list[str] = Field(default_factory=list)

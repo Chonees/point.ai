@@ -111,6 +111,19 @@ describe('ThreadMessageList', () => {
           siteConstraints: { unit: 'inch' },
           summary: 'Keep the current plan unchanged.',
           fitStatus: 'fit_ready',
+          changeCount: 0,
+          candidateStrategy: 'preserve_existing_layout',
+          footprint: {
+            current: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+            projected: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+            buildable: { x1: 3180, y1: 180, x2: 3900, y2: 1260, width: 720, height: 1080 },
+            widthDelta: 252,
+            heightDelta: 288,
+          },
+          violationMessages: [],
+          blockerMessages: [],
+          mutationHintCount: 0,
+          changedRoomIds: [],
           warnings: [],
         },
       }],
@@ -119,6 +132,7 @@ describe('ThreadMessageList', () => {
     const { container } = render(<ThreadMessageList messages={messages} onApplySiteFitProposal={onApply} />)
 
     expect(container.querySelector('[data-artifact-kind="site-fit-proposal"]')).toHaveClass('md:col-span-2')
+    expect(screen.getByText(/footprint actual/i)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /apply proposal/i }))
     expect(onApply).toHaveBeenCalledWith(expect.objectContaining({ candidateId: 'baseline_preserved' }))
   })
@@ -140,6 +154,10 @@ describe('ThreadMessageList', () => {
           applyId: 'apply-123',
           applyStatus: 'applied',
           complianceStatus: 'pass',
+          changeCount: 1,
+          changedRoomIds: ['BEDROOM_2'],
+          beforeFootprint: { x1: 0, y1: 0, x2: 480, y2: 792, width: 480, height: 792 },
+          afterFootprint: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
           href: '/api/v2/site-fit/bridge/export/apply-123',
           exportUrl: '/api/v2/site-fit/bridge/export/apply-123',
           preview: {
@@ -214,6 +232,12 @@ describe('ThreadMessageList', () => {
             warnings: [],
             export: { ready: false, reason: 'preview only' },
           },
+          rooms: [{
+            name: 'BEDROOM 2',
+            width: 120,
+            height: 120,
+            area: 14400,
+          }],
           warnings: [],
         },
       }],
@@ -223,6 +247,7 @@ describe('ThreadMessageList', () => {
 
     expect(container.querySelector('[data-artifact-kind="site-fit-apply"]')).toHaveClass('md:col-span-2')
     expect(screen.getByText('Applied site-fit result')).toBeInTheDocument()
+    expect(screen.getByText(/medidas nuevas por room/i)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /download applied dxf/i })).toHaveAttribute(
       'href',
       '/api/v2/site-fit/bridge/export/apply-123',

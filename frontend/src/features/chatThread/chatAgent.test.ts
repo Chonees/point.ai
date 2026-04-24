@@ -208,15 +208,83 @@ describe('runChatAgentTool', () => {
           },
           warnings: [],
         },
+        proposal_review: {
+          analysis_id: 'proposal-123',
+          source_name: 'SEMINOLE2000 proposed',
+          source_format: 'site_fit_proposal',
+          canonical_unit: 'inch',
+          conversion_status: 'site_fit_proposal',
+          floor_plan: {
+            role: 'floor_plan',
+            bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+            summary: { entity_count: 1, line_count: 1, polyline_count: 0, text_count: 0 },
+            entities: [],
+            rooms: [],
+            measurements: { width: 468, height: 792, source: 'catalog_plan_bbox' },
+          },
+          site_plan: {
+            role: 'site_plan',
+            bbox: { x1: 100, y1: 100, x2: 865.77, y2: 1110.71, width: 765.77, height: 1010.71 },
+            summary: { entity_count: 0, line_count: 0, polyline_count: 0, text_count: 0 },
+            entities: [],
+            rooms: [],
+            measurements: { width: 765.77, height: 1010.71, source: 'buildable_bbox' },
+          },
+          side_by_side: {
+            canonical_unit: 'inch',
+            gap: 0,
+            floor_width: 468,
+            site_width: 765.77,
+            max_height: 1010.71,
+          },
+          fit_summary: {
+            comparison_unit: 'inch',
+            basis: 'buildable_polygon',
+            footprint_bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+            registered_footprint_bbox: { x1: 100, y1: 100, x2: 568, y2: 892, width: 468, height: 792 },
+            buildable_bbox: { x1: 100, y1: 100, x2: 865.77, y2: 1110.71, width: 765.77, height: 1010.71 },
+            buildable_polygon: [
+              { x: 100, y: 100 },
+              { x: 865.77, y: 100 },
+              { x: 865.77, y: 1110.71 },
+              { x: 100, y: 1110.71 },
+              { x: 100, y: 100 },
+            ],
+            fits_within_buildable_polygon: true,
+            fits_within_buildable_bbox: true,
+            width_delta: 297.77,
+            height_delta: 218.71,
+          },
+          warnings: [],
+        },
         site_constraints: { unit: 'inch' },
         proposal: {
+          analysis_id: 'proposal-123',
           status: 'fit_ready',
+          plan_summary: {
+            source_kind: 'plan',
+            canonical_unit: 'inch',
+            room_count: 12,
+            wall_count: 42,
+            opening_count: 18,
+            footprint_bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+          },
+          compliance_summary: {
+            status: 'fit_ready',
+            checked_rule_ids: ['buildable_polygon.contains_plan_footprint'],
+            violations: [],
+            warnings: [],
+            boundary_diagnostics: [],
+            room_diagnostics: [],
+            mutation_hints: [],
+          },
           candidates: [{
             candidate_id: 'baseline_preserved',
             strategy: 'preserve_existing_layout',
             summary: 'Keep the current plan unchanged.',
             fit_status: 'fit_ready',
             change_count: 0,
+            changes: [],
           }],
           warnings: [],
         },
@@ -241,6 +309,125 @@ describe('runChatAgentTool', () => {
       kind: 'site-fit-proposal',
       proposal: expect.objectContaining({
         cadAnalysisId: 'cad-123',
+        changeCount: 0,
+        preview: expect.objectContaining({
+          sourceName: 'SEMINOLE2000 proposed',
+        }),
+        footprint: expect.objectContaining({
+          current: expect.objectContaining({ width: 468 }),
+        }),
+      }),
+    }))
+  })
+
+  it('explains why no candidate was produced when site-fit stays in buildable conflict', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve({
+        pipeline: 'site_fit_bridge_mvp_v1',
+        scope: 'seminole-2000-only',
+        plan_id: 'seminole-2000',
+        plan_name: 'SEMINOLE2000',
+        cad_analysis: {
+          analysis_id: 'cad-999',
+          source_name: 'site.dxf',
+          source_format: 'dxf',
+          canonical_unit: 'inch',
+          conversion_status: 'native_dxf',
+          floor_plan: { role: 'floor_plan', bbox: null, summary: { entity_count: 0, line_count: 0, polyline_count: 0, text_count: 0 }, entities: [], rooms: [], measurements: null },
+          site_plan: { role: 'site_plan', bbox: null, summary: { entity_count: 0, line_count: 0, polyline_count: 0, text_count: 0 }, entities: [], rooms: [], measurements: null },
+          side_by_side: { canonical_unit: 'inch', gap: 0, floor_width: 0, site_width: 0, max_height: 0 },
+          fit_summary: null,
+          warnings: [],
+        },
+        proposal_review: {
+          analysis_id: 'proposal-999',
+          source_name: 'SEMINOLE2000 proposed',
+          source_format: 'site_fit_proposal',
+          canonical_unit: 'inch',
+          conversion_status: 'site_fit_proposal',
+          floor_plan: {
+            role: 'floor_plan',
+            bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+            summary: { entity_count: 1, line_count: 1, polyline_count: 0, text_count: 0 },
+            entities: [],
+            rooms: [],
+            measurements: { width: 468, height: 792, source: 'catalog_plan_bbox' },
+          },
+          site_plan: {
+            role: 'site_plan',
+            bbox: { x1: 3180, y1: 180, x2: 3600, y2: 900, width: 420, height: 720 },
+            summary: { entity_count: 1, line_count: 0, polyline_count: 1, text_count: 0 },
+            entities: [],
+            rooms: [],
+            measurements: { width: 420, height: 720, source: 'buildable_bbox' },
+          },
+          side_by_side: { canonical_unit: 'inch', gap: 0, floor_width: 468, site_width: 420, max_height: 792 },
+          fit_summary: {
+            comparison_unit: 'inch',
+            basis: 'buildable_polygon',
+            footprint_bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+            registered_footprint_bbox: { x1: 3180, y1: 180, x2: 3648, y2: 972, width: 468, height: 792 },
+            buildable_bbox: { x1: 3180, y1: 180, x2: 3600, y2: 900, width: 420, height: 720 },
+            buildable_polygon: [
+              { x: 3180, y: 180 },
+              { x: 3600, y: 180 },
+              { x: 3600, y: 900 },
+              { x: 3180, y: 900 },
+              { x: 3180, y: 180 },
+            ],
+            fits_within_buildable_polygon: false,
+            fits_within_buildable_bbox: false,
+            width_delta: -48,
+            height_delta: -72,
+          },
+          warnings: [],
+        },
+        site_constraints: { unit: 'inch' },
+        proposal: {
+          analysis_id: 'proposal-999',
+          status: 'buildable_conflict',
+          plan_summary: {
+            source_kind: 'plan',
+            canonical_unit: 'inch',
+            room_count: 12,
+            wall_count: 42,
+            opening_count: 18,
+            footprint_bbox: { x1: 0, y1: 0, x2: 468, y2: 792, width: 468, height: 792 },
+          },
+          compliance_summary: {
+            status: 'buildable_conflict',
+            checked_rule_ids: ['buildable_polygon.contains_plan_footprint'],
+            violations: [{ rule_id: 'buildable_polygon.contains_plan_footprint', message: 'The normalized plan footprint exceeds the buildable polygon.' }],
+            warnings: [],
+            boundary_diagnostics: [{ status: 'blocked_room_minimum', reason: 'owner room cannot absorb the shrink' }],
+            room_diagnostics: [],
+            mutation_hints: [],
+          },
+          candidates: [],
+          warnings: [],
+        },
+        warnings: [],
+      }),
+    })
+
+    const file = new File(['cad'], 'site.dxf', { type: 'application/dxf' })
+    const result = await runChatAgentTool({
+      prompt: 'Fit Seminole 2000 on this site plan',
+      attachment: file,
+    })
+
+    expect(result.assistantMessage.artifacts[0]).toEqual(expect.objectContaining({
+      kind: 'site-fit-proposal',
+      proposal: expect.objectContaining({
+        candidateId: null,
+        blockerMessages: expect.arrayContaining([
+          expect.stringMatching(/no apareció ningún candidate/i),
+          expect.stringMatching(/owner room cannot absorb the shrink/i),
+        ]),
+        violationMessages: expect.arrayContaining([
+          'The normalized plan footprint exceeds the buildable polygon.',
+        ]),
       }),
     }))
   })
@@ -333,6 +520,7 @@ describe('runChatAgentTool', () => {
           candidate_id: 'baseline_preserved',
           apply_status: 'applied',
           compliance_summary: { status: 'pass' },
+          change_set: [],
           warnings: [],
         },
         warnings: [],
@@ -364,6 +552,15 @@ describe('runChatAgentTool', () => {
           applyId: 'apply-123',
           href: '/api/v2/site-fit/bridge/export/apply-123',
           exportUrl: '/api/v2/site-fit/bridge/export/apply-123',
+          beforeFootprint: expect.objectContaining({
+            width: 468,
+          }),
+          afterFootprint: expect.objectContaining({
+            width: 468,
+          }),
+          rooms: expect.arrayContaining([
+            expect.objectContaining({ name: 'BEDROOM 2', width: 120 }),
+          ]),
           preview: expect.objectContaining({
             fitSummary: expect.objectContaining({
               registered_footprint_bbox: expect.objectContaining({
