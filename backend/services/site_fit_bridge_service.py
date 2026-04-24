@@ -28,9 +28,33 @@ def build_mvp_site_constraints(cad_analysis: dict, plan_payload: dict) -> tuple[
     fit = cad_analysis.get("fit_summary") or {}
     buildable_bbox = fit.get("buildable_bbox")
     if not buildable_bbox:
-        raise ValueError("Bridge MVP v1 needs an extracted buildable bbox.")
+        site_plan = cad_analysis.get("site_plan") or {}
+        site_bbox = site_plan.get("bbox") if isinstance(site_plan, dict) else None
+        if isinstance(site_bbox, dict) and site_bbox.get("width") and site_bbox.get("height"):
+            buildable_bbox = {
+                "x1": float(site_bbox.get("x1", 0.0)),
+                "y1": float(site_bbox.get("y1", 0.0)),
+                "x2": float(site_bbox.get("x2", 0.0)),
+                "y2": float(site_bbox.get("y2", 0.0)),
+                "width": float(site_bbox.get("width", 0.0)),
+                "height": float(site_bbox.get("height", 0.0)),
+            }
+            fit_warnings = [
+                "No se detectó un buildable_polygon/capa explícita; se usó la bbox del site plan como envelope provisional."
+            ]
+        else:
+            raise ValueError("Bridge MVP v1 needs an extracted buildable bbox.")
+    else:
+        fit_warnings = []
 
     plan_bbox = plan_payload.get("footprint_bbox") or {}
+    warnings = [
+        "Bridge MVP v1 anchors SEMINOLE2000 at the buildable bbox origin for a fixed 1:1 registration lane.",
+    ]
+    if fit.get("buildable_polygon"):
+        warnings.append("Buildable polygon detected and used for polygonal fit check.")
+    if fit_warnings:
+        warnings.extend(fit_warnings)
     return {
         "unit": cad_analysis.get("canonical_unit") or "inch",
         "placed_plan_footprint": {
@@ -46,9 +70,7 @@ def build_mvp_site_constraints(cad_analysis: dict, plan_payload: dict) -> tuple[
             "height": buildable_bbox["height"],
         },
         "buildable_polygon": fit.get("buildable_polygon") or [],
-    }, [
-        "Bridge MVP v1 anchors SEMINOLE2000 at the buildable bbox origin for a fixed 1:1 registration lane.",
-    ]
+    }, warnings
 
 
 def propose_mvp_site_fit(*, filename: str, data: bytes) -> dict:

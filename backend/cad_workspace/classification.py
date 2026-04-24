@@ -27,8 +27,11 @@ def assign_floor_and_site_clusters(
     if site_index is None:
         site_index = site_anchor_index
     if site_index is None:
-        remaining = [idx for idx in range(len(clusters)) if idx != floor_index]
-        site_index = remaining[0] if remaining else None
+        if len(clusters) == 1:
+            site_index = 0
+        else:
+            remaining = [idx for idx in range(len(clusters)) if idx != floor_index]
+            site_index = remaining[0] if remaining else None
 
     floor_indexes = {floor_index}
     if floor_anchor_index is not None:
