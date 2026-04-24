@@ -34,27 +34,26 @@ export function PlanCard({ plan, onOpen, onDelete, onRename }: PlanCardProps) {
         className="block w-full text-left"
       >
         <div className="relative h-40 border-b border-white/6 bg-zinc-950">
-          {plan.imageData ? (
-            <img src={plan.imageData} alt={plan.name} className="h-full w-full object-cover opacity-90" />
-          ) : (
-            <div className="flex h-full items-center justify-center">
-              <div className="space-y-2 text-center">
-                <div className="mx-auto h-12 w-12 rounded-2xl border border-white/8 bg-white/[0.04]" />
-                <p className="text-xs uppercase tracking-[0.24em] text-zinc-600">No artifact preview</p>
+          <div className="flex h-full items-end justify-between gap-3 px-4 py-4">
+            <div className="space-y-2">
+              <p className="text-[11px] uppercase tracking-[0.24em] text-zinc-500">Site-fit workspace</p>
+              <div className="space-y-1">
+                <p className="text-sm font-medium text-zinc-100">{plan.structure ? 'Site-fit workspace' : 'Site-fit thread'}</p>
+                <p className="text-xs text-zinc-400">
+                  {plan.structure ? 'Restored thread ready for chat and fit.' : 'Chat-first thread ready to continue.'}
+                </p>
               </div>
             </div>
-          )}
+            <span className="rounded-full border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-300">
+              Open workspace
+            </span>
+          </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/15 to-transparent" />
           <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate text-lg font-medium text-zinc-100">{plan.name}</p>
-              <p className="mt-1 text-xs text-zinc-300/75">
-                {plan.structure ? 'Structured result available' : 'No generated artifacts yet'}
-              </p>
+              <p className="mt-1 text-xs text-zinc-300/75">{plan.structure ? 'Site-fit chat lane' : 'Thread workspace'}</p>
             </div>
-            <span className="rounded-full border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-300">
-              Open thread
-            </span>
           </div>
         </div>
       </button>

@@ -1,6 +1,4 @@
 import { apiUrl } from '../../lib/api'
-import type { V2Result } from '../../types'
-import { fileToBase64 } from '../../utils/fileToBase64'
 import { buildCadReviewArtifactData } from '../cad/review'
 import type { CadWorkspaceExtractResult } from '../cad/contracts'
 import type {
@@ -14,11 +12,9 @@ import type { ThreadArtifact, ThreadMessage } from './thread.types'
 interface RunChatAgentToolArgs {
   prompt: string
   attachment: File | null
-  planName: string
 }
 
 interface ChatPlanUpdates {
-  imageData?: string | null
   structure?: Record<string, unknown> | null
   totalSqft?: number | null
 }
@@ -38,11 +34,6 @@ interface RunSiteFitApplyToolArgs {
 
 function newMessageId(prefix: string) {
   return `${prefix}-${Math.random().toString(36).slice(2, 10)}`
-}
-
-function isImageFile(file: File | null) {
-  if (!file) return false
-  return file.type.startsWith('image/') || /\.(png|jpe?g|webp)$/i.test(file.name)
 }
 
 function isCadFile(file: File | null) {
@@ -72,54 +63,6 @@ async function parseJsonOrThrow(response: Response) {
   return payload
 }
 
-async function runGenerateFromImageTool(file: File, prompt: string): Promise<RunChatAgentToolResult> {
-  const sourceImageData = await fileToBase64(file)
-  const imageBase64 = sourceImageData.replace(/^data:image\/\w+;base64,/, '')
-  const response = await fetch(apiUrl('/api/v2/generate-dxf'), {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      image: imageBase64,
-      model_variant: 'ensemble',
-    }),
-  })
-  const payload = await parseJsonOrThrow(response) as V2Result
-  const artifacts: ThreadArtifact[] = []
-
-  if (payload.preview_url) {
-    artifacts.push({
-      id: newMessageId('artifact'),
-      kind: 'preview',
-      title: 'Floor plan preview',
-      description: 'Preview generado por Point.ai a partir de la imagen adjunta.',
-      href: apiUrl(payload.preview_url),
-    })
-  }
-
-  if (payload.dxf_url) {
-    artifacts.push({
-      id: newMessageId('artifact'),
-      kind: 'export',
-      title: 'Download DXF',
-      description: 'DXF generado a partir del floor plan interpretado.',
-      href: apiUrl(payload.dxf_url),
-    })
-  }
-
-  const reviewText = payload.needs_review ? 'Quedo marcado para revision.' : 'Quedo listo para seguir trabajando.'
-
-  return {
-    assistantMessage: buildAssistantMessage(
-      `Listo, genere el floor plan desde ${file.name}. ${reviewText}${prompt ? ` Pedido: ${prompt}.` : ''}`,
-      artifacts,
-    ),
-    planUpdates: {
-      imageData: sourceImageData,
-      structure: payload.structure,
-    },
-  }
-}
-
 function buildCadFitText(result: CadWorkspaceExtractResult) {
   const fit = result.fit_summary
   if (!fit) return 'No encontre un resumen de encaje todavia.'
@@ -146,8 +89,8 @@ async function runCadAnalyzeTool(file: File, prompt: string): Promise<RunChatAge
   const artifacts: ThreadArtifact[] = [{
     id: newMessageId('artifact'),
     kind: 'cad-review',
-    title: 'CAD fit review',
-    description: 'Review human-in-the-loop del floor plan sobre el site/buildable dentro del chat.',
+    title: 'CAD diagnostic review',
+    description: 'Diagnostico del CAD cargado para inspeccionar encaje y geometria. No es salida final de producto.',
     review: {
       ...cadReview,
       export: cadReview.export.ready && cadReview.export.href
@@ -158,7 +101,7 @@ async function runCadAnalyzeTool(file: File, prompt: string): Promise<RunChatAge
 
   return {
     assistantMessage: buildAssistantMessage(
-      `Listo, analice el CAD ${file.name}. ${buildCadFitText(payload)} Unidad comun: ${payload.canonical_unit}. Te dejo el review inline en este chat.${prompt ? ` Pedido: ${prompt}.` : ''}`,
+      `Listo, corri el diagnostico CAD de ${file.name}. ${buildCadFitText(payload)} Unidad comun: ${payload.canonical_unit}. Esto es diagnostico inline, no salida final de producto.${prompt ? ` Pedido: ${prompt}.` : ''}`,
       artifacts,
     ),
   }
@@ -173,7 +116,7 @@ function buildSiteFitProposalArtifactData(payload: SiteFitBridgeProposalResult):
     candidateId: candidate?.candidate_id ?? null,
     cadAnalysisId: payload.cad_analysis.analysis_id,
     siteConstraints: payload.site_constraints,
-    summary: candidate?.summary ?? 'No vino ningun candidate baseline desde el bridge.',
+    summary: candidate?.summary ?? 'No vino ningun candidate baseline desde el site-fit.',
     fitStatus: candidate?.fit_status ?? payload.proposal.status,
     warnings: [...payload.warnings, ...(payload.proposal.warnings ?? [])],
   }
@@ -231,7 +174,7 @@ async function runSiteFitBridgeTool(file: File, prompt: string): Promise<RunChat
 
   return {
     assistantMessage: buildAssistantMessage(
-      `Listo, pase ${file.name} por el bridge site-fit para ${payload.plan_name}. Estado: ${proposal.fitStatus}.${prompt ? ` Pedido: ${prompt}.` : ''}`,
+      `Listo, corri site-fit de ${payload.plan_name} sobre ${file.name}. Estado: ${proposal.fitStatus}.${prompt ? ` Pedido: ${prompt}.` : ''}`,
       artifacts,
     ),
   }
@@ -277,10 +220,6 @@ export async function runChatAgentTool({
 }: RunChatAgentToolArgs): Promise<RunChatAgentToolResult> {
   const normalizedPrompt = prompt.trim().toLowerCase()
 
-  if (attachment && isImageFile(attachment)) {
-    return runGenerateFromImageTool(attachment, prompt)
-  }
-
   if (attachment && isCadFile(attachment)) {
     if (wantsSeminoleSiteFit(prompt)) {
       return runSiteFitBridgeTool(attachment, prompt)
@@ -291,7 +230,7 @@ export async function runChatAgentTool({
   if (attachment) {
     return {
       assistantMessage: buildAssistantMessage(
-        `Todavia no se usar ${attachment.name}. Subime una imagen del floor plan o un .dxf/.dwg para que ejecute una de las dos herramientas reales.`,
+        `No puedo usar ${attachment.name} en esta lane. Solo soportamos site plan .dxf/.dwg para correr site-fit de Seminole 2000 o un diagnostico CAD.`,
       ),
     }
   }
@@ -299,14 +238,14 @@ export async function runChatAgentTool({
   if (/(dxf|dwg|cad|site|lot|fit)/i.test(normalizedPrompt)) {
     return {
       assistantMessage: buildAssistantMessage(
-        'Subime un .dxf o .dwg y lo analizo contra el site plan desde este mismo chat.',
+        'Subime un site plan .dxf o .dwg y corro site-fit de Seminole 2000 o un diagnostico CAD desde este mismo chat.',
       ),
     }
   }
 
   return {
     assistantMessage: buildAssistantMessage(
-      'Subime una imagen del floor plan o un .dxf/.dwg. Hoy este agente ya sabe usar esas dos herramientas reales desde el chat.',
+      'Esta lane trabaja solo con site plan .dxf/.dwg. Con eso puedo correr site-fit de Seminole 2000 o un diagnostico CAD honesto.',
     ),
   }
 }

@@ -112,7 +112,7 @@ function MainAppShell() {
     createdAtIso: new Date().toISOString(),
     artifacts: submission.attachment ? [{
       id: `artifact-${Math.random().toString(36).slice(2, 10)}`,
-      kind: submission.attachment.type.startsWith('image/') ? 'image-source' : 'cad-source',
+      kind: 'cad-source',
       title: submission.attachment.name,
       description: 'Adjunto enviado al agente desde el chat.',
     }] : [],
@@ -136,7 +136,6 @@ function MainAppShell() {
       const result = await runChatAgentTool({
         prompt: submission.message,
         attachment: submission.attachment,
-        planName: activeThread.name,
       })
 
       appendThreadMessages(threadId, [result.assistantMessage])

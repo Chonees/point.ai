@@ -82,7 +82,7 @@ describe('App chat shell', () => {
     expect(screen.queryByText('Image workspace')).not.toBeInTheDocument()
     expect(screen.queryByText('CAD workspace')).not.toBeInTheDocument()
     expect(await screen.findByText(/your workspace/i)).toBeInTheDocument()
-    expect(screen.queryByPlaceholderText(/pedile algo a point/i)).not.toBeInTheDocument()
+    expect(screen.queryByPlaceholderText(/site plan dxf\/dwg/i)).not.toBeInTheDocument()
   })
 
   it('can transition from projects to an open thread without hook-order crashes', async () => {
@@ -91,7 +91,7 @@ describe('App chat shell', () => {
     fireEvent.click(await screen.findByRole('button', { name: /open project pointe homes/i }))
     fireEvent.click(await screen.findByRole('button', { name: /open thread fit dawson/i }))
 
-    expect(await screen.findByPlaceholderText(/pedile algo a point/i)).toBeInTheDocument()
+    expect(await screen.findByPlaceholderText(/site plan dxf\/dwg/i)).toBeInTheDocument()
   })
 
   it('routes a chat prompt through the agent tool and appends the assistant response', async () => {
@@ -99,13 +99,13 @@ describe('App chat shell', () => {
       assistantMessage: {
         id: 'assistant-1',
         role: 'assistant',
-        content: 'Listo, analice el site plan y ya deje el overlay listo.',
+        content: 'Listo, corri el diagnostico CAD del site plan y deje el review inline.',
         createdAtIso: '2026-04-21T00:00:00.000Z',
         artifacts: [
           {
             id: 'artifact-1',
             kind: 'export',
-            title: 'Download CAD overlay DXF',
+            title: 'Download diagnostic overlay DXF',
             href: '/api/cad-workspace/export-overlay/cad-123',
           },
         ],
@@ -116,13 +116,13 @@ describe('App chat shell', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: /open project pointe homes/i }))
     fireEvent.click(await screen.findByRole('button', { name: /open thread fit dawson/i }))
-    fireEvent.change(screen.getByPlaceholderText(/pedile algo a point/i), {
-      target: { value: 'Analyze DXF/DWG' },
+    fireEvent.change(screen.getByPlaceholderText(/site plan dxf\/dwg/i), {
+      target: { value: 'Run CAD diagnostic' },
     })
     fireEvent.click(screen.getByRole('button', { name: /enviar/i }))
 
-    expect((await screen.findAllByText('Analyze DXF/DWG')).length).toBeGreaterThan(0)
-    expect(await screen.findByText(/analice el site plan/i)).toBeInTheDocument()
+    expect((await screen.findAllByText('Run CAD diagnostic')).length).toBeGreaterThan(0)
+    expect(await screen.findByText(/diagnostico cad/i)).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/api/cad-workspace/export-overlay/cad-123')
   })
 
@@ -179,7 +179,7 @@ describe('App chat shell', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: /open project pointe homes/i }))
     fireEvent.click(await screen.findByRole('button', { name: /open thread fit dawson/i }))
-    fireEvent.change(screen.getByPlaceholderText(/pedile algo a point/i), {
+    fireEvent.change(screen.getByPlaceholderText(/site plan dxf\/dwg/i), {
       target: { value: 'Fit Seminole 2000 on this site plan' },
     })
     fireEvent.click(screen.getByRole('button', { name: /enviar/i }))
@@ -208,7 +208,7 @@ describe('App chat shell', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: /open project pointe homes/i }))
     fireEvent.click(await screen.findByRole('button', { name: /open thread fit dawson/i }))
-    fireEvent.change(screen.getByPlaceholderText(/pedile algo a point/i), {
+    fireEvent.change(screen.getByPlaceholderText(/site plan dxf\/dwg/i), {
       target: { value: 'Fit Seminole 2000 on this site plan' },
     })
     fireEvent.click(screen.getByRole('button', { name: /enviar/i }))

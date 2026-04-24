@@ -1,4 +1,4 @@
-import type { ThreadArtifact, ThreadMessage, ThreadSummary } from '../chatThread/thread.types'
+import type { ThreadMessage, ThreadSummary } from '../chatThread/thread.types'
 import type { ThreadData } from './thread.types'
 
 export function threadToThreadSummary(thread: ThreadData): ThreadSummary {
@@ -7,45 +7,25 @@ export function threadToThreadSummary(thread: ThreadData): ThreadSummary {
     projectId: thread.projectId,
     title: thread.name,
     lastActivityIso: thread.updatedAt,
-    preview: thread.structure ? 'Floor plan disponible' : 'Thread listo para empezar',
+    preview: thread.structure ? 'Site-fit workspace ready' : 'Site-fit thread ready to start',
   }
 }
 
 export function threadToInitialMessages(thread: ThreadData): ThreadMessage[] {
-  const artifacts: ThreadArtifact[] = []
-
-  if (thread.imageData) {
-    artifacts.push({
-      id: `${thread.id}-image`,
-      kind: 'image-source',
-      title: 'Original image',
-      description: 'Fuente persistida del thread',
-    })
-  }
-
-  if (thread.structure) {
-    artifacts.push({
-      id: `${thread.id}-preview`,
-      kind: 'preview',
-      title: 'Latest parsed structure',
-      description: 'Persisted geometry is available for the agent to continue from.',
-    })
-  }
-
   return [
     {
       id: `${thread.id}-system`,
       role: 'system',
-      content: 'Thread restaurado desde el proyecto.',
+      content: 'Thread restaurado desde el workspace site-fit.',
       createdAtIso: thread.createdAt,
       artifacts: [],
     },
     {
       id: `${thread.id}-assistant`,
       role: 'assistant',
-      content: 'Listo para continuar con generacion, fit o ajustes.',
+      content: 'Restored site-fit workspace. Continue from the current thread state.',
       createdAtIso: thread.updatedAt,
-      artifacts,
+      artifacts: [],
     },
   ]
 }

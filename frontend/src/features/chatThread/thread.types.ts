@@ -10,12 +10,7 @@ interface ThreadArtifactBase {
 }
 
 export interface ThreadSourceArtifact extends ThreadArtifactBase {
-  kind: 'image-source' | 'cad-source'
-}
-
-export interface ThreadPreviewArtifact extends ThreadArtifactBase {
-  kind: 'preview'
-  href?: string
+  kind: 'cad-source'
 }
 
 export interface ThreadExportArtifact extends ThreadArtifactBase {
@@ -40,7 +35,6 @@ export interface ThreadSiteFitApplyArtifact extends ThreadArtifactBase {
 
 export type ThreadArtifact =
   | ThreadSourceArtifact
-  | ThreadPreviewArtifact
   | ThreadExportArtifact
   | ThreadCadReviewArtifact
   | ThreadSiteFitProposalArtifact

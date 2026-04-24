@@ -15,7 +15,7 @@ describe('ThreadWorkspacePage', () => {
             projectId: 'project-1',
             title: 'Fit Dawson',
             lastActivityIso: '2026-04-20T11:00:00.000Z',
-            preview: 'Floor plan disponible',
+            preview: 'Site-fit workspace ready',
           },
         ]}
         selectedThreadId="thread-1"
@@ -36,7 +36,7 @@ describe('ThreadWorkspacePage', () => {
     expect(screen.getByText('Pointe Homes')).toBeInTheDocument()
     expect(screen.getAllByText('Fit Dawson').length).toBe(2)
     expect(screen.getByText('Listo para continuar.')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText(/pedile algo a point/i)).toBeInTheDocument()
+    expect(screen.getByPlaceholderText(/site plan dxf\/dwg/i)).toBeInTheDocument()
   })
 
   it('submits the composer content', () => {
@@ -53,7 +53,7 @@ describe('ThreadWorkspacePage', () => {
       />,
     )
 
-    fireEvent.change(screen.getByPlaceholderText(/pedile algo a point/i), {
+    fireEvent.change(screen.getByPlaceholderText(/site plan dxf\/dwg/i), {
       target: { value: 'Generame un floor plan' },
     })
     fireEvent.click(screen.getByRole('button', { name: /enviar/i }))
@@ -82,13 +82,13 @@ describe('ThreadWorkspacePage', () => {
     const file = new File(['cad'], 'dawson.dxf', { type: 'application/dxf' })
 
     fireEvent.change(input, { target: { files: [file] } })
-    fireEvent.change(screen.getByPlaceholderText(/pedile algo a point/i), {
-      target: { value: 'Analyze DXF/DWG' },
+    fireEvent.change(screen.getByPlaceholderText(/site plan dxf\/dwg/i), {
+      target: { value: 'Fit Seminole 2000 on this site plan' },
     })
     fireEvent.click(screen.getByRole('button', { name: /enviar/i }))
 
     expect(onSubmitMessage).toHaveBeenCalledWith({
-      message: 'Analyze DXF/DWG',
+      message: 'Fit Seminole 2000 on this site plan',
       attachment: file,
     })
   })
@@ -103,7 +103,7 @@ describe('ThreadWorkspacePage', () => {
             projectId: 'project-1',
             title: 'Fit Dawson',
             lastActivityIso: '2026-04-20T11:00:00.000Z',
-            preview: 'Floor plan disponible',
+            preview: 'Site-fit workspace ready',
           },
         ]}
         selectedThreadId="thread-1"
@@ -117,7 +117,7 @@ describe('ThreadWorkspacePage', () => {
               {
                 id: 'cad-review-1',
                 kind: 'cad-review',
-                title: 'CAD fit review',
+                title: 'CAD diagnostic review',
                 review: {
                   analysisId: 'demo',
                   sourceName: 'dawson.dxf',
@@ -213,12 +213,28 @@ describe('ThreadWorkspacePage', () => {
       />,
     )
 
-    expect(screen.getByText('Generate from image')).toBeInTheDocument()
-    expect(screen.getByText('Analyze DXF/DWG')).toBeInTheDocument()
+    expect(screen.getByText('Fit Seminole 2000 on this site plan')).toBeInTheDocument()
+    expect(screen.getByText('Run CAD diagnostic')).toBeInTheDocument()
     expect(screen.getAllByText(/Footprint/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Area construible/i).length).toBeGreaterThan(0)
     expect(screen.getByText("Buildable 63'-9 3/4\" · 765.77 in")).toBeInTheDocument()
     expect(screen.getByText('BEDROOM 2')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /download dxf/i })).toHaveAttribute('href', '/api/cad-workspace/export-overlay/demo')
+    expect(screen.getByRole('link', { name: /download diagnostic overlay dxf/i })).toHaveAttribute('href', '/api/cad-workspace/export-overlay/demo')
+  })
+
+  it('restricts the hidden file input to site plan DXF/DWG attachments', () => {
+    render(
+      <ThreadWorkspacePage
+        projectName="Pointe Homes"
+        threads={[]}
+        selectedThreadId={null}
+        messages={[]}
+        onSelectThread={vi.fn()}
+        onSubmitMessage={vi.fn()}
+      />,
+    )
+
+    expect(screen.getByLabelText(/adjuntar archivo/i)).toHaveAttribute('accept', '.dxf,.dwg')
+    expect(screen.queryByText('Generate from image')).not.toBeInTheDocument()
   })
 })

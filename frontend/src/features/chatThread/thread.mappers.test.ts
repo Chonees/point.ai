@@ -38,7 +38,13 @@ describe('thread.mappers', () => {
 
     expect(messages[0].role).toBe('system')
     expect(messages[1].role).toBe('assistant')
-    expect(messages[1].artifacts[0].kind).toBe('image-source')
-    expect(messages[1].artifacts[1].kind).toBe('preview')
+    expect(messages[1].content).toBe('Restored site-fit workspace. Continue from the current thread state.')
+    expect(messages[1].artifacts).toEqual([])
+  })
+
+  it('uses a site-fit-first thread summary preview', () => {
+    const summary = threadToThreadSummary(buildThread())
+
+    expect(summary.preview).toBe('Site-fit workspace ready')
   })
 })

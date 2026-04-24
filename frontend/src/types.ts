@@ -63,39 +63,3 @@ export const DEFAULT_VISIBILITY: Visibility = {
   dimensions: true,
 }
 
-export interface V2Result {
-  dxf_url: string
-  preview_url: string | null
-  structure: Record<string, unknown>
-  quality_metrics: Record<string, unknown>
-  review_flags: string[]
-  needs_review: boolean
-  scale_status: string
-  auto_annotations?: Array<{
-    id?: string
-    type: string
-    x1: number
-    y1: number
-    x2: number
-    y2: number
-    swing?: string
-    _source?: string
-    thickness?: number
-    wall_id?: string
-    side?: 'bottom' | 'top' | 'left' | 'right'
-    door_type?: string
-    polygon?: Array<{ x: number; y: number }>
-    // Dimension fields arriving from backend use snake_case
-    subtype?: DimensionSubtype
-    offset_px?: number
-    orientation?: DimensionOrientation
-    outward?: 1 | -1
-    value_inches?: number
-    value_text?: string
-    wall_ids?: string[]
-    window_ids?: string[]
-  }>
-  computed_rooms?: { roomName: string; sqft: number; x1: number; y1: number }[]
-  region_overlay?: string
-  scale_ipp?: number
-}

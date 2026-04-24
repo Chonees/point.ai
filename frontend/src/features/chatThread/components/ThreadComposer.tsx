@@ -6,12 +6,11 @@ interface ThreadComposerProps {
   isSubmitting?: boolean
 }
 
-const QUICK_ACTIONS = ['Generate from image', 'Analyze DXF/DWG']
+const QUICK_ACTIONS = ['Fit Seminole 2000 on this site plan', 'Run CAD diagnostic']
 
 function defaultMessageForAttachment(file: File | null) {
   if (!file) return ''
-  if (file.type.startsWith('image/') || /\.(png|jpe?g|webp)$/i.test(file.name)) return 'Generate from image'
-  if (/\.(dxf|dwg)$/i.test(file.name)) return 'Analyze DXF/DWG'
+  if (/\.(dxf|dwg)$/i.test(file.name)) return 'Fit Seminole 2000 on this site plan'
   return ''
 }
 
@@ -39,7 +38,7 @@ export function ThreadComposer({ onSubmitMessage, isSubmitting = false }: Thread
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*,.dxf,.dwg"
+        accept=".dxf,.dwg"
         aria-label="Adjuntar archivo"
         className="sr-only"
         onChange={(event) => {
@@ -49,7 +48,7 @@ export function ThreadComposer({ onSubmitMessage, isSubmitting = false }: Thread
       <textarea
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
-        placeholder="Pedile algo a Point..."
+        placeholder="Subi un site plan DXF/DWG y pedime meter Seminole 2000 o correr un diagnostico..."
         className="min-h-[120px] w-full rounded-2xl border border-white/8 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none"
       />
       <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -58,7 +57,7 @@ export function ThreadComposer({ onSubmitMessage, isSubmitting = false }: Thread
           onClick={() => fileInputRef.current?.click()}
           className="rounded-2xl border border-white/10 bg-white/[0.04] px-3 py-2 text-xs text-zinc-200"
         >
-          Adjuntar archivo
+          Adjuntar site plan
         </button>
         {attachment && (
           <div className="inline-flex items-center gap-2 rounded-full border border-white/8 px-3 py-1 text-xs text-zinc-300">

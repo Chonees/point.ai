@@ -4,55 +4,25 @@ import { runChatAgentTool, runSiteFitApplyTool } from './chatAgent'
 const mockFetch = vi.fn()
 globalThis.fetch = mockFetch
 
-vi.mock('../../utils/fileToBase64', () => ({
-  fileToBase64: vi.fn(async () => 'data:image/png;base64,AAAA'),
-}))
-
 describe('runChatAgentTool', () => {
   beforeEach(() => {
     mockFetch.mockReset()
   })
 
-  it('uses the generate-from-image tool when the attachment is an image', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({
-        dxf_url: '/downloads/generated.dxf',
-        preview_url: '/artifacts/preview.png',
-        structure: { rooms: [] },
-        quality_metrics: {},
-        review_flags: [],
-        needs_review: false,
-        scale_status: 'ok',
-      }),
-    })
-
+  it('rejects image attachments because this chat lane only supports site plan DXF/DWG', async () => {
     const file = new File(['image'], 'floor.png', { type: 'image/png' })
     const result = await runChatAgentTool({
-      prompt: 'Generame el floor plan',
+      prompt: 'Fit Seminole 2000 on this site plan',
       attachment: file,
-      planName: 'Fit Dawson',
     })
 
-    expect(mockFetch).toHaveBeenCalledWith('/api/v2/generate-dxf', expect.objectContaining({
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    }))
-
-    expect(result.assistantMessage.content).toMatch(/gener/i)
-    expect(result.assistantMessage.artifacts).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ kind: 'preview', title: 'Floor plan preview', href: '/artifacts/preview.png' }),
-        expect.objectContaining({ kind: 'export', title: 'Download DXF', href: '/downloads/generated.dxf' }),
-      ]),
-    )
-    expect(result.planUpdates).toEqual(expect.objectContaining({
-      imageData: 'data:image/png;base64,AAAA',
-      structure: { rooms: [] },
-    }))
+    expect(mockFetch).not.toHaveBeenCalled()
+    expect(result.assistantMessage.content).toMatch(/solo.*site plan.*\.dxf\/\.dwg/i)
+    expect(result.assistantMessage.artifacts).toEqual([])
+    expect(result.planUpdates).toBeUndefined()
   })
 
-  it('returns an inline CAD review artifact and enables DXF export when overlay data is complete', async () => {
+  it('returns an inline CAD diagnostic artifact and keeps overlay export explicitly diagnostic', async () => {
     mockFetch.mockResolvedValueOnce({
       ok: true,
       json: () => Promise.resolve({
@@ -96,20 +66,20 @@ describe('runChatAgentTool', () => {
     const result = await runChatAgentTool({
       prompt: 'Analiza este site plan',
       attachment: file,
-      planName: 'Fit Dawson',
     })
 
     expect(mockFetch).toHaveBeenCalledWith('/api/cad-workspace/extract', expect.objectContaining({
       method: 'POST',
       body: expect.any(FormData),
     }))
-    expect(result.assistantMessage.content).toMatch(/analic/i)
+    expect(result.assistantMessage.content).toMatch(/diagnostic/i)
     expect(result.assistantMessage.content).toMatch(/no entra/i)
     expect(result.assistantMessage.artifacts).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           kind: 'cad-review',
-          title: 'CAD fit review',
+          title: 'CAD diagnostic review',
+          description: expect.stringMatching(/diagnostic/i),
           review: expect.objectContaining({
             export: {
               ready: true,
@@ -163,7 +133,6 @@ describe('runChatAgentTool', () => {
     const result = await runChatAgentTool({
       prompt: 'Analiza este site plan',
       attachment: file,
-      planName: 'Fit Dawson',
     })
 
     expect(result.assistantMessage.artifacts).toEqual(
@@ -183,13 +152,13 @@ describe('runChatAgentTool', () => {
 
   it('asks for the required file when the prompt references a tool but no attachment was sent', async () => {
     const result = await runChatAgentTool({
-      prompt: 'Analyze DXF/DWG',
+      prompt: 'Fit Seminole 2000 on this site plan',
       attachment: null,
-      planName: 'Fit Dawson',
     })
 
     expect(mockFetch).not.toHaveBeenCalled()
-    expect(result.assistantMessage.content).toMatch(/subime un \.dxf o \.dwg/i)
+    expect(result.assistantMessage.content).toMatch(/site plan.*\.dxf o \.dwg/i)
+    expect(result.assistantMessage.content).toMatch(/seminole|diagnostic/i)
   })
 
   it('routes CAD + Seminole prompts through the bridge propose endpoint', async () => {
@@ -259,13 +228,14 @@ describe('runChatAgentTool', () => {
     const result = await runChatAgentTool({
       prompt: 'Fit Seminole 2000 on this site plan',
       attachment: file,
-      planName: 'Fit Dawson',
     })
 
     expect(mockFetch).toHaveBeenCalledWith('/api/v2/site-fit/bridge/propose', expect.objectContaining({
       method: 'POST',
       body: expect.any(FormData),
     }))
+    expect(result.assistantMessage.content).toMatch(/site-fit.*SEMINOLE2000/i)
+    expect(result.assistantMessage.content).not.toMatch(/bridge/i)
     expect(result.assistantMessage.artifacts).toEqual(expect.arrayContaining([
       expect.objectContaining({
         kind: 'cad-review',
@@ -335,5 +305,16 @@ describe('runChatAgentTool', () => {
         }),
       }),
     ]))
+  })
+
+  it('rejects unsupported attachments with the site-fit-lane-only message', async () => {
+    const file = new File(['text'], 'notes.txt', { type: 'text/plain' })
+    const result = await runChatAgentTool({
+      prompt: 'Run CAD diagnostic',
+      attachment: file,
+    })
+
+    expect(mockFetch).not.toHaveBeenCalled()
+    expect(result.assistantMessage.content).toMatch(/solo.*site plan.*\.dxf\/\.dwg/i)
   })
 })

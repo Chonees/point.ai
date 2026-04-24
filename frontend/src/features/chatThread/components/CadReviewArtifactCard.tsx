@@ -12,6 +12,7 @@ export function CadReviewArtifactCard({ artifact }: CadReviewArtifactCardProps) 
     <article className="rounded-2xl border border-cyan-500/20 bg-[#0b1115] p-3 shadow-[0_0_0_1px_rgba(34,211,238,0.04)]">
       <p className="text-[11px] uppercase tracking-[0.22em] text-cyan-200/70">cad-review</p>
       <h4 className="mt-2 text-sm font-medium text-zinc-100">{artifact.title}</h4>
+      <p className="mt-2 text-xs text-cyan-100/80">Diagnostico CAD solamente. No es salida final del producto.</p>
       <p className="mt-2 text-xs text-zinc-400">Unidad comun: {review.canonicalUnit}</p>
       {review.warnings.length > 0 && (
         <p className="mt-1 text-xs text-amber-300">{review.warnings[0]}</p>
@@ -25,7 +26,7 @@ export function CadReviewArtifactCard({ artifact }: CadReviewArtifactCardProps) 
             href={review.export.href}
             className="inline-flex rounded-xl border border-white/10 px-3 py-2 text-xs text-zinc-100"
           >
-            Download DXF
+            Download diagnostic overlay DXF
           </a>
         ) : (
           <span className="inline-flex rounded-xl border border-white/10 px-3 py-2 text-xs text-zinc-500">
