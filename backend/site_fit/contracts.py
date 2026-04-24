@@ -65,6 +65,9 @@ class SiteFitComplianceSummaryResponse(BaseModel):
     checked_rule_ids: list[str] = Field(default_factory=list)
     violations: list[dict] = Field(default_factory=list)
     warnings: list[str] = Field(default_factory=list)
+    boundary_diagnostics: list[dict] = Field(default_factory=list)
+    room_diagnostics: list[dict] = Field(default_factory=list)
+    mutation_hints: list[dict] = Field(default_factory=list)
 
 
 class SiteFitCandidateResponse(BaseModel):
