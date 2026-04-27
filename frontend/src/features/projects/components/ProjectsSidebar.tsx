@@ -9,6 +9,10 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
+function isSelectProjectKey(key: string) {
+  return key === 'Enter' || key === ' '
+}
+
 interface ProjectsSidebarProps {
   projects: ProjectData[]
   loading: boolean
@@ -96,10 +100,17 @@ export function ProjectsSidebar({
           {projects.map((project) => {
             const active = selectedProjectId === project.id
             return (
-              <button
+              <div
                 key={project.id}
-                type="button"
+                role="button"
+                tabIndex={0}
+                aria-pressed={active}
                 onClick={() => onSelectProject(project.id)}
+                onKeyDown={(e) => {
+                  if (!isSelectProjectKey(e.key)) return
+                  e.preventDefault()
+                  onSelectProject(project.id)
+                }}
                 className={`group w-full rounded-[24px] border px-4 py-4 text-left transition-all ${
                   active
                     ? 'border-white/14 bg-white/[0.06] shadow-[0_0_0_1px_rgba(255,255,255,0.04)]'
@@ -119,6 +130,7 @@ export function ProjectsSidebar({
                           onChange={(e) => setEditName(e.target.value)}
                           onBlur={() => handleRename(project.id)}
                           onKeyDown={(e) => {
+                            e.stopPropagation()
                             if (e.key === 'Enter') handleRename(project.id)
                             if (e.key === 'Escape') setEditingId(null)
                           }}
@@ -159,7 +171,7 @@ export function ProjectsSidebar({
                     </button>
                   </div>
                 </div>
-              </button>
+              </div>
             )
           })}
         </div>
