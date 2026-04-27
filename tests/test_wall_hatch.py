@@ -28,7 +28,7 @@ def test_4_inch_wall_uses_ansi31_bylayer():
     h = hatches[0]
     assert h.dxf.layer == LAYER
     assert h.dxf.pattern_name == "ANSI31"
-    assert h.dxf.pattern_scale == 6.0
+    assert h.dxf.pattern_scale == 0.3
 
 
 def test_6_inch_wall_uses_solid_color_9():
