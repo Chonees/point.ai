@@ -827,7 +827,10 @@ def _limit_exterior_wall_windows(
     kept_windows: list[dict[str, Any]] = []
     removed = 0
     for wall_id, wins in windows_by_wall.items():
-        if len(wins) <= _MAX_WINDOWS_PER_EXTERIOR_WALL:
+        wall = wall_map.get(wall_id)
+        if wall is None or not wall.get("is_exterior", False):
+            kept_windows.extend(wins)
+        elif len(wins) <= _MAX_WINDOWS_PER_EXTERIOR_WALL:
             kept_windows.extend(wins)
         else:
             wins_sorted = sorted(wins, key=lambda o: o["span"], reverse=True)
@@ -1023,25 +1026,46 @@ def _anchor_openings(
     anchored = []
     filtered = 0
     inferred_side_count = 0
+
+    def _pick_wall(normalized_opening: dict[str, Any]) -> dict[str, Any] | None:
+        if normalized_opening.get("wall_id") and normalized_opening["wall_id"] in wall_map:
+            return wall_map[normalized_opening["wall_id"]]
+        return _find_best_wall(normalized_opening, walls, config=resolved)
+
     for counter, opening in enumerate(openings, start=1):
         normalized = _normalize_opening(opening, counter)
-        wall = None
-
-        if normalized.get("wall_id") and normalized["wall_id"] in wall_map:
-            wall = wall_map[normalized["wall_id"]]
-        else:
-            wall = _find_best_wall(normalized, walls, config=resolved)
+        wall = _pick_wall(normalized)
 
         if wall is None:
-            filtered += 1
-            review_flags.append(f"Filtered opening {normalized['id']}: no compatible wall found.")
-            continue
+            if normalized.get("orientation"):
+                retry_normalized = dict(normalized)
+                retry_normalized["orientation"] = None
+                retry_normalized["wall_id"] = None
+                wall = _pick_wall(retry_normalized)
+                if wall is not None:
+                    normalized = retry_normalized
+            if wall is None:
+                filtered += 1
+                review_flags.append(f"Filtered opening {normalized['id']}: no compatible wall found.")
+                continue
 
         offset = _opening_offset_for_wall(normalized, wall)
         if offset < -resolved.snap_tolerance or offset + normalized["span"] > _wall_length(wall) + resolved.snap_tolerance:
-            filtered += 1
-            review_flags.append(f"Filtered opening {normalized['id']}: opening span does not fit wall {wall['id']}.")
-            continue
+            if normalized.get("orientation"):
+                retry_normalized = dict(normalized)
+                retry_normalized["orientation"] = None
+                retry_normalized["wall_id"] = None
+                retry_wall = _pick_wall(retry_normalized)
+                if retry_wall is not None:
+                    retry_offset = _opening_offset_for_wall(retry_normalized, retry_wall)
+                    if -resolved.snap_tolerance <= retry_offset and retry_offset + retry_normalized["span"] <= _wall_length(retry_wall) + resolved.snap_tolerance:
+                        normalized = retry_normalized
+                        wall = retry_wall
+                        offset = retry_offset
+            if offset < -resolved.snap_tolerance or offset + normalized["span"] > _wall_length(wall) + resolved.snap_tolerance:
+                filtered += 1
+                review_flags.append(f"Filtered opening {normalized['id']}: opening span does not fit wall {wall['id']}.")
+                continue
 
         side = normalized.get("side") or wall.get("side") or _default_side_for_wall(wall)
         if normalized.get("side") is None:
@@ -1096,15 +1120,20 @@ def _find_best_wall(
     *,
     config: PostprocessConfig | None = None,
 ) -> dict[str, Any] | None:
-    candidates = []
-    for wall in walls:
-        if opening.get("orientation") and wall["orientation"] != opening["orientation"]:
-            continue
-        distance = _opening_distance_to_wall(opening, wall, config=config)
-        if distance is None:
-            continue
-        candidates.append((distance, -_wall_length(wall), wall))
+    def _collect_candidates(enforce_orientation: bool) -> list[tuple[float, float, dict[str, Any]]]:
+        candidates = []
+        for wall in walls:
+            if enforce_orientation and opening.get("orientation") and wall["orientation"] != opening["orientation"]:
+                continue
+            distance = _opening_distance_to_wall(opening, wall, config=config)
+            if distance is None:
+                continue
+            candidates.append((distance, -_wall_length(wall), wall))
+        return candidates
 
+    candidates = _collect_candidates(enforce_orientation=True)
+    if not candidates and opening.get("orientation"):
+        candidates = _collect_candidates(enforce_orientation=False)
     if not candidates:
         return None
     candidates.sort(key=lambda item: (item[0], item[1]))
@@ -1211,7 +1240,7 @@ def _orientation(start: dict[str, float], end: dict[str, float]) -> str:
 
 
 def _default_side_for_wall(wall: dict[str, Any]) -> str:
-    if wall["side"]:
+    if wall.get("side"):
         return wall["side"]
     if wall["orientation"] == "horizontal":
         return "top"

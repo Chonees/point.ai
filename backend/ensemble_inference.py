@@ -15,6 +15,13 @@ from typing import Any
 from .mitunet_inference import infer_mitunet, mitunet_available
 from .cubicasa_inference import cubicasa_available, infer_cubicasa
 from .observability import log_event
+from .structure_postprocess import (
+    _anchor_openings,
+    _deduplicate_openings,
+    _limit_exterior_wall_windows,
+    _normalize_wall_geometry,
+    _resolve_postprocess_config,
+)
 
 ENSEMBLE_BACKEND = "ensemble_local"
 
@@ -54,31 +61,48 @@ def infer_ensemble(
 
     h, w = mitunet_result["_image_shape"]
     mitunet_walls = mitunet_result["walls"]
+    normalized_mitunet_walls = [_normalize_wall_geometry(wall) for wall in mitunet_walls]
     cubicasa_openings = cubi_result.get("openings", [])
     cubicasa_debug = {
         "raw_opening_count": len(cubicasa_openings),
         "cubicasa_wall_count": len(cubi_result.get("walls", [])),
     }
 
-    # --- Step 3: Re-anchor CubiCasa openings to MitUNet walls ---
-    reanchored = _reanchor_openings(cubicasa_openings, mitunet_walls, image_height=h)
+    config = _resolve_postprocess_config(mitunet_result.get("structure_meta") or {})
 
-    # --- Step 4: Convert to annotation format ---
-    auto_annotations = _openings_to_annotations(reanchored, image_height=h)
+    # --- Step 3: Anchor semantics (side/swing/defaults) onto MitUNet walls ---
+    review_flags: list[str] = []
+    wall_map = {wall["id"]: wall for wall in normalized_mitunet_walls}
+    anchored_openings, opening_metrics = _anchor_openings(
+        cubicasa_openings,
+        normalized_mitunet_walls,
+        wall_map,
+        review_flags,
+        config=config,
+    )
+
+    # --- Step 4: Deduplicate + cap after openings are anchored structurally ---
+    deduplicated, duplicate_removed_count = _deduplicate_openings(anchored_openings, normalized_mitunet_walls)
+    filtered, excess_window_removed_count = _limit_exterior_wall_windows(deduplicated, normalized_mitunet_walls)
+
+    # --- Step 5: Convert to annotation format for mask_regions DXF ---
+    auto_annotations = _openings_to_annotations(filtered, image_height=h)
 
     elapsed = time.time() - t0
     log_event(
         "ensemble.infer.done",
         wall_count=len(mitunet_walls),
         opening_count=len(cubicasa_openings),
-        reanchored_count=len(reanchored),
+        anchored_count=len(anchored_openings),
+        deduplicated_count=len(deduplicated),
+        filtered_count=len(filtered),
         annotation_count=len(auto_annotations),
         elapsed=round(elapsed, 2),
     )
 
     return {
         "walls": mitunet_walls,
-        "openings": [],
+        "openings": filtered,
         "rooms": [],
         "source": ENSEMBLE_BACKEND,
         "_wall_mask": mitunet_result["_wall_mask"],
@@ -95,67 +119,18 @@ def infer_ensemble(
             "ensemble": {
                 "wall_count": len(mitunet_walls),
                 "cubicasa_raw_opening_count": len(cubicasa_openings),
-                "reanchored_opening_count": len(reanchored),
+                "anchored_opening_count": len(anchored_openings),
+                "deduplicated_opening_count": len(deduplicated),
+                "final_opening_count": len(filtered),
+                "duplicate_removed_count": duplicate_removed_count,
+                "excess_window_removed_count": excess_window_removed_count,
                 "auto_annotation_count": len(auto_annotations),
+                **opening_metrics,
+                "review_flags": review_flags,
                 "elapsed_s": round(elapsed, 2),
             },
         },
     }
-
-
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
-
-def _reanchor_openings(
-    cubicasa_openings: list[dict[str, Any]],
-    mitunet_walls: list[dict[str, Any]],
-    *,
-    image_height: int,
-) -> list[dict[str, Any]]:
-    """Re-anchor each CubiCasa opening to the nearest MitUNet wall.
-
-    Both coordinate systems are Y-flipped image pixels (Y goes up).
-    MitUNet wall polylines: ``[[x, y], [x, y]]`` (list-of-lists).
-    CubiCasa opening positions: ``{"x": cx, "y": cy}`` (dict).
-    """
-    if not mitunet_walls or not cubicasa_openings:
-        return []
-
-    reanchored: list[dict[str, Any]] = []
-
-    for opening in cubicasa_openings:
-        pos = opening.get("position") or {}
-        cx = float(pos.get("x", 0))
-        cy = float(pos.get("y", 0))
-
-        best_wall = None
-        best_dist = float("inf")
-
-        for wall in mitunet_walls:
-            poly = wall.get("polyline", [])
-            if len(poly) < 2:
-                continue
-            p0, p1 = poly[0], poly[1]
-            # MitUNet uses [[x,y],[x,y]]
-            wx0, wy0 = float(p0[0]), float(p0[1])
-            wx1, wy1 = float(p1[0]), float(p1[1])
-
-            wall_cx = (wx0 + wx1) / 2
-            wall_cy = (wy0 + wy1) / 2
-            dist = abs(cx - wall_cx) + abs(cy - wall_cy)
-
-            if dist < best_dist:
-                best_dist = dist
-                best_wall = wall
-
-        if best_wall is not None and best_dist <= _MAX_OPENING_WALL_DISTANCE:
-            anchored = dict(opening)
-            anchored["wall_id"] = best_wall["id"]
-            anchored["_anchor_distance"] = round(best_dist, 1)
-            reanchored.append(anchored)
-
-    return reanchored
 
 
 def _openings_to_annotations(
@@ -165,9 +140,9 @@ def _openings_to_annotations(
 ) -> list[dict[str, Any]]:
     """Convert CubiCasa openings (Y-flipped) to annotation format (Y-down).
 
-    CubiCasa openings:
+    Structured openings:
       position.x, position.y  -- Y-flipped (Y goes up)
-      span, orientation, kind, swing
+      span, orientation, kind, side, swing
 
     Annotations (standard image coords, Y goes down):
       {type, x1, y1, x2, y2, swing?}
@@ -205,8 +180,36 @@ def _openings_to_annotations(
             "y2": round(y2, 1),
             "_source": "ensemble_cubicasa",
         }
-        # No swing from CubiCasa — unreliable. User sets it manually.
+
+        if kind == "door":
+            swing = opening.get("swing")
+            if swing:
+                ann["swing"] = swing
+        else:
+            side = opening.get("side")
+            swing = _window_side_to_annotation_swing(side, orientation) or opening.get("swing")
+            if swing:
+                ann["swing"] = swing
 
         annotations.append(ann)
 
     return annotations
+
+
+def _window_side_to_annotation_swing(
+    side: str | None,
+    orientation: str,
+) -> str | None:
+    if not side:
+        return None
+    if orientation == "horizontal":
+        return {
+            "bottom": "up",
+            "top": "down",
+            "up": "up",
+            "down": "down",
+        }.get(side)
+    return {
+        "left": "left",
+        "right": "right",
+    }.get(side)
