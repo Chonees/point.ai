@@ -1,4 +1,3 @@
-import type { Annotation } from '../../types'
 import type { PlacedItemDB } from '../../lib/database.types'
 
 export interface ProjectData {
@@ -10,7 +9,6 @@ export interface ProjectData {
 }
 
 export interface PlanScene {
-  annotations2d: Annotation[]
   placedItems3d: PlacedItemDB[]
   floorMaterial: string
   wallMaterial: string

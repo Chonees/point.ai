@@ -110,7 +110,6 @@ async def api_parse_structure(req: ParseStructureRequest):
         quality_metrics=parsed["quality_metrics"],
         needs_review=parsed["needs_review"],
         review_flags=parsed["review_flags"],
-        auto_annotations=auto_anns or None,
     )
 
 
@@ -131,14 +130,14 @@ async def api_generate_v2(req: GenerateStructureRequest):
     filename = f"{request_id}.dxf"
     out_path = str(DXF_DIR / filename)
     dxf_mode = resolve_dxf_mode(parsed)
+    infer_result = parsed.get("_infer_result") or {}
+    auto_anns = infer_result.get("_auto_annotations", [])
 
     try:
         dxf_result = generate_dxf(
             parsed=parsed,
             out_path=out_path,
             dxf_mode=dxf_mode,
-            annotations=req.annotations,
-            total_area=req.total_area if req.total_area is not None else req.total_sqft,
             image_b64=image_b64,
         )
     except Exception as e:
@@ -150,7 +149,7 @@ async def api_generate_v2(req: GenerateStructureRequest):
         quality_metrics=parsed["quality_metrics"],
         image_b64=image_b64,
         debug_overlay_b64=debug_overlay_b64,
-        auto_annotations=dxf_result["auto_annotations"],
+        auto_annotations=auto_anns or None,
         dxf_preview=dxf_result["dxf_preview"],
     )
     log_event(
@@ -168,9 +167,6 @@ async def api_generate_v2(req: GenerateStructureRequest):
         scale_status=parsed["structure"]["structure_meta"]["scale_status"],
         quality_metrics=parsed["quality_metrics"],
         review_flags=parsed["review_flags"],
-        auto_annotations=dxf_result["auto_annotations"],
-        computed_rooms=dxf_result["computed_rooms"],
-        region_overlay=dxf_result["region_overlay"],
     )
 
 

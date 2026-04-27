@@ -1,27 +1,22 @@
 import { lazy, Suspense, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { V2Result, Annotation } from '../../types'
+import type { V2Result } from '../../types'
 import type { PlanScene } from '../projects/project.types'
 import { DownloadButton } from '../../components/DownloadButton'
 import { apiUrl } from '../../lib/api'
 
 const ENABLE_3D = false
 
-const OverlayEditor = lazy(() => import('../../components/OverlayEditor'))
 const FloorPlan3D = lazy(() => import('../../components/FloorPlan3D'))
 
 interface WorkspaceOutputProps {
   result: V2Result
-  annotations: Annotation[]
-  setAnnotations: (annotations: Annotation[]) => void
   initialScene?: PlanScene
   onSceneChange?: (scene: PlanScene) => void
 }
 
 export function WorkspaceOutput({
   result,
-  annotations,
-  setAnnotations,
   initialScene,
   onSceneChange,
 }: WorkspaceOutputProps) {
@@ -39,7 +34,7 @@ export function WorkspaceOutput({
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.28em] text-zinc-600">Workspace output</p>
-            <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-100">Preview, annotate and export</h3>
+            <h3 className="mt-2 text-xl font-semibold tracking-tight text-zinc-100">Preview and export</h3>
           </div>
           <div className="flex items-center gap-3">
             {result.preview_url && (
@@ -50,7 +45,7 @@ export function WorkspaceOutput({
                     !view3D ? 'bg-white/[0.08] text-zinc-100' : 'text-zinc-500 hover:text-zinc-300'
                   }`}
                 >
-                  2D Edit
+                  2D Preview
                 </button>
                 {ENABLE_3D ? (
                   <button
@@ -84,17 +79,17 @@ export function WorkspaceOutput({
             {ENABLE_3D && view3D ? (
               <FloorPlan3D
                 structure={result.structure}
-                annotations={annotations}
                 initialScene={initialScene}
                 onSceneChange={onSceneChange}
               />
             ) : (
-              <OverlayEditor
-                previewUrl={apiUrl(result.preview_url)}
-                regionOverlay={result.region_overlay}
-                annotations={annotations}
-                setAnnotations={setAnnotations}
-              />
+              <div className="overflow-hidden rounded-[24px] border border-white/6 bg-zinc-950">
+                <img
+                  src={apiUrl(result.preview_url)}
+                  alt="Generated floor plan preview"
+                  className="max-h-[640px] w-full object-contain"
+                />
+              </div>
             )}
           </Suspense>
         )}

@@ -1,5 +1,3 @@
-import type { Annotation } from '../types'
-
 /** Mirrors the PlacedFurniture interface from FloorPlan3D */
 export type PlacedItemDB = {
   itemId: string
@@ -27,7 +25,6 @@ export type PlanRow = {
   name: string
   image_data: string | null
   structure: Record<string, unknown> | null
-  annotations_2d: Annotation[]
   placed_items_3d: PlacedItemDB[]
   floor_material: string
   wall_material: string
@@ -57,7 +54,6 @@ export type Database = {
           name: string
           image_data: string | null
           structure: Record<string, unknown> | null
-          annotations_2d: Annotation[]
           placed_items_3d: PlacedItemDB[]
           floor_material: string
           wall_material: string
@@ -66,7 +62,6 @@ export type Database = {
           name?: string
           image_data?: string | null
           structure?: Record<string, unknown> | null
-          annotations_2d?: Annotation[]
           placed_items_3d?: PlacedItemDB[]
           floor_material?: string
           wall_material?: string

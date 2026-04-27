@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { motion } from 'framer-motion'
-import type { Annotation } from '../types'
 import type { PlanData, PlanScene } from '../features/projects'
 import { useGenerateDxf } from '../features/workspace/useGenerateDxf'
 import { PlanSourceCard } from '../features/workspace/PlanSourceCard'
@@ -18,32 +17,18 @@ interface UploadPanelProps {
 export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveNow }: UploadPanelProps = {}) {
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const [annotations, setAnnotations] = useState<Annotation[]>([])
-  const [autoLoaded, setAutoLoaded] = useState(false)
-  const [totalSqft, setTotalSqft] = useState('')
   const [dragging, setDragging] = useState(false)
 
   const { status, statusMsg, result, generate } = useGenerateDxf({
     file,
     preview,
-    annotations,
-    autoLoaded,
-    totalSqft,
     onStructureChange,
-    onAnnotationsUpdate: (updater) => setAnnotations(updater),
-    onAutoLoaded: () => setAutoLoaded(true),
   })
 
-  const labelCount = annotations.filter((a) => a.type === 'label').length
-  const computedRoomCount = result?.computed_rooms?.length ?? 0
   const hasPlan = Boolean(file || preview)
 
   useEffect(() => {
     if (!project) return
-    if (project.scene.annotations2d.length > 0) {
-      setAnnotations(project.scene.annotations2d)
-      setAutoLoaded(true)
-    }
     if (project.imageData) {
       setPreview(project.imageData)
     }
@@ -54,20 +39,8 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveN
     }
   }, [project?.id])
 
-  const notifySceneChange = useCallback((newAnnotations: Annotation[]) => {
-    if (!onSceneChange || !project) return
-    onSceneChange({
-      annotations2d: newAnnotations,
-      placedItems3d: project.scene.placedItems3d,
-      floorMaterial: project.scene.floorMaterial,
-      wallMaterial: project.scene.wallMaterial,
-    })
-  }, [onSceneChange, project])
-
   const handleFile = useCallback((uploadedFile: File) => {
     setFile(uploadedFile)
-    setAnnotations([])
-    setAutoLoaded(false)
 
     const reader = new FileReader()
     reader.onload = () => {
@@ -100,10 +73,6 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveN
             }}
           />
           <PlanMetadataCard
-            totalSqft={totalSqft}
-            onTotalSqftChange={setTotalSqft}
-            labelCount={labelCount}
-            computedRoomCount={computedRoomCount}
             status={status}
             hasPlan={hasPlan}
             onGenerate={generate}
@@ -132,11 +101,6 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveN
         {result && (
           <WorkspaceOutput
             result={result}
-            annotations={annotations}
-            setAnnotations={(next) => {
-              setAnnotations(next)
-              notifySceneChange(next)
-            }}
             initialScene={project?.scene}
             onSceneChange={onSceneChange}
           />

@@ -20,7 +20,6 @@ export function usePlanSave(planId: string | null) {
     if (updates.imageData !== undefined) dbUpdate.image_data = updates.imageData
     if (updates.structure !== undefined) dbUpdate.structure = updates.structure
     if (updates.scene) {
-      dbUpdate.annotations_2d = updates.scene.annotations2d
       dbUpdate.placed_items_3d = updates.scene.placedItems3d
       dbUpdate.floor_material = updates.scene.floorMaterial
       dbUpdate.wall_material = updates.scene.wallMaterial

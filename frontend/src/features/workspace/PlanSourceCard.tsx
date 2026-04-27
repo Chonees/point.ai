@@ -67,7 +67,7 @@ export function PlanSourceCard({
             </div>
             <p className="text-base font-medium text-zinc-200">Drop a floor plan image</p>
             <p className="mt-2 max-w-sm text-sm leading-6 text-zinc-500">
-              Start with PNG or JPG. Once it is loaded, you can label rooms, paint regions and generate a DXF.
+              Start with PNG or JPG. Once it is loaded, you can generate the DXF and review the resulting preview.
             </p>
           </div>
         )}

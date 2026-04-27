@@ -43,9 +43,7 @@ export function PlanCard({ plan, onOpen, onDelete, onRename }: PlanCardProps) {
           <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between gap-3">
             <div className="min-w-0">
               <p className="truncate text-lg font-medium text-zinc-100">{plan.name}</p>
-              <p className="mt-1 text-xs text-zinc-300/75">
-                {plan.scene.annotations2d.length} annotations · {plan.scene.placedItems3d.length} 3D items
-              </p>
+              <p className="mt-1 text-xs text-zinc-300/75">{plan.scene.placedItems3d.length} 3D items</p>
             </div>
             <span className="rounded-full border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] uppercase tracking-[0.2em] text-zinc-300">
               Open

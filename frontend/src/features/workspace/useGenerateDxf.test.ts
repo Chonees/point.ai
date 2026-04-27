@@ -13,12 +13,7 @@ function makeHookArgs(overrides: Record<string, unknown> = {}) {
   return {
     file: null as File | null,
     preview: null as string | null,
-    annotations: [] as any[],
-    autoLoaded: false,
-    totalSqft: '',
     onStructureChange: vi.fn(),
-    onAnnotationsUpdate: vi.fn(),
-    onAutoLoaded: vi.fn(),
     ...overrides,
   }
 }
@@ -43,7 +38,7 @@ describe('useGenerateDxf', () => {
     expect(result.current.statusMsg).toBe('Upload a floor plan image first.')
   })
 
-  it('sends correct request body with image and sqft', async () => {
+  it('sends only the image payload needed for DXF generation', async () => {
     const dxfResult = {
       dxf_url: '/downloads/test.dxf',
       preview_url: null,
@@ -60,7 +55,6 @@ describe('useGenerateDxf', () => {
 
     const args = makeHookArgs({
       preview: 'data:image/png;base64,AAAA',
-      totalSqft: '2000',
     })
 
     const { result } = renderHook(() => useGenerateDxf(args))
@@ -75,41 +69,10 @@ describe('useGenerateDxf', () => {
     const body = JSON.parse(opts.body)
     expect(body.image).toBe('AAAA')
     expect(body.model_variant).toBe('ensemble')
-    expect(body.total_sqft).toBe(2000)
+    expect(body).not.toHaveProperty('total_sqft')
+    expect(body).not.toHaveProperty('annotations')
     expect(result.current.status).toBe('done')
     expect(result.current.result).toBeTruthy()
-  })
-
-  it('includes annotations when autoLoaded', async () => {
-    const annotations = [{ type: 'wall', x1: 0, y1: 0, x2: 10, y2: 10, _source: 'test' }]
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: () => Promise.resolve({
-        dxf_url: '/downloads/test.dxf',
-        preview_url: null,
-        structure: {},
-        quality_metrics: {},
-        review_flags: [],
-        needs_review: false,
-        scale_status: 'ok',
-      }),
-    })
-
-    const args = makeHookArgs({
-      preview: 'data:image/png;base64,BBBB',
-      annotations,
-      autoLoaded: true,
-    })
-
-    const { result } = renderHook(() => useGenerateDxf(args))
-
-    await act(async () => {
-      await result.current.generate()
-    })
-
-    const body = JSON.parse(mockFetch.mock.calls[0][1].body)
-    expect(body.annotations).toHaveLength(1)
-    expect(body.annotations[0]._source).toBeUndefined()
   })
 
   it('handles API error response', async () => {

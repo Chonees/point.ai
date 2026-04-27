@@ -9,7 +9,6 @@ export function rowToPlan(row: PlanRow): PlanData {
     imageData: row.image_data,
     structure: row.structure,
     scene: {
-      annotations2d: row.annotations_2d ?? [],
       placedItems3d: row.placed_items_3d ?? [],
       floorMaterial: row.floor_material,
       wallMaterial: row.wall_material,

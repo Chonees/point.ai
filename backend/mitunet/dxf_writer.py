@@ -1,11 +1,7 @@
 from __future__ import annotations
 
-import math
 from pathlib import Path
 from typing import Any
-
-import cv2
-import numpy as np
 
 from ..provenance import build_code_provenance, build_file_provenance, utc_now_iso
 from .annotations import _draw_mitunet_annotations_from_region_plan
@@ -42,95 +38,6 @@ def _load_mitunet_template_doc():
     return ezdxf.new("R2010")
 
 
-def _add_dims_and_labels(doc, msp, annotations, wall_mask, image_shape, transform, img_h, *, total_area_sqft: float | None = None) -> dict | None:
-    """Generate simplified exterior dimensions + manual room labels.
-
-    Returns dict with 'computed_rooms' and 'region_overlay' when available.
-    """
-    try:
-        from ..scale_calibrator import calibrate_scale, generate_region_overlay, encode_overlay_png
-        from ..components.dimensions import generate_all_dimensions
-        from ..observability import log_event
-
-        has_labels = any(a.get("type") == "label" for a in annotations)
-        if not has_labels:
-            log_event("dims_pipeline_skipped", reason="no_labels")
-            return None
-
-        has_sqft = any(a.get("type") == "label" and a.get("sqft") for a in annotations)
-        has_total_area = total_area_sqft is not None and float(total_area_sqft) > 0
-        render_dimensions = bool((has_total_area or has_sqft) and wall_mask is not None)
-        scale_ipp = 1.0
-        measurement_context = None
-        if render_dimensions:
-            measurement_context = calibrate_scale(
-                annotations,
-                wall_mask,
-                image_shape,
-                total_area_sqft=float(total_area_sqft) if has_total_area else None,
-            )
-            if measurement_context is None:
-                scale_ipp = 1.0
-                render_dimensions = False
-            else:
-                scale_ipp = float(measurement_context["scale_ipp"])
-        log_event(
-            "dims_pipeline_start",
-            label_count=sum(1 for a in annotations if a.get("type") == "label"),
-            has_sqft=has_sqft,
-            has_total_area=has_total_area,
-            total_area_sqft=round(float(total_area_sqft), 4) if has_total_area else None,
-            wall_mask_present=wall_mask is not None,
-            render_dimensions=render_dimensions,
-            scale_ipp=round(scale_ipp, 6),
-            calibration_mode=measurement_context["calibration_mode"] if measurement_context else None,
-        )
-
-        counts = generate_all_dimensions(
-            doc, msp, annotations,
-            scale_ipp=scale_ipp,
-            image_shape=image_shape,
-            transform=transform,
-            wall_mask=wall_mask,
-            render_dimensions=render_dimensions,
-            measurement_context=measurement_context,
-        )
-        total = sum(counts.values())
-        log_event("dims_pipeline_done", total=total, counts=counts)
-        print(f"[DIMS] Generated {total} elements: {counts}", flush=True)
-
-        # Extract computed rooms + region overlay for the API response
-        result: dict = {}
-        if measurement_context and "room_analysis" in measurement_context:
-            room_analysis = measurement_context["room_analysis"]
-            rooms = room_analysis.get("rooms", [])
-            computed = []
-            for room in rooms:
-                if room.get("computed_sqft") is not None:
-                    label = room.get("label", {})
-                    computed.append({
-                        "roomName": str(room.get("room_name") or label.get("roomName", "ROOM")).upper(),
-                        "sqft": round(float(room["computed_sqft"])),
-                        "x1": float(label.get("x1", 0)),
-                        "y1": float(label.get("y1", 0)),
-                    })
-            if computed:
-                result["computed_rooms"] = computed
-
-            # Generate colored region overlay
-            overlay = generate_region_overlay(room_analysis, image_shape)
-            overlay_b64 = encode_overlay_png(overlay)
-            if overlay_b64:
-                result["region_overlay"] = overlay_b64
-
-        return result if result else None
-
-    except Exception:
-        import traceback
-        traceback.print_exc()
-        return None
-
-
 def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
                          annotations: list[dict] | None = None) -> int:
     """Legacy entrypoint kept as a compatibility wrapper.
@@ -141,7 +48,7 @@ def generate_mitunet_dxf(infer_result: dict[str, Any], out_path: str,
     from .regions import build_mitunet_region_plan
 
     region_plan = build_mitunet_region_plan(infer_result, annotations=annotations)
-    rect_count, _ = generate_mitunet_region_dxf(region_plan, out_path, annotations=annotations)
+    rect_count = generate_mitunet_region_dxf(region_plan, out_path, annotations=annotations)
     return rect_count
 
 
@@ -151,8 +58,7 @@ def generate_mitunet_region_dxf(
     *,
     annotations: list[dict] | None = None,
     skip_regions: bool = False,
-    total_area_sqft: float | None = None,
-) -> tuple[int, dict | None]:
+) -> int:
     doc = _load_mitunet_template_doc()
     msp = doc.modelspace()
 
@@ -263,24 +169,6 @@ def generate_mitunet_region_dxf(
         regions=region_plan.get("regions", []),
     )
 
-    # --- Dimensions + room labels from label annotations ---
-    dims_result = None
-    if annotations:
-        wall_mask = region_plan.get("meta", {}).get("_wall_mask")
-        transform = meta.get("transform", {})
-        img_h = image_shape[0]
-
-        dims_result = _add_dims_and_labels(
-            doc,
-            msp,
-            annotations,
-            wall_mask,
-            image_shape,
-            transform,
-            img_h,
-            total_area_sqft=total_area_sqft,
-        )
-
     # --- Wall Legend ---
     from ..components.wall_legend import add_wall_legend
 
@@ -299,4 +187,4 @@ def generate_mitunet_region_dxf(
     add_wall_legend(msp, doc, legend_x, legend_y)
 
     doc.saveas(out_path)
-    return rect_count, dims_result
+    return rect_count

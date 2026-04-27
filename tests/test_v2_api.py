@@ -46,6 +46,7 @@ def test_parse_structure_endpoint_returns_v2_payload():
     assert payload["needs_review"] is False
     assert payload["preview_url"].startswith("/artifacts/")
     assert payload["artifact_urls"]["structure_url"].startswith("/artifacts/")
+    assert "auto_annotations" not in payload
 
     preview = client.get(payload["preview_url"])
     assert preview.status_code == 200
@@ -59,6 +60,9 @@ def test_generate_dxf_endpoint_writes_downloadable_file():
     payload = response.json()
     assert payload["scale_status"] == "calibrated"
     assert payload["dxf_url"].startswith("/downloads/")
+    assert "auto_annotations" not in payload
+    assert "computed_rooms" not in payload
+    assert "region_overlay" not in payload
 
     download = client.get(payload["dxf_url"])
     assert download.status_code == 200

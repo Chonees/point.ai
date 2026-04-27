@@ -5,7 +5,6 @@ import { Grid, OrbitControls } from '@react-three/drei'
 import { WalkControls } from './WalkControls'
 import { FurnitureSidebar } from './FurnitureSidebar'
 import type { FurnitureItem, MaterialPreset } from './catalog'
-import type { Annotation } from '../../types'
 import type { PlanScene } from '../../hooks/useProject'
 import type { PlacedFurniture } from './types'
 
@@ -17,7 +16,7 @@ import { WallMesh } from './meshes/WallMesh'
 import { OpeningMesh } from './meshes/OpeningMesh'
 import { FurnitureMesh, FurnitureBoxFallback } from './meshes/FurnitureMesh'
 import { GhostPreview } from './meshes/GhostPreview'
-import { useAnnotationGeometry } from './hooks/useAnnotationGeometry'
+import { structureTo3D } from './structureTo3D'
 import { useAutoSave, resolveInitialMaterials, dbToPlaced } from './hooks/useScenePersistence'
 import { useGhostControls } from './hooks/useGhostControls'
 
@@ -57,16 +56,18 @@ function PlacementHint({ ghostHeight, ghostScaleW, ghostScaleD, ghostScaleH }: {
 
 export default function FloorPlan3D({
   structure,
-  annotations = [],
   initialScene,
   onSceneChange,
 }: {
   structure: Record<string, unknown>
-  annotations?: Annotation[]
   initialScene?: PlanScene
   onSceneChange?: (scene: PlanScene) => void
 }) {
-  const { walls3D, openings3D, floorBounds, center } = useAnnotationGeometry(structure, annotations)
+  const scene = useMemo(() => structureTo3D(structure), [structure])
+  const walls3D = scene.walls
+  const openings3D = scene.openings
+  const floorBounds = { x: scene.floor.x, z: scene.floor.z, w: scene.floor.width, d: scene.floor.depth }
+  const center = scene.center
   const camDist = Math.max(floorBounds.w, floorBounds.d) * 1.2
   const initMats = useMemo(() => resolveInitialMaterials(initialScene), [])
 
@@ -104,7 +105,7 @@ export default function FloorPlan3D({
     setSelectedPlaced(-1)
   }
 
-  useAutoSave({ placed, floorMat, wallMat, annotations, onSceneChange })
+  useAutoSave({ placed, floorMat, wallMat, onSceneChange })
 
   const canvasContainerRef = useRef<HTMLDivElement>(null)
   const containerClass = fullscreen

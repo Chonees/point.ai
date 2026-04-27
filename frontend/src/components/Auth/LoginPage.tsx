@@ -65,7 +65,7 @@ export function LoginPage({ onSignIn, onSignUp, onGoogleSignIn, onSkip }: LoginP
               <p className="mt-2 text-sm leading-6 text-zinc-500">
                 {mode === 'signin'
                   ? 'Open your saved projects and continue working.'
-                  : 'Start a clean workspace for plans, labels and DXF export.'}
+                  : 'Start a clean workspace for plans, previews and DXF export.'}
               </p>
             </div>
 

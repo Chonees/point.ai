@@ -8,7 +8,6 @@ const makeRow = (overrides: Partial<PlanRow> = {}): PlanRow => ({
   name: 'Main Floor',
   image_data: null,
   structure: null,
-  annotations_2d: [],
   placed_items_3d: [],
   floor_material: 'hardwood',
   wall_material: 'white-paint',
@@ -26,31 +25,33 @@ describe('rowToPlan', () => {
     expect(plan.name).toBe('Main Floor')
     expect(plan.imageData).toBeNull()
     expect(plan.structure).toBeNull()
+    expect(plan.scene).toEqual({
+      placedItems3d: [],
+      floorMaterial: 'hardwood',
+      wallMaterial: 'white-paint',
+    })
     expect(plan.createdAt).toBe('2026-01-01T00:00:00Z')
     expect(plan.updatedAt).toBe('2026-01-02T00:00:00Z')
   })
 
   it('maps scene fields correctly', () => {
-    const annotations = [{ type: 'wall' as const, x1: 0, y1: 0, x2: 10, y2: 10 }]
     const plan = rowToPlan(makeRow({
-      annotations_2d: annotations,
+      placed_items_3d: [{
+        itemId: 'chair-1',
+        x: 10,
+        y: 0,
+        z: 20,
+        rotation: 0,
+        scaleW: 1,
+        scaleD: 1,
+        scaleH: 1,
+      }],
       floor_material: 'marble',
       wall_material: 'brick',
     }))
 
-    expect(plan.scene.annotations2d).toEqual(annotations)
-    expect(plan.scene.placedItems3d).toEqual([])
+    expect(plan.scene.placedItems3d).toHaveLength(1)
     expect(plan.scene.floorMaterial).toBe('marble')
     expect(plan.scene.wallMaterial).toBe('brick')
-  })
-
-  it('defaults annotations to empty array when null', () => {
-    const plan = rowToPlan(makeRow({
-      annotations_2d: null as any,
-      placed_items_3d: null as any,
-    }))
-
-    expect(plan.scene.annotations2d).toEqual([])
-    expect(plan.scene.placedItems3d).toEqual([])
   })
 })

@@ -2,7 +2,6 @@ import { useEffect } from 'react'
 import { FURNITURE, MATERIALS } from '../catalog'
 import type { MaterialPreset } from '../catalog'
 import type { PlacedFurniture } from '../types'
-import type { Annotation } from '../../../types'
 import type { PlanScene } from '../../../hooks/useProject'
 import type { PlacedItemDB } from '../../../lib/database.types'
 
@@ -55,19 +54,16 @@ export function useAutoSave({
   placed,
   floorMat,
   wallMat,
-  annotations,
   onSceneChange,
 }: {
   placed: PlacedFurniture[]
   floorMat: MaterialPreset
   wallMat: MaterialPreset
-  annotations: Annotation[]
   onSceneChange?: (scene: PlanScene) => void
 }) {
   useEffect(() => {
     if (!onSceneChange) return
     onSceneChange({
-      annotations2d: annotations,
       placedItems3d: placedToDb(placed),
       floorMaterial: floorMat.id,
       wallMaterial: wallMat.id,

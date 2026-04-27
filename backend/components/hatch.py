@@ -14,7 +14,7 @@ from ezdxf import colors
 LAYER = "HATCH"
 LAYER_COLOR = 123
 THRESHOLD = 5.0
-ANSI31_SCALE = 0.3
+ANSI31_SCALE = 6.0
 
 
 def ensure_hatch_layer(doc: Any) -> None:

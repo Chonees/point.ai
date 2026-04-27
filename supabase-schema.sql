@@ -41,9 +41,6 @@ create table plans (
   -- Backend parse result
   structure       jsonb,
 
-  -- 2D Editor state
-  annotations_2d  jsonb not null default '[]'::jsonb,
-
   -- 3D Editor state
   placed_items_3d jsonb not null default '[]'::jsonb,
   floor_material  text not null default 'hardwood',
