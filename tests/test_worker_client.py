@@ -14,7 +14,8 @@ def test_heuristic_backend_works_via_worker_client():
 
     assert result["source"] == "heuristic_local"
     assert len(result["walls"]) >= 5
-    assert len(result["openings"]) == 2
+    assert result["openings"] == []
+    assert result["inference_debug"]["opening_detection_disabled"] is True
 
 
 def test_unsupported_backend_raises():
@@ -31,6 +32,7 @@ def test_remote_backend_raises_when_no_worker(monkeypatch):
 
 
 def test_cubicasa_backend_routes_to_local_model(monkeypatch):
+    monkeypatch.setattr("backend.worker_client._CUBICASA_MIN_WALLS", 0)
     monkeypatch.setattr("backend.worker_client.cubicasa_available", lambda model_variant=None: (True, None))
     monkeypatch.setattr(
         "backend.worker_client.infer_cubicasa",
@@ -41,11 +43,14 @@ def test_cubicasa_backend_routes_to_local_model(monkeypatch):
 
     assert result["source"] == "cubicasa5k"
     assert result["inference_debug"]["backend"] == "cubicasa_local"
-    assert len(result["openings"]) == 2
+    assert result["openings"] == []
+    assert result["inference_debug"]["opening_detection_disabled"] is True
+    assert result["structure_meta"]["opening_detection_mode"] == "disabled"
 
 
 def test_cubicasa_backend_passes_model_variant_to_local_model(monkeypatch):
     captured: dict[str, object] = {}
+    monkeypatch.setattr("backend.worker_client._CUBICASA_MIN_WALLS", 0)
 
     def fake_infer(image: str, *, model_variant: str | None = None):
         captured["image"] = image
@@ -105,7 +110,8 @@ def test_remote_backend_succeeds_with_mock_transport():
     assert result["source"] == "remote_worker/1.2.3"
     assert result["inference_debug"]["debug_overlay_b64"] == "dGVzdA=="
     assert len(result["walls"]) == 1
-    assert len(result["openings"]) == 1
+    assert result["openings"] == []
+    assert result["inference_debug"]["opening_detection_disabled"] is True
 
 
 def test_get_worker_health_uses_remote_endpoint():

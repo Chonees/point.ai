@@ -17,6 +17,7 @@ import httpx
 
 from .cubicasa_inference import CUBICASA_BACKEND, cubicasa_available, infer_cubicasa
 from .inference_client import HEURISTIC_BACKEND, infer_heuristic_structure
+from .opening_policy import disable_opening_detections
 from .r2v_inference import R2V_BACKEND, infer_r2v, r2v_available
 from .mitunet_inference import MITUNET_BACKEND, infer_mitunet, mitunet_available
 from .ensemble_inference import ENSEMBLE_BACKEND, infer_ensemble, ensemble_available
@@ -53,9 +54,7 @@ def infer_structure(
     log_event("worker_client.infer.request", backend=backend)
 
     if backend == HEURISTIC_BACKEND:
-        result = infer_heuristic_structure(image_b64)
-        result.setdefault("inference_debug", {})
-        result["inference_debug"]["backend"] = backend
+        result = _finalize_inference_result(infer_heuristic_structure(image_b64), backend=backend)
         log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
         return result
 
@@ -82,6 +81,7 @@ def infer_structure(
             heuristic["inference_debug"]["backend"] = HEURISTIC_BACKEND
             heuristic["inference_debug"]["fallback_from"] = CUBICASA_BACKEND
             heuristic["inference_debug"]["cubicasa_wall_count"] = wall_count
+            heuristic = disable_opening_detections(heuristic)
             log_event(
                 "worker_client.infer.success",
                 backend=HEURISTIC_BACKEND,
@@ -90,13 +90,15 @@ def infer_structure(
             )
             return heuristic
 
+        result = disable_opening_detections(result)
         log_event("worker_client.infer.success", backend=backend, wall_count=wall_count)
         return result
 
     if backend == REMOTE_BACKEND:
-        result = _infer_remote(image_b64, options=options, worker_url=worker_url, transport=transport)
-        result.setdefault("inference_debug", {})
-        result["inference_debug"]["backend"] = backend
+        result = _finalize_inference_result(
+            _infer_remote(image_b64, options=options, worker_url=worker_url, transport=transport),
+            backend=backend,
+        )
         log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
         return result
 
@@ -104,9 +106,7 @@ def infer_structure(
         ready, reason = r2v_available()
         if not ready:
             raise WorkerError("MODEL_NOT_LOADED", reason or "R2V is not available.")
-        result = infer_r2v(image_b64)
-        result.setdefault("inference_debug", {})
-        result["inference_debug"]["backend"] = backend
+        result = _finalize_inference_result(infer_r2v(image_b64), backend=backend)
         log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
         return result
 
@@ -114,9 +114,7 @@ def infer_structure(
         ready, reason = mitunet_available()
         if not ready:
             raise WorkerError("MODEL_NOT_LOADED", reason or "MitUNet is not available.")
-        result = infer_mitunet(image_b64)
-        result.setdefault("inference_debug", {})
-        result["inference_debug"]["backend"] = backend
+        result = _finalize_inference_result(infer_mitunet(image_b64), backend=backend)
         log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
         return result
 
@@ -124,9 +122,7 @@ def infer_structure(
         ready, reason = ensemble_available()
         if not ready:
             raise WorkerError("MODEL_NOT_LOADED", reason or "Ensemble backend is not available.")
-        result = infer_ensemble(image_b64)
-        result.setdefault("inference_debug", {})
-        result["inference_debug"]["backend"] = backend
+        result = _finalize_inference_result(infer_ensemble(image_b64), backend=backend)
         log_event("worker_client.infer.success", backend=backend, wall_count=len(result.get("walls", [])))
         return result
 
@@ -195,6 +191,12 @@ def _model_variant_from_options(options: dict[str, Any] | None) -> str | None:
     if variant is None:
         return None
     return str(variant)
+
+
+def _finalize_inference_result(result: dict[str, Any], *, backend: str) -> dict[str, Any]:
+    result.setdefault("inference_debug", {})
+    result["inference_debug"]["backend"] = backend
+    return disable_opening_detections(result)
 
 
 def _infer_remote(

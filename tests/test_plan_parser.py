@@ -122,6 +122,18 @@ def test_parse_structure_marks_low_quality_cases_for_review():
     assert "no_openings_detected" in parsed["quality_metrics"]["quality_gate_reasons"]
 
 
+def test_parse_structure_allows_missing_openings_when_detection_is_disabled():
+    structure = build_manual_structure(source="heuristic_local", with_openings=False)
+    structure["inference_debug"]["opening_detection_disabled"] = True
+    structure["structure_meta"]["opening_detection_mode"] = "disabled"
+
+    parsed = parse_structure_payload(structure=structure)
+
+    assert parsed["needs_review"] is False
+    assert parsed["quality_metrics"]["quality_gate_passed"] is True
+    assert "no_openings_detected" not in parsed["quality_metrics"]["quality_gate_reasons"]
+
+
 def test_parse_structure_keeps_short_thin_wall_when_it_forms_a_real_junction():
     structure = _pixel_box_structure()
     structure["walls"].append(

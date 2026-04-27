@@ -35,3 +35,23 @@ def test_quality_gate_flags_missing_openings_and_exterior_shell():
     assert "no_openings_detected" in metrics["quality_gate_reasons"]
     assert "anomalous_exterior_wall_count" in metrics["quality_gate_reasons"]
     assert flags
+
+
+def test_quality_gate_does_not_flag_missing_openings_when_detection_is_disabled():
+    structure = build_manual_structure(with_openings=False)
+    structure["inference_debug"]["opening_detection_disabled"] = True
+    structure["structure_meta"]["opening_detection_mode"] = "disabled"
+
+    metrics, flags = apply_quality_gate(
+        structure,
+        {
+            "wall_count": 5,
+            "opening_count": 0,
+            "exterior_wall_count": 4,
+        },
+        [],
+    )
+
+    assert metrics["quality_gate_passed"] is True
+    assert "no_openings_detected" not in metrics["quality_gate_reasons"]
+    assert flags == []

@@ -5,8 +5,7 @@ Local heuristic inference adapter for the v2 image pipeline.
 Supports both color-coded synthetic images and real grayscale floor plans.
 Detection strategy:
   - Walls: morphological H/V line extraction on binarized image
-  - Doors: color hint (synthetic) or arc/gap detection (real plans)
-  - Windows: color hint (synthetic) or triple-line gap detection (real plans)
+  - Automatic door/window detection is intentionally disabled
 """
 from __future__ import annotations
 
@@ -17,6 +16,7 @@ import cv2
 import numpy as np
 
 from .image_utils import decode_image
+from .opening_policy import OPENING_DETECTION_REASON
 
 HEURISTIC_BACKEND = "heuristic_local"
 MIN_SEGMENT_LENGTH = 20
@@ -37,43 +37,30 @@ def infer_structure(image_b64: str) -> dict[str, Any]:
 def infer_heuristic_structure(image_b64: str) -> dict[str, Any]:
     image = decode_image(image_b64)
     height, width = image.shape[:2]
-
-    is_color_coded = _is_color_coded(image)
-
-    if is_color_coded:
-        door_mask = _color_door_mask(image)
-        window_mask = _color_window_mask(image)
-    else:
-        door_mask = np.zeros((height, width), dtype=np.uint8)
-        window_mask = np.zeros((height, width), dtype=np.uint8)
-
-    opening_mask = cv2.bitwise_or(door_mask, window_mask)
     binary = _binarize(image)
-    wall_binary = _remove_openings(binary, opening_mask)
-
-    horizontal_segments = _extract_h_segments(wall_binary)
-    vertical_segments = _extract_v_segments(wall_binary)
+    horizontal_segments = _extract_h_segments(binary)
+    vertical_segments = _extract_v_segments(binary)
     walls = _segments_to_walls(horizontal_segments, vertical_segments)
-
-    if is_color_coded:
-        openings = _extract_color_openings(door_mask, window_mask)
-    else:
-        openings = _extract_real_openings(binary, horizontal_segments, vertical_segments)
 
     return {
         "model": "Heuristic Image Structure",
         "source": HEURISTIC_BACKEND,
         "walls": walls,
-        "openings": openings,
+        "openings": [],
         "structure_meta": {
             "image_size": {"width": width, "height": height},
             "scale_status": "unverified",
             "unit": "pixel",
+            "opening_detection_mode": "disabled",
+            "opening_detection_reason": OPENING_DETECTION_REASON,
         },
         "inference_debug": {
             "raw_wall_fragments": len(walls),
-            "raw_opening_detections": len(openings),
-            "color_coded": is_color_coded,
+            "raw_opening_detections": 0,
+            "color_coded": _is_color_coded(image),
+            "opening_detection_disabled": True,
+            "opening_detection_reason": OPENING_DETECTION_REASON,
+            "suppressed_opening_count": 0,
         },
     }
 

@@ -18,6 +18,7 @@ from .artifacts import build_preview_image
 from .cubicasa_inference import CUBICASA_BACKEND, cubicasa_available, infer_cubicasa
 from .image_utils import encode_png_data
 from .inference_client import HEURISTIC_BACKEND, infer_heuristic_structure
+from .opening_policy import disable_opening_detections
 from .observability import log_event
 
 WORKER_MODEL_NAME = os.getenv("POINTAI_WORKER_MODEL_NAME", "heuristic-floorplan-worker")
@@ -77,6 +78,8 @@ async def infer_structure(request: Request) -> JSONResponse:
     except Exception as exc:  # pragma: no cover - defensive branch
         log_event("worker.inference_failed", error=str(exc))
         return _worker_error_response("INFERENCE_FAILED", str(exc), status_code=500)
+
+    inferred = disable_opening_detections(inferred)
 
     include_overlay = bool(options.get("include_debug_overlay", True))
     debug_overlay_b64 = None

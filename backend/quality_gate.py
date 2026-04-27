@@ -35,11 +35,12 @@ def apply_quality_gate(
     gate_reasons: list[str] = []
     walls = structure.get("walls", [])
     openings = structure.get("openings", [])
+    opening_detection_disabled = _opening_detection_disabled(structure)
 
     if not walls:
         gate_reasons.append("no_walls_detected")
 
-    if not openings:
+    if not openings and not opening_detection_disabled:
         gate_reasons.append("no_openings_detected")
 
     exterior_wall_count = int(metrics.get("exterior_wall_count", 0))
@@ -56,6 +57,7 @@ def apply_quality_gate(
     metrics["quality_gate_passed"] = len(gate_reasons) == 0
     metrics["quality_gate_reasons"] = gate_reasons
     metrics["quality_gate_reason_count"] = len(gate_reasons)
+    metrics["opening_detection_disabled"] = opening_detection_disabled
 
     for reason in gate_reasons:
         message = _REASON_MESSAGES[reason]
@@ -63,6 +65,15 @@ def apply_quality_gate(
             flags.append(message)
 
     return metrics, flags
+
+
+def _opening_detection_disabled(structure: dict[str, Any]) -> bool:
+    structure_meta = structure.get("structure_meta") or {}
+    inference_debug = structure.get("inference_debug") or {}
+    return (
+        structure_meta.get("opening_detection_mode") == "disabled"
+        or bool(inference_debug.get("opening_detection_disabled"))
+    )
 
 
 def _compute_bbox_shell_metrics(walls: list[dict[str, Any]]) -> dict[str, float | int]:
