@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAuth } from './hooks/useAuth'
 import { useProjectList, usePlanList, usePlanSave } from './hooks/useProject'
@@ -6,6 +6,8 @@ import { isSupabaseConfigured } from './lib/supabase'
 import { LoginPage } from './components/Auth/LoginPage'
 import { ProjectList } from './components/ProjectList/ProjectList'
 import type { PlanData, ProjectScene } from './hooks/useProject'
+import type { OpeningAnnotation } from './types'
+import { markStructureWithPersistedOpeningReview } from './features/projects/openingReviewPersistence'
 
 const UploadPanel = lazy(() =>
   import('./components/UploadPanel').then((m) => ({ default: m.UploadPanel })),
@@ -23,6 +25,8 @@ export default function App() {
   const { saving, lastSaved, saveNow } = usePlanSave(currentPlan?.id ?? null)
   const pendingSceneRef = useRef<ProjectScene | null>(null)
   const pendingStructureRef = useRef<Record<string, unknown> | null>(null)
+  const pendingReviewedAnnotationsRef = useRef<OpeningAnnotation[] | null>(null)
+  const pendingOpeningReviewActiveRef = useRef(false)
   const saveState = useMemo(() => {
     if (!currentPlan) return 'Not saved yet'
     if (saving) return 'Saving...'
@@ -30,11 +34,27 @@ export default function App() {
     return 'Autosave ready'
   }, [currentPlan, lastSaved, saving])
 
+  useEffect(() => {
+    pendingSceneRef.current = null
+    pendingStructureRef.current = null
+    pendingReviewedAnnotationsRef.current = null
+    pendingOpeningReviewActiveRef.current = false
+  }, [currentPlan?.id])
+
   const handleSave = async () => {
     if (!currentPlan) return
-    const updates: Record<string, unknown> = {}
+    const updates: Parameters<typeof saveNow>[0] = {}
     if (pendingSceneRef.current) updates.scene = pendingSceneRef.current
+    const baseStructure = pendingStructureRef.current ?? currentPlan.structure
     if (pendingStructureRef.current) updates.structure = pendingStructureRef.current
+    if (pendingOpeningReviewActiveRef.current && pendingReviewedAnnotationsRef.current) {
+      updates.reviewedOpeningAnnotations = pendingReviewedAnnotationsRef.current
+      const markedStructure = markStructureWithPersistedOpeningReview(baseStructure)
+      if (markedStructure) {
+        updates.structure = markedStructure
+        pendingStructureRef.current = markedStructure
+      }
+    }
     await saveNow(updates)
   }
 
@@ -184,6 +204,10 @@ export default function App() {
                 if (updates.imageData) saveNow({ imageData: updates.imageData })
                 if (updates.structure) pendingStructureRef.current = updates.structure
                 if (updates.scene) pendingSceneRef.current = updates.scene
+              }}
+              onOpeningReviewStateChange={({ annotations, reviewSessionActive }) => {
+                pendingReviewedAnnotationsRef.current = annotations
+                pendingOpeningReviewActiveRef.current = reviewSessionActive
               }}
             />
           </Suspense>

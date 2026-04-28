@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase, isSupabaseConfigured } from '../../lib/supabase'
 import type { PlanScene } from './project.types'
+import type { OpeningAnnotation } from '../../types'
+import { sanitizeReviewedOpeningAnnotations } from './openingReviewPersistence'
 
 export function usePlanSave(planId: string | null) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -12,6 +14,7 @@ export function usePlanSave(planId: string | null) {
     imageData?: string | null
     structure?: Record<string, unknown> | null
     scene?: PlanScene
+    reviewedOpeningAnnotations?: OpeningAnnotation[]
   }) => {
     if (!planId || !isSupabaseConfigured) return
 
@@ -19,6 +22,9 @@ export function usePlanSave(planId: string | null) {
     if (updates.name !== undefined) dbUpdate.name = updates.name
     if (updates.imageData !== undefined) dbUpdate.image_data = updates.imageData
     if (updates.structure !== undefined) dbUpdate.structure = updates.structure
+    if (updates.reviewedOpeningAnnotations !== undefined) {
+      dbUpdate.reviewed_opening_annotations = sanitizeReviewedOpeningAnnotations(updates.reviewedOpeningAnnotations)
+    }
     if (updates.scene) {
       dbUpdate.placed_items_3d = updates.scene.placedItems3d
       dbUpdate.floor_material = updates.scene.floorMaterial

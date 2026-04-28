@@ -1,4 +1,5 @@
 import type { PlacedItemDB } from '../../lib/database.types'
+import type { OpeningAnnotation } from '../../types'
 
 export interface ProjectData {
   id: string
@@ -22,6 +23,7 @@ export interface PlanData {
   name: string
   imageData: string | null
   structure: Record<string, unknown> | null
+  reviewedOpeningAnnotations: OpeningAnnotation[]
   scene: PlanScene
   createdAt: string
   updatedAt: string

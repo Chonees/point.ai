@@ -37,6 +37,7 @@ export function usePlanList(projectId: string | null) {
         name,
         image_data: null,
         structure: null,
+        reviewed_opening_annotations: [],
         placed_items_3d: [],
         floor_material: 'hardwood',
         wall_material: 'white-paint',

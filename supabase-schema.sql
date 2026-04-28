@@ -40,6 +40,7 @@ create table plans (
 
   -- Backend parse result
   structure       jsonb,
+  reviewed_opening_annotations jsonb not null default '[]'::jsonb,
 
   -- 3D Editor state
   placed_items_3d jsonb not null default '[]'::jsonb,

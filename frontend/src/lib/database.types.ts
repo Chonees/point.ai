@@ -1,3 +1,5 @@
+import type { OpeningAnnotation } from '../types'
+
 /** Mirrors the PlacedFurniture interface from FloorPlan3D */
 export type PlacedItemDB = {
   itemId: string
@@ -19,12 +21,15 @@ export type ProjectRow = {
   updated_at: string
 }
 
+export type ReviewedOpeningAnnotationRow = Omit<OpeningAnnotation, '_source'>
+
 export type PlanRow = {
   id: string
   project_id: string
   name: string
   image_data: string | null
   structure: Record<string, unknown> | null
+  reviewed_opening_annotations: ReviewedOpeningAnnotationRow[]
   placed_items_3d: PlacedItemDB[]
   floor_material: string
   wall_material: string
@@ -54,6 +59,7 @@ export type Database = {
           name: string
           image_data: string | null
           structure: Record<string, unknown> | null
+          reviewed_opening_annotations?: ReviewedOpeningAnnotationRow[]
           placed_items_3d: PlacedItemDB[]
           floor_material: string
           wall_material: string
@@ -62,6 +68,7 @@ export type Database = {
           name?: string
           image_data?: string | null
           structure?: Record<string, unknown> | null
+          reviewed_opening_annotations?: ReviewedOpeningAnnotationRow[]
           placed_items_3d?: PlacedItemDB[]
           floor_material?: string
           wall_material?: string

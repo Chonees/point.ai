@@ -8,6 +8,7 @@ const makeRow = (overrides: Partial<PlanRow> = {}): PlanRow => ({
   name: 'Main Floor',
   image_data: null,
   structure: null,
+  reviewed_opening_annotations: [],
   placed_items_3d: [],
   floor_material: 'hardwood',
   wall_material: 'white-paint',
@@ -25,6 +26,7 @@ describe('rowToPlan', () => {
     expect(plan.name).toBe('Main Floor')
     expect(plan.imageData).toBeNull()
     expect(plan.structure).toBeNull()
+    expect(plan.reviewedOpeningAnnotations).toEqual([])
     expect(plan.scene).toEqual({
       placedItems3d: [],
       floorMaterial: 'hardwood',
@@ -53,5 +55,23 @@ describe('rowToPlan', () => {
     expect(plan.scene.placedItems3d).toHaveLength(1)
     expect(plan.scene.floorMaterial).toBe('marble')
     expect(plan.scene.wallMaterial).toBe('brick')
+  })
+
+  it('maps reviewed opening annotations and falls back to an empty list', () => {
+    const withAnnotations = rowToPlan(makeRow({
+      reviewed_opening_annotations: [
+        { type: 'door', x1: 50, y1: 60, x2: 50, y2: 90, swing: 'left' },
+      ],
+    }))
+
+    expect(withAnnotations.reviewedOpeningAnnotations).toEqual([
+      { type: 'door', x1: 50, y1: 60, x2: 50, y2: 90, swing: 'left' },
+    ])
+
+    const withoutAnnotations = rowToPlan(makeRow({
+      reviewed_opening_annotations: undefined as never,
+    }))
+
+    expect(withoutAnnotations.reviewedOpeningAnnotations).toEqual([])
   })
 })
