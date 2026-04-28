@@ -110,6 +110,7 @@ async def api_parse_structure(req: ParseStructureRequest):
         quality_metrics=parsed["quality_metrics"],
         needs_review=parsed["needs_review"],
         review_flags=parsed["review_flags"],
+        auto_annotations=auto_anns,
     )
 
 
@@ -131,6 +132,9 @@ async def api_generate_v2(req: GenerateStructureRequest):
     out_path = str(DXF_DIR / filename)
     dxf_mode = resolve_dxf_mode(parsed)
     infer_result = parsed.get("_infer_result") or {}
+    if req.annotations is not None:
+        infer_result["_auto_annotations"] = req.annotations
+        parsed["_reviewed_annotations"] = req.annotations
     auto_anns = infer_result.get("_auto_annotations", [])
 
     try:
@@ -167,6 +171,7 @@ async def api_generate_v2(req: GenerateStructureRequest):
         scale_status=parsed["structure"]["structure_meta"]["scale_status"],
         quality_metrics=parsed["quality_metrics"],
         review_flags=parsed["review_flags"],
+        auto_annotations=auto_anns,
     )
 
 

@@ -8,6 +8,8 @@ from ..plan_parser import parse_structure_payload
 from ..mitunet_inference import MITUNET_BACKEND
 from ..ensemble_inference import ENSEMBLE_BACKEND
 
+_NO_OPENINGS_REVIEW_FLAG = "Quality gate: no openings detected."
+
 
 def parse_v2_input(
     plan: dict | None,
@@ -52,6 +54,7 @@ def parse_v2_input(
             inferred.get("inference_debug", {}).get("model_variant") or model_variant or "baseline"
         )
         parsed["_infer_result"] = inferred
+        _apply_annotation_first_opening_metrics(parsed, inferred)
         return parsed, image, inferred.get("inference_debug", {}).get("debug_overlay_b64")
 
     raise ValueError("One of structure, plan or image must be provided.")
@@ -66,3 +69,32 @@ def resolve_dxf_mode(parsed: dict) -> str:
         and "_wall_mask" in infer_result
     )
     return "mask_regions" if supports_mask_regions else "structural"
+
+
+def _apply_annotation_first_opening_metrics(parsed: dict, inferred: dict) -> None:
+    auto_annotations = [
+        ann for ann in (inferred.get("_auto_annotations") or [])
+        if ann.get("type") in ("door", "window")
+    ]
+    if not auto_annotations:
+        return
+
+    quality_metrics = parsed.get("quality_metrics", {})
+    quality_metrics["opening_annotation_count"] = len(auto_annotations)
+    quality_metrics["opening_count"] = len(auto_annotations)
+    quality_metrics["door_count"] = sum(1 for ann in auto_annotations if ann.get("type") == "door")
+    quality_metrics["window_count"] = sum(1 for ann in auto_annotations if ann.get("type") == "window")
+
+    gate_reasons = [
+        reason for reason in quality_metrics.get("quality_gate_reasons", [])
+        if reason != "no_openings_detected"
+    ]
+    quality_metrics["quality_gate_reasons"] = gate_reasons
+    quality_metrics["quality_gate_reason_count"] = len(gate_reasons)
+    quality_metrics["quality_gate_passed"] = len(gate_reasons) == 0
+
+    parsed["review_flags"] = [
+        flag for flag in parsed.get("review_flags", [])
+        if flag != _NO_OPENINGS_REVIEW_FLAG
+    ]
+    parsed["needs_review"] = bool(parsed["review_flags"])

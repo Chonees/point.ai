@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react'
-import type { V2Result } from '../../types'
+import type { OpeningAnnotation, V2Result } from '../../types'
 import { fileToBase64 } from '../../utils/fileToBase64'
 import { apiUrl } from '../../lib/api'
 
@@ -7,12 +7,16 @@ interface UseGenerateDxfOptions {
   file: File | null
   preview: string | null
   onStructureChange?: (structure: Record<string, unknown>) => void
+  reviewedAnnotations?: OpeningAnnotation[]
+  useReviewedAnnotations?: boolean
 }
 
 export function useGenerateDxf({
   file,
   preview,
   onStructureChange,
+  reviewedAnnotations = [],
+  useReviewedAnnotations = false,
 }: UseGenerateDxfOptions) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'done' | 'error'>('idle')
   const [statusMsg, setStatusMsg] = useState('')
@@ -31,6 +35,9 @@ export function useGenerateDxf({
     try {
       const imageBase64 = file ? await fileToBase64(file) : preview!.replace(/^data:image\/\w+;base64,/, '')
       const body: Record<string, unknown> = { image: imageBase64, model_variant: 'ensemble' }
+      if (useReviewedAnnotations) {
+        body.annotations = reviewedAnnotations.map(({ _source, ...annotation }) => annotation)
+      }
 
       const response = await fetch(apiUrl('/api/v2/generate-dxf'), {
         method: 'POST',
@@ -64,7 +71,7 @@ export function useGenerateDxf({
       setStatus('error')
       setStatusMsg(error instanceof Error ? error.message : 'Unknown error')
     }
-  }, [file, onStructureChange, preview])
+  }, [file, onStructureChange, preview, reviewedAnnotations, useReviewedAnnotations])
 
   return { status, statusMsg, result, setResult, setStatus, setStatusMsg, generate }
 }

@@ -196,6 +196,8 @@ def _model_variant_from_options(options: dict[str, Any] | None) -> str | None:
 def _finalize_inference_result(result: dict[str, Any], *, backend: str) -> dict[str, Any]:
     result.setdefault("inference_debug", {})
     result["inference_debug"]["backend"] = backend
+    if backend == ENSEMBLE_BACKEND:
+        return result
     return disable_opening_detections(result)
 
 

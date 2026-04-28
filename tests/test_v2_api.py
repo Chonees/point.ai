@@ -46,7 +46,7 @@ def test_parse_structure_endpoint_returns_v2_payload():
     assert payload["needs_review"] is False
     assert payload["preview_url"].startswith("/artifacts/")
     assert payload["artifact_urls"]["structure_url"].startswith("/artifacts/")
-    assert "auto_annotations" not in payload
+    assert payload["auto_annotations"] == []
 
     preview = client.get(payload["preview_url"])
     assert preview.status_code == 200
@@ -60,7 +60,7 @@ def test_generate_dxf_endpoint_writes_downloadable_file():
     payload = response.json()
     assert payload["scale_status"] == "calibrated"
     assert payload["dxf_url"].startswith("/downloads/")
-    assert "auto_annotations" not in payload
+    assert payload["auto_annotations"] == []
     assert "computed_rooms" not in payload
     assert "region_overlay" not in payload
 
@@ -202,3 +202,65 @@ def test_generate_dxf_endpoint_ignores_legacy_dxf_mode_override_for_mitunet(monk
     assert payload["structure"]["structure_meta"]["dxf_mode"] == "mask_regions"
     assert "dxf_region_plan" in payload["structure"]["structure_meta"]
     assert "mitunet_region_debug" in payload["structure"]["structure_meta"]
+
+
+def test_parse_structure_endpoint_returns_auto_annotations_for_ensemble(monkeypatch):
+    def fake_infer(image: str, *, backend=None, options=None):
+        result = build_mitunet_infer_result()
+        result["source"] = "ensemble_local"
+        result["openings"] = []
+        result["_auto_annotations"] = [
+            {"type": "window", "x1": 10.0, "y1": 20.0, "x2": 30.0, "y2": 20.0, "swing": "down"},
+        ]
+        result["inference_debug"] = {"backend": "ensemble_local", "model_variant": "ensemble"}
+        return result
+
+    monkeypatch.setattr("backend.services.parse_service.infer_structure", fake_infer)
+
+    response = client.post(
+        "/api/v2/parse-structure",
+        json={"image": build_synthetic_structure_image(), "model_variant": "ensemble"},
+    )
+
+    assert response.status_code == 200, response.text
+    payload = response.json()
+    assert payload["auto_annotations"][0]["type"] == "window"
+    assert payload["quality_metrics"]["opening_count"] == 1
+    assert "no_openings_detected" not in payload["quality_metrics"]["quality_gate_reasons"]
+
+
+def test_generate_dxf_endpoint_uses_reviewed_opening_annotations(monkeypatch):
+    captured: dict[str, object] = {}
+
+    def fake_infer(image: str, *, backend=None, options=None):
+        result = build_mitunet_infer_result()
+        result["source"] = "ensemble_local"
+        result["openings"] = []
+        result["_auto_annotations"] = [
+            {"type": "window", "x1": 10.0, "y1": 20.0, "x2": 30.0, "y2": 20.0, "swing": "down"},
+        ]
+        result["inference_debug"] = {"backend": "ensemble_local", "model_variant": "ensemble"}
+        return result
+
+    def fake_generate_dxf(*, parsed, out_path, dxf_mode, image_b64):
+        captured["annotations"] = parsed["_infer_result"].get("_auto_annotations", [])
+        return {"dxf_preview": None}
+
+    monkeypatch.setattr("backend.services.parse_service.infer_structure", fake_infer)
+    monkeypatch.setattr("backend.app.generate_dxf", fake_generate_dxf)
+
+    response = client.post(
+        "/api/v2/generate-dxf",
+        json={
+            "image": build_synthetic_structure_image(),
+            "model_variant": "ensemble",
+            "annotations": [
+                {"type": "door", "x1": 50.0, "y1": 60.0, "x2": 50.0, "y2": 90.0, "swing": "left"},
+            ],
+        },
+    )
+
+    assert response.status_code == 200, response.text
+    assert captured["annotations"] == [
+        {"type": "door", "x1": 50.0, "y1": 60.0, "x2": 50.0, "y2": 90.0, "swing": "left"},
+    ]

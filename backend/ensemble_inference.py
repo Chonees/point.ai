@@ -16,11 +16,9 @@ from .mitunet_inference import infer_mitunet, mitunet_available
 from .cubicasa_inference import cubicasa_available, infer_cubicasa
 from .observability import log_event
 from .structure_postprocess import (
-    _anchor_openings,
-    _deduplicate_openings,
-    _limit_exterior_wall_windows,
     _normalize_wall_geometry,
-    _resolve_postprocess_config,
+    _default_side_for_wall,
+    _default_swing,
 )
 
 ENSEMBLE_BACKEND = "ensemble_local"
@@ -61,48 +59,40 @@ def infer_ensemble(
 
     h, w = mitunet_result["_image_shape"]
     mitunet_walls = mitunet_result["walls"]
-    normalized_mitunet_walls = [_normalize_wall_geometry(wall) for wall in mitunet_walls]
     cubicasa_openings = cubi_result.get("openings", [])
     cubicasa_debug = {
         "raw_opening_count": len(cubicasa_openings),
         "cubicasa_wall_count": len(cubi_result.get("walls", [])),
     }
 
-    config = _resolve_postprocess_config(mitunet_result.get("structure_meta") or {})
+    normalized_walls = [_normalize_wall_geometry(wall) for wall in mitunet_walls]
+    wall_map = {wall["id"]: wall for wall in normalized_walls}
 
-    # --- Step 3: Anchor semantics (side/swing/defaults) onto MitUNet walls ---
+    # --- Step 3: Re-anchor CubiCasa openings to MitUNet walls ---
     review_flags: list[str] = []
-    wall_map = {wall["id"]: wall for wall in normalized_mitunet_walls}
-    anchored_openings, opening_metrics = _anchor_openings(
-        cubicasa_openings,
-        normalized_mitunet_walls,
-        wall_map,
-        review_flags,
-        config=config,
-    )
+    reanchored = _reanchor_openings(cubicasa_openings, mitunet_walls)
+    enriched = [
+        _auto_fill_opening_semantics(opening, wall_map.get(opening.get("wall_id")), review_flags)
+        for opening in reanchored
+    ]
 
-    # --- Step 4: Deduplicate + cap after openings are anchored structurally ---
-    deduplicated, duplicate_removed_count = _deduplicate_openings(anchored_openings, normalized_mitunet_walls)
-    filtered, excess_window_removed_count = _limit_exterior_wall_windows(deduplicated, normalized_mitunet_walls)
-
-    # --- Step 5: Convert to annotation format for mask_regions DXF ---
-    auto_annotations = _openings_to_annotations(filtered, image_height=h)
+    # --- Step 4: Convert to annotation format for mask_regions DXF ---
+    auto_annotations = _openings_to_annotations(enriched, image_height=h)
 
     elapsed = time.time() - t0
     log_event(
         "ensemble.infer.done",
         wall_count=len(mitunet_walls),
         opening_count=len(cubicasa_openings),
-        anchored_count=len(anchored_openings),
-        deduplicated_count=len(deduplicated),
-        filtered_count=len(filtered),
+        reanchored_count=len(reanchored),
+        enriched_count=len(enriched),
         annotation_count=len(auto_annotations),
         elapsed=round(elapsed, 2),
     )
 
     return {
         "walls": mitunet_walls,
-        "openings": filtered,
+        "openings": [],
         "rooms": [],
         "source": ENSEMBLE_BACKEND,
         "_wall_mask": mitunet_result["_wall_mask"],
@@ -119,18 +109,74 @@ def infer_ensemble(
             "ensemble": {
                 "wall_count": len(mitunet_walls),
                 "cubicasa_raw_opening_count": len(cubicasa_openings),
-                "anchored_opening_count": len(anchored_openings),
-                "deduplicated_opening_count": len(deduplicated),
-                "final_opening_count": len(filtered),
-                "duplicate_removed_count": duplicate_removed_count,
-                "excess_window_removed_count": excess_window_removed_count,
+                "reanchored_opening_count": len(reanchored),
+                "enriched_opening_count": len(enriched),
                 "auto_annotation_count": len(auto_annotations),
-                **opening_metrics,
                 "review_flags": review_flags,
                 "elapsed_s": round(elapsed, 2),
             },
         },
     }
+
+
+def _reanchor_openings(
+    cubicasa_openings: list[dict[str, Any]],
+    mitunet_walls: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    """Re-anchor each CubiCasa opening to the nearest MitUNet wall midpoint."""
+    if not mitunet_walls or not cubicasa_openings:
+        return []
+
+    reanchored: list[dict[str, Any]] = []
+
+    for opening in cubicasa_openings:
+        pos = opening.get("position") or {}
+        cx = float(pos.get("x", 0))
+        cy = float(pos.get("y", 0))
+
+        best_wall = None
+        best_dist = float("inf")
+        for wall in mitunet_walls:
+            try:
+                (wx0, wy0), (wx1, wy1) = _wall_xy_pair(wall)
+            except ValueError:
+                continue
+
+            wall_cx = (wx0 + wx1) / 2.0
+            wall_cy = (wy0 + wy1) / 2.0
+            dist = abs(cx - wall_cx) + abs(cy - wall_cy)
+            if dist < best_dist:
+                best_dist = dist
+                best_wall = wall
+
+        if best_wall is not None and best_dist <= _MAX_OPENING_WALL_DISTANCE:
+            anchored = dict(opening)
+            anchored["wall_id"] = best_wall["id"]
+            anchored["_anchor_distance"] = round(best_dist, 1)
+            reanchored.append(anchored)
+
+    return reanchored
+
+
+def _auto_fill_opening_semantics(
+    opening: dict[str, Any],
+    wall: dict[str, Any] | None,
+    review_flags: list[str],
+) -> dict[str, Any]:
+    enriched = dict(opening)
+    default_side = _default_side_for_wall(wall) if wall is not None else None
+
+    if enriched.get("kind") == "door" and not enriched.get("swing"):
+        fallback_swing = _default_swing(default_side)
+        if fallback_swing:
+            enriched["swing"] = fallback_swing
+            review_flags.append(f"Auto-filled door swing for {enriched.get('id', 'door')}.")
+
+    if enriched.get("kind") == "window" and not enriched.get("side") and default_side:
+        enriched["side"] = default_side
+        review_flags.append(f"Auto-filled window exterior side for {enriched.get('id', 'window')}.")
+
+    return enriched
 
 
 def _openings_to_annotations(
@@ -213,3 +259,18 @@ def _window_side_to_annotation_swing(
         "left": "left",
         "right": "right",
     }.get(side)
+
+
+def _wall_xy_pair(wall: dict[str, Any]) -> tuple[tuple[float, float], tuple[float, float]]:
+    poly = wall.get("polyline", [])
+    if len(poly) < 2:
+        raise ValueError("wall polyline must have at least 2 points")
+    return _point_xy(poly[0]), _point_xy(poly[1])
+
+
+def _point_xy(point: Any) -> tuple[float, float]:
+    if isinstance(point, dict):
+        return float(point["x"]), float(point["y"])
+    if isinstance(point, (list, tuple)) and len(point) >= 2:
+        return float(point[0]), float(point[1])
+    raise ValueError(f"Unsupported point format: {point!r}")

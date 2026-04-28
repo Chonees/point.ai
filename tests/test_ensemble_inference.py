@@ -29,7 +29,7 @@ def _patch_models(monkeypatch, *, cubicasa_openings: list[dict]) -> None:
     )
 
 
-def test_infer_ensemble_deduplicates_overlapping_doors(monkeypatch):
+def test_infer_ensemble_keeps_overlapping_doors_in_annotation_first_mode(monkeypatch):
     _patch_models(
         monkeypatch,
         cubicasa_openings=[
@@ -59,11 +59,11 @@ def test_infer_ensemble_deduplicates_overlapping_doors(monkeypatch):
     result = infer_ensemble("data:image/png;base64,AAAA")
 
     doors = [ann for ann in result["_auto_annotations"] if ann["type"] == "door"]
-    assert len(doors) == 1
-    assert doors[0]["swing"] == "left"
+    assert len(doors) == 2
+    assert all(door["swing"] == "left" for door in doors)
 
 
-def test_infer_ensemble_caps_dense_exterior_windows(monkeypatch):
+def test_infer_ensemble_keeps_dense_exterior_windows_in_annotation_first_mode(monkeypatch):
     _patch_models(
         monkeypatch,
         cubicasa_openings=[
@@ -82,7 +82,7 @@ def test_infer_ensemble_caps_dense_exterior_windows(monkeypatch):
     result = infer_ensemble("data:image/png;base64,AAAA")
 
     windows = [ann for ann in result["_auto_annotations"] if ann["type"] == "window"]
-    assert len(windows) == 3
+    assert len(windows) == 5
     assert all(window["swing"] == "down" for window in windows)
 
 
@@ -109,7 +109,7 @@ def test_infer_ensemble_keeps_dense_interior_windows(monkeypatch):
     assert all(window["swing"] == "right" for window in windows)
 
 
-def test_infer_ensemble_anchors_opening_by_wall_compatibility_not_midpoint(monkeypatch):
+def test_infer_ensemble_reanchors_opening_by_nearest_wall_midpoint(monkeypatch):
     mitunet_result = deepcopy(build_mitunet_infer_result())
     mitunet_result["walls"] = [
         {
@@ -154,7 +154,9 @@ def test_infer_ensemble_anchors_opening_by_wall_compatibility_not_midpoint(monke
 
     result = infer_ensemble("data:image/png;base64,AAAA")
 
-    assert result["openings"][0]["wall_id"] == "wall-top-long"
+    assert result["openings"] == []
+    assert len(result["_auto_annotations"]) == 1
+    assert result["inference_debug"]["ensemble"]["reanchored_opening_count"] == 1
 
 
 def test_infer_ensemble_falls_back_when_cubicasa_orientation_is_wrong(monkeypatch):
@@ -189,5 +191,38 @@ def test_infer_ensemble_falls_back_when_cubicasa_orientation_is_wrong(monkeypatc
 
     result = infer_ensemble("data:image/png;base64,AAAA")
 
-    assert len(result["openings"]) == 1
-    assert result["openings"][0]["wall_id"] == "wall-top"
+    assert result["openings"] == []
+    assert [ann["type"] for ann in result["_auto_annotations"]] == ["window"]
+
+
+def test_infer_ensemble_restores_annotation_first_openings_with_semantics(monkeypatch):
+    _patch_models(
+        monkeypatch,
+        cubicasa_openings=[
+            {
+                "id": "door-no-swing",
+                "kind": "door",
+                "position": {"x": 110.0, "y": 74.0},
+                "span": 28.0,
+                "orientation": "vertical",
+                "confidence": 0.9,
+                "door_type": "normal",
+                "swing": None,
+            },
+            {
+                "id": "window-no-side",
+                "kind": "window",
+                "position": {"x": 151.0, "y": 20.0},
+                "span": 30.0,
+                "orientation": "horizontal",
+                "confidence": 0.92,
+            },
+        ],
+    )
+
+    result = infer_ensemble("data:image/png;base64,AAAA")
+
+    assert result["openings"] == []
+    assert [ann["type"] for ann in result["_auto_annotations"]] == ["door", "window"]
+    assert result["_auto_annotations"][0]["swing"] in {"left", "right"}
+    assert result["_auto_annotations"][1]["swing"] in {"up", "down"}

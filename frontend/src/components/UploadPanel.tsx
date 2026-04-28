@@ -1,11 +1,13 @@
 import { useState, useCallback, useEffect } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { motion } from 'framer-motion'
+import type { OpeningAnnotation } from '../types'
 import type { PlanData, PlanScene } from '../features/projects'
 import { useGenerateDxf } from '../features/workspace/useGenerateDxf'
 import { PlanSourceCard } from '../features/workspace/PlanSourceCard'
 import { PlanMetadataCard } from '../features/workspace/PlanMetadataCard'
 import { WorkspaceOutput } from '../features/workspace/WorkspaceOutput'
+import { filterOpeningAnnotations } from '../features/workspace/openingsReview'
 
 interface UploadPanelProps {
   project?: PlanData | null
@@ -18,11 +20,15 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveN
   const [file, setFile] = useState<File | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [dragging, setDragging] = useState(false)
+  const [reviewedAnnotations, setReviewedAnnotations] = useState<OpeningAnnotation[]>([])
+  const [reviewSessionActive, setReviewSessionActive] = useState(false)
 
   const { status, statusMsg, result, generate } = useGenerateDxf({
     file,
     preview,
     onStructureChange,
+    reviewedAnnotations,
+    useReviewedAnnotations: reviewSessionActive,
   })
 
   const hasPlan = Boolean(file || preview)
@@ -39,8 +45,16 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveN
     }
   }, [project?.id])
 
+  useEffect(() => {
+    if (!result) return
+    setReviewedAnnotations(filterOpeningAnnotations(result.auto_annotations))
+    setReviewSessionActive(true)
+  }, [result])
+
   const handleFile = useCallback((uploadedFile: File) => {
     setFile(uploadedFile)
+    setReviewedAnnotations([])
+    setReviewSessionActive(false)
 
     const reader = new FileReader()
     reader.onload = () => {
@@ -101,8 +115,16 @@ export function UploadPanel({ project, onSceneChange, onStructureChange, onSaveN
         {result && (
           <WorkspaceOutput
             result={result}
+            sourceImage={preview}
             initialScene={project?.scene}
             onSceneChange={onSceneChange}
+            openingAnnotations={reviewedAnnotations}
+            onOpeningAnnotationsChange={(annotations) => {
+              setReviewedAnnotations(annotations)
+              setReviewSessionActive(true)
+            }}
+            onRegenerate={generate}
+            isRegenerating={status === 'loading'}
           />
         )}
       </AnimatePresence>

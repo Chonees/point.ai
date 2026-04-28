@@ -27,7 +27,11 @@ def generate_dxf(
 
     if dxf_mode == "mask_regions":
         infer_result = parsed.get("_infer_result") or {}
-        auto_annotations = infer_result.get("_auto_annotations", [])
+        if "_reviewed_annotations" in parsed:
+            auto_annotations = parsed.get("_reviewed_annotations") or []
+            infer_result["_auto_annotations"] = auto_annotations
+        else:
+            auto_annotations = infer_result.get("_auto_annotations", [])
         region_plan = build_mitunet_region_plan(infer_result, annotations=auto_annotations)
 
         parsed["quality_metrics"]["dxf_region_count"] = region_plan["meta"]["region_count"]

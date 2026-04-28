@@ -1,9 +1,11 @@
 import { lazy, Suspense, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import type { V2Result } from '../../types'
+import type { OpeningAnnotation, V2Result } from '../../types'
 import type { PlanScene } from '../projects/project.types'
 import { DownloadButton } from '../../components/DownloadButton'
 import { apiUrl } from '../../lib/api'
+import { OpeningsReviewCanvas } from './OpeningsReviewCanvas'
+import { Spinner } from '../../components/Spinner'
 
 const ENABLE_3D = false
 
@@ -11,14 +13,24 @@ const FloorPlan3D = lazy(() => import('../../components/FloorPlan3D'))
 
 interface WorkspaceOutputProps {
   result: V2Result
+  sourceImage?: string | null
   initialScene?: PlanScene
   onSceneChange?: (scene: PlanScene) => void
+  openingAnnotations?: OpeningAnnotation[]
+  onOpeningAnnotationsChange?: (annotations: OpeningAnnotation[]) => void
+  onRegenerate?: () => void
+  isRegenerating?: boolean
 }
 
 export function WorkspaceOutput({
   result,
+  sourceImage,
   initialScene,
   onSceneChange,
+  openingAnnotations = [],
+  onOpeningAnnotationsChange,
+  onRegenerate,
+  isRegenerating = false,
 }: WorkspaceOutputProps) {
   const [view3D, setView3D] = useState(false)
   const [showDetails, setShowDetails] = useState(false)
@@ -105,6 +117,34 @@ export function WorkspaceOutput({
             {result.dxf_url ? 'DXF ready for download.' : 'Generate DXF to export the current workspace.'}
           </p>
         </div>
+
+        {sourceImage && onOpeningAnnotationsChange && (
+          <div className="mt-5 space-y-3">
+            <OpeningsReviewCanvas
+              imageSrc={sourceImage}
+              annotations={openingAnnotations}
+              onChange={onOpeningAnnotationsChange}
+            />
+
+            {onRegenerate && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-[20px] border border-white/6 bg-white/[0.02] px-4 py-3">
+                <p className="text-xs leading-5 text-zinc-500">
+                  Cuando termines de mover o borrar openings, regenerá el DXF para aplicar la sesión actual.
+                </p>
+                <button
+                  type="button"
+                  onClick={onRegenerate}
+                  disabled={isRegenerating}
+                  className="rounded-2xl border border-white/10 bg-white/[0.06] px-4 py-2 text-xs font-medium text-zinc-200 transition-all duration-200 hover:bg-white/[0.1] disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  {isRegenerating
+                    ? <span className="flex items-center gap-2"><Spinner />Regenerating…</span>
+                    : 'Regenerate DXF with openings'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         <AnimatePresence>
           {showDetails && (

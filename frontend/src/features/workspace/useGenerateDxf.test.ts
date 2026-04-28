@@ -14,6 +14,8 @@ function makeHookArgs(overrides: Record<string, unknown> = {}) {
     file: null as File | null,
     preview: null as string | null,
     onStructureChange: vi.fn(),
+    reviewedAnnotations: [],
+    useReviewedAnnotations: false,
     ...overrides,
   }
 }
@@ -91,5 +93,42 @@ describe('useGenerateDxf', () => {
 
     expect(result.current.status).toBe('error')
     expect(result.current.statusMsg).toBe('Inference failed')
+  })
+
+  it('sends reviewed opening annotations when the session has review state', async () => {
+    const dxfResult = {
+      dxf_url: '/downloads/test.dxf',
+      preview_url: null,
+      structure: { walls: [] },
+      quality_metrics: {},
+      review_flags: [],
+      needs_review: false,
+      scale_status: 'ok',
+      auto_annotations: [],
+    }
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () => Promise.resolve(dxfResult),
+    })
+
+    const args = makeHookArgs({
+      preview: 'data:image/png;base64,AAAA',
+      reviewedAnnotations: [
+        { type: 'door', x1: 50, y1: 60, x2: 50, y2: 90, swing: 'left' },
+      ],
+      useReviewedAnnotations: true,
+    })
+
+    const { result } = renderHook(() => useGenerateDxf(args))
+
+    await act(async () => {
+      await result.current.generate()
+    })
+
+    const [, opts] = mockFetch.mock.calls[0]
+    const body = JSON.parse(opts.body)
+    expect(body.annotations).toEqual([
+      { type: 'door', x1: 50, y1: 60, x2: 50, y2: 90, swing: 'left' },
+    ])
   })
 })

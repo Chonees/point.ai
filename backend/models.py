@@ -18,6 +18,7 @@ class ParseStructureResponse(BaseModel):
     quality_metrics: dict = Field(default_factory=dict)
     needs_review: bool = False
     review_flags: list[str] = Field(default_factory=list)
+    auto_annotations: list[dict] = Field(default_factory=list)
 
 
 class GenerateStructureRequest(BaseModel):
@@ -26,6 +27,7 @@ class GenerateStructureRequest(BaseModel):
     image: Optional[str] = None
     scale_hint: Optional[float] = None
     model_variant: Optional[str] = None
+    annotations: Optional[list[dict]] = None
 
 
 class GenerateStructureResponse(BaseModel):
@@ -37,3 +39,4 @@ class GenerateStructureResponse(BaseModel):
     scale_status: str
     quality_metrics: dict = Field(default_factory=dict)
     review_flags: list[str] = Field(default_factory=list)
+    auto_annotations: list[dict] = Field(default_factory=list)
