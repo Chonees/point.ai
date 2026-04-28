@@ -1,6 +1,6 @@
 import type { OpeningAnnotation, SwingDir } from '../../types'
 
-type UnknownAnnotation = Partial<OpeningAnnotation> & { type?: string }
+type UnknownAnnotation = Omit<Partial<OpeningAnnotation>, 'type'> & { type?: string }
 
 export interface OpeningPreviewLine {
   x1: number

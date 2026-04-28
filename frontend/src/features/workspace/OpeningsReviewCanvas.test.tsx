@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import type { OpeningAnnotation } from '../../types'
 import { OpeningsReviewCanvas } from './OpeningsReviewCanvas'
 
 function stubImageMetrics(image: HTMLImageElement) {
@@ -94,7 +95,7 @@ describe('OpeningsReviewCanvas', () => {
 
   it('moves the opening only when dragging the move handle', () => {
     const onChange = vi.fn()
-    const annotations = [
+    const annotations: OpeningAnnotation[] = [
       { type: 'door' as const, x1: 50, y1: 20, x2: 50, y2: 70, swing: 'left' },
     ]
 
