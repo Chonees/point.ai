@@ -17,6 +17,157 @@ from .model import (
 )
 
 
+# Ray-cast parameters: eps is the perpendicular offset from the region
+# centerline (must exceed half the max wall thickness so face points fall
+# outside the wall body). span_tol is the tolerance for "ray hits another
+# wall span" — kept tight to avoid false blocking at adjacent endpoints.
+_RAY_EPS = 4.0
+_RAY_SPAN_TOL = 0.5
+
+
+def _compute_regions_bbox(regions: list[dict]) -> dict | None:
+    """Bounding box of all wall regions, in DXF coords."""
+    xs: list[float] = []
+    ys: list[float] = []
+    for region in regions:
+        bounds = region.get("bounds") or {}
+        try:
+            xs.append(float(bounds["x1"]))
+            xs.append(float(bounds["x2"]))
+            ys.append(float(bounds["y1"]))
+            ys.append(float(bounds["y2"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+    if not xs or not ys:
+        return None
+    return {"min_x": min(xs), "max_x": max(xs), "min_y": min(ys), "max_y": max(ys)}
+
+
+def _region_centerline(region: dict) -> tuple[str, float, float, float, float] | None:
+    """Return (orientation, mid_x, mid_y, span_lo, span_hi) for a region, or None."""
+    bounds = region.get("bounds") or {}
+    try:
+        x1 = float(bounds["x1"])
+        y1 = float(bounds["y1"])
+        x2 = float(bounds["x2"])
+        y2 = float(bounds["y2"])
+    except (KeyError, TypeError, ValueError):
+        return None
+    if abs(x2 - x1) < 1e-6 or abs(y2 - y1) < 1e-6:
+        return None
+    orientation = region.get("orientation", "horizontal")
+    if orientation == "horizontal":
+        mx = (x1 + x2) / 2.0
+        my = (y1 + y2) / 2.0
+        return ("horizontal", mx, my, min(x1, x2), max(x1, x2))
+    mx = (x1 + x2) / 2.0
+    my = (y1 + y2) / 2.0
+    return ("vertical", mx, my, min(y1, y2), max(y1, y2))
+
+
+def _region_is_exterior(region: dict, bbox: dict | None, all_regions: list[dict] | None = None) -> bool:
+    """6-ray line-of-sight: exterior iff at least one face has a clear axial
+    ray (in any of UP/DOWN/LEFT/RIGHT, excluding the direction that pierces
+    the wall) to the bbox edge without crossing another wall region.
+
+    Robust to L, U, bump-out, and courtyard plan shapes. Falls back to bbox-
+    edge proximity when `all_regions` is not provided (legacy callers).
+    """
+    if not bbox:
+        return False
+    centerline = _region_centerline(region)
+    if centerline is None:
+        return False
+    orientation, mx, my, _span_lo, _span_hi = centerline
+
+    if all_regions is None:
+        # Legacy fallback: bbox-edge proximity (no ray cast).
+        if orientation == "horizontal":
+            return abs(my - bbox["min_y"]) <= _RAY_SPAN_TOL or abs(my - bbox["max_y"]) <= _RAY_SPAN_TOL
+        return abs(mx - bbox["min_x"]) <= _RAY_SPAN_TOL or abs(mx - bbox["max_x"]) <= _RAY_SPAN_TOL
+
+    # Pre-index horizontal and vertical region centerlines (excluding self).
+    self_id = id(region)
+    h_index: list[tuple[float, float, float]] = []
+    v_index: list[tuple[float, float, float]] = []
+    for other in all_regions:
+        if id(other) == self_id:
+            continue
+        cl = _region_centerline(other)
+        if cl is None:
+            continue
+        ori, omx, omy, lo, hi = cl
+        if ori == "horizontal":
+            h_index.append((omy, lo, hi))
+        else:
+            v_index.append((omx, lo, hi))
+
+    pad = 1.0
+    if orientation == "horizontal":
+        # Top face: rays UP / LEFT / RIGHT.
+        face_y = my + _RAY_EPS
+        top_clear = (
+            _ray_clear_h(mx, face_y, bbox["max_y"] + pad, h_index)
+            or _ray_clear_v(face_y, bbox["min_x"] - pad, mx, v_index)
+            or _ray_clear_v(face_y, mx, bbox["max_x"] + pad, v_index)
+        )
+        if top_clear:
+            return True
+        # Bottom face: rays DOWN / LEFT / RIGHT.
+        face_y = my - _RAY_EPS
+        bottom_clear = (
+            _ray_clear_h(mx, bbox["min_y"] - pad, face_y, h_index)
+            or _ray_clear_v(face_y, bbox["min_x"] - pad, mx, v_index)
+            or _ray_clear_v(face_y, mx, bbox["max_x"] + pad, v_index)
+        )
+        return bottom_clear
+
+    # Vertical region.
+    # Right face: rays RIGHT / UP / DOWN.
+    face_x = mx + _RAY_EPS
+    right_clear = (
+        _ray_clear_v(my, face_x, bbox["max_x"] + pad, v_index)
+        or _ray_clear_h(face_x, my, bbox["max_y"] + pad, h_index)
+        or _ray_clear_h(face_x, bbox["min_y"] - pad, my, h_index)
+    )
+    if right_clear:
+        return True
+    # Left face: rays LEFT / UP / DOWN.
+    face_x = mx - _RAY_EPS
+    left_clear = (
+        _ray_clear_v(my, bbox["min_x"] - pad, face_x, v_index)
+        or _ray_clear_h(face_x, my, bbox["max_y"] + pad, h_index)
+        or _ray_clear_h(face_x, bbox["min_y"] - pad, my, h_index)
+    )
+    return left_clear
+
+
+def _ray_clear_h(mx: float, ray_lo: float, ray_hi: float,
+                 h_index: list[tuple[float, float, float]]) -> bool:
+    """Vertical ray at x=mx through y-range [ray_lo, ray_hi]: clear iff no
+    horizontal wall (h_index entries: y, x_lo, x_hi) blocks it."""
+    if ray_lo >= ray_hi:
+        return True
+    tol = _RAY_SPAN_TOL
+    for hy, hx1, hx2 in h_index:
+        if ray_lo <= hy <= ray_hi and (hx1 - tol) <= mx <= (hx2 + tol):
+            return False
+    return True
+
+
+def _ray_clear_v(my: float, ray_lo: float, ray_hi: float,
+                 v_index: list[tuple[float, float, float]]) -> bool:
+    """Horizontal ray at y=my through x-range [ray_lo, ray_hi]: clear iff no
+    vertical wall (v_index entries: x, y_lo, y_hi) blocks it."""
+    if ray_lo >= ray_hi:
+        return True
+    tol = _RAY_SPAN_TOL
+    for vx, vy1, vy2 in v_index:
+        if ray_lo <= vx <= ray_hi and (vy1 - tol) <= my <= (vy2 + tol):
+            return False
+    return True
+
+
 def _prepare_mitunet_wall_mask_for_regions(
     wall_mask: np.ndarray,
     *,

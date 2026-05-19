@@ -3,19 +3,31 @@ walls.py — Pointe Homes Wall Standards + Drawing Logic
 Source: Seminole 2000 FARMHOUSE floorplan.dxf, verified 2026-03-11.
 
 Standards:
-  - Double-line walls, 4" thickness
+  - Exterior walls: 2x6 framing -> 6" double-line thickness
+  - Interior walls: 2x4 framing -> 4" double-line thickness
   - End caps at every opening (door/window gap)
   - Lineweight: 0.60mm, Color: 7 (white)
   - 1 AutoCAD unit = 1 inch
+
+Wall thickness is determined ONLY by exterior/interior classification.
+No detection-based, median-based, or measurement-based thickness logic.
 """
 from collections import defaultdict
 from .primitives import add_line
 
-# === STANDARDS ===
-THICKNESS = 4      # inches — two parallel LINEs 4" apart
+# === FRAMING STANDARDS (HARD RULE) ===
+INTERIOR_THICKNESS = 4   # 2x4 nominal
+EXTERIOR_THICKNESS = 6   # 2x6 nominal
+THICKNESS = INTERIOR_THICKNESS  # default for room/plan_parser callers (interior assumed)
+
 LINEWEIGHT = 60    # 0.60mm
 COLOR = 7
 LAYER = "WALLS"
+
+
+def resolve_wall_thickness(is_exterior: bool) -> float:
+    """Single source of truth: exterior -> 2x6 (6"), interior -> 2x4 (4")."""
+    return float(EXTERIOR_THICKNESS) if is_exterior else float(INTERIOR_THICKNESS)
 
 
 # === DRAWING ===

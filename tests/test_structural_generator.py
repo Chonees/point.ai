@@ -98,12 +98,12 @@ def test_opening_offset_uses_original_wall_start_after_extension():
         "id": "w1",
         "orientation": "horizontal",
         "coord": 20.0,
-        "start": 12.0,
-        "end": 108.0,
+        "start": 14.0,
+        "end": 106.0,
         "base_start": 20.0,
         "base_end": 100.0,
-        "thickness": 8.0,
-        "draw_thickness": 8.0,
+        "thickness": 6.0,
+        "draw_thickness": 6.0,
         "is_exterior": True,
     }
     opening = {
@@ -120,7 +120,8 @@ def test_opening_offset_uses_original_wall_start_after_extension():
     assert geometry["end"] == 54.0
 
 
-def test_junction_extensions_use_detected_wall_thickness():
+def test_junction_extensions_use_exterior_thickness():
+    """Exterior walls extend by 2x6 (6\") at each junction."""
     wall = {
         "id": "w1",
         "orientation": "horizontal",
@@ -129,8 +130,8 @@ def test_junction_extensions_use_detected_wall_thickness():
         "end": 100.0,
         "base_start": 20.0,
         "base_end": 100.0,
-        "thickness": 8.0,
-        "draw_thickness": 8.0,
+        "thickness": 6.0,
+        "draw_thickness": 6.0,
         "is_exterior": True,
     }
     wall_map = {"w1": wall}
@@ -138,7 +139,29 @@ def test_junction_extensions_use_detected_wall_thickness():
 
     _apply_junction_extensions([wall], junctions, wall_map)
 
-    assert wall["start"] == 12.0
+    assert wall["start"] == 14.0  # 20 - 6 (exterior thickness)
+
+
+def test_junction_extensions_use_interior_thickness():
+    """Interior walls extend by 2x4 (4\") at each junction."""
+    wall = {
+        "id": "w1",
+        "orientation": "horizontal",
+        "coord": 20.0,
+        "start": 20.0,
+        "end": 100.0,
+        "base_start": 20.0,
+        "base_end": 100.0,
+        "thickness": 4.0,
+        "draw_thickness": 4.0,
+        "is_exterior": False,
+    }
+    wall_map = {"w1": wall}
+    junctions = [{"point": {"x": 20.0, "y": 20.0}, "type": "L", "wall_ids": ["w1"]}]
+
+    _apply_junction_extensions([wall], junctions, wall_map)
+
+    assert wall["start"] == 16.0  # 20 - 4 (interior thickness)
 
 
 def test_build_render_plan_exposes_wall_lines():

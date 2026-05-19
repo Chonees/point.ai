@@ -3,6 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from ..components.walls import (
+    EXTERIOR_THICKNESS,
+    INTERIOR_THICKNESS,
+    resolve_wall_thickness,
+)
 from ..provenance import build_code_provenance, build_file_provenance, utc_now_iso
 from .annotations import _draw_mitunet_annotations_from_region_plan
 from .junctions import resolve_wall_junctions
@@ -13,6 +18,7 @@ from .model import (
     _TEMPLATE_PATH,
     _WEIGHTS_PATH,
 )
+from .regions import _compute_regions_bbox, _region_is_exterior
 
 
 def build_mitunet_provenance(*, dxf_mode: str = MITUNET_MASK_REGIONS_DXF_MODE) -> dict[str, Any]:
@@ -70,14 +76,13 @@ def generate_mitunet_region_dxf(
     rect_count = 0
     region_thicknesses: list[float] = []
 
-    def _snap_thickness(raw: float) -> float:
-        """Snap detected thickness to standard: 4" (interior) or 6" (exterior)."""
-        return 6.0 if raw >= 5.0 else 4.0
+    all_regions = region_plan.get("regions", [])
+    regions_bbox = _compute_regions_bbox(all_regions)
 
     if not skip_regions:
-        # --- Phase 1: collect snapped regions ---
+        # --- Phase 1: collect regions with rule-based thickness (exterior=2x6, interior=2x4) ---
         snapped: list[dict] = []
-        for region in region_plan.get("regions", []):
+        for region in all_regions:
             bounds = region.get("bounds") or {}
             x1 = float(bounds.get("x1", 0.0))
             y1 = float(bounds.get("y1", 0.0))
@@ -86,8 +91,8 @@ def generate_mitunet_region_dxf(
             if abs(x2 - x1) < 1 or abs(y2 - y1) < 1:
                 continue
 
-            dt = float(region.get("draw_thickness", 4.0))
-            std = _snap_thickness(dt)
+            is_exterior = _region_is_exterior(region, regions_bbox, all_regions=all_regions)
+            std = resolve_wall_thickness(is_exterior)
             orientation = region.get("orientation", "horizontal")
             if orientation == "horizontal":
                 cy = (y1 + y2) / 2
@@ -97,7 +102,8 @@ def generate_mitunet_region_dxf(
                 x1, x2 = cx - std / 2, cx + std / 2
 
             snapped.append({"x1": x1, "y1": y1, "x2": x2, "y2": y2,
-                            "orientation": orientation, "std": std})
+                            "orientation": orientation, "std": std,
+                            "is_exterior": is_exterior})
 
         # --- Phase 2: resolve junctions (L-corners + T-junctions) ---
         junction_input = []
@@ -145,13 +151,10 @@ def generate_mitunet_region_dxf(
             rect_count += 1
             region_thicknesses.append(std)
 
-    # Median standard thickness for manual wall annotations
-    if region_thicknesses:
-        region_thicknesses.sort()
-        mid = len(region_thicknesses) // 2
-        median_thickness = region_thicknesses[mid] if len(region_thicknesses) % 2 else (region_thicknesses[mid - 1] + region_thicknesses[mid]) / 2
-    else:
-        median_thickness = 4.0
+    # Manual wall annotations: thickness is resolved per-wall by the rule
+    # (exterior bbox-edge -> 2x6, interior -> 2x4). The default below is only
+    # used when the annotation has no parent wall to anchor against.
+    default_thickness = float(INTERIOR_THICKNESS)
 
     meta = region_plan.get("meta", {})
     image_shape_meta = meta.get("image_shape", {})
@@ -165,8 +168,8 @@ def generate_mitunet_region_dxf(
         annotations,
         image_shape=image_shape,
         transform=meta.get("transform", {}),
-        wall_thickness=median_thickness,
-        regions=region_plan.get("regions", []),
+        wall_thickness=default_thickness,
+        regions=all_regions,
     )
 
     # --- Wall Legend ---

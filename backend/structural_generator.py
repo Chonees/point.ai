@@ -12,7 +12,15 @@ from typing import Any
 
 from .components.doors import draw_door, draw_garage_door, draw_sliding_door
 from .components.layers import setup_doc
-from .components.walls import THICKNESS, draw_wall_h, draw_wall_v, split_segments
+from .components.walls import (
+    EXTERIOR_THICKNESS,
+    INTERIOR_THICKNESS,
+    THICKNESS,
+    draw_wall_h,
+    draw_wall_v,
+    resolve_wall_thickness,
+    split_segments,
+)
 from .components.windows import draw_window_h, draw_window_v
 
 EPSILON = 1e-6
@@ -54,10 +62,8 @@ def generate(structure: dict[str, Any], out_path: str) -> None:
 
 
 def build_render_plan(structure: dict[str, Any]) -> dict[str, Any]:
-    use_detected_thickness = _use_detected_wall_thickness(structure)
     wall_geometries = [
-        _wall_geometry(wall, use_detected_thickness=use_detected_thickness)
-        for wall in structure.get("walls") or []
+        _wall_geometry(wall) for wall in structure.get("walls") or []
     ]
     wall_map = {wall["id"]: wall for wall in wall_geometries}
 
@@ -94,9 +100,10 @@ def build_render_plan(structure: dict[str, Any]) -> dict[str, Any]:
 
     return {
         "meta": {
-            "use_detected_thickness": use_detected_thickness,
             "wall_count": len(wall_geometries),
             "opening_count": sum(len(openings) for openings in openings_by_wall.values()),
+            "interior_thickness": INTERIOR_THICKNESS,
+            "exterior_thickness": EXTERIOR_THICKNESS,
         },
         "wall_geometries": wall_geometries,
         "walls": wall_plans,
@@ -162,19 +169,15 @@ def _apply_junction_extensions(
 # Wall geometry
 # ---------------------------------------------------------------------------
 
-def _wall_geometry(
-    wall: dict[str, Any],
-    *,
-    use_detected_thickness: bool = False,
-) -> dict[str, Any]:
+def _wall_geometry(wall: dict[str, Any]) -> dict[str, Any]:
     polyline = wall.get("polyline") or []
     if len(polyline) != 2:
         raise ValueError(f"Wall {wall.get('id')} must have exactly 2 polyline points in phase 1.")
 
     start = _point(polyline[0])
     end = _point(polyline[1])
-    raw_thickness = max(1.0, float(wall.get("thickness", THICKNESS)))
-    draw_thickness = raw_thickness if use_detected_thickness else float(THICKNESS)
+    is_exterior = bool(wall.get("is_exterior", False))
+    draw_thickness = resolve_wall_thickness(is_exterior)
 
     if abs(start["y"] - end["y"]) <= EPSILON:
         if start["x"] > end["x"]:
@@ -187,9 +190,9 @@ def _wall_geometry(
             "end": end["x"],
             "base_start": start["x"],
             "base_end": end["x"],
-            "thickness": raw_thickness,
+            "thickness": draw_thickness,
             "draw_thickness": draw_thickness,
-            "is_exterior": bool(wall.get("is_exterior", False)),
+            "is_exterior": is_exterior,
         }
 
     if abs(start["x"] - end["x"]) <= EPSILON:
@@ -203,9 +206,9 @@ def _wall_geometry(
             "end": end["y"],
             "base_start": start["y"],
             "base_end": end["y"],
-            "thickness": raw_thickness,
+            "thickness": draw_thickness,
             "draw_thickness": draw_thickness,
-            "is_exterior": bool(wall.get("is_exterior", False)),
+            "is_exterior": is_exterior,
         }
 
     raise ValueError(f"Wall {wall.get('id')} is not axis-aligned.")
@@ -338,11 +341,6 @@ def _default_swing(side: str | None) -> str | None:
         "left": "right",
         "right": "left",
     }.get(side)
-
-
-def _use_detected_wall_thickness(structure: dict[str, Any]) -> bool:
-    meta = structure.get("structure_meta") or {}
-    return meta.get("unit") == "pixel" or meta.get("scale_status") == "unverified"
 
 
 def _wall_line_entities(wall: dict[str, Any]) -> list[dict[str, Any]]:

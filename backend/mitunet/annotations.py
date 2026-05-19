@@ -3,10 +3,20 @@ from __future__ import annotations
 import math
 from typing import Any
 
+from ..components.walls import (
+    EXTERIOR_THICKNESS,
+    INTERIOR_THICKNESS,
+    resolve_wall_thickness,
+)
 from ..geometry_utils import is_diagonal as _is_diagonal, snap_endpoint_clusters
 from ..diagonal_walls import diagonal_wall_hatch_pts
 from .junctions import resolve_wall_junctions
-from .regions import _mitunet_region_dxf_to_img, _mitunet_region_img_to_dxf
+from .regions import (
+    _compute_regions_bbox,
+    _mitunet_region_dxf_to_img,
+    _mitunet_region_img_to_dxf,
+    _region_is_exterior,
+)
 
 
 def regions_to_wall_annotations(
@@ -14,9 +24,9 @@ def regions_to_wall_annotations(
 ) -> list[dict[str, Any]]:
     """Convert region plan wall regions to image-space wall annotations.
 
-    Each wall annotation includes a ``thickness`` field (4 or 6 inches)
-    derived from the region's ``draw_thickness`` using the median as the
-    split threshold — same logic the DXF writer uses.
+    Thickness follows the framing rule: exterior walls (region centerline on
+    the global bbox edge) -> 2x6 (6"), interior walls -> 2x4 (4"). No
+    detection-, median-, or measurement-based logic.
     """
     meta = region_plan.get("meta") or {}
     image_shape_meta = meta.get("image_shape") or {}
@@ -29,15 +39,7 @@ def regions_to_wall_annotations(
         return []
 
     regions = region_plan.get("regions", [])
-
-    # Compute median draw_thickness for snap threshold (mirrors dxf_writer logic)
-    all_dt = [float(r.get("draw_thickness", 0)) for r in regions if float(r.get("draw_thickness", 0)) > 0]
-    if all_dt:
-        all_dt.sort()
-        m = len(all_dt) // 2
-        dt_median = all_dt[m] if len(all_dt) % 2 else (all_dt[m - 1] + all_dt[m]) / 2
-    else:
-        dt_median = 4.0
+    regions_bbox = _compute_regions_bbox(regions)
 
     annotations: list[dict[str, Any]] = []
     for region in regions:
@@ -48,9 +50,8 @@ def regions_to_wall_annotations(
         y2 = float(bounds.get("y2", 0))
         orientation = region.get("orientation", "horizontal")
 
-        # Snap thickness: same median-based classification as DXF writer
-        raw_dt = float(region.get("draw_thickness", 0))
-        thickness = 6 if raw_dt > dt_median else 4
+        is_exterior = _region_is_exterior(region, regions_bbox, all_regions=regions)
+        thickness = int(resolve_wall_thickness(is_exterior))
 
         # Region center line in DXF coords
         if orientation == "horizontal":
@@ -171,43 +172,42 @@ def _draw_mitunet_annotations_from_region_plan(
 
     rect_count = 0
 
-    # Pre-compute region DXF rects for thickness lookup
-    _region_rects: list[tuple[float, float, float, float, float]] = []
-    for region in (regions or []):
+    # Pre-compute region centerlines + their is_exterior flag (bbox-edge rule)
+    # so each manual wall annotation inherits the thickness of its parent region.
+    _regions_list = list(regions or [])
+    _regions_bbox = _compute_regions_bbox(_regions_list)
+    _region_rects: list[tuple[float, float, float, float, bool]] = []
+    for region in _regions_list:
         bounds = region.get("bounds") or {}
         rx1 = float(bounds.get("x1", 0))
         ry1 = float(bounds.get("y1", 0))
         rx2 = float(bounds.get("x2", 0))
         ry2 = float(bounds.get("y2", 0))
-        dt = float(region.get("draw_thickness", 0))
-        if dt > 0:
-            _region_rects.append((rx1, ry1, rx2, ry2, dt))
-
-    # Compute median for snap threshold
-    all_dt = [r[4] for r in _region_rects]
-    if all_dt:
-        all_dt.sort()
-        m = len(all_dt) // 2
-        _thickness_median = all_dt[m] if len(all_dt) % 2 else (all_dt[m - 1] + all_dt[m]) / 2
-    else:
-        _thickness_median = wall_thickness
+        if abs(rx2 - rx1) < 1 or abs(ry2 - ry1) < 1:
+            continue
+        is_ext = _region_is_exterior(region, _regions_bbox, all_regions=_regions_list)
+        _region_rects.append((rx1, ry1, rx2, ry2, is_ext))
 
     def _resolve_wall_thickness(dx1: float, dy1: float, dx2: float, dy2: float) -> float:
-        """Find the closest region to this wall annotation and snap its thickness."""
+        """Inherit thickness from the closest region (rule: ext=2x6, int=2x4).
+
+        Falls back to the caller-provided default when no regions are present
+        (manual-only DXF). No detection-based or median-based logic.
+        """
+        if not _region_rects:
+            return wall_thickness
         mid_x = (dx1 + dx2) / 2
         mid_y = (dy1 + dy2) / 2
-        best_dt = 0.0
+        best_is_ext = False
         best_dist = float("inf")
-        for rx1, ry1, rx2, ry2, dt in _region_rects:
+        for rx1, ry1, rx2, ry2, is_ext in _region_rects:
             rmx = (rx1 + rx2) / 2
             rmy = (ry1 + ry2) / 2
             d = abs(mid_x - rmx) + abs(mid_y - rmy)
             if d < best_dist:
                 best_dist = d
-                best_dt = dt
-        if best_dt > 0:
-            return 6.0 if best_dt > _thickness_median else 4.0
-        return wall_thickness
+                best_is_ext = is_ext
+        return resolve_wall_thickness(best_is_ext)
 
     # Pre-compute wall DXF coords for junction detection
     wall_dxf_coords: list[tuple[float, float, float, float]] = []

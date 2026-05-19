@@ -17,6 +17,8 @@ from dataclasses import asdict, dataclass
 from collections import defaultdict
 from typing import Any
 
+from .components.walls import INTERIOR_THICKNESS
+
 EPSILON = 1e-6
 DEFAULT_SNAP_TOLERANCE = 4.0
 DEFAULT_JUNCTION_TOLERANCE = 6.0
@@ -406,12 +408,21 @@ def _classify_walls_with_junctions(
     config: PostprocessConfig | None = None,
 ) -> list[dict[str, Any]]:
     """
-    Classify walls as exterior or interior using bounding box coverage
-    and junction connectivity, not just proximity to extremes.
+    Classify walls as exterior or interior via 6-ray line-of-sight.
 
-    A wall on the bounding perimeter that covers a significant portion of
-    the corresponding side is exterior. Interior walls that only partially
-    span are not promoted even if they touch the boundary.
+    For each wall we evaluate two FACE points (perpendicular offset from the
+    centerline). From each face point we cast 3 rays away from the wall body
+    (the ray that would pierce the wall is omitted). A face is "exposed to
+    outside" iff at least one of its 3 rays reaches the global bbox edge
+    without crossing another wall. The wall is EXTERIOR iff at least one
+    face is exposed.
+
+    Robust against any plan shape: rectangular, L, U, bump-outs, internal
+    courtyards. The U-notch case (open space parallel to a wall) is handled
+    correctly because each face casts axial rays in BOTH the perpendicular
+    AND parallel directions.
+
+    Junction connectivity is preserved as a confidence-only signal.
     """
     resolved = config or PostprocessConfig()
     if not walls:
@@ -423,10 +434,52 @@ def _classify_walls_with_junctions(
     min_y = min(p["y"] for p in all_points)
     max_y = max(p["y"] for p in all_points)
 
-    bbox_width = max_x - min_x
-    bbox_height = max_y - min_y
+    # Pre-index axis-aligned walls for fast ray casting.
+    h_index: list[tuple[float, float, float, str]] = []
+    v_index: list[tuple[float, float, float, str]] = []
+    for w in walls:
+        p1, p2 = w["polyline"]
+        ori = w.get("orientation")
+        if ori == "horizontal":
+            h_index.append((float(p1["y"]),
+                            float(min(p1["x"], p2["x"])),
+                            float(max(p1["x"], p2["x"])),
+                            w["id"]))
+        elif ori == "vertical":
+            v_index.append((float(p1["x"]),
+                            float(min(p1["y"], p2["y"])),
+                            float(max(p1["y"], p2["y"])),
+                            w["id"]))
 
-    # Build junction connectivity per wall
+    # eps must exceed half the maximum wall thickness so face points fall
+    # OUTSIDE the wall body. span_tol is kept tight so wall endpoints don't
+    # spuriously block adjacent rays at L/T/X corners.
+    eps = 4.0
+    span_tol = 0.5
+
+    def _vray_clear(x: float, y_lo: float, y_hi: float, exclude_id: str) -> bool:
+        """Vertical ray at column x from y_lo to y_hi: clear iff no horizontal wall blocks."""
+        if y_lo >= y_hi:
+            return True
+        for hy, hx1, hx2, hid in h_index:
+            if hid == exclude_id:
+                continue
+            if y_lo <= hy <= y_hi and (hx1 - span_tol) <= x <= (hx2 + span_tol):
+                return False
+        return True
+
+    def _hray_clear(y: float, x_lo: float, x_hi: float, exclude_id: str) -> bool:
+        """Horizontal ray at row y from x_lo to x_hi: clear iff no vertical wall blocks."""
+        if x_lo >= x_hi:
+            return True
+        for vx, vy1, vy2, vid in v_index:
+            if vid == exclude_id:
+                continue
+            if x_lo <= vx <= x_hi and (vy1 - span_tol) <= y <= (vy2 + span_tol):
+                return False
+        return True
+
+    # Build junction connectivity per wall (used only to boost confidence).
     wall_junction_count: dict[str, int] = defaultdict(int)
     for j in junctions:
         for wid in j["wall_ids"]:
@@ -437,40 +490,75 @@ def _classify_walls_with_junctions(
         start, end = wall["polyline"]
         side = None
         is_exterior = False
-        length = _wall_length(wall)
+        ori = wall.get("orientation")
+        wid = wall["id"]
 
-        if wall["orientation"] == "horizontal":
-            ref_size = bbox_width if bbox_width > EPSILON else 1.0
-            coverage = length / ref_size
+        if ori == "horizontal":
+            mx = (float(start["x"]) + float(end["x"])) / 2.0
+            wy = float(start["y"])
 
-            if abs(start["y"] - min_y) <= resolved.snap_tolerance:
-                if coverage >= resolved.exterior_coverage_threshold or length >= ref_size - resolved.snap_tolerance:
-                    side = "bottom"
-                    is_exterior = True
-            elif abs(start["y"] - max_y) <= resolved.snap_tolerance:
-                if coverage >= resolved.exterior_coverage_threshold or length >= ref_size - resolved.snap_tolerance:
-                    side = "top"
-                    is_exterior = True
-        elif wall["orientation"] == "vertical":
-            ref_size = bbox_height if bbox_height > EPSILON else 1.0
-            coverage = length / ref_size
+            # Top face: cast UP, LEFT, RIGHT (the DOWN ray would pierce the wall).
+            face_y = wy + eps
+            top_clear = (
+                _vray_clear(mx, face_y, max_y + 1.0, wid)
+                or _hray_clear(face_y, min_x - 1.0, mx, wid)
+                or _hray_clear(face_y, mx, max_x + 1.0, wid)
+            )
 
-            if abs(start["x"] - min_x) <= resolved.snap_tolerance:
-                if coverage >= resolved.exterior_coverage_threshold or length >= ref_size - resolved.snap_tolerance:
-                    side = "left"
-                    is_exterior = True
-            elif abs(start["x"] - max_x) <= resolved.snap_tolerance:
-                if coverage >= resolved.exterior_coverage_threshold or length >= ref_size - resolved.snap_tolerance:
-                    side = "right"
-                    is_exterior = True
-        # Diagonal walls: keep defaults (not exterior, no side)
+            # Bottom face: cast DOWN, LEFT, RIGHT.
+            face_y = wy - eps
+            bottom_clear = (
+                _vray_clear(mx, min_y - 1.0, face_y, wid)
+                or _hray_clear(face_y, min_x - 1.0, mx, wid)
+                or _hray_clear(face_y, mx, max_x + 1.0, wid)
+            )
+
+            if top_clear and not bottom_clear:
+                is_exterior = True
+                side = "top"
+            elif bottom_clear and not top_clear:
+                is_exterior = True
+                side = "bottom"
+            elif top_clear and bottom_clear:
+                is_exterior = True
+                side = "top" if abs(wy - max_y) <= abs(wy - min_y) else "bottom"
+
+        elif ori == "vertical":
+            wx = float(start["x"])
+            my = (float(start["y"]) + float(end["y"])) / 2.0
+
+            # Right face: cast RIGHT, UP, DOWN (LEFT ray would pierce the wall).
+            face_x = wx + eps
+            right_clear = (
+                _hray_clear(my, face_x, max_x + 1.0, wid)
+                or _vray_clear(face_x, my, max_y + 1.0, wid)
+                or _vray_clear(face_x, min_y - 1.0, my, wid)
+            )
+
+            # Left face: cast LEFT, UP, DOWN.
+            face_x = wx - eps
+            left_clear = (
+                _hray_clear(my, min_x - 1.0, face_x, wid)
+                or _vray_clear(face_x, my, max_y + 1.0, wid)
+                or _vray_clear(face_x, min_y - 1.0, my, wid)
+            )
+
+            if right_clear and not left_clear:
+                is_exterior = True
+                side = "right"
+            elif left_clear and not right_clear:
+                is_exterior = True
+                side = "left"
+            elif right_clear and left_clear:
+                is_exterior = True
+                side = "right" if abs(wx - max_x) <= abs(wx - min_x) else "left"
+        # Diagonal walls: keep defaults (not exterior, no side).
 
         confidence = wall["confidence"]
         if is_exterior:
             confidence = min(0.995, confidence + 0.05)
 
-        # Boost confidence for well-connected walls
-        jcount = wall_junction_count.get(wall["id"], 0)
+        jcount = wall_junction_count.get(wid, 0)
         if jcount >= 2:
             confidence = min(0.995, confidence + 0.03)
 
@@ -993,17 +1081,19 @@ def _build_merged_wall(
     source_walls: list[dict[str, Any]],
     counter: int,
 ) -> dict[str, Any]:
-    avg_thickness = sum(wall["thickness"] for wall in source_walls) / len(source_walls)
     avg_confidence = sum(wall["confidence"] for wall in source_walls) / len(source_walls)
     if orientation == "horizontal":
         polyline = [{"x": start, "y": coord}, {"x": end, "y": coord}]
     else:
         polyline = [{"x": coord, "y": start}, {"x": coord, "y": end}]
+    # Thickness is a placeholder here. The framing rule (exterior=2x6,
+    # interior=2x4) is applied downstream in structural_generator after the
+    # wall is classified by `_classify_walls_with_junctions`.
     return {
         "id": f"wall-{counter:04d}",
         "orientation": orientation,
         "polyline": polyline,
-        "thickness": avg_thickness,
+        "thickness": float(INTERIOR_THICKNESS),
         "confidence": round(min(0.99, avg_confidence + 0.15), 4),
         "is_exterior": False,
         "side": None,
